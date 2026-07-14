@@ -82,3 +82,53 @@ test_that("save_manuscript_table still allows footnotes = NULL to suppress both"
   expect_false(grepl("Number of non-missing values", xml, fixed = TRUE))
   expect_false(grepl("Median (15th, 85th percentile)", xml, fixed = TRUE))
 })
+
+test_that("save_manuscript_table rejects fully unnamed footnotes", {
+  ft <- mk_ft()
+  f <- tempfile(fileext = ".docx")
+  on.exit(unlink(f), add = TRUE)
+  expect_error(save_manuscript_table(ft, f, footnotes = list("unnamed text")),
+               "footnotes.*named")
+})
+
+test_that("save_manuscript_table rejects footnotes with a mix of named and unnamed entries", {
+  ft <- mk_ft()
+  f <- tempfile(fileext = ".docx")
+  on.exit(unlink(f), add = TRUE)
+  expect_error(save_manuscript_table(ft, f, footnotes = list(`*` = "ok", "unnamed")),
+               "footnotes.*named")
+})
+
+test_that("save_manuscript_table treats footnotes = list() as a no-op, same as NULL", {
+  ft <- mk_ft()
+  f <- tempfile(fileext = ".docx")
+  on.exit(unlink(f), add = TRUE)
+  expect_no_error(save_manuscript_table(ft, f, footnotes = list()))
+  xml <- read_docx_text(f)
+  expect_false(grepl("Number of non-missing values", xml, fixed = TRUE))
+})
+
+test_that("save_manuscript_table rejects fully unnamed abbreviations", {
+  ft <- mk_ft()
+  f <- tempfile(fileext = ".docx")
+  on.exit(unlink(f), add = TRUE)
+  expect_error(save_manuscript_table(ft, f, abbreviations = c("expansion1", "expansion2")),
+               "abbreviations.*named")
+})
+
+test_that("save_manuscript_table rejects abbreviations with a mix of named and unnamed entries", {
+  ft <- mk_ft()
+  f <- tempfile(fileext = ".docx")
+  on.exit(unlink(f), add = TRUE)
+  expect_error(save_manuscript_table(ft, f, abbreviations = c(ABBR = "expansion", "unnamed expansion")),
+               "abbreviations.*named")
+})
+
+test_that("save_manuscript_table treats abbreviations = character(0) as a no-op, same as NULL", {
+  ft <- mk_ft()
+  f <- tempfile(fileext = ".docx")
+  on.exit(unlink(f), add = TRUE)
+  expect_no_error(save_manuscript_table(ft, f, abbreviations = character(0)))
+  xml <- read_docx_text(f)
+  expect_false(grepl("Key:", xml, fixed = TRUE))
+})

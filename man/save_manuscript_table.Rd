@@ -24,11 +24,14 @@ Symbols must be drawn from \code{c("*", "†", "‡", "§", "¶", "||")}. Each
 symbol is appended as a superscript reference mark to the table's \code{N}
 column header cell (or the first column if no \code{N} column is present),
 and its text is rendered as its own paragraph below the table, in the
-order given.}
+order given. Every element must be named (unnamed or blank-named
+entries raise an error); an empty list is a no-op, same as \code{NULL}.}
 
 \item{abbreviations}{Optional named character vector, \code{c(ABBR = "expansion", ...)}. Rendered as one \verb{Key:} paragraph below any
 footnotes, sorted alphabetically by abbreviation, abbreviation
-italicized, pairs separated by \code{"; "} — house rule 14.}
+italicized, pairs separated by \code{"; "} — house rule 14. Every element
+must be named (unnamed or blank-named entries raise an error); an
+empty or \code{NULL} vector is a no-op.}
 }
 \value{
 Invisibly, the \code{file} path.

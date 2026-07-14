@@ -20,5 +20,12 @@ remotes::install_github("ehrlinger/hvtiRtables")
 
 ## Example
 
-This package is under active development; no functions are exported yet.
+``` r
+library(gtsummary)
+library(hvtiRtables)
+
+tbl <- tbl_summary(trial, by = trt, include = c(age, grade))
+ft <- manuscript_flextable(tbl)
+save_manuscript_table(ft, "table1.docx")
+```
 

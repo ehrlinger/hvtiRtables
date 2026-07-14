@@ -26,11 +26,14 @@
 #'   symbol is appended as a superscript reference mark to the table's `N`
 #'   column header cell (or the first column if no `N` column is present),
 #'   and its text is rendered as its own paragraph below the table, in the
-#'   order given.
+#'   order given. Every element must be named (unnamed or blank-named
+#'   entries raise an error); an empty list is a no-op, same as `NULL`.
 #' @param abbreviations Optional named character vector, `c(ABBR =
 #'   "expansion", ...)`. Rendered as one `Key:` paragraph below any
 #'   footnotes, sorted alphabetically by abbreviation, abbreviation
-#'   italicized, pairs separated by `"; "` — house rule 14.
+#'   italicized, pairs separated by `"; "` — house rule 14. Every element
+#'   must be named (unnamed or blank-named entries raise an error); an
+#'   empty or `NULL` vector is a no-op.
 #'
 #' @return Invisibly, the `file` path.
 #'
@@ -48,15 +51,20 @@ save_manuscript_table <- function(ft, file, footnotes = standard_footnotes(), ab
     stop("Output directory does not exist: ", out_dir, call. = FALSE)
 
   valid_symbols <- c("*", "†", "‡", "§", "¶", "||")
-  if (!is.null(footnotes)) {
-    bad <- setdiff(names(footnotes), valid_symbols)
+  if (!is.null(footnotes) && length(footnotes) > 0) {
+    fn_names <- names(footnotes)
+    if (is.null(fn_names) || any(!nzchar(fn_names)))
+      stop("`footnotes` must be a named list (symbol -> footnote text); ",
+           "every element must have a non-empty name. Valid symbols: ",
+           paste(valid_symbols, collapse = " "), call. = FALSE)
+    bad <- setdiff(fn_names, valid_symbols)
     if (length(bad) > 0)
       stop("Invalid footnote symbol(s): ", paste(bad, collapse = ", "),
            ". Must be one of: ", paste(valid_symbols, collapse = " "),
            call. = FALSE)
     n_col <- if ("n" %in% ft$col_keys) "n" else ft$col_keys[1]
     j <- which(ft$col_keys == n_col)
-    for (sym in names(footnotes)) {
+    for (sym in fn_names) {
       ft <- flextable::append_chunks(ft, i = 1, j = j, part = "header",
                                       flextable::as_sup(sym))
     }
@@ -76,6 +84,11 @@ save_manuscript_table <- function(ft, file, footnotes = standard_footnotes(), ab
   }
 
   if (!is.null(abbreviations) && length(abbreviations) > 0) {
+    abbr_names <- names(abbreviations)
+    if (is.null(abbr_names) || any(!nzchar(abbr_names)))
+      stop("`abbreviations` must be a named character vector ",
+           "(c(ABBR = \"expansion\", ...)); every element must have a ",
+           "non-empty name.", call. = FALSE)
     ordered <- abbreviations[order(names(abbreviations))]
     runs <- list(officer::ftext("Key: "))
     for (i in seq_along(ordered)) {
