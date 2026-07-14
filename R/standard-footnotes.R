@@ -13,10 +13,10 @@
 #' this function, so every table gets both automatically. Override with
 #' ordinary list operations — no special sentinel values:
 #' - Suppress both: `footnotes = NULL`
-#' - Change one: `modifyList(standard_footnotes(), list(\`†\` = "custom text"))`
-#' - Add a study-specific one alongside: `c(standard_footnotes(), list(\`‡\` = "extra note"))`
+#' - Change one: `modifyList(standard_footnotes(), list(...))` with `` `†` `` = "custom text"
+#' - Add a study-specific one alongside: `c(standard_footnotes(), list(...))` with `` `‡` `` = "extra note"
 #'
-#' @return A named list, `list(\`*\` = ..., \`†\` = ...)`, in the format
+#' @return A named list with elements `` `*` `` and `` `†` ``, in the format
 #'   [save_manuscript_table()]'s `footnotes` parameter expects.
 #'
 #' @seealso [save_manuscript_table()]

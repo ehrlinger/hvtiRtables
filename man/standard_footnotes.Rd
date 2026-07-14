@@ -7,7 +7,7 @@
 standard_footnotes()
 }
 \value{
-A named list, \verb{list(\\}*\\verb{ = ..., \\}†\\verb{ = ...)}, in the format
+A named list with elements \code{`*`} and \code{`†`}, in the format
 \code{\link[=save_manuscript_table]{save_manuscript_table()}}'s \code{footnotes} parameter expects.
 }
 \description{
@@ -26,8 +26,8 @@ this function, so every table gets both automatically. Override with
 ordinary list operations — no special sentinel values:
 \itemize{
 \item Suppress both: \code{footnotes = NULL}
-\item Change one: \verb{modifyList(standard_footnotes(), list(\\}†\\verb{ = "custom text"))}
-\item Add a study-specific one alongside: \verb{c(standard_footnotes(), list(\\}‡\\verb{ = "extra note"))}
+\item Change one: \code{modifyList(standard_footnotes(), list(...))} with \code{`†`} = "custom text"
+\item Add a study-specific one alongside: \code{c(standard_footnotes(), list(...))} with \code{`‡`} = "extra note"
 }
 }
 \seealso{
