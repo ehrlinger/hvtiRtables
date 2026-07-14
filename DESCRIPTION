@@ -16,12 +16,10 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 8.0.0
 Suggests:
-    testthat (>= 3.0.0),
-    withr
+    dplyr,
+    testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports:
-    dplyr,
     flextable (>= 0.9.0),
     gtsummary (>= 2.5.0),
-    officer (>= 0.6.0),
-    rlang
+    officer (>= 0.6.0)
