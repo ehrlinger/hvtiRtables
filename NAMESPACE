@@ -2,3 +2,4 @@
 
 export(manuscript_flextable)
 export(save_manuscript_table)
+export(standard_footnotes)

@@ -18,13 +18,15 @@
 #'
 #' @param ft A `flextable` object, typically from [manuscript_flextable()].
 #' @param file Output `.docx` path.
-#' @param footnotes Optional named list, symbol -> footnote text. Symbols
-#'   must be drawn from `c("*", "†", "‡", "§", "¶", "||")`. Each symbol is
-#'   appended as a superscript reference mark to the table's `N` column
-#'   header cell (or the first column if no `N` column is present), and its
-#'   text is rendered as its own paragraph below the table, in the order
-#'   given. Use the exact wording `"Number of non-missing values."` for a
-#'   `"*"` on the N column, per house rule 8.
+#' @param footnotes Optional named list, symbol -> footnote text. Defaults to
+#'   [standard_footnotes()] (the house-universal N and median/percentile
+#'   footnotes). Pass `NULL` to suppress both, or compose with
+#'   [standard_footnotes()] to override or extend — see its documentation.
+#'   Symbols must be drawn from `c("*", "†", "‡", "§", "¶", "||")`. Each
+#'   symbol is appended as a superscript reference mark to the table's `N`
+#'   column header cell (or the first column if no `N` column is present),
+#'   and its text is rendered as its own paragraph below the table, in the
+#'   order given.
 #' @param abbreviations Optional named character vector, `c(ABBR =
 #'   "expansion", ...)`. Rendered as one `Key:` paragraph below any
 #'   footnotes, sorted alphabetically by abbreviation, abbreviation
@@ -33,9 +35,10 @@
 #' @return Invisibly, the `file` path.
 #'
 #' @seealso [manuscript_flextable()] to build a compliant `flextable` first.
+#'   [standard_footnotes()] for details on the default footnotes.
 #'
 #' @export
-save_manuscript_table <- function(ft, file, footnotes = NULL, abbreviations = NULL) {
+save_manuscript_table <- function(ft, file, footnotes = standard_footnotes(), abbreviations = NULL) {
   if (!inherits(ft, "flextable"))
     stop("`ft` must be a flextable object.", call. = FALSE)
   if (!is.character(file) || length(file) != 1L || is.na(file) || !nzchar(file))

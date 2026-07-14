@@ -4,20 +4,27 @@
 \alias{save_manuscript_table}
 \title{Write a manuscript_flextable() table to a compliant .docx}
 \usage{
-save_manuscript_table(ft, file, footnotes = NULL, abbreviations = NULL)
+save_manuscript_table(
+  ft,
+  file,
+  footnotes = standard_footnotes(),
+  abbreviations = NULL
+)
 }
 \arguments{
 \item{ft}{A \code{flextable} object, typically from \code{\link[=manuscript_flextable]{manuscript_flextable()}}.}
 
 \item{file}{Output \code{.docx} path.}
 
-\item{footnotes}{Optional named list, symbol -> footnote text. Symbols
-must be drawn from \code{c("*", "†", "‡", "§", "¶", "||")}. Each symbol is
-appended as a superscript reference mark to the table's \code{N} column
-header cell (or the first column if no \code{N} column is present), and its
-text is rendered as its own paragraph below the table, in the order
-given. Use the exact wording \code{"Number of non-missing values."} for a
-\code{"*"} on the N column, per house rule 8.}
+\item{footnotes}{Optional named list, symbol -> footnote text. Defaults to
+\code{\link[=standard_footnotes]{standard_footnotes()}} (the house-universal N and median/percentile
+footnotes). Pass \code{NULL} to suppress both, or compose with
+\code{\link[=standard_footnotes]{standard_footnotes()}} to override or extend — see its documentation.
+Symbols must be drawn from \code{c("*", "†", "‡", "§", "¶", "||")}. Each
+symbol is appended as a superscript reference mark to the table's \code{N}
+column header cell (or the first column if no \code{N} column is present),
+and its text is rendered as its own paragraph below the table, in the
+order given.}
 
 \item{abbreviations}{Optional named character vector, \code{c(ABBR = "expansion", ...)}. Rendered as one \verb{Key:} paragraph below any
 footnotes, sorted alphabetically by abbreviation, abbreviation
@@ -45,4 +52,5 @@ README for the paste-in workflow).
 }
 \seealso{
 \code{\link[=manuscript_flextable]{manuscript_flextable()}} to build a compliant \code{flextable} first.
+\code{\link[=standard_footnotes]{standard_footnotes()}} for details on the default footnotes.
 }

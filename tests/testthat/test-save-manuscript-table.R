@@ -62,3 +62,23 @@ test_that("save_manuscript_table validates inputs", {
   expect_error(save_manuscript_table(mk_ft(), file.path(tempdir(), "no_such_dir_xyz", "t.docx")),
                "directory does not exist")
 })
+
+test_that("save_manuscript_table applies standard_footnotes() by default", {
+  ft <- mk_ft()
+  f <- tempfile(fileext = ".docx")
+  on.exit(unlink(f), add = TRUE)
+  save_manuscript_table(ft, f)
+  xml <- read_docx_text(f)
+  expect_true(grepl("Number of non-missing values", xml, fixed = TRUE))
+  expect_true(grepl("Median (15th, 85th percentile)", xml, fixed = TRUE))
+})
+
+test_that("save_manuscript_table still allows footnotes = NULL to suppress both", {
+  ft <- mk_ft()
+  f <- tempfile(fileext = ".docx")
+  on.exit(unlink(f), add = TRUE)
+  save_manuscript_table(ft, f, footnotes = NULL)
+  xml <- read_docx_text(f)
+  expect_false(grepl("Number of non-missing values", xml, fixed = TRUE))
+  expect_false(grepl("Median (15th, 85th percentile)", xml, fixed = TRUE))
+})
