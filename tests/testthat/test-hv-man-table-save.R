@@ -16,7 +16,7 @@ read_docx_text <- function(path) {
   paste(lines, collapse = "")
 }
 
-test_that("save_manuscript_table writes a file, returns the path invisibly", {
+test_that("hv_man_table_save writes a file, returns the path invisibly", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
@@ -26,7 +26,7 @@ test_that("save_manuscript_table writes a file, returns the path invisibly", {
   expect_true(file.exists(f))
 })
 
-test_that("save_manuscript_table renders footnotes below the table, not in a cell", {
+test_that("hv_man_table_save renders footnotes below the table, not in a cell", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
@@ -38,7 +38,7 @@ test_that("save_manuscript_table renders footnotes below the table, not in a cel
   expect_true(grepl("Number of non-missing values", xml, fixed = TRUE))
 })
 
-test_that("save_manuscript_table renders an alphabetical Key: block", {
+test_that("hv_man_table_save renders an alphabetical Key: block", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
@@ -56,7 +56,7 @@ test_that("save_manuscript_table renders an alphabetical Key: block", {
   expect_true(nyha_pos < smd_pos) # alphabetical: NYHA before SMD
 })
 
-test_that("save_manuscript_table validates footnote symbols", {
+test_that("hv_man_table_save validates footnote symbols", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
@@ -66,7 +66,7 @@ test_that("save_manuscript_table validates footnote symbols", {
   )
 })
 
-test_that("save_manuscript_table validates inputs", {
+test_that("hv_man_table_save validates inputs", {
   f <- tempfile(fileext = ".docx")
   expect_error(hv_man_table_save("not a flextable", f), "flextable")
   bad_path <- file.path(tempdir(), "no_such_dir_xyz", "t.docx")
@@ -76,7 +76,7 @@ test_that("save_manuscript_table validates inputs", {
   )
 })
 
-test_that("save_manuscript_table applies standard_footnotes() by default", {
+test_that("hv_man_table_save applies hv_man_footnotes() by default", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
@@ -96,7 +96,7 @@ test_that("footnotes = NULL suppresses both standard footnotes", {
   expect_false(grepl("Median (15th, 85th percentile)", xml, fixed = TRUE))
 })
 
-test_that("save_manuscript_table rejects fully unnamed footnotes", {
+test_that("hv_man_table_save rejects fully unnamed footnotes", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
@@ -125,7 +125,7 @@ test_that("footnotes = list() is a no-op, same as NULL", {
   expect_false(grepl("Number of non-missing values", xml, fixed = TRUE))
 })
 
-test_that("save_manuscript_table rejects fully unnamed abbreviations", {
+test_that("hv_man_table_save rejects fully unnamed abbreviations", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
