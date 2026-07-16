@@ -2,7 +2,7 @@
 % Please edit documentation in R/hv-man-table.R
 \name{hv_man_table}
 \alias{hv_man_table}
-\title{Convert a gtsummary table into a Blackstone-compliant flextable}
+\title{Convert a gtsummary table into a flextable matching HVTI CORR's table rules}
 \usage{
 hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2)
 }
@@ -24,29 +24,41 @@ A \code{flextable} object with a single header row and no merged
 cells, ready for \code{\link[=hv_man_table_save]{hv_man_table_save()}}.
 }
 \description{
-Transforms a \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} (or any gtsummary table object
-supporting \code{\link[gtsummary:as_flex_table]{gtsummary::as_flex_table()}}) into a \code{flextable} that complies
-with the HVTI CORR "Table Construction for Manuscripts" rules: a single,
-non-merged header row (no spanning parent cells over grouped columns), no
-merged row-group section-header cells, and Times New Roman at the house
-font size.
+You give this a \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} (or any gtsummary table object
+supporting \code{\link[gtsummary:as_flex_table]{gtsummary::as_flex_table()}}), and you get back a \code{flextable}
+that already complies with HVTI CORR's "Table Construction for
+Manuscripts" rules: a single, non-merged header row (no spanning parent
+cells over grouped columns), no merged row-group section-header cells,
+and Times New Roman at the house font size.
 }
 \details{
 \code{gtsummary::as_flex_table()} already emits one header row per group with
-self-contained labels (e.g. \code{"B\\nN = 45"}) rather than a merged spanning
-header. The one remaining merge — a full-width \code{gridSpan} on the
-\code{modify_table_body(groupname_col = ...)} section-header row — is removed
+self-contained labels (e.g. \code{"B\\nN = 45"}), not a merged spanning header.
+The one remaining merge, a full-width \code{gridSpan} on the
+\code{modify_table_body(groupname_col = ...)} section-header row, gets removed
 with \code{\link[flextable:merge_none]{flextable::merge_none()}}, which un-merges every merged region back
 into individual cells (content stays in the top-left cell of the former
-merge, the rest become empty). This satisfies the "format the table as
+merge; the rest become empty). That satisfies the "format the table as
 flat as possible ... simple non-merged column titles" rule.
 
-Rounding, \verb{\%}-free percentage cells, and \verb{±}-without-spaces formatting
-are the caller's responsibility via the \code{statistic}/\code{digits} arguments to
-\code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} — see the package README for a worked example
+Rounding, \verb{\%}-free percentage cells, and \verb{±}-without-spaces formatting are
+yours to control, via the \code{statistic}/\code{digits} arguments to
+\code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}}; see the package README for a worked example
 using \code{\link[gtsummary:style_sigfig]{gtsummary::style_sigfig()}} for 2-significant-figure rounding.
+
+Submitting to JTCVS instead? Use \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}, which builds the
+two-row merged spanning header that journal's template expects: CORR
+house style and JTCVS submission format want different things from the
+same header row.
+}
+\examples{
+library(gtsummary)
+tbl <- tbl_summary(trial, by = trt, include = c(age, grade))
+ft <- hv_man_table(tbl)
+
 }
 \seealso{
 \code{\link[=hv_man_table_save]{hv_man_table_save()}} to write the result to a compliant
-\code{.docx} with footnotes and an abbreviation key.
+\code{.docx} with footnotes and an abbreviation key. \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}
+for the JTCVS submission format instead.
 }

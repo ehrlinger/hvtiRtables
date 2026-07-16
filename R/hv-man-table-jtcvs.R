@@ -63,11 +63,13 @@
 
 #' Build a JTCVS-format manuscript table with merged spanning headers
 #'
-#' Companion to [hv_man_table()] for the shape editorial actually needs at
-#' JTCVS submission: a 2-row header (group name spanning `na`/stat
-#' sub-columns) and bold-italic, row-spanning section headers in the body,
-#' matching Tess's JTCVS template. This is a separate mode, not a
-#' replacement for [hv_man_table()]'s flat-header CORR house style.
+#' Use this instead of [hv_man_table()] when you're building the shape
+#' editorial actually needs at JTCVS submission: a 2-row header (group name
+#' spanning `na`/stat sub-columns) and bold-italic, row-spanning section
+#' headers in the body, matching the journal's own submission template.
+#' This is a separate mode, not a replacement for [hv_man_table()]'s
+#' flat-header CORR house style; the two exist because CORR reports and
+#' JTCVS submissions want different things from the same header row.
 #'
 #' @param tbl A `gtsummary` table object whose `statistic` argument used
 #'   `"{N_obs} ||| {<stat>}"` for every group column (see `groups`).
@@ -87,6 +89,19 @@
 #'
 #' @seealso [hv_man_table()] for the flat-header CORR house-style mode.
 #'   [hv_man_table_save_jtcvs()] to write the result to a compliant `.docx`.
+#'
+#' @examples
+#' library(gtsummary)
+#' tbl <- trial |>
+#'   tbl_summary(
+#'     by = trt,
+#'     statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
+#'     include = c(age, grade)
+#'   )
+#' ft <- hv_man_table_jtcvs(
+#'   tbl,
+#'   groups = c(stat_1 = "Drug A (n=98)", stat_2 = "Drug B (n=102)")
+#' )
 #'
 #' @export
 hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,

@@ -8,10 +8,20 @@
 [![Codecov test coverage](https://codecov.io/gh/ehrlinger/hvtiRtables/graph/badge.svg)](https://app.codecov.io/gh/ehrlinger/hvtiRtables)
 <!-- badges: end -->
 
-hvtiRtables turns `gtsummary` table objects into MS Word tables complying
-with HVTI CORR manuscript table-construction rules: flat (non-merged)
-headers, no hidden spacer columns, footnotes and abbreviation keys as text
-below the table, house font and rounding conventions.
+You already know the drill: hand-copy a `gtsummary` table into a Word
+template, or run it through the SAS table macro, and by the third revision
+a footnote wording has drifted, a header has re-merged itself, or the font
+quietly changed. hvtiRtables closes that gap. Give it a `gtsummary` table
+object and you get back a `.docx` that already matches HVTI CORR's
+"Table Construction for Manuscripts" rules (house font and rounding,
+footnotes and an abbreviation key as text below the table, no hidden
+spacer columns), the same way every time.
+
+Two house styles exist because two audiences want different things from
+the same header row. Most CORR reports and manuscripts use a flat, single
+header row (`hv_man_table()`); a JTCVS submission wants the traditional
+two-row spanning header instead (`hv_man_table_jtcvs()`). Use whichever
+matches where the table is headed.
 
 ## Installation
 
@@ -35,9 +45,11 @@ hv_man_table_save(ft, "table1.docx")
 
 ## JTCVS submission format
 
-For JTCVS manuscript submission (merged spanning headers, matching Tess's
-template), use `hv_man_table_jtcvs()` / `hv_man_table_save_jtcvs()` instead
-of `hv_man_table()` / `hv_man_table_save()`:
+When you're submitting to JTCVS, swap in `hv_man_table_jtcvs()` /
+`hv_man_table_save_jtcvs()` for `hv_man_table()` / `hv_man_table_save()`.
+The merged spanning header and lettered footnotes match the journal's own
+submission template, so you're not hand-reformatting the table a second
+time after the flat-header version is already done:
 
 ``` r
 library(gtsummary)
