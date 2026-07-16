@@ -79,6 +79,7 @@ docx_xml_jtcvs <- function(ft) {
   on.exit(unlink(out), add = TRUE)
   flextable::save_as_docx(ft, path = out)
   xdir <- tempfile()
+  on.exit(unlink(xdir, recursive = TRUE), add = TRUE)
   utils::unzip(out, exdir = xdir)
   paste(readLines(file.path(xdir, "word", "document.xml"), warn = FALSE), collapse = "")
 }

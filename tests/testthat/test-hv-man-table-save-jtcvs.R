@@ -19,6 +19,7 @@ mk_jtcvs_ft <- function() {
 
 read_docx_text <- function(path) {
   xdir <- tempfile()
+  on.exit(unlink(xdir, recursive = TRUE), add = TRUE)
   utils::unzip(path, exdir = xdir)
   paste(readLines(file.path(xdir, "word", "document.xml"), warn = FALSE), collapse = "")
 }
