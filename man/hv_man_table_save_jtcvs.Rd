@@ -22,7 +22,12 @@ not auto-number tables; include the number yourself.}
 
 \item{footnotes}{Optional list of \code{list(row =, col =, text =)}, one per
 footnote, in the order letters should be assigned (\code{a}, \code{b}, ...).
-\code{row}/\code{col} address a body cell in \code{ft} (\code{col} is a \code{col_keys} name).}
+\code{row}/\code{col} address a body cell in \code{ft} (\code{col} is a \code{col_keys} name).
+\code{row} indexes \code{ft}'s body rows as shown — for a sectioned table (built
+with \code{groupname_col}), that includes the section-header rows
+\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} interleaves into the body, so a caller must
+count those rows when computing the target row index rather than
+indexing only the data rows.}
 
 \item{abbreviations}{Optional named character vector, same as
 \code{\link[=hv_man_table_save]{hv_man_table_save()}} — rendered via the shared \verb{Key:} helper.}

@@ -14,6 +14,11 @@
 #' @param footnotes Optional list of `list(row =, col =, text =)`, one per
 #'   footnote, in the order letters should be assigned (`a`, `b`, ...).
 #'   `row`/`col` address a body cell in `ft` (`col` is a `col_keys` name).
+#'   `row` indexes `ft`'s body rows as shown — for a sectioned table (built
+#'   with `groupname_col`), that includes the section-header rows
+#'   [hv_man_table_jtcvs()] interleaves into the body, so a caller must
+#'   count those rows when computing the target row index rather than
+#'   indexing only the data rows.
 #' @param abbreviations Optional named character vector, same as
 #'   [hv_man_table_save()] — rendered via the shared `Key:` helper.
 #'
