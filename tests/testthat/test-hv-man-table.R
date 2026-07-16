@@ -18,7 +18,7 @@ mk_tbl <- function() {
 
   dta |>
     tbl_summary(
-      by = group,
+      by = group, # nolint: object_usage_linter.
       statistic = list(
         all_continuous() ~ "{mean}±{sd}",
         all_categorical() ~ "{n} ({p})"
@@ -27,7 +27,9 @@ mk_tbl <- function() {
     ) |>
     modify_table_body(
       mutate,
-      groupname_col = case_when(variable == "age" ~ "Demographics", TRUE ~ "Cardiac")
+      groupname_col = case_when(
+        variable == "age" ~ "Demographics", TRUE ~ "Cardiac"
+      )
     ) |>
     add_n()
 }
@@ -39,7 +41,10 @@ docx_xml <- function(ft) {
   xdir <- tempfile()
   on.exit(unlink(xdir, recursive = TRUE), add = TRUE)
   utils::unzip(out, exdir = xdir)
-  paste(readLines(file.path(xdir, "word", "document.xml"), warn = FALSE), collapse = "")
+  paste(
+    readLines(file.path(xdir, "word", "document.xml"), warn = FALSE),
+    collapse = ""
+  )
 }
 
 test_that("hv_man_table returns a flextable with a single header row", {
@@ -59,13 +64,15 @@ test_that("hv_man_table applies the house font and size", {
   ft <- hv_man_table(mk_tbl())
   xml <- docx_xml(ft)
   expect_true(grepl("Times New Roman", xml, fixed = TRUE))
-  expect_true(grepl('w:sz w:val="24"', xml, fixed = TRUE)) # 12pt = half-points * 2 = 24
+  # 12pt = half-points * 2 = 24
+  expect_true(grepl('w:sz w:val="24"', xml, fixed = TRUE))
 })
 
 test_that("hv_man_table honours a smaller font_size for wide tables", {
   ft <- hv_man_table(mk_tbl(), font_size = 11)
   xml <- docx_xml(ft)
-  expect_true(grepl('w:sz w:val="22"', xml, fixed = TRUE)) # 11pt = 22 half-points
+  # 11pt = 22 half-points
+  expect_true(grepl('w:sz w:val="22"', xml, fixed = TRUE))
 })
 
 test_that("hv_man_table validates its inputs", {

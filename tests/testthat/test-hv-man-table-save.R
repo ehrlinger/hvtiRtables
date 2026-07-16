@@ -4,8 +4,9 @@ library(gtsummary)
 mk_ft <- function() {
   set.seed(1)
   dta <- data.frame(age = round(rnorm(50, 60, 10)),
-                     grp = factor(sample(c("A", "B"), 50, replace = TRUE)))
-  tbl <- tbl_summary(dta, by = grp, missing = "no")
+                    grp = factor(sample(c("A", "B"), 50, replace = TRUE)))
+  tbl <- tbl_summary(dta, by = grp, # nolint: object_usage_linter.
+                     missing = "no")
   hv_man_table(tbl)
 }
 
@@ -27,7 +28,7 @@ test_that("hv_man_table_save writes a file, returns the path invisibly", {
   expect_true(file.exists(f))
 })
 
-test_that("hv_man_table_save renders footnotes below the table, not in a cell", {
+test_that("hv_man_table_save renders footnotes below the table, not a cell", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
@@ -43,7 +44,9 @@ test_that("hv_man_table_save renders footnotes below the table, not in a cell", 
   tbl_start <- regexpr("<w:tbl[ >]", xml)
   tbl_end <- regexpr("</w:tbl>", xml, fixed = TRUE)
   expect_true(tbl_start > 0 && tbl_end > 0)
-  tbl_region <- substr(xml, tbl_start, tbl_end + attr(tbl_end, "match.length") - 1)
+  tbl_region <- substr(
+    xml, tbl_start, tbl_end + attr(tbl_end, "match.length") - 1
+  )
   expect_false(grepl("Number of non-missing values", tbl_region, fixed = TRUE))
 })
 
@@ -193,11 +196,13 @@ test_that("abbreviations = character(0) is a no-op, same as NULL", {
   expect_false(grepl("Key:", xml, fixed = TRUE))
 })
 
-test_that("hv_man_table_save still renders the Key: block after the internal refactor", {
+test_that("hv_man_table_save still renders the Key: block after refactor", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
-  hv_man_table_save(ft, f, abbreviations = c(NYHA = "New York Heart Association"))
+  hv_man_table_save(
+    ft, f, abbreviations = c(NYHA = "New York Heart Association")
+  )
   xml <- read_docx_text(f)
   expect_true(grepl("Key:", xml, fixed = TRUE))
   expect_true(grepl("NYHA", xml, fixed = TRUE))

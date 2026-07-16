@@ -25,8 +25,7 @@
 #'
 #' @export
 hv_man_footnotes <- function() {
-  list(
-    `*` = "Number of non-missing values.",
-    `†` = "Median (15th, 85th percentile)."
-  )
+  out <- list(`*` = "Number of non-missing values.")
+  out[["\u2020"]] <- "Median (15th, 85th percentile)."
+  out
 }

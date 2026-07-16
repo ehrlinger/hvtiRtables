@@ -10,18 +10,23 @@ mk_jtcvs_ft <- function() {
   )
   dta$age[sample(n, 5)] <- NA
   tbl <- dta |> tbl_summary(
-    by = group,
+    by = group, # nolint: object_usage_linter.
     statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
     missing = "no"
   )
-  hv_man_table_jtcvs(tbl, groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)"))
+  hv_man_table_jtcvs(
+    tbl, groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)")
+  )
 }
 
 read_docx_text <- function(path) {
   xdir <- tempfile()
   on.exit(unlink(xdir, recursive = TRUE), add = TRUE)
   utils::unzip(path, exdir = xdir)
-  paste(readLines(file.path(xdir, "word", "document.xml"), warn = FALSE), collapse = "")
+  paste(
+    readLines(file.path(xdir, "word", "document.xml"), warn = FALSE),
+    collapse = ""
+  )
 }
 
 test_that("hv_man_table_save_jtcvs renders a bold caption before the table", {
@@ -40,7 +45,7 @@ test_that("hv_man_table_save_jtcvs renders a bold caption before the table", {
   expect_true(grepl('w:b w:val="true"', preceding_run, fixed = TRUE))
 })
 
-test_that("hv_man_table_save_jtcvs attaches lettered footnotes to specific cells", {
+test_that("hv_man_table_save_jtcvs attaches lettered footnotes to cells", {
   ft <- mk_jtcvs_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)

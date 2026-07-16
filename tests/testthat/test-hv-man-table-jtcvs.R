@@ -13,7 +13,7 @@ mk_jtcvs_tbl <- function() {
 
   dta |>
     tbl_summary(
-      by = group,
+      by = group, # nolint: object_usage_linter.
       statistic = list(
         all_continuous() ~ "{N_obs} ||| {mean} ± {sd}",
         all_categorical() ~ "{N_obs} ||| {n} ({p}%)"
@@ -22,7 +22,9 @@ mk_jtcvs_tbl <- function() {
     ) |>
     modify_table_body(
       mutate,
-      groupname_col = case_when(variable == "age" ~ "Demographics", TRUE ~ "Cardiac")
+      groupname_col = case_when(
+        variable == "age" ~ "Demographics", TRUE ~ "Cardiac"
+      )
     )
 }
 
@@ -36,7 +38,7 @@ test_that(".reshape_jtcvs_body splits N_obs and stat into paired columns", {
   expect_identical(age_row$n_stat_2, "33")
 })
 
-test_that(".reshape_jtcvs_body marks section-header rows and blanks their stats", {
+test_that(".reshape_jtcvs_body marks section-header rows, blanks stats", {
   reshaped <- hvtiRtables:::.reshape_jtcvs_body(
     mk_jtcvs_tbl(), groups = c(stat_1 = "Group A", stat_2 = "Group B")
   )
@@ -46,7 +48,7 @@ test_that(".reshape_jtcvs_body marks section-header rows and blanks their stats"
   expect_true(all(is.na(sec$disp_stat_1)))
 })
 
-test_that(".reshape_jtcvs_body leaves categorical parent rows blank, not erroring", {
+test_that(".reshape_jtcvs_body leaves categorical rows blank, not erroring", {
   reshaped <- hvtiRtables:::.reshape_jtcvs_body(
     mk_jtcvs_tbl(), groups = c(stat_1 = "Group A", stat_2 = "Group B")
   )
@@ -54,7 +56,7 @@ test_that(".reshape_jtcvs_body leaves categorical parent rows blank, not errorin
   expect_true(is.na(nyha_row$n_stat_1))
 })
 
-test_that(".reshape_jtcvs_body works when groupname_col was never set (no sections)", {
+test_that(".reshape_jtcvs_body works with no groupname_col (no sections)", {
   set.seed(42)
   n <- 60
   dta <- data.frame(
@@ -68,7 +70,9 @@ test_that(".reshape_jtcvs_body works when groupname_col was never set (no sectio
     missing = "no"
   )
   expect_false("groupname_col" %in% names(tbl$table_body))
-  reshaped <- hvtiRtables:::.reshape_jtcvs_body(tbl, groups = c(stat_1 = "Group A", stat_2 = "Group B"))
+  reshaped <- hvtiRtables:::.reshape_jtcvs_body(
+    tbl, groups = c(stat_1 = "Group A", stat_2 = "Group B")
+  )
   expect_false(any(reshaped$is_section))
   expect_identical(nrow(reshaped), nrow(tbl$table_body))
 })
@@ -81,7 +85,10 @@ docx_xml_jtcvs <- function(ft) {
   xdir <- tempfile()
   on.exit(unlink(xdir, recursive = TRUE), add = TRUE)
   utils::unzip(out, exdir = xdir)
-  paste(readLines(file.path(xdir, "word", "document.xml"), warn = FALSE), collapse = "")
+  paste(
+    readLines(file.path(xdir, "word", "document.xml"), warn = FALSE),
+    collapse = ""
+  )
 }
 
 test_that("hv_man_table_jtcvs builds a 2-row header with merged group spans", {
@@ -97,8 +104,11 @@ test_that("hv_man_table_jtcvs builds a 2-row header with merged group spans", {
   expect_true(grepl("Group B (n=33)", xml, fixed = TRUE))
   expect_true(grepl(">na<", xml, fixed = TRUE))
   expect_true(grepl("No. (%) or Mean", xml, fixed = TRUE))
-  # sub-header row ("na") comes after the spanning group-label row in document order
-  expect_true(regexpr("Group A", xml, fixed = TRUE) < regexpr(">na<", xml, fixed = TRUE))
+  # sub-header row ("na") comes after the spanning group-label row in
+  # document order
+  expect_true(
+    regexpr("Group A", xml, fixed = TRUE) < regexpr(">na<", xml, fixed = TRUE)
+  )
 })
 
 test_that("hv_man_table_jtcvs bolds and merges section-header rows", {
@@ -135,7 +145,7 @@ test_that("hv_man_table_jtcvs applies the house font", {
   expect_true(grepl("Times New Roman", xml, fixed = TRUE))
 })
 
-test_that("hv_man_table_jtcvs reproduces the template's Table 1 header/section shape", {
+test_that("hv_man_table_jtcvs reproduces template's header/section shape", {
   set.seed(1)
   n <- 525
   # `factor()` defaults to alphabetical level order ("Isolated" before

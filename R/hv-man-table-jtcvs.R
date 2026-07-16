@@ -11,8 +11,14 @@
 
   for (col in names(groups)) {
     parts <- strsplit(tb[[col]], " \\|\\|\\| ")
-    out[[paste0("n_", col)]] <- vapply(parts, function(p) if (length(p) == 2) p[1] else NA_character_, character(1))
-    out[[paste0("disp_", col)]] <- vapply(parts, function(p) if (length(p) == 2) p[2] else NA_character_, character(1))
+    out[[paste0("n_", col)]] <- vapply(
+      parts, function(p) if (length(p) == 2) p[1] else NA_character_,
+      character(1)
+    )
+    out[[paste0("disp_", col)]] <- vapply(
+      parts, function(p) if (length(p) == 2) p[2] else NA_character_,
+      character(1)
+    )
   }
 
   if (!is.null(trailing)) {
@@ -41,7 +47,9 @@
   prev <- 0L
   for (k in seq_along(insert_before)) {
     if (insert_before[k] > prev + 1L) {
-      result <- rbind(result, out[(prev + 1L):(insert_before[k] - 1L), , drop = FALSE])
+      result <- rbind(
+        result, out[(prev + 1L):(insert_before[k] - 1L), , drop = FALSE]
+      )
     }
     result <- rbind(result, sec_rows[k, , drop = FALSE])
     prev <- insert_before[k] - 1L
@@ -100,7 +108,7 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   header_labels <- list(label = "Characteristic")
   for (g in names(groups)) {
     header_labels[[paste0("n_", g)]] <- "na"
-    header_labels[[paste0("disp_", g)]] <- "No. (%) or Mean ± SD"
+    header_labels[[paste0("disp_", g)]] <- "No. (%) or Mean \u00B1 SD"
   }
   if (!is.null(trailing)) header_labels[[names(trailing)]] <- unname(trailing)
   ft <- do.call(flextable::set_header_labels, c(list(x = ft), header_labels))
@@ -111,7 +119,9 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
     top_values <- c(top_values, "")
     top_widths <- c(top_widths, 1L)
   }
-  ft <- flextable::add_header_row(ft, top = TRUE, values = top_values, colwidths = top_widths)
+  ft <- flextable::add_header_row(
+    ft, top = TRUE, values = top_values, colwidths = top_widths
+  )
 
   sec_i <- which(reshaped$is_section)
   ft <- flextable::merge_h(ft, i = sec_i, part = "body")

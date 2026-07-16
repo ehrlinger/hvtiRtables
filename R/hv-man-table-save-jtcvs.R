@@ -31,7 +31,8 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
                                     abbreviations = NULL) {
   if (!inherits(ft, "flextable"))
     stop("`ft` must be a flextable object.", call. = FALSE)
-  if (!is.character(caption) || length(caption) != 1L || is.na(caption) || !nzchar(caption))
+  if (!is.character(caption) || length(caption) != 1L || is.na(caption) ||
+        !nzchar(caption))
     stop("`caption` must be a single non-empty string.", call. = FALSE)
   out_dir <- dirname(file)
   if (!dir.exists(out_dir))
@@ -39,7 +40,8 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
 
   letters_seq <- letters
   if (!is.null(footnotes) && length(footnotes) > length(letters_seq))
-    stop("Too many footnotes (max ", length(letters_seq), " letters).", call. = FALSE)
+    stop("Too many footnotes (max ", length(letters_seq), " letters).",
+         call. = FALSE)
 
   if (!is.null(footnotes)) {
     for (k in seq_along(footnotes)) {
@@ -52,7 +54,9 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
   }
 
   doc <- officer::read_docx()
-  cap_par <- officer::fpar(officer::ftext(caption, prop = officer::fp_text(bold = TRUE)))
+  cap_par <- officer::fpar(
+    officer::ftext(caption, prop = officer::fp_text(bold = TRUE))
+  )
   doc <- officer::body_add_fpar(doc, cap_par, style = "Normal")
   doc <- flextable::body_add_flextable(doc, ft)
 

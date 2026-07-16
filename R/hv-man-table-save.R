@@ -51,7 +51,7 @@ hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
   if (!dir.exists(out_dir))
     stop("Output directory does not exist: ", out_dir, call. = FALSE)
 
-  valid_symbols <- c("*", "†", "‡", "§", "¶", "||")
+  valid_symbols <- c("*", "\u2020", "\u2021", "\u00A7", "\u00B6", "||")
   if (!is.null(footnotes) && length(footnotes) > 0) {
     fn_names <- names(footnotes)
     if (is.null(fn_names) || anyNA(fn_names) || any(!nzchar(fn_names)))
@@ -103,7 +103,11 @@ hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
   italic_prop <- officer::fp_text(italic = TRUE)
   for (i in seq_along(ordered)) {
     runs <- c(runs, list(officer::ftext(names(ordered)[i], prop = italic_prop)))
-    suffix <- if (i < length(ordered)) paste0(", ", ordered[i], "; ") else paste0(", ", ordered[i])
+    suffix <- if (i < length(ordered)) {
+      paste0(", ", ordered[i], "; ")
+    } else {
+      paste0(", ", ordered[i])
+    }
     runs <- c(runs, list(officer::ftext(suffix)))
   }
   key_par <- do.call(officer::fpar, runs)
