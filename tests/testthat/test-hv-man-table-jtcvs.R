@@ -142,6 +142,42 @@ test_that("hv_man_table_jtcvs sets column widths to avoid wrapping", {
   expect_equal(unname(widths["disp_stat_1"]), 0.9)
 })
 
+test_that("hv_man_table_jtcvs rejects a trailing name not in table_body", {
+  expect_error(
+    hv_man_table_jtcvs(
+      mk_jtcvs_tbl(),
+      groups = c(stat_1 = "Group A", stat_2 = "Group B"),
+      trailing = c(nonexistent = "Label")
+    ),
+    "not a column"
+  )
+})
+
+test_that("hv_man_table_jtcvs rejects an unnamed trailing", {
+  expect_error(
+    hv_man_table_jtcvs(
+      mk_jtcvs_tbl(),
+      groups = c(stat_1 = "Group A", stat_2 = "Group B"),
+      trailing = "std_diff"
+    ),
+    "named character vector of length 1"
+  )
+})
+
+test_that("hv_man_table_jtcvs rejects a length-2 trailing", {
+  tbl <- mk_jtcvs_tbl()
+  tbl$table_body$a <- "x"
+  tbl$table_body$b <- "y"
+  expect_error(
+    hv_man_table_jtcvs(
+      tbl,
+      groups = c(stat_1 = "Group A", stat_2 = "Group B"),
+      trailing = c(a = "A", b = "B")
+    ),
+    "named character vector of length 1"
+  )
+})
+
 test_that("hv_man_table_jtcvs adds an optional trailing column", {
   tbl <- mk_jtcvs_tbl()
   tbl$table_body$std_diff <- "12"

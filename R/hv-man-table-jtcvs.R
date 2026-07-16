@@ -111,6 +111,15 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
     stop("`tbl` must be a gtsummary table object.", call. = FALSE)
   if (is.null(names(groups)) || any(!nzchar(names(groups))))
     stop("`groups` must be a named character vector.", call. = FALSE)
+  if (!is.null(trailing)) {
+    if (!is.character(trailing) || length(trailing) != 1L ||
+          is.null(names(trailing)) || !nzchar(names(trailing)))
+      stop("`trailing` must be a named character vector of length 1 ",
+           "(e.g. c(std_diff = \"Std. Diff.\")).", call. = FALSE)
+    if (!names(trailing) %in% names(tbl$table_body))
+      stop("`trailing` name `", names(trailing), "` is not a column in ",
+           "`tbl$table_body`.", call. = FALSE)
+  }
 
   reshaped <- .reshape_jtcvs_body(tbl, groups, trailing)
 
