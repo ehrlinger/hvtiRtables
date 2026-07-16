@@ -54,7 +54,7 @@ hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
   valid_symbols <- c("*", "†", "‡", "§", "¶", "||")
   if (!is.null(footnotes) && length(footnotes) > 0) {
     fn_names <- names(footnotes)
-    if (is.null(fn_names) || any(!nzchar(fn_names)))
+    if (is.null(fn_names) || anyNA(fn_names) || any(!nzchar(fn_names)))
       stop("`footnotes` must be a named list (symbol -> footnote text); ",
            "every element must have a non-empty name. Valid symbols: ",
            paste(valid_symbols, collapse = " "), call. = FALSE)
@@ -94,7 +94,7 @@ hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
 .add_abbreviations_key <- function(doc, abbreviations) {
   if (is.null(abbreviations) || length(abbreviations) == 0) return(doc)
   abbr_names <- names(abbreviations)
-  if (is.null(abbr_names) || any(!nzchar(abbr_names)))
+  if (is.null(abbr_names) || anyNA(abbr_names) || any(!nzchar(abbr_names)))
     stop("`abbreviations` must be a named character vector ",
          "(c(ABBR = \"expansion\", ...)); every element must have a ",
          "non-empty name.", call. = FALSE)

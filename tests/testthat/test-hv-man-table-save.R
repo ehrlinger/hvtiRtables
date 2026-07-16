@@ -11,6 +11,7 @@ mk_ft <- function() {
 
 read_docx_text <- function(path) {
   xdir <- tempfile()
+  on.exit(unlink(xdir, recursive = TRUE), add = TRUE)
   utils::unzip(path, exdir = xdir)
   lines <- readLines(file.path(xdir, "word", "document.xml"), warn = FALSE)
   paste(lines, collapse = "")
@@ -36,6 +37,14 @@ test_that("hv_man_table_save renders footnotes below the table, not in a cell", 
   )
   xml <- read_docx_text(f)
   expect_true(grepl("Number of non-missing values", xml, fixed = TRUE))
+  # Regression guard: the footnote text must NOT be embedded inside the
+  # table's own <w:tbl> block (that's the flextable::footnote() bug this
+  # function exists to avoid) — it must appear only after the table closes.
+  tbl_start <- regexpr("<w:tbl[ >]", xml)
+  tbl_end <- regexpr("</w:tbl>", xml, fixed = TRUE)
+  expect_true(tbl_start > 0 && tbl_end > 0)
+  tbl_region <- substr(xml, tbl_start, tbl_end + attr(tbl_end, "match.length") - 1)
+  expect_false(grepl("Number of non-missing values", tbl_region, fixed = TRUE))
 })
 
 test_that("hv_man_table_save renders an alphabetical Key: block", {
@@ -116,6 +125,18 @@ test_that("rejects footnotes with any unnamed entry", {
   )
 })
 
+test_that("rejects footnotes with an NA name (Copilot C1)", {
+  ft <- mk_ft()
+  f <- tempfile(fileext = ".docx")
+  on.exit(unlink(f), add = TRUE)
+  footnotes <- list(`*` = "ok")
+  names(footnotes)[1] <- NA
+  expect_error(
+    hv_man_table_save(ft, f, footnotes = footnotes),
+    "footnotes.*named"
+  )
+})
+
 test_that("footnotes = list() is a no-op, same as NULL", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
@@ -147,6 +168,18 @@ test_that("rejects abbreviations with any unnamed entry", {
       ft, f,
       abbreviations = c(ABBR = "expansion", "unnamed expansion")
     ),
+    "abbreviations.*named"
+  )
+})
+
+test_that("rejects abbreviations with an NA name (Copilot C2)", {
+  ft <- mk_ft()
+  f <- tempfile(fileext = ".docx")
+  on.exit(unlink(f), add = TRUE)
+  abbreviations <- c(ABBR = "expansion")
+  names(abbreviations)[1] <- NA
+  expect_error(
+    hv_man_table_save(ft, f, abbreviations = abbreviations),
     "abbreviations.*named"
   )
 })
