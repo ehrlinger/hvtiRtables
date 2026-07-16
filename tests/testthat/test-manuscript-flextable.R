@@ -4,12 +4,15 @@ library(gtsummary)
 mk_tbl <- function() {
   set.seed(42)
   n <- 200
-  grp <- factor(sample(c("B", "F", "Z"), n, replace = TRUE, prob = c(94, 114, 369)),
-                levels = c("B", "F", "Z"))
+  grp <- factor(
+    sample(c("B", "F", "Z"), n, replace = TRUE, prob = c(94, 114, 369)),
+    levels = c("B", "F", "Z")
+  )
   dta <- data.frame(
     group = grp,
     age = round(rnorm(n, 62, 12)),
-    nyha = factor(sample(c("I", "II", "III"), n, replace = TRUE), levels = c("I", "II", "III"))
+    nyha = factor(sample(c("I", "II", "III"), n, replace = TRUE),
+                  levels = c("I", "II", "III"))
   )
   dta$age[sample(n, 8)] <- NA
 

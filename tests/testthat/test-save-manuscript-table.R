@@ -12,11 +12,11 @@ mk_ft <- function() {
 read_docx_text <- function(path) {
   xdir <- tempfile()
   utils::unzip(path, exdir = xdir)
-  xml <- paste(readLines(file.path(xdir, "word", "document.xml"), warn = FALSE), collapse = "")
-  xml
+  lines <- readLines(file.path(xdir, "word", "document.xml"), warn = FALSE)
+  paste(lines, collapse = "")
 }
 
-test_that("save_manuscript_table writes a file and returns the path invisibly", {
+test_that("save_manuscript_table writes a file, returns the path invisibly", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
@@ -26,21 +26,29 @@ test_that("save_manuscript_table writes a file and returns the path invisibly", 
   expect_true(file.exists(f))
 })
 
-test_that("save_manuscript_table renders footnote text below the table, not in a cell", {
+test_that("save_manuscript_table renders footnotes below the table, not in a cell", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
-  save_manuscript_table(ft, f, footnotes = list(`*` = "Number of non-missing values."))
+  save_manuscript_table(
+    ft, f,
+    footnotes = list(`*` = "Number of non-missing values.")
+  )
   xml <- read_docx_text(f)
   expect_true(grepl("Number of non-missing values", xml, fixed = TRUE))
 })
 
-test_that("save_manuscript_table renders an alphabetical, semicolon-separated Key: block", {
+test_that("save_manuscript_table renders an alphabetical Key: block", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
-  save_manuscript_table(ft, f, abbreviations = c(SMD = "standardized mean difference",
-                                                  NYHA = "New York Heart Association"))
+  save_manuscript_table(
+    ft, f,
+    abbreviations = c(
+      SMD = "standardized mean difference",
+      NYHA = "New York Heart Association"
+    )
+  )
   xml <- read_docx_text(f)
   expect_true(grepl("Key:", xml, fixed = TRUE))
   nyha_pos <- regexpr("NYHA", xml, fixed = TRUE)
@@ -52,15 +60,20 @@ test_that("save_manuscript_table validates footnote symbols", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
-  expect_error(save_manuscript_table(ft, f, footnotes = list(`#` = "bad symbol")),
-               "footnote symbol")
+  expect_error(
+    save_manuscript_table(ft, f, footnotes = list(`#` = "bad symbol")),
+    "footnote symbol"
+  )
 })
 
 test_that("save_manuscript_table validates inputs", {
   f <- tempfile(fileext = ".docx")
   expect_error(save_manuscript_table("not a flextable", f), "flextable")
-  expect_error(save_manuscript_table(mk_ft(), file.path(tempdir(), "no_such_dir_xyz", "t.docx")),
-               "directory does not exist")
+  bad_path <- file.path(tempdir(), "no_such_dir_xyz", "t.docx")
+  expect_error(
+    save_manuscript_table(mk_ft(), bad_path),
+    "directory does not exist"
+  )
 })
 
 test_that("save_manuscript_table applies standard_footnotes() by default", {
@@ -73,7 +86,7 @@ test_that("save_manuscript_table applies standard_footnotes() by default", {
   expect_true(grepl("Median (15th, 85th percentile)", xml, fixed = TRUE))
 })
 
-test_that("save_manuscript_table still allows footnotes = NULL to suppress both", {
+test_that("footnotes = NULL suppresses both standard footnotes", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
@@ -87,19 +100,23 @@ test_that("save_manuscript_table rejects fully unnamed footnotes", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
-  expect_error(save_manuscript_table(ft, f, footnotes = list("unnamed text")),
-               "footnotes.*named")
+  expect_error(
+    save_manuscript_table(ft, f, footnotes = list("unnamed text")),
+    "footnotes.*named"
+  )
 })
 
-test_that("save_manuscript_table rejects footnotes with a mix of named and unnamed entries", {
+test_that("rejects footnotes with any unnamed entry", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
-  expect_error(save_manuscript_table(ft, f, footnotes = list(`*` = "ok", "unnamed")),
-               "footnotes.*named")
+  expect_error(
+    save_manuscript_table(ft, f, footnotes = list(`*` = "ok", "unnamed")),
+    "footnotes.*named"
+  )
 })
 
-test_that("save_manuscript_table treats footnotes = list() as a no-op, same as NULL", {
+test_that("footnotes = list() is a no-op, same as NULL", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
@@ -112,19 +129,29 @@ test_that("save_manuscript_table rejects fully unnamed abbreviations", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
-  expect_error(save_manuscript_table(ft, f, abbreviations = c("expansion1", "expansion2")),
-               "abbreviations.*named")
+  expect_error(
+    save_manuscript_table(
+      ft, f,
+      abbreviations = c("expansion1", "expansion2")
+    ),
+    "abbreviations.*named"
+  )
 })
 
-test_that("save_manuscript_table rejects abbreviations with a mix of named and unnamed entries", {
+test_that("rejects abbreviations with any unnamed entry", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
-  expect_error(save_manuscript_table(ft, f, abbreviations = c(ABBR = "expansion", "unnamed expansion")),
-               "abbreviations.*named")
+  expect_error(
+    save_manuscript_table(
+      ft, f,
+      abbreviations = c(ABBR = "expansion", "unnamed expansion")
+    ),
+    "abbreviations.*named"
+  )
 })
 
-test_that("save_manuscript_table treats abbreviations = character(0) as a no-op, same as NULL", {
+test_that("abbreviations = character(0) is a no-op, same as NULL", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)

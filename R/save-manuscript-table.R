@@ -41,7 +41,8 @@
 #'   [standard_footnotes()] for details on the default footnotes.
 #'
 #' @export
-save_manuscript_table <- function(ft, file, footnotes = standard_footnotes(), abbreviations = NULL) {
+save_manuscript_table <- function(ft, file, footnotes = standard_footnotes(),
+                                  abbreviations = NULL) {
   if (!inherits(ft, "flextable"))
     stop("`ft` must be a flextable object.", call. = FALSE)
   if (!is.character(file) || length(file) != 1L || is.na(file) || !nzchar(file))
@@ -66,7 +67,7 @@ save_manuscript_table <- function(ft, file, footnotes = standard_footnotes(), ab
     j <- which(ft$col_keys == n_col)
     for (sym in fn_names) {
       ft <- flextable::append_chunks(ft, i = 1, j = j, part = "header",
-                                      flextable::as_sup(sym))
+                                     flextable::as_sup(sym))
     }
   }
 
@@ -75,8 +76,9 @@ save_manuscript_table <- function(ft, file, footnotes = standard_footnotes(), ab
 
   if (!is.null(footnotes)) {
     for (sym in names(footnotes)) {
+      sup_prop <- officer::fp_text(vertical.align = "superscript")
       note_par <- officer::fpar(
-        officer::ftext(sym, prop = officer::fp_text(vertical.align = "superscript")),
+        officer::ftext(sym, prop = sup_prop),
         officer::ftext(paste0(" ", footnotes[[sym]]))
       )
       doc <- officer::body_add_fpar(doc, note_par, style = "Normal")
@@ -91,11 +93,15 @@ save_manuscript_table <- function(ft, file, footnotes = standard_footnotes(), ab
            "non-empty name.", call. = FALSE)
     ordered <- abbreviations[order(names(abbreviations))]
     runs <- list(officer::ftext("Key: "))
+    italic_prop <- officer::fp_text(italic = TRUE)
     for (i in seq_along(ordered)) {
       runs <- c(runs, list(officer::ftext(names(ordered)[i],
-                                           prop = officer::fp_text(italic = TRUE))))
-      suffix <- if (i < length(ordered)) paste0(", ", ordered[i], "; ")
-                else paste0(", ", ordered[i])
+                                          prop = italic_prop)))
+      suffix <- if (i < length(ordered)) {
+        paste0(", ", ordered[i], "; ")
+      } else {
+        paste0(", ", ordered[i])
+      }
       runs <- c(runs, list(officer::ftext(suffix)))
     }
     key_par <- do.call(officer::fpar, runs)
