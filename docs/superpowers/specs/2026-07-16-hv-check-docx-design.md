@@ -28,7 +28,8 @@ or unreachable to an editor working in normal Word view:
    table's own `<w:tbl>` block rather than as document text below the table
    (this is the exact regression [flextable::footnote()] would introduce,
    already called out in `hv_man_table_save()`'s own roxygen and covered by
-   a dedicated test per Copilot review finding C4 on PR #1).
+   the "renders footnotes below the table, not a cell" regression test in
+   `tests/testthat/test-hv-man-table-save.R`).
 
 Neither of the two reference documents examined this session
 (`Table Construction for Manuscripts.docx`,
@@ -37,7 +38,7 @@ patterns — manually verified via raw OOXML inspection. `hvtiRtables`'
 own output is also structurally immune by construction (built via
 `officer`/`flextable`, never via SAS RTF export or manual frame
 positioning). But there is currently no automated, reusable way to check
-an arbitrary incoming `.docx` — one from outside the package, or a
+an arbitrary incoming `.docx` — one from outside the package, or an
 existing template someone may have hand-edited — for these patterns
 before trusting it. This spec adds that check.
 
@@ -72,7 +73,7 @@ Scans the document XML for either:
 ### Detector 2 — hidden spacer columns (structural, high-confidence when combined)
 
 A table column is flagged only when **both** conditions hold, to avoid
-false-positiving on legitimately narrow columns (e.g. a 1-2 digit N
+false positives on legitimately narrow columns (e.g. a 1-2 digit N
 count):
 - every cell in that column is empty or whitespace-only, **and**
 - the column's width is below a threshold tuned to be narrower than any
