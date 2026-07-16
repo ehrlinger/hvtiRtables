@@ -72,3 +72,64 @@ test_that(".reshape_jtcvs_body works when groupname_col was never set (no sectio
   expect_false(any(reshaped$is_section))
   expect_identical(nrow(reshaped), nrow(tbl$table_body))
 })
+
+# Helper for rendering and checking DOCX XML
+docx_xml_jtcvs <- function(ft) {
+  out <- tempfile(fileext = ".docx")
+  on.exit(unlink(out), add = TRUE)
+  flextable::save_as_docx(ft, path = out)
+  xdir <- tempfile()
+  utils::unzip(out, exdir = xdir)
+  paste(readLines(file.path(xdir, "word", "document.xml"), warn = FALSE), collapse = "")
+}
+
+test_that("hv_man_table_jtcvs builds a 2-row header with merged group spans", {
+  ft <- hv_man_table_jtcvs(
+    mk_jtcvs_tbl(),
+    groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)")
+  )
+  expect_s3_class(ft, "flextable")
+  expect_identical(flextable::nrow_part(ft, "header"), 2L)
+
+  xml <- docx_xml_jtcvs(ft)
+  expect_true(grepl("Group A (n=27)", xml, fixed = TRUE))
+  expect_true(grepl("Group B (n=33)", xml, fixed = TRUE))
+  expect_true(grepl(">na<", xml, fixed = TRUE))
+  expect_true(grepl("No. (%) or Mean", xml, fixed = TRUE))
+  # sub-header row ("na") comes after the spanning group-label row in document order
+  expect_true(regexpr("Group A", xml, fixed = TRUE) < regexpr(">na<", xml, fixed = TRUE))
+})
+
+test_that("hv_man_table_jtcvs bolds and merges section-header rows", {
+  ft <- hv_man_table_jtcvs(
+    mk_jtcvs_tbl(),
+    groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)")
+  )
+  body <- ft$body$dataset
+  sec_i <- which(body$label %in% c("Demographics", "Cardiac"))
+  expect_length(sec_i, 2L)
+  bold_map <- ft$body$styles$text$bold$data
+  expect_true(all(bold_map[sec_i, 1]))
+})
+
+test_that("hv_man_table_jtcvs adds an optional trailing column", {
+  tbl <- mk_jtcvs_tbl()
+  tbl$table_body$std_diff <- "12"
+  ft <- hv_man_table_jtcvs(
+    tbl,
+    groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)"),
+    trailing = c(std_diff = "Std. Diff.")
+  )
+  expect_true("std_diff" %in% ft$col_keys)
+  xml <- docx_xml_jtcvs(ft)
+  expect_true(grepl("Std. Diff.", xml, fixed = TRUE))
+})
+
+test_that("hv_man_table_jtcvs applies the house font", {
+  ft <- hv_man_table_jtcvs(
+    mk_jtcvs_tbl(),
+    groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)")
+  )
+  xml <- docx_xml_jtcvs(ft)
+  expect_true(grepl("Times New Roman", xml, fixed = TRUE))
+})
