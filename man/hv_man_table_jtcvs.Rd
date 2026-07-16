@@ -37,11 +37,12 @@ for \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}.
 \description{
 Use this instead of \code{\link[=hv_man_table]{hv_man_table()}} when you're building the shape
 editorial actually needs at JTCVS submission: a 2-row header (group name
-spanning \code{na}/stat sub-columns) and bold-italic, row-spanning section
-headers in the body, matching the journal's own submission template.
-This is a separate mode, not a replacement for \code{\link[=hv_man_table]{hv_man_table()}}'s
-flat-header CORR house style; the two exist because CORR reports and
-JTCVS submissions want different things from the same header row.
+spanning \code{na}/stat sub-columns) and bold, light-blue-shaded, row-spanning
+section headers in the body, matching the canonical "Table Construction
+for Manuscripts" house example (section-header fill \verb{#CAEDFB}). This is
+a separate mode, not a replacement for \code{\link[=hv_man_table]{hv_man_table()}}'s flat-header
+CORR house style; the two exist because CORR reports and JTCVS
+submissions want different things from the same header row.
 }
 \examples{
 library(gtsummary)

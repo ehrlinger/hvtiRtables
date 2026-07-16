@@ -65,11 +65,12 @@
 #'
 #' Use this instead of [hv_man_table()] when you're building the shape
 #' editorial actually needs at JTCVS submission: a 2-row header (group name
-#' spanning `na`/stat sub-columns) and bold-italic, row-spanning section
-#' headers in the body, matching the journal's own submission template.
-#' This is a separate mode, not a replacement for [hv_man_table()]'s
-#' flat-header CORR house style; the two exist because CORR reports and
-#' JTCVS submissions want different things from the same header row.
+#' spanning `na`/stat sub-columns) and bold, light-blue-shaded, row-spanning
+#' section headers in the body, matching the canonical "Table Construction
+#' for Manuscripts" house example (section-header fill `#CAEDFB`). This is
+#' a separate mode, not a replacement for [hv_man_table()]'s flat-header
+#' CORR house style; the two exist because CORR reports and JTCVS
+#' submissions want different things from the same header row.
 #'
 #' @param tbl A `gtsummary` table object whose `statistic` argument used
 #'   `"{N_obs} ||| {<stat>}"` for every group column (see `groups`).
@@ -141,7 +142,7 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   sec_i <- which(reshaped$is_section)
   ft <- flextable::merge_h(ft, i = sec_i, part = "body")
   ft <- flextable::bold(ft, i = sec_i, part = "body", bold = TRUE)
-  ft <- flextable::italic(ft, i = sec_i, part = "body", italic = TRUE)
+  ft <- flextable::bg(ft, i = sec_i, part = "body", bg = "#CAEDFB")
 
   level_i <- which(reshaped$row_type == "level")
   if (length(level_i) > 0)
@@ -150,6 +151,12 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   ft <- flextable::font(ft, fontname = font, part = "all")
   ft <- flextable::fontsize(ft, size = font_size, part = "all")
   ft <- flextable::valign(ft, valign = "center", part = "all")
+
+  ft <- flextable::width(ft, j = "label", width = 2.5)
+  ft <- flextable::width(ft, j = n_cols, width = 0.6)
+  ft <- flextable::width(ft, j = disp_cols, width = 0.9)
+  if (!is.null(trailing))
+    ft <- flextable::width(ft, j = names(trailing), width = 0.6)
 
   ft
 }

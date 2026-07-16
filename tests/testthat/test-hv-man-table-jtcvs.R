@@ -111,7 +111,7 @@ test_that("hv_man_table_jtcvs builds a 2-row header with merged group spans", {
   )
 })
 
-test_that("hv_man_table_jtcvs bolds and merges section-header rows", {
+test_that("hv_man_table_jtcvs bolds, shades, and merges section-header rows", {
   ft <- hv_man_table_jtcvs(
     mk_jtcvs_tbl(),
     groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)")
@@ -121,6 +121,25 @@ test_that("hv_man_table_jtcvs bolds and merges section-header rows", {
   expect_length(sec_i, 2L)
   bold_map <- ft$body$styles$text$bold$data
   expect_true(all(bold_map[sec_i, 1]))
+  # bold only, not italic, matching the canonical "Table Construction for
+  # Manuscripts" house example (not bold-italic, as an earlier JTCVS
+  # worked-example table happened to use)
+  italic_map <- ft$body$styles$text$italic$data
+  expect_false(any(italic_map[sec_i, 1]))
+  # #CAEDFB matches the canonical house document's section-header shading
+  bg_map <- ft$body$styles$cells$background.color$data
+  expect_true(all(bg_map[sec_i, 1] == "#CAEDFB"))
+})
+
+test_that("hv_man_table_jtcvs sets column widths to avoid wrapping", {
+  ft <- hv_man_table_jtcvs(
+    mk_jtcvs_tbl(),
+    groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)")
+  )
+  widths <- dim(ft)$widths
+  expect_equal(unname(widths["label"]), 2.5)
+  expect_equal(unname(widths["n_stat_1"]), 0.6)
+  expect_equal(unname(widths["disp_stat_1"]), 0.9)
 })
 
 test_that("hv_man_table_jtcvs adds an optional trailing column", {
