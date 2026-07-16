@@ -3,7 +3,7 @@ Title: Manuscript-Compliant Table Construction for HVTI CORR Group
 Version: 0.9.0
 Authors@R:
     person("John", "Ehrlinger", , "ehrlinj@ccf.org", role = c("aut", "cre"))
-Description: Turns gtsummary table objects into MS Word tables complying
+Description: Turns 'gtsummary' table objects into MS Word tables complying
     with HVTI CORR's "Table Construction for Manuscripts" rules: flat
     (non-merged) headers, no hidden spacer columns, footnotes and
     abbreviation keys as text below the table, house font and rounding
