@@ -35,11 +35,27 @@ A \code{flextable} with a 2-row header and merged section rows, ready
 for \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}.
 }
 \description{
-Companion to \code{\link[=hv_man_table]{hv_man_table()}} for the shape editorial actually needs at
-JTCVS submission: a 2-row header (group name spanning \code{na}/stat
-sub-columns) and bold-italic, row-spanning section headers in the body,
-matching Tess's JTCVS template. This is a separate mode, not a
-replacement for \code{\link[=hv_man_table]{hv_man_table()}}'s flat-header CORR house style.
+Use this instead of \code{\link[=hv_man_table]{hv_man_table()}} when you're building the shape
+editorial actually needs at JTCVS submission: a 2-row header (group name
+spanning \code{na}/stat sub-columns) and bold-italic, row-spanning section
+headers in the body, matching the journal's own submission template.
+This is a separate mode, not a replacement for \code{\link[=hv_man_table]{hv_man_table()}}'s
+flat-header CORR house style; the two exist because CORR reports and
+JTCVS submissions want different things from the same header row.
+}
+\examples{
+library(gtsummary)
+tbl <- trial |>
+  tbl_summary(
+    by = trt,
+    statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
+    include = c(age, grade)
+  )
+ft <- hv_man_table_jtcvs(
+  tbl,
+  groups = c(stat_1 = "Drug A (n=98)", stat_2 = "Drug B (n=102)")
+)
+
 }
 \seealso{
 \code{\link[=hv_man_table]{hv_man_table()}} for the flat-header CORR house-style mode.

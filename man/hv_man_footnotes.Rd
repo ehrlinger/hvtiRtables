@@ -12,18 +12,18 @@ A named list with elements \code{`*`} and \code{`†`}, in the format
 }
 \description{
 Two footnotes are universal to the HVTI CORR "Table Construction for
-Manuscripts" rules, not specific to any one study, so they live here
-rather than being re-typed at every \code{\link[=hv_man_table_save]{hv_man_table_save()}} call site:
-a \code{*} for the non-missing-value count (house rule 8, exact wording
-required) and a \verb{†} explaining the \code{{median} ({p15}, {p85})} format used
-for continuous variables throughout these tables. No footnote is needed
-for the categorical \verb{n (\%)} format — the column header text already
-covers it (house rules 10/12).
+Manuscripts" rules, not specific to any one study, so you don't have to
+re-type them at every \code{\link[=hv_man_table_save]{hv_man_table_save()}} call site: a \code{*} for the
+non-missing-value count (house rule 8, exact wording required) and a
+\verb{†} explaining the \code{{median} ({p15}, {p85})} format used for continuous
+variables throughout these tables. You don't need a footnote for the
+categorical \verb{n (\%)} format; the column header text already covers it
+(house rules 10/12).
 }
 \details{
 \code{\link[=hv_man_table_save]{hv_man_table_save()}}'s \code{footnotes} parameter defaults to calling
 this function, so every table gets both automatically. Override with
-ordinary list operations — no special sentinel values:
+ordinary list operations, no special sentinel values needed:
 \itemize{
 \item Suppress both: \code{footnotes = NULL}
 \item Change one: \code{modifyList(hv_man_footnotes(), list(...))} with
@@ -31,6 +31,11 @@ ordinary list operations — no special sentinel values:
 \item Add a study-specific one alongside: \code{c(hv_man_footnotes(), list(...))}
 with \code{`‡`} = "extra note"
 }
+}
+\examples{
+hv_man_footnotes()
+modifyList(hv_man_footnotes(), list(`†` = "custom text"))
+
 }
 \seealso{
 \code{\link[=hv_man_table_save]{hv_man_table_save()}}

@@ -1,27 +1,27 @@
-#' Write a hv_man_table() table to a compliant .docx
+#' Write an hv_man_table() table to a compliant .docx
 #'
-#' Writes a `flextable` (typically from [hv_man_table()]) to a Word
-#' document, with footnotes and an abbreviation key rendered as text below
-#' the table rather than embedded within it — house rules 13-14. Note that
-#' [flextable::footnote()] cannot be used for this: it renders footnote text
-#' as an extra row inside the table's own `<w:tbl>` block (a "footer" table
-#' part), which is exactly the compliance violation this function exists to
-#' avoid. Instead, a superscript reference symbol is appended to the target
-#' header cell (a normal, compliant reference mark), and the footnote text
-#' itself is written as a genuine document paragraph after the table via
-#' [officer::body_add_fpar()]. The table itself is inserted directly (no
-#' leading blank paragraph), which is what keeps vertical cell alignment
-#' controllable if the surrounding document is later reformatted to 1.5- or
-#' double-spacing (house rule 2 concerns the *insertion point* in the
-#' destination document, not this function's output — see the package
-#' README for the paste-in workflow).
+#' You hand this a `flextable` (typically from [hv_man_table()]), and it
+#' writes a Word document with footnotes and an abbreviation key rendered
+#' as text below the table rather than embedded within it (house rules
+#' 13-14). [flextable::footnote()] cannot do this for you: it renders
+#' footnote text as an extra row inside the table's own `<w:tbl>` block (a
+#' "footer" table part), which is exactly the compliance violation this
+#' function exists to avoid. Instead, a superscript reference symbol is
+#' appended to the target header cell (a normal, compliant reference
+#' mark), and the footnote text itself is written as a genuine document
+#' paragraph after the table via [officer::body_add_fpar()]. The table
+#' itself is inserted directly (no leading blank paragraph), which keeps
+#' vertical cell alignment controllable if you later reformat the
+#' surrounding document to 1.5- or double-spacing. House rule 2 concerns
+#' the *insertion point* in the destination document, not this function's
+#' output; see the package README for the paste-in workflow.
 #'
 #' @param ft A `flextable` object, typically from [hv_man_table()].
 #' @param file Output `.docx` path.
 #' @param footnotes Optional named list, symbol -> footnote text. Defaults to
 #'   [hv_man_footnotes()] (the house-universal N and median/percentile
 #'   footnotes). Pass `NULL` to suppress both, or compose with
-#'   [hv_man_footnotes()] to override or extend — see its documentation.
+#'   [hv_man_footnotes()] to override or extend (see its documentation).
 #'   Symbols must be drawn from `c("*", "†", "‡", "§", "¶", "||")`. Each
 #'   symbol is appended as a superscript reference mark to the table's `N`
 #'   column header cell (or the first column if no `N` column is present),
@@ -31,7 +31,7 @@
 #' @param abbreviations Optional named character vector, `c(ABBR =
 #'   "expansion", ...)`. Rendered as one `Key:` paragraph below any
 #'   footnotes, sorted alphabetically by abbreviation, abbreviation
-#'   italicized, pairs separated by `"; "` — house rule 14. Every element
+#'   italicized, pairs separated by `"; "` (house rule 14). Every element
 #'   must be named (unnamed or blank-named entries raise an error); an
 #'   empty or `NULL` vector is a no-op.
 #'
@@ -39,6 +39,13 @@
 #'
 #' @seealso [hv_man_table()] to build a compliant `flextable` first.
 #'   [hv_man_footnotes()] for details on the default footnotes.
+#'
+#' @examples
+#' library(gtsummary)
+#' tbl <- tbl_summary(trial, by = trt, include = c(age, grade))
+#' ft <- hv_man_table(tbl)
+#' out <- tempfile(fileext = ".docx")
+#' hv_man_table_save(ft, out, abbreviations = c(N = "sample size"))
 #'
 #' @export
 hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),

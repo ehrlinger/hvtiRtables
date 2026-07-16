@@ -2,7 +2,7 @@
 % Please edit documentation in R/hv-man-table-save.R
 \name{hv_man_table_save}
 \alias{hv_man_table_save}
-\title{Write a hv_man_table() table to a compliant .docx}
+\title{Write an hv_man_table() table to a compliant .docx}
 \usage{
 hv_man_table_save(
   ft,
@@ -19,7 +19,7 @@ hv_man_table_save(
 \item{footnotes}{Optional named list, symbol -> footnote text. Defaults to
 \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} (the house-universal N and median/percentile
 footnotes). Pass \code{NULL} to suppress both, or compose with
-\code{\link[=hv_man_footnotes]{hv_man_footnotes()}} to override or extend — see its documentation.
+\code{\link[=hv_man_footnotes]{hv_man_footnotes()}} to override or extend (see its documentation).
 Symbols must be drawn from \code{c("*", "†", "‡", "§", "¶", "||")}. Each
 symbol is appended as a superscript reference mark to the table's \code{N}
 column header cell (or the first column if no \code{N} column is present),
@@ -29,7 +29,7 @@ entries raise an error); an empty list is a no-op, same as \code{NULL}.}
 
 \item{abbreviations}{Optional named character vector, \code{c(ABBR = "expansion", ...)}. Rendered as one \verb{Key:} paragraph below any
 footnotes, sorted alphabetically by abbreviation, abbreviation
-italicized, pairs separated by \code{"; "} — house rule 14. Every element
+italicized, pairs separated by \code{"; "} (house rule 14). Every element
 must be named (unnamed or blank-named entries raise an error); an
 empty or \code{NULL} vector is a no-op.}
 }
@@ -37,21 +37,29 @@ empty or \code{NULL} vector is a no-op.}
 Invisibly, the \code{file} path.
 }
 \description{
-Writes a \code{flextable} (typically from \code{\link[=hv_man_table]{hv_man_table()}}) to a Word
-document, with footnotes and an abbreviation key rendered as text below
-the table rather than embedded within it — house rules 13-14. Note that
-\code{\link[flextable:footnote]{flextable::footnote()}} cannot be used for this: it renders footnote text
-as an extra row inside the table's own \verb{<w:tbl>} block (a "footer" table
-part), which is exactly the compliance violation this function exists to
-avoid. Instead, a superscript reference symbol is appended to the target
-header cell (a normal, compliant reference mark), and the footnote text
-itself is written as a genuine document paragraph after the table via
-\code{\link[officer:body_add_fpar]{officer::body_add_fpar()}}. The table itself is inserted directly (no
-leading blank paragraph), which is what keeps vertical cell alignment
-controllable if the surrounding document is later reformatted to 1.5- or
-double-spacing (house rule 2 concerns the \emph{insertion point} in the
-destination document, not this function's output — see the package
-README for the paste-in workflow).
+You hand this a \code{flextable} (typically from \code{\link[=hv_man_table]{hv_man_table()}}), and it
+writes a Word document with footnotes and an abbreviation key rendered
+as text below the table rather than embedded within it (house rules
+13-14). \code{\link[flextable:footnote]{flextable::footnote()}} cannot do this for you: it renders
+footnote text as an extra row inside the table's own \verb{<w:tbl>} block (a
+"footer" table part), which is exactly the compliance violation this
+function exists to avoid. Instead, a superscript reference symbol is
+appended to the target header cell (a normal, compliant reference
+mark), and the footnote text itself is written as a genuine document
+paragraph after the table via \code{\link[officer:body_add_fpar]{officer::body_add_fpar()}}. The table
+itself is inserted directly (no leading blank paragraph), which keeps
+vertical cell alignment controllable if you later reformat the
+surrounding document to 1.5- or double-spacing. House rule 2 concerns
+the \emph{insertion point} in the destination document, not this function's
+output; see the package README for the paste-in workflow.
+}
+\examples{
+library(gtsummary)
+tbl <- tbl_summary(trial, by = trt, include = c(age, grade))
+ft <- hv_man_table(tbl)
+out <- tempfile(fileext = ".docx")
+hv_man_table_save(ft, out, abbreviations = c(N = "sample size"))
+
 }
 \seealso{
 \code{\link[=hv_man_table]{hv_man_table()}} to build a compliant \code{flextable} first.

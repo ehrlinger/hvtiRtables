@@ -1,14 +1,15 @@
 Package: hvtiRtables
 Title: Manuscript-Compliant Table Construction for HVTI CORR Group
-Version: 0.1.0
-Authors@R: 
+Version: 0.9.0
+Authors@R:
     person("John", "Ehrlinger", , "ehrlinj@ccf.org", role = c("aut", "cre"))
 Description: Turns gtsummary table objects into MS Word tables complying
-    with HVTI CORR manuscript table-construction rules: flat (non-merged)
-    headers, no hidden spacer columns, footnotes and abbreviation keys as
-    text below the table, house font and rounding conventions. A JTCVS
-    submission mode is also available, with merged spanning headers and
-    lettered cell-targeted footnotes matching that journal's template.
+    with HVTI CORR's "Table Construction for Manuscripts" rules: flat
+    (non-merged) headers, no hidden spacer columns, footnotes and
+    abbreviation keys as text below the table, house font and rounding
+    conventions. A JTCVS submission mode is also available, with merged
+    spanning headers and lettered cell-targeted footnotes matching that
+    journal's own template.
 License: GPL-3
 URL: https://github.com/ehrlinger/hvtiRtables
 BugReports: https://github.com/ehrlinger/hvtiRtables/issues
