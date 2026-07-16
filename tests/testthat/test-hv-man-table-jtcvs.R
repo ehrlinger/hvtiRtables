@@ -133,3 +133,42 @@ test_that("hv_man_table_jtcvs applies the house font", {
   xml <- docx_xml_jtcvs(ft)
   expect_true(grepl("Times New Roman", xml, fixed = TRUE))
 })
+
+test_that("hv_man_table_jtcvs reproduces the template's Table 1 header/section shape", {
+  set.seed(1)
+  n <- 525
+  # `factor()` defaults to alphabetical level order ("Isolated" before
+  # "Non-Isolated"), which would silently swap which group lands in stat_1
+  # vs. stat_2 — verified by actually running this without explicit
+  # `levels =` during planning and getting 133/392 reversed. Pin the levels
+  # explicitly so stat_1 is deterministically "Non-Isolated".
+  dta <- data.frame(
+    group = factor(
+      rep(c("Non-Isolated", "Isolated"), c(392, 133)),
+      levels = c("Non-Isolated", "Isolated")
+    ),
+    age = round(rnorm(n, 66.6, 12))
+  )
+  tbl <- dta |> gtsummary::tbl_summary(
+    by = group,
+    statistic = list(gtsummary::all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
+    missing = "no"
+  ) |>
+    gtsummary::modify_table_body(dplyr::mutate, groupname_col = "Demographics")
+
+  ft <- hv_man_table_jtcvs(
+    tbl,
+    groups = c(
+      stat_1 = "Non-Isolated Re-Replacement (n=392)",
+      stat_2 = "Isolated Re-Replacement (n=133)"
+    )
+  )
+  xml <- docx_xml_jtcvs(ft)
+  expect_true(grepl(">na<", xml, fixed = TRUE))
+  expect_true(grepl("No. (%) or Mean", xml, fixed = TRUE))
+
+  body <- ft$body$dataset
+  expect_identical(body$label[1], "Demographics")
+  expect_identical(body$n_stat_1[2], "392")
+  expect_identical(body$n_stat_2[2], "133")
+})
