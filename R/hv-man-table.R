@@ -31,14 +31,14 @@
 #'   without a breaking signature change.
 #'
 #' @return A `flextable` object with a single header row and no merged
-#'   cells, ready for [save_manuscript_table()].
+#'   cells, ready for [hv_man_table_save()].
 #'
-#' @seealso [save_manuscript_table()] to write the result to a compliant
+#' @seealso [hv_man_table_save()] to write the result to a compliant
 #'   `.docx` with footnotes and an abbreviation key.
 #'
 #' @export
-manuscript_flextable <- function(tbl, font = "Times New Roman", font_size = 12,
-                                 digits = 2) {
+hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
+                         digits = 2) {
   if (!inherits(tbl, "gtsummary"))
     stop("`tbl` must be a gtsummary table object.", call. = FALSE)
   if (!is.numeric(font_size) || length(font_size) != 1L ||

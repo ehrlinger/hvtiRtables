@@ -41,33 +41,33 @@ docx_xml <- function(ft) {
   paste(readLines(file.path(xdir, "word", "document.xml"), warn = FALSE), collapse = "")
 }
 
-test_that("manuscript_flextable returns a flextable with a single header row", {
-  ft <- manuscript_flextable(mk_tbl())
+test_that("hv_man_table returns a flextable with a single header row", {
+  ft <- hv_man_table(mk_tbl())
   expect_s3_class(ft, "flextable")
   expect_identical(flextable::nrow_part(ft, "header"), 1L)
 })
 
-test_that("manuscript_flextable output has no merged cells (gridSpan/vMerge)", {
-  ft <- manuscript_flextable(mk_tbl())
+test_that("hv_man_table output has no merged cells (gridSpan/vMerge)", {
+  ft <- hv_man_table(mk_tbl())
   xml <- docx_xml(ft)
   expect_equal(lengths(regmatches(xml, gregexpr("gridSpan", xml))), 0L)
   expect_equal(lengths(regmatches(xml, gregexpr("vMerge", xml))), 0L)
 })
 
-test_that("manuscript_flextable applies the house font and size", {
-  ft <- manuscript_flextable(mk_tbl())
+test_that("hv_man_table applies the house font and size", {
+  ft <- hv_man_table(mk_tbl())
   xml <- docx_xml(ft)
   expect_true(grepl("Times New Roman", xml, fixed = TRUE))
   expect_true(grepl('w:sz w:val="24"', xml, fixed = TRUE)) # 12pt = half-points * 2 = 24
 })
 
-test_that("manuscript_flextable honours a smaller font_size for wide tables", {
-  ft <- manuscript_flextable(mk_tbl(), font_size = 11)
+test_that("hv_man_table honours a smaller font_size for wide tables", {
+  ft <- hv_man_table(mk_tbl(), font_size = 11)
   xml <- docx_xml(ft)
   expect_true(grepl('w:sz w:val="22"', xml, fixed = TRUE)) # 11pt = 22 half-points
 })
 
-test_that("manuscript_flextable validates its inputs", {
-  expect_error(manuscript_flextable("not a gtsummary object"), "gtsummary")
-  expect_error(manuscript_flextable(mk_tbl(), font_size = 10), "font_size")
+test_that("hv_man_table validates its inputs", {
+  expect_error(hv_man_table("not a gtsummary object"), "gtsummary")
+  expect_error(hv_man_table(mk_tbl(), font_size = 10), "font_size")
 })

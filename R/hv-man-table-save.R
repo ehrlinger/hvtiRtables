@@ -1,6 +1,6 @@
-#' Write a manuscript_flextable() table to a compliant .docx
+#' Write a hv_man_table() table to a compliant .docx
 #'
-#' Writes a `flextable` (typically from [manuscript_flextable()]) to a Word
+#' Writes a `flextable` (typically from [hv_man_table()]) to a Word
 #' document, with footnotes and an abbreviation key rendered as text below
 #' the table rather than embedded within it — house rules 13-14. Note that
 #' [flextable::footnote()] cannot be used for this: it renders footnote text
@@ -16,12 +16,12 @@
 #' destination document, not this function's output — see the package
 #' README for the paste-in workflow).
 #'
-#' @param ft A `flextable` object, typically from [manuscript_flextable()].
+#' @param ft A `flextable` object, typically from [hv_man_table()].
 #' @param file Output `.docx` path.
 #' @param footnotes Optional named list, symbol -> footnote text. Defaults to
-#'   [standard_footnotes()] (the house-universal N and median/percentile
+#'   [hv_man_footnotes()] (the house-universal N and median/percentile
 #'   footnotes). Pass `NULL` to suppress both, or compose with
-#'   [standard_footnotes()] to override or extend — see its documentation.
+#'   [hv_man_footnotes()] to override or extend — see its documentation.
 #'   Symbols must be drawn from `c("*", "†", "‡", "§", "¶", "||")`. Each
 #'   symbol is appended as a superscript reference mark to the table's `N`
 #'   column header cell (or the first column if no `N` column is present),
@@ -37,12 +37,12 @@
 #'
 #' @return Invisibly, the `file` path.
 #'
-#' @seealso [manuscript_flextable()] to build a compliant `flextable` first.
-#'   [standard_footnotes()] for details on the default footnotes.
+#' @seealso [hv_man_table()] to build a compliant `flextable` first.
+#'   [hv_man_footnotes()] for details on the default footnotes.
 #'
 #' @export
-save_manuscript_table <- function(ft, file, footnotes = standard_footnotes(),
-                                  abbreviations = NULL) {
+hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
+                              abbreviations = NULL) {
   if (!inherits(ft, "flextable"))
     stop("`ft` must be a flextable object.", call. = FALSE)
   if (!is.character(file) || length(file) != 1L || is.na(file) || !nzchar(file))

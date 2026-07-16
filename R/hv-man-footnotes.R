@@ -2,29 +2,29 @@
 #'
 #' Two footnotes are universal to the HVTI CORR "Table Construction for
 #' Manuscripts" rules, not specific to any one study, so they live here
-#' rather than being re-typed at every [save_manuscript_table()] call site:
+#' rather than being re-typed at every [hv_man_table_save()] call site:
 #' a `*` for the non-missing-value count (house rule 8, exact wording
 #' required) and a `†` explaining the `{median} ({p15}, {p85})` format used
 #' for continuous variables throughout these tables. No footnote is needed
 #' for the categorical `n (%)` format — the column header text already
 #' covers it (house rules 10/12).
 #'
-#' [save_manuscript_table()]'s `footnotes` parameter defaults to calling
+#' [hv_man_table_save()]'s `footnotes` parameter defaults to calling
 #' this function, so every table gets both automatically. Override with
 #' ordinary list operations — no special sentinel values:
 #' - Suppress both: `footnotes = NULL`
-#' - Change one: `modifyList(standard_footnotes(), list(...))` with
+#' - Change one: `modifyList(hv_man_footnotes(), list(...))` with
 #'   `` `†` `` = "custom text"
-#' - Add a study-specific one alongside: `c(standard_footnotes(), list(...))`
+#' - Add a study-specific one alongside: `c(hv_man_footnotes(), list(...))`
 #'   with `` `‡` `` = "extra note"
 #'
 #' @return A named list with elements `` `*` `` and `` `†` ``, in the format
-#'   [save_manuscript_table()]'s `footnotes` parameter expects.
+#'   [hv_man_table_save()]'s `footnotes` parameter expects.
 #'
-#' @seealso [save_manuscript_table()]
+#' @seealso [hv_man_table_save()]
 #'
 #' @export
-standard_footnotes <- function() {
+hv_man_footnotes <- function() {
   list(
     `*` = "Number of non-missing values.",
     `†` = "Median (15th, 85th percentile)."

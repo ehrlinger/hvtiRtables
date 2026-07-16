@@ -29,7 +29,7 @@ library(gtsummary)
 library(hvtiRtables)
 
 tbl <- tbl_summary(trial, by = trt, include = c(age, grade))
-ft <- manuscript_flextable(tbl)
-save_manuscript_table(ft, "table1.docx")
+ft <- hv_man_table(tbl)
+hv_man_table_save(ft, "table1.docx")
 ```
 
