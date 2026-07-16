@@ -35,11 +35,36 @@ Decision: build for what actually gets published. The JTCVS format is a
 `manuscript_flextable()` may still be the right shape for internal CORR
 review tables; that usage is not being touched.
 
+## Naming: adopt `hv_` prefix package-wide
+
+`hvtiPlotR` uses an `hv_*` convention for its constructors (`hv_venn()`,
+`hv_atrisk()`, `hv_sankey()`). `hvtiRtables` currently doesn't
+(`manuscript_flextable()`, `save_manuscript_table()`, `standard_footnotes()`).
+
+Decision: align `hvtiRtables` with the `hv_*` convention as part of this
+work, not just for the new function. Since the package hasn't shipped a
+release yet (still on `feat/manuscript-flextable`, unmerged), this is a
+low-cost time to rename the existing exports too. Exact new names for all
+exports (existing three plus the new function(s) below) are a planning-time
+decision — not pinned in this spec.
+
 ## Component 1 — JTCVS merged-header table function
 
-- New exported function (name TBD, e.g. `jtcvs_flextable()`), added
-  alongside `manuscript_flextable()` in `hvtiRtables`. Existing function and
-  its callers are unchanged.
+- New exported function (`hv_`-prefixed name TBD, e.g. `hv_man_table()`),
+  added alongside the (also to-be-renamed) flat-header function in
+  `hvtiRtables`. The flat-header behavior itself is unchanged, only its name
+  may change as part of the package-wide rename above.
+- **One flexible engine, not a set of named presets.** The template shows
+  several recurring shapes (baseline characteristics with Std. Diff.,
+  procedural details, outcomes with P instead of Std. Diff., a more complex
+  matched-vs-unmatched comparison), but a single "consolidated" template
+  with 3-4 examples isn't enough evidence that these are the exhaustive set
+  of standard CORR table archetypes. Build one function that handles the
+  general structure via arguments (group count, with/without a trailing
+  Std. Diff./P column, matched vs. unmatched), not `hv_table_baseline()` /
+  `hv_table_outcomes()` / etc. Thin preset wrappers can be added later, once
+  real usage across multiple manuscripts shows which shapes actually recur —
+  premature now.
 - Input: a `gtsummary` table object, plus a way to declare the grouping
   structure needed to build the spanning header (exact signature TBD at
   planning time — needs to be worked out against how `gtsummary::tbl_merge()`
@@ -100,5 +125,9 @@ run without erroring."
   zero-setup tool is needed. Follow-up question once the transform logic
   exists, not before.
 - Exact function signatures (parameter names/types for both new functions).
+- Exact new `hv_`-prefixed names for all exports (existing three plus new).
 - Whether `standard_footnotes()` is extended or forked for lettered
   footnotes.
+- Named presets for standard table archetypes (baseline/procedural/outcomes/
+  matched-comparison) — revisit once real usage across multiple manuscripts
+  shows recurring shapes; not built now.
