@@ -2,4 +2,5 @@
 
 export(hv_man_footnotes)
 export(hv_man_table)
+export(hv_man_table_jtcvs)
 export(hv_man_table_save)
