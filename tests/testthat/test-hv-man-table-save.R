@@ -159,3 +159,13 @@ test_that("abbreviations = character(0) is a no-op, same as NULL", {
   xml <- read_docx_text(f)
   expect_false(grepl("Key:", xml, fixed = TRUE))
 })
+
+test_that("hv_man_table_save still renders the Key: block after the internal refactor", {
+  ft <- mk_ft()
+  f <- tempfile(fileext = ".docx")
+  on.exit(unlink(f), add = TRUE)
+  hv_man_table_save(ft, f, abbreviations = c(NYHA = "New York Heart Association"))
+  xml <- read_docx_text(f)
+  expect_true(grepl("Key:", xml, fixed = TRUE))
+  expect_true(grepl("NYHA", xml, fixed = TRUE))
+})

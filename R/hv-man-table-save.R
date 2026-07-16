@@ -85,29 +85,27 @@ hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
     }
   }
 
-  if (!is.null(abbreviations) && length(abbreviations) > 0) {
-    abbr_names <- names(abbreviations)
-    if (is.null(abbr_names) || any(!nzchar(abbr_names)))
-      stop("`abbreviations` must be a named character vector ",
-           "(c(ABBR = \"expansion\", ...)); every element must have a ",
-           "non-empty name.", call. = FALSE)
-    ordered <- abbreviations[order(names(abbreviations))]
-    runs <- list(officer::ftext("Key: "))
-    italic_prop <- officer::fp_text(italic = TRUE)
-    for (i in seq_along(ordered)) {
-      runs <- c(runs, list(officer::ftext(names(ordered)[i],
-                                          prop = italic_prop)))
-      suffix <- if (i < length(ordered)) {
-        paste0(", ", ordered[i], "; ")
-      } else {
-        paste0(", ", ordered[i])
-      }
-      runs <- c(runs, list(officer::ftext(suffix)))
-    }
-    key_par <- do.call(officer::fpar, runs)
-    doc <- officer::body_add_fpar(doc, key_par, style = "Normal")
-  }
+  doc <- .add_abbreviations_key(doc, abbreviations)
 
   print(doc, target = file)
   invisible(file)
+}
+
+.add_abbreviations_key <- function(doc, abbreviations) {
+  if (is.null(abbreviations) || length(abbreviations) == 0) return(doc)
+  abbr_names <- names(abbreviations)
+  if (is.null(abbr_names) || any(!nzchar(abbr_names)))
+    stop("`abbreviations` must be a named character vector ",
+         "(c(ABBR = \"expansion\", ...)); every element must have a ",
+         "non-empty name.", call. = FALSE)
+  ordered <- abbreviations[order(names(abbreviations))]
+  runs <- list(officer::ftext("Key: "))
+  italic_prop <- officer::fp_text(italic = TRUE)
+  for (i in seq_along(ordered)) {
+    runs <- c(runs, list(officer::ftext(names(ordered)[i], prop = italic_prop)))
+    suffix <- if (i < length(ordered)) paste0(", ", ordered[i], "; ") else paste0(", ", ordered[i])
+    runs <- c(runs, list(officer::ftext(suffix)))
+  }
+  key_par <- do.call(officer::fpar, runs)
+  officer::body_add_fpar(doc, key_par, style = "Normal")
 }
