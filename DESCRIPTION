@@ -6,8 +6,10 @@ Authors@R:
 Description: Turns gtsummary table objects into MS Word tables complying
     with HVTI CORR manuscript table-construction rules: flat (non-merged)
     headers, no hidden spacer columns, footnotes and abbreviation keys as
-    text below the table, house font and rounding conventions.
-License: GPL (>= 3)
+    text below the table, house font and rounding conventions. A JTCVS
+    submission mode is also available, with merged spanning headers and
+    lettered cell-targeted footnotes matching that journal's template.
+License: GPL-3
 URL: https://github.com/ehrlinger/hvtiRtables
 BugReports: https://github.com/ehrlinger/hvtiRtables/issues
 Depends:
@@ -16,12 +18,10 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 8.0.0
 Suggests:
-    testthat (>= 3.0.0),
-    withr
+    dplyr,
+    testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports:
-    dplyr,
     flextable (>= 0.9.0),
     gtsummary (>= 2.5.0),
-    officer (>= 0.6.0),
-    rlang
+    officer (>= 0.6.0)

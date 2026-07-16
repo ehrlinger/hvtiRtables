@@ -2,6 +2,10 @@
 # hvtiRtables
 
 <!-- badges: start -->
+[![R package version](https://img.shields.io/github/r-package/v/ehrlinger/hvtiRtables)](https://github.com/ehrlinger/hvtiRtables)
+[![R-CMD-check](https://github.com/ehrlinger/hvtiRtables/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ehrlinger/hvtiRtables/actions/workflows/R-CMD-check.yaml)
+[![lint](https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml/badge.svg)](https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml)
+[![Codecov test coverage](https://codecov.io/gh/ehrlinger/hvtiRtables/graph/badge.svg)](https://app.codecov.io/gh/ehrlinger/hvtiRtables)
 <!-- badges: end -->
 
 hvtiRtables turns `gtsummary` table objects into MS Word tables complying
@@ -20,5 +24,36 @@ remotes::install_github("ehrlinger/hvtiRtables")
 
 ## Example
 
-This package is under active development; no functions are exported yet.
+``` r
+library(gtsummary)
+library(hvtiRtables)
+
+tbl <- tbl_summary(trial, by = trt, include = c(age, grade))
+ft <- hv_man_table(tbl)
+hv_man_table_save(ft, "table1.docx")
+```
+
+## JTCVS submission format
+
+For JTCVS manuscript submission (merged spanning headers, matching Tess's
+template), use `hv_man_table_jtcvs()` / `hv_man_table_save_jtcvs()` instead
+of `hv_man_table()` / `hv_man_table_save()`:
+
+``` r
+library(gtsummary)
+library(hvtiRtables)
+
+tbl <- trial |>
+  tbl_summary(
+    by = trt,
+    statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
+    include = c(age, grade)
+  )
+
+ft <- hv_man_table_jtcvs(
+  tbl,
+  groups = c(stat_1 = "Drug A (n=98)", stat_2 = "Drug B (n=102)")
+)
+hv_man_table_save_jtcvs(ft, "table1.docx", caption = "Table 1. Baseline Characteristics")
+```
 
