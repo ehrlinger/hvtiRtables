@@ -55,19 +55,21 @@ equivalent:
    equivalent for each argument, e.g. "`%summarytable` `PP=` equivalent"),
    `@return`, `@seealso`, and `@examples`.
 5. **Run `devtools::document()`** to regenerate `NAMESPACE` and `.Rd` files.
-6. **Add a migration cheat-sheet section to `README.md`** — a
-   parameter-mapping table (every SAS macro argument against its R
-   equivalent, explicitly marking what's not supported) plus a worked
-   side-by-side example, matching the "Migrating from the `%summarytable`
-   SAS macro" section as a template.
+6. **Add a migration cheat-sheet section to `README.md`** — a heading
+   named for the macro you ported ("Migrating from the `%yourmacro` SAS
+   macro"), a parameter-mapping table listing every SAS macro argument
+   against its R equivalent and explicitly marking what is not supported,
+   and a worked side-by-side example showing a real macro call next to
+   the equivalent R call.
 7. **Add the function** to the right section in `_pkgdown.yml`.
 8. **Write tests** in `tests/testthat/test-hv-my-table.R` (matching the
    existing hyphenated file naming): input validation, each documented
    option, and at least one characterization test against a real example
-   table if one is available (see `test-hv-tbl-summary.R` for the pattern —
+   table if one is available. See `test-hv-man-table-jtcvs.R`'s
+   "reproduces template's header/section shape" test for the pattern —
    synthetic data engineered to reproduce a real table's actual N counts
-   and section grouping, since real patient-level data is rarely available
-   to check into the repo).
+   and section grouping, since real patient-level data is rarely
+   available to check into the repo.
 9. **Update `NEWS.md`** under the current dev version.
 10. Open a pull request against `main`.
 
