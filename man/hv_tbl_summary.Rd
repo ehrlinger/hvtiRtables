@@ -47,9 +47,9 @@ there is nothing to compare. \verb{\%summarytable} \verb{PVALUES=}/\verb{ASD=}
 equivalent.}
 
 \item{percentiles}{Numeric vector of length 2, the low/high percentile
-pair for continuous summaries. Default \code{c(15, 85)}, the
-\code{\link[=hv_man_footnotes]{hv_man_footnotes()}} house convention (\verb{\%summarytable} \verb{PP=}
-equivalent).}
+pair for continuous summaries, as increasing whole numbers between 0
+and 100. Default \code{c(15, 85)}, the \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} house
+convention (\verb{\%summarytable} \verb{PP=} equivalent).}
 }
 \value{
 A \code{gtsummary} object, ready for \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}. See

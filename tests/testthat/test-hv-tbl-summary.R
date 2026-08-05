@@ -45,6 +45,63 @@ test_that("hv_tbl_summary rejects a percentiles vector of the wrong length", {
   )
 })
 
+test_that("hv_tbl_summary rejects non-integer or out-of-range percentiles", {
+  # gtsummary's glue token is `{pNN}`; a fractional or out-of-range value
+  # becomes an invalid token and a header stating percentiles the table
+  # does not show.
+  dta <- mk_tbl_summary_data()
+  bad <- list(c(10.5, 85), c(-5, 85), c(15, 150), c(NA_real_, 85))
+  for (p in bad) {
+    expect_error(
+      hv_tbl_summary(
+        dta, groups = list(Vitals = "age"), continuous = "age",
+        percentiles = p
+      ),
+      "whole numbers between 0 and 100"
+    )
+  }
+})
+
+test_that("hv_tbl_summary rejects non-increasing percentiles", {
+  dta <- mk_tbl_summary_data()
+  for (p in list(c(85, 15), c(50, 50))) {
+    expect_error(
+      hv_tbl_summary(
+        dta, groups = list(Vitals = "age"), continuous = "age",
+        percentiles = p
+      ),
+      "must be increasing"
+    )
+  }
+})
+
+test_that("hv_tbl_summary rejects non-string variable names in groups", {
+  dta <- mk_tbl_summary_data()
+  expect_error(
+    hv_tbl_summary(dta, groups = list(Vitals = 1), continuous = "age"),
+    "non-empty strings"
+  )
+  expect_error(
+    hv_tbl_summary(dta, groups = list(Vitals = ""), continuous = "age"),
+    "non-empty strings"
+  )
+})
+
+test_that("hv_tbl_summary sets hv_stat_label on every compare path", {
+  # The attribute is assigned once, before the compare handling, and must
+  # survive the add_p()/add_difference()/modify_table_body() chain rather
+  # than being re-set afterwards.
+  dta <- mk_tbl_summary_data()
+  expected <- "No. (%) or Median (15th, 85th percentile)"
+  for (cmp in c("none", "pvalue", "smd", "both")) {
+    tbl <- hv_tbl_summary(
+      dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
+      compare = cmp
+    )
+    expect_identical(attr(tbl, "hv_stat_label"), expected)
+  }
+})
+
 test_that("hv_tbl_summary rejects a variable listed in two groups sections", {
   dta <- mk_tbl_summary_data()
   expect_error(

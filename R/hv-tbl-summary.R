@@ -48,9 +48,9 @@
 #'   there is nothing to compare. `%summarytable` `PVALUES=`/`ASD=`
 #'   equivalent.
 #' @param percentiles Numeric vector of length 2, the low/high percentile
-#'   pair for continuous summaries. Default `c(15, 85)`, the
-#'   [hv_man_footnotes()] house convention (`%summarytable` `PP=`
-#'   equivalent).
+#'   pair for continuous summaries, as increasing whole numbers between 0
+#'   and 100. Default `c(15, 85)`, the [hv_man_footnotes()] house
+#'   convention (`%summarytable` `PP=` equivalent).
 #'
 #' @return A `gtsummary` object, ready for [hv_man_table_jtcvs()]. See
 #'   Details for the `hv_stat_label`/`hv_trailing` attributes.
@@ -84,8 +84,22 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   if (!is.numeric(percentiles) || length(percentiles) != 2L)
     stop("`percentiles` must be a numeric vector of length 2, ",
          "e.g. c(15, 85).", call. = FALSE)
+  # gtsummary's glue tokens are `{pNN}`, so a non-integer or out-of-range
+  # value silently becomes an invalid token (`{p10.5}`) and a header that
+  # states percentiles the table does not actually show. Reject here
+  # rather than letting it surface as an opaque gtsummary error.
+  if (anyNA(percentiles) || any(percentiles != as.integer(percentiles)) ||
+        any(percentiles < 0 | percentiles > 100))
+    stop("`percentiles` must be whole numbers between 0 and 100, ",
+         "e.g. c(15, 85).", call. = FALSE)
+  if (percentiles[1] >= percentiles[2])
+    stop("`percentiles` must be increasing: the low percentile must be ",
+         "less than the high one, e.g. c(15, 85).", call. = FALSE)
 
   vars <- unlist(groups, use.names = FALSE)
+  if (!is.character(vars) || anyNA(vars) || any(!nzchar(vars)))
+    stop("`groups` must contain variable names as non-empty strings, ",
+         "e.g. list(Demography = c(\"age\")).", call. = FALSE)
   if (any(duplicated(vars)))
     stop("Variable(s) appear in more than one `groups` section: ",
          paste(unique(vars[duplicated(vars)]), collapse = ", "),
@@ -204,9 +218,6 @@ hv_tbl_summary <- function(data, by = NULL, groups,
       tb$hv_compare_col <- compare_col
       tb
     }
-  )
-  attr(tbl, "hv_stat_label") <- sprintf(
-    "No. (%%) or Median (%sth, %sth percentile)", p_lo, p_hi
   )
   attr(tbl, "hv_trailing") <- stats::setNames(compare_label, "hv_compare_col")
 
