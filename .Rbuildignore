@@ -1,6 +1,7 @@
 ^hvtiRtables\.Rproj$
 ^\.Rproj\.user$
 ^\.superpowers$
+^design$
 ^\.github$
 ^docs$
 ^codecov\.yml$
