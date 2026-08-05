@@ -200,6 +200,28 @@ test_that("hv_man_table_jtcvs applies the house font", {
   expect_true(grepl("Times New Roman", xml, fixed = TRUE))
 })
 
+test_that("hv_man_table_jtcvs accepts a custom stat_label", {
+  ft <- hv_man_table_jtcvs(
+    mk_jtcvs_tbl(),
+    groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)"),
+    stat_label = "No. (%) or Median (15th, 85th percentile)"
+  )
+  xml <- docx_xml_jtcvs(ft)
+  expect_true(
+    grepl("No. (%) or Median (15th, 85th percentile)", xml, fixed = TRUE)
+  )
+  expect_false(grepl("Mean", xml, fixed = TRUE))
+})
+
+test_that("hv_man_table_jtcvs defaults stat_label to the mean/SD text", {
+  ft <- hv_man_table_jtcvs(
+    mk_jtcvs_tbl(),
+    groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)")
+  )
+  xml <- docx_xml_jtcvs(ft)
+  expect_true(grepl("No. (%) or Mean", xml, fixed = TRUE))
+})
+
 test_that("hv_man_table_jtcvs reproduces template's header/section shape", {
   set.seed(1)
   n <- 525
