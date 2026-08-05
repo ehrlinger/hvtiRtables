@@ -332,14 +332,36 @@ test_that("hv_tbl_summary compare 'both' preserves add_p()'s test_name", {
   # Same root cause as the SMD regression above, different casualty:
   # add_difference() running second also overwrites `test_name` with
   # "smd", losing the record of which test produced the p-value.
+  #
+  # Pinned against add_p() computed independently, for the same reason the
+  # SMD test above pins against add_difference(): the invariant is that
+  # whatever add_p() selected survives, not that it selected any
+  # particular test. A literal "wilcox.test" would fail if gtsummary
+  # changed its default continuous test, or if this fixture's data
+  # changed, even while hv_tbl_summary() was still preserving correctly.
   dta <- mk_tbl_summary_data()
   tbl <- hv_tbl_summary(
     dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
     compare = "both"
   )
   tb <- tbl$table_body
+
+  reference <- gtsummary::add_p(
+    gtsummary::tbl_summary(
+      dta,
+      by = gtsummary::all_of("grp"),
+      include = gtsummary::all_of("age"), missing = "no"
+    )
+  )
+  ref_tb <- reference$table_body
+  expected <- ref_tb$test_name[ref_tb$variable == "age"]
+
   is_age <- tb$variable == "age" & tb$row_type == "label"
-  expect_identical(tb$test_name[is_age], "wilcox.test")
+  expect_identical(tb$test_name[is_age], expected)
+  # Backstop: if the reference itself were ever "smd", the comparison
+  # above would pass while the bug was present. Assert the regression
+  # value directly too.
+  expect_false(identical(tb$test_name[is_age], "smd"))
 })
 
 test_that("hv_tbl_summary compare 'both' reports an SMD for every type", {
