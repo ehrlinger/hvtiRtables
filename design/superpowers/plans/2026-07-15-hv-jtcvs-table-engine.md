@@ -13,7 +13,7 @@
 - House font: Times New Roman, 12pt (11pt permitted for wide tables) — same rule `hv_man_table()` already enforces; the JTCVS engine reuses it.
 - Footnote symbols for the *existing* flat-header save function stay `c("*", "†", "‡", "§", "¶", "||")` — unchanged. The new JTCVS save function uses **lettered** footnotes (`a`, `b`, `c`, ...) instead — a different mechanism, not an extension of the symbol set.
 - No CRAN release exists yet (`DESCRIPTION` version `0.1.0`, unmerged branch) — renaming exports is a breaking change with no external users to migrate; do not add back-compat aliases for the old names.
-- Per `docs/superpowers/specs/2026-07-15-jtcvs-table-format-design.md`: one flexible engine, not per-archetype presets. Do not add `hv_table_baseline()`-style wrapper functions in this plan.
+- Per `design/superpowers/specs/2026-07-15-jtcvs-table-format-design.md`: one flexible engine, not per-archetype presets. Do not add `hv_table_baseline()`-style wrapper functions in this plan.
 - Every new/changed exported function needs a `@return`/roxygen block sufficient for `R CMD check` (house release-gate habit, even though this plan doesn't run the full CRAN gate).
 
 ---

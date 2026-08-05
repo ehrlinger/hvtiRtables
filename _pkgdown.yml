@@ -1,0 +1,59 @@
+url: https://ehrlinger.github.io/hvtiRtables/
+template:
+  bootstrap: 5
+  bslib:
+    bootswatch: zephyr
+    base_font: {google: "Outfit"}
+    code_font: {google: "Fira Code"}
+  light-switch: true
+  theme: atom-one-light
+  theme-dark: atom-one-dark
+
+home:
+  sidebar:
+    structure: [badges, links, authors]
+    components:
+      badges:
+        title: Package badges
+        text: |
+          ![](https://img.shields.io/github/r-package/v/ehrlinger/hvtirtables)<br>
+          ![](https://img.shields.io/github/actions/workflow/status/ehrlinger/hvtirtables/pkgdown.yaml)<br>
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github, my_linkedin, lightswitch]
+  components:
+    my_linkedin:
+      icon: fa-linkedin
+      href: https://www.linkedin.com/in/ehrlinger/
+      aria-label: LinkedIn
+
+reference:
+- title: "Flat-Header Tables"
+  desc: >
+    Standard HVTI CORR manuscript tables: flat (non-merged) headers,
+    no hidden spacer columns, footnotes as text below the table.
+  contents:
+  - hv_man_table
+  - hv_man_table_save
+
+- title: "JTCVS Merged-Header Tables"
+  desc: >
+    JTCVS submission mode, with merged spanning group headers and
+    lettered cell-targeted footnotes matching that journal's template.
+  contents:
+  - hv_man_table_jtcvs
+  - hv_man_table_save_jtcvs
+
+- title: "Footnotes"
+  contents:
+  - hv_man_footnotes
+
+footer:
+  structure:
+    left: developed_by
+    right: built_with_pkgdown
+  components:
+    developed_by: "John Ehrlinger"
+    built_with_pkgdown: "This site was built using [pkgdown](https://pkgdown.r-lib.org/)!&nbsp;&nbsp;<img src='https://pkgdown.r-lib.org/logo.png' alt='pkgdown logo' width='25'>"
