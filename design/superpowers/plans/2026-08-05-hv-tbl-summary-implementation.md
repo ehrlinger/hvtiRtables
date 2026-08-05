@@ -627,6 +627,29 @@ test_that("hv_tbl_summary compare = 'both' combines p-value and SMD in one colum
   expect_true(grepl("SMD", tbl$table_body$hv_compare_col))
   expect_identical(attr(tbl, "hv_trailing"), c(hv_compare_col = "P (SMD)"))
 })
+
+test_that("hv_tbl_summary compare = 'both' omits SMD where it is unavailable", {
+  # gtsummary computes a chi-square p-value for a nominal categorical
+  # variable but no SMD, leaving `estimate` NA on that row. Guarding only
+  # on `p.value` would render the literal string "0.9 (SMD NA)". Every
+  # other `compare` test above uses continuous-only data, so this mixed
+  # dataset is the regression guard for that path specifically.
+  dta <- mk_tbl_summary_mixed_data()
+  tbl <- hv_tbl_summary(
+    dta, by = "grp",
+    groups = list(Vitals = "age", Demography = "race"),
+    continuous = "age", categorical = "race", compare = "both"
+  )
+  tb <- tbl$table_body
+  cont_val <- tb$hv_compare_col[tb$variable == "age"]
+  cat_val <- tb$hv_compare_col[tb$variable == "race" & tb$row_type == "label"]
+  level_vals <- tb$hv_compare_col[tb$row_type == "level"]
+
+  expect_match(cont_val, "SMD")
+  expect_false(is.na(cat_val))
+  expect_false(grepl("SMD", cat_val))
+  expect_true(all(is.na(level_vals)))
+})
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
@@ -670,12 +693,22 @@ with:
     effective_compare,
     pvalue = gtsummary::style_pvalue(tb$p.value, digits = 1),
     smd    = gtsummary::style_sigfig(tb$estimate),
+    # Three cases, not two. `add_p()` produces a valid chi-square p-value
+    # for a nominal categorical variable, but `add_difference(~ "smd")`
+    # leaves `estimate` NA on that same row — guarding only on `p.value`
+    # would render the literal string "0.9 (SMD NA)" into a manuscript
+    # table. The p-value is valid and must be kept; only the unavailable
+    # SMD is dropped.
     both   = ifelse(
       is.na(tb$p.value), NA_character_,
-      sprintf(
-        "%s (SMD %s)",
+      ifelse(
+        is.na(tb$estimate),
         gtsummary::style_pvalue(tb$p.value, digits = 1),
-        gtsummary::style_sigfig(tb$estimate)
+        sprintf(
+          "%s (SMD %s)",
+          gtsummary::style_pvalue(tb$p.value, digits = 1),
+          gtsummary::style_sigfig(tb$estimate)
+        )
       )
     )
   )
@@ -998,3 +1031,4 @@ git commit -m "chore: bump version to 0.9.1 for hv_tbl_summary()"
 - **New design decision surfaced during planning, not in the original spec:** the spec's "Footnote letters marking which test ran per row reuse gtsummary's own test-name reporting from `add_p()`" bullet is satisfied passively — `add_p()`'s `test_name` column survives untouched on the object `hv_tbl_summary()` returns, so a caller can build `hv_man_table_save_jtcvs()`'s existing manual `footnotes = list(list(row=, col=, text=))` argument from it. This plan does **not** add automatic per-row lettered-footnote generation (deriving unique test names, assigning letters, building legend text) — that would be a new, undesigned subsystem, not a one-parameter addition like `stat_label`. Flag this to the user after Task 7 lands as a possible follow-up, rather than silently treating it as done.
 - **Type consistency check:** `hv_man_table_jtcvs()`'s `trailing` parameter (Task 1, unchanged from its existing length-1 validation) matches `hv_tbl_summary()`'s `hv_trailing` attribute (Task 4), which is always exactly length-1 regardless of `compare` value (`"both"` combines p-value and SMD into one formatted string in one column, not two columns) — consistent with `hv_man_table_jtcvs()` never being modified in this plan to accept more than one trailing column.
 - **Empirically validated, not just read against docs:** every code block in Tasks 2-5 was actually run against a live `gtsummary` 2.5.1 install before this plan was finalized (not just written from API documentation), which caught three real bugs the plan would otherwise have shipped: (1) `tbl_summary(by = by, ...)` with a bare string variable triggers a tidyselect "external vector" deprecation warning — fixed by wrapping `by` in `gtsummary::all_of()` the same way `include` already is; (2) `gtsummary`'s default `N_obs`/`n` formatter inserts thousands separators ("4,190") for any count >= 1000, which both real example tables (N=7948, 4190, 3758) actually reach and which does not match their plain-digit house style — fixed with an explicit `digits = list(everything() ~ list(N_obs = ..., n = ...))` argument and pinned with a dedicated >= 1000-row regression test in Task 2; (3) the original percentile test pinned an exact string built from `stats::quantile(..., type = 2)`, which does not match gtsummary's internal rounding (a raw 80.5 renders as "81", not R's `round()` "80") — replaced with a structural-shape assertion instead of an exact pinned value, since that internal rounding is gtsummary's implementation detail, not this package's.
+- **Corrections made during execution** (this plan was revised mid-flight rather than left stale, so it stays a truthful record of what was built): (1) Task 2's plain-digit regression test originally also asserted `expect_false(grepl(",", ...))`, banning *any* comma — wrong, since the percentile pair legitimately renders with a comma separator ("1500 ||| 60 (50, 71)"); the narrower "starts with the un-comma'd N literal" assertion already covers the regression. Caught by the Task 2 implementer running the code rather than trusting it. (2) Task 4's `compare = "both"` branch originally guarded only on `is.na(tb$p.value)`, which rendered the literal string "0.9 (SMD NA)" for any nominal categorical variable — gtsummary produces a valid chi-square p-value there but no SMD. Fixed to a three-case guard that keeps the valid p-value and drops only the unavailable SMD, plus a dedicated mixed-data regression test (every other `compare` test used continuous-only data, which is exactly why this slipped through). Caught by the Task 4 reviewer running a focused check beyond the task's own tests.
