@@ -237,8 +237,12 @@ test_that("hv_tbl_summary does not comma-format large N (house style is plain di
   n <- 1500
   dta <- data.frame(age = round(rnorm(n, 60, 10)))
   tbl <- hv_tbl_summary(dta, groups = list(Vitals = "age"), continuous = "age")
+  # Asserting the string starts with the literal, un-comma'd "1500 |||"
+  # already proves N_obs isn't thousands-formatted — a broader
+  # expect_false(grepl(",", ...)) would be wrong here, since the
+  # percentile pair legitimately renders with a comma separator, e.g.
+  # "1500 ||| 60 (50, 71)".
   expect_true(grepl("^1500 \\|\\|\\|", tbl$table_body$stat_0))
-  expect_false(grepl(",", tbl$table_body$stat_0))
 })
 
 test_that("hv_tbl_summary's percentiles argument changes the glue statistic", {
