@@ -1,3 +1,22 @@
+# hvtiRtables 0.9.2
+
+## Bug fixes
+
+- `hv_tbl_summary(compare = "both")` reported a wrong standardized mean
+  difference. `add_difference()` ran after `add_p()`, and in that order
+  `gtsummary` overwrites the `estimate` column with a raw mean difference
+  for continuous variables and leaves it `NA` for binary and categorical
+  ones. A table could render `0.7 (SMD -1.0)` where the true SMD was
+  -0.03, under a column header saying SMD, and categorical variables
+  showed no SMD at all. The two calls are now ordered
+  `add_difference()` then `add_p()`, which reproduces
+  `add_difference()`'s own output exactly for continuous, binary, and
+  categorical variables alike. `compare = "pvalue"`, `"smd"`, and
+  `"none"` are unaffected, since none of them runs both calls.
+
+  The same reordering preserves `add_p()`'s `test_name` column, which
+  `add_difference()` had been overwriting with `"smd"`.
+
 # hvtiRtables 0.9.1
 
 ## New features

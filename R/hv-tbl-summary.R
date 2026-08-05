@@ -183,11 +183,16 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     return(tbl)
   }
 
-  if (effective_compare %in% c("pvalue", "both")) {
-    tbl <- gtsummary::add_p(tbl)
-  }
+  # Order matters for compare = "both": add_difference() must run first.
+  # Called second, it overwrites `estimate` with a raw mean difference
+  # instead of the standardized one, and clobbers add_p()'s `test_name`
+  # to "smd". Neither path runs both calls for any other `compare` value,
+  # so the order is only observable here.
   if (effective_compare %in% c("smd", "both")) {
     tbl <- gtsummary::add_difference(tbl, gtsummary::everything() ~ "smd")
+  }
+  if (effective_compare %in% c("pvalue", "both")) {
+    tbl <- gtsummary::add_p(tbl)
   }
 
   tb <- tbl$table_body
