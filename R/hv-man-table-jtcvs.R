@@ -81,6 +81,10 @@
 #'   `tbl$table_body` column name -> header label, for a trailing
 #'   comparison column (e.g. `c(std_diff = "Std. Diff.")` or
 #'   `c(p_value = "P")`). Must already exist in `tbl$table_body`.
+#' @param stat_label Sub-header text under each group's statistic column.
+#'   Default `"No. (%) or Mean ± SD"` (house default for mean/SD
+#'   tables). Pass e.g. `"No. (%) or Median (15th, 85th percentile)"` when
+#'   the table's continuous statistic is a median, not a mean.
 #' @param font Font family. Default `"Times New Roman"` (house rule).
 #' @param font_size Font size in points. Default `12`; pass `11` for wide
 #'   tables.
@@ -106,6 +110,7 @@
 #'
 #' @export
 hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
+                               stat_label = "No. (%) or Mean \u00B1 SD",
                                font = "Times New Roman", font_size = 12) {
   if (!inherits(tbl, "gtsummary"))
     stop("`tbl` must be a gtsummary table object.", call. = FALSE)
@@ -133,7 +138,7 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   header_labels <- list(label = "Characteristic")
   for (g in names(groups)) {
     header_labels[[paste0("n_", g)]] <- "na"
-    header_labels[[paste0("disp_", g)]] <- "No. (%) or Mean \u00B1 SD"
+    header_labels[[paste0("disp_", g)]] <- stat_label
   }
   if (!is.null(trailing)) header_labels[[names(trailing)]] <- unname(trailing)
   ft <- do.call(flextable::set_header_labels, c(list(x = ft), header_labels))

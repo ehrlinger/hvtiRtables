@@ -1,6 +1,6 @@
 Package: hvtiRtables
 Title: Manuscript-Compliant Table Construction for HVTI CORR Group
-Version: 0.9.0
+Version: 0.9.1
 Authors@R:
     person("John", "Ehrlinger", , "ehrlinj@ccf.org", role = c("aut", "cre"))
 Description: Turns 'gtsummary' table objects into MS Word tables complying
@@ -19,7 +19,9 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 8.0.0
 Suggests:
+    broom (>= 1.0.8),
     dplyr,
+    smd (>= 0.6.6),
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports:

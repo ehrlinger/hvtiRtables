@@ -1,9 +1,10 @@
 ^hvtiRtables\.Rproj$
 ^\.Rproj\.user$
 ^\.superpowers$
+^design$
 ^\.github$
 ^docs$
-^design$
 ^_pkgdown\.yml$
 ^codecov\.yml$
 ^LICENSE\.md$
+^CONTRIBUTING\.md$
