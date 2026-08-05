@@ -74,3 +74,88 @@ ft <- hv_man_table_jtcvs(
 )
 hv_man_table_save_jtcvs(ft, "table1.docx", caption = "Table 1. Baseline Characteristics")
 ```
+
+## Migrating from the `%summarytable` SAS macro
+
+If you already know `%summarytable`, you give
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+the same thing you gave the macro: a grouped, ordered variable list (the
+shape of the macro’s `LIST=` block). You get back a `gtsummary` object
+you hand straight to
+[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md).
+Two defaults differ from the macro and are worth knowing up front: we
+always use a blanket non-parametric test, so there is no per-variable
+Gaussian classification to maintain, and continuous variables report as
+`median (P15, P85)` rather than `mean ± SD`.
+
+| `%summarytable` parameter | [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md) argument |
+|----|----|
+| `DATA=` | `data` |
+| `CLASS=` | `by` |
+| `LIST=` | `groups` |
+| `CON1=` | `continuous` |
+| `CAT1=` | `binary` |
+| `CAT2=` | `categorical` |
+| `PVALUES=` / `ASD=` | `compare` |
+| `PP=` | `percentiles` |
+| `TOTALCOL=` / `NCOL=` | handled automatically |
+
+Not supported in this first pass: `WEIGHT=` (weighted summaries),
+`PROPENMT=` (propensity-matched mode), `CON2=`/`CON3=`
+(Gaussian-classification split, superseded by the blanket-nonparametric
+default), `SUBSET=`, `SORTBY=` (ordering comes directly from `groups`).
+Ordinal variables (`ORD1=` in the macro) fold into `categorical` here;
+no trend test is run.
+
+A real `%summarytable` call, next to its
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+equivalent:
+
+``` sas
+%summarytable(data=built,
+              class=grp_res,
+              con1=&gaussian.,
+              cat1=&binary.,
+              cat2=&catg.,
+              pp=16 84,
+              pvalues=1,
+              list=
+    /* Demography */
+       female AGE BSA race_gp
+
+    /* Symptoms */
+       surgstat nyha_pr
+);
+```
+
+``` r
+
+library(gtsummary)
+library(hvtiRtables)
+
+tbl <- hv_tbl_summary(
+  built,
+  by = "grp_res",
+  groups = list(
+    Demography = c("female", "AGE", "BSA", "race_gp"),
+    Symptoms   = c("surgstat", "nyha_pr")
+  ),
+  continuous  = c("AGE", "BSA"),
+  binary      = c("female", "surgstat"),
+  categorical = c("race_gp", "nyha_pr"),
+  compare     = "pvalue",
+  percentiles = c(16, 84)
+)
+ft <- hv_man_table_jtcvs(
+  tbl,
+  groups = c(
+    stat_1 = "PERIMOUNT (n=4190)", stat_2 = "Resilia (n=3758)"
+  ),
+  trailing = attr(tbl, "hv_trailing"),
+  stat_label = attr(tbl, "hv_stat_label")
+)
+hv_man_table_save_jtcvs(
+  ft, "table1.docx",
+  caption = "Table 1. Baseline Characteristics by Tissue Type"
+)
+```

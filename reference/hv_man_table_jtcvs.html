@@ -21,7 +21,7 @@ submissions want different things from the same header row."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,6 +71,7 @@ submissions want different things from the same header row.</p>
 <span>  <span class="va">tbl</span>,</span>
 <span>  <span class="va">groups</span>,</span>
 <span>  trailing <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  stat_label <span class="op">=</span> <span class="st">"No. (%) or Mean ± SD"</span>,</span>
 <span>  font <span class="op">=</span> <span class="st">"Times New Roman"</span>,</span>
 <span>  font_size <span class="op">=</span> <span class="fl">12</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -96,6 +97,13 @@ the label text yourself, e.g. <code>c(stat_1 = "Group A (n=60)")</code>).</p></d
 <code>tbl$table_body</code> column name -&gt; header label, for a trailing
 comparison column (e.g. <code>c(std_diff = "Std. Diff.")</code> or
 <code>c(p_value = "P")</code>). Must already exist in <code>tbl$table_body</code>.</p></dd>
+
+
+<dt id="arg-stat-label">stat_label<a class="anchor" aria-label="anchor" href="#arg-stat-label"></a></dt>
+<dd><p>Sub-header text under each group's statistic column.
+Default <code>"No. (%) or Mean ± SD"</code> (house default for mean/SD
+tables). Pass e.g. <code>"No. (%) or Median (15th, 85th percentile)"</code> when
+the table's continuous statistic is a median, not a mean.</p></dd>
 
 
 <dt id="arg-font">font<a class="anchor" aria-label="anchor" href="#arg-font"></a></dt>

@@ -114,7 +114,7 @@ package-level architecture:
 | Convention | Rule |
 |----|----|
 | File names | `kebab-case.R` (e.g. `hv-man-table-jtcvs.R`) |
-| Function names | `hv_<concept>()`, e.g. [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md), [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md), `hv_tbl_summary()` |
+| Function names | `hv_<concept>()`, e.g. [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md), [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md), [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md) |
 | House font/rounding | Times New Roman, 12pt (11pt permitted for wide tables, house rule 5) — set once via each renderer’s `font`/`font_size` params, never hard-coded elsewhere |
 | Footnotes | House-universal footnotes live in [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md); study-specific ones are passed by the caller, never hard-coded into a table-building function |
 | Statistics | Reuse `gtsummary`’s own defaults (Wilcoxon/Kruskal-Wallis for continuous, chi-square-with-Fisher’s-fallback for categorical) rather than writing custom test-selection logic |

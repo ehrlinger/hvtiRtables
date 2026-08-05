@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,16 @@
       <small>Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.1" id="hvtirtables-091">hvtiRtables 0.9.1<a class="anchor" aria-label="anchor" href="#hvtirtables-091"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-9-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-9-1"></a></h3>
+<ul><li>
+<code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code>: a thin wrapper over <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html" class="external-link">gtsummary::tbl_summary()</a></code> / <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/add_p.html" class="external-link">add_p()</a></code> / <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/add_difference.html" class="external-link">add_difference()</a></code> modeled on the interface biostats team members already know from the <code>%summarytable</code> SAS macro — a grouped, ordered variable list and variable-type buckets (<code>continuous</code>/<code>binary</code>/<code>categorical</code>), rather than gtsummary’s own tidyselect interface. Always uses a blanket non-parametric test for continuous variables (no per-variable Gaussian classification) and reports <code>median (P15, P85)</code> by default, matching <code><a href="../reference/hv_man_footnotes.html">hv_man_footnotes()</a></code>’s house convention. <code>compare</code> adds a p-value, standardized mean difference, or both, as a trailing column. Returns a plain <code>gtsummary</code> object ready for <code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>. See the README’s “Migrating from the <code>%summarytable</code> SAS macro” section for a parameter-mapping table and worked example.</li>
+<li>
+<code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> gains a <code>stat_label</code> parameter (default <code>"No. (%) or Mean ± SD"</code>, unchanged for existing callers) so callers whose statistic is a median, not a mean, can set an accurate sub-header — <code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> sets this automatically.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.0" id="hvtirtables-090">hvtiRtables 0.9.0<a class="anchor" aria-label="anchor" href="#hvtirtables-090"></a></h2>
 <div class="section level3">

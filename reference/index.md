@@ -1,5 +1,15 @@
 # Package index
 
+## Building Tables from Data
+
+Build a grouped baseline-characteristics table straight from a data
+frame, using an interface modeled on the SAS `%summarytable` macro.
+Returns a `gtsummary` object for the renderers below.
+
+- [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  : Build a gtsummary table from a SAS %summarytable-style grouped
+  variable list
+
 ## Flat-Header Tables
 
 Standard HVTI CORR manuscript tables: flat (non-merged) headers, no
