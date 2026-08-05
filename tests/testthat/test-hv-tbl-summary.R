@@ -236,8 +236,8 @@ test_that("hv_tbl_summary compare = 'both' falls back to a bare p-value when SMD
   dta <- mk_tbl_summary_mixed_data()
   tbl <- hv_tbl_summary(
     dta, by = "grp",
-    groups = list(Vitals = "age", Demography = "race"),
-    continuous = "age", categorical = "race",
+    groups = list(Vitals = c("age", "flag"), Demography = "race"),
+    continuous = "age", binary = "flag", categorical = "race",
     compare = "both"
   )
   tb <- tbl$table_body
@@ -249,6 +249,14 @@ test_that("hv_tbl_summary compare = 'both' falls back to a bare p-value when SMD
   expect_false(is.na(race_header_val))
   expect_false(grepl("SMD", race_header_val))
   expect_true(grepl("^(<)?[0-9.]+$", race_header_val))
+
+  # Binary shares the same NA-estimate exposure as categorical in a
+  # mixed-type call, and the fix guards on `is.na(estimate)` rather than
+  # on variable type — assert that explicitly rather than leaving it to
+  # code-path inspection.
+  flag_val <- tb$hv_compare_col[tb$variable == "flag" & tb$row_type == "label"]
+  expect_false(is.na(flag_val))
+  expect_false(grepl("NA", flag_val))
 
   race_level_vals <- tb$hv_compare_col[tb$variable == "race" & tb$row_type == "level"]
   expect_true(all(is.na(race_level_vals)))
