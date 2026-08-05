@@ -1,5 +1,35 @@
 # Changelog
 
+## hvtiRtables 0.9.2
+
+### Bug fixes
+
+- `hv_tbl_summary(compare = "both")` reported a wrong standardized mean
+  difference.
+  [`add_difference()`](https://www.danieldsjoberg.com/gtsummary/reference/add_difference.html)
+  ran after
+  [`add_p()`](https://www.danieldsjoberg.com/gtsummary/reference/add_p.html),
+  and in that order `gtsummary` overwrites the `estimate` column with a
+  raw mean difference for continuous variables and leaves it `NA` for
+  binary and categorical ones. A table could render `0.7 (SMD -1.0)`
+  where the true SMD was -0.03, under a column header saying SMD, and
+  categorical variables showed no SMD at all. The two calls are now
+  ordered
+  [`add_difference()`](https://www.danieldsjoberg.com/gtsummary/reference/add_difference.html)
+  then
+  [`add_p()`](https://www.danieldsjoberg.com/gtsummary/reference/add_p.html),
+  which reproduces
+  [`add_difference()`](https://www.danieldsjoberg.com/gtsummary/reference/add_difference.html)’s
+  own output exactly for continuous, binary, and categorical variables
+  alike. `compare = "pvalue"`, `"smd"`, and `"none"` are unaffected,
+  since none of them runs both calls.
+
+  The same reordering preserves
+  [`add_p()`](https://www.danieldsjoberg.com/gtsummary/reference/add_p.html)’s
+  `test_name` column, which
+  [`add_difference()`](https://www.danieldsjoberg.com/gtsummary/reference/add_difference.html)
+  had been overwriting with `"smd"`.
+
 ## hvtiRtables 0.9.1
 
 ### New features

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,16 @@
       <small>Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.2" id="hvtirtables-092">hvtiRtables 0.9.2<a class="anchor" aria-label="anchor" href="#hvtirtables-092"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-0-9-2">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-9-2"></a></h3>
+<ul><li>
+<p><code>hv_tbl_summary(compare = "both")</code> reported a wrong standardized mean difference. <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/add_difference.html" class="external-link">add_difference()</a></code> ran after <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/add_p.html" class="external-link">add_p()</a></code>, and in that order <code>gtsummary</code> overwrites the <code>estimate</code> column with a raw mean difference for continuous variables and leaves it <code>NA</code> for binary and categorical ones. A table could render <code>0.7 (SMD -1.0)</code> where the true SMD was -0.03, under a column header saying SMD, and categorical variables showed no SMD at all. The two calls are now ordered <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/add_difference.html" class="external-link">add_difference()</a></code> then <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/add_p.html" class="external-link">add_p()</a></code>, which reproduces <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/add_difference.html" class="external-link">add_difference()</a></code>’s own output exactly for continuous, binary, and categorical variables alike. <code>compare = "pvalue"</code>, <code>"smd"</code>, and <code>"none"</code> are unaffected, since none of them runs both calls.</p>
+<p>The same reordering preserves <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/add_p.html" class="external-link">add_p()</a></code>’s <code>test_name</code> column, which <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/add_difference.html" class="external-link">add_difference()</a></code> had been overwriting with <code>"smd"</code>.</p>
+</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.1" id="hvtirtables-091">hvtiRtables 0.9.1<a class="anchor" aria-label="anchor" href="#hvtirtables-091"></a></h2>
 <div class="section level3">
