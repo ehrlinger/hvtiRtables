@@ -16,8 +16,8 @@ home:
       badges:
         title: Package badges
         text: |
-          ![](https://img.shields.io/github/r-package/v/ehrlinger/hvtirtables)<br>
-          ![](https://img.shields.io/github/actions/workflow/status/ehrlinger/hvtirtables/pkgdown.yaml)<br>
+          ![](https://img.shields.io/github/r-package/v/ehrlinger/hvtiRtables)<br>
+          ![](https://img.shields.io/github/actions/workflow/status/ehrlinger/hvtiRtables/pkgdown.yaml)<br>
 
 navbar:
   structure:
