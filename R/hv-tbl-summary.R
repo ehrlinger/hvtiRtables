@@ -176,10 +176,14 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     smd    = gtsummary::style_sigfig(tb$estimate),
     both   = ifelse(
       is.na(tb$p.value), NA_character_,
-      sprintf(
-        "%s (SMD %s)",
+      ifelse(
+        is.na(tb$estimate),
         gtsummary::style_pvalue(tb$p.value, digits = 1),
-        gtsummary::style_sigfig(tb$estimate)
+        sprintf(
+          "%s (SMD %s)",
+          gtsummary::style_pvalue(tb$p.value, digits = 1),
+          gtsummary::style_sigfig(tb$estimate)
+        )
       )
     )
   )

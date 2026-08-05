@@ -226,3 +226,30 @@ test_that("hv_tbl_summary compare = 'both' combines p-value and SMD in one colum
   expect_true(grepl("SMD", tbl$table_body$hv_compare_col))
   expect_identical(attr(tbl, "hv_trailing"), c(hv_compare_col = "P (SMD)"))
 })
+
+test_that("hv_tbl_summary compare = 'both' falls back to a bare p-value when SMD is unavailable (categorical variables)", {
+  # gtsummary::add_difference(... ~ "smd") does not compute an SMD for
+  # nominal categoricals, leaving `estimate` NA on the variable's header
+  # row even though add_p() produced a valid chi-square p-value there.
+  # The `both` column must keep that p-value alone rather than rendering
+  # a literal "0.9 (SMD NA)" string into the table.
+  dta <- mk_tbl_summary_mixed_data()
+  tbl <- hv_tbl_summary(
+    dta, by = "grp",
+    groups = list(Vitals = "age", Demography = "race"),
+    continuous = "age", categorical = "race",
+    compare = "both"
+  )
+  tb <- tbl$table_body
+
+  age_val <- tb$hv_compare_col[tb$variable == "age" & tb$row_type == "label"]
+  expect_true(grepl("^(<)?[0-9.]+ \\(SMD -?[0-9.]+\\)$", age_val))
+
+  race_header_val <- tb$hv_compare_col[tb$variable == "race" & tb$row_type == "label"]
+  expect_false(is.na(race_header_val))
+  expect_false(grepl("SMD", race_header_val))
+  expect_true(grepl("^(<)?[0-9.]+$", race_header_val))
+
+  race_level_vals <- tb$hv_compare_col[tb$variable == "race" & tb$row_type == "level"]
+  expect_true(all(is.na(race_level_vals)))
+})
