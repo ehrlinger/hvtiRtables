@@ -51,7 +51,7 @@ already emits one header row per group with self-contained labels (e.g.
 `"B\nN = 45"`), not a merged spanning header. The one remaining merge, a
 full-width `gridSpan` on the `modify_table_body(groupname_col = ...)`
 section-header row, gets removed with
-[`flextable::merge_none()`](https://rdrr.io/pkg/flextable/man/merge_none.html),
+[`flextable::merge_none()`](https://davidgohel.github.io/flextable/reference/merge_none.html),
 which un-merges every merged region back into individual cells (content
 stays in the top-left cell of the former merge; the rest become empty).
 That satisfies the "format the table as flat as possible ... simple

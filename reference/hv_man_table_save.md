@@ -5,7 +5,7 @@ You hand this a `flextable` (typically from
 and it writes a Word document with footnotes and an abbreviation key
 rendered as text below the table rather than embedded within it (house
 rules 13-14).
-[`flextable::footnote()`](https://rdrr.io/pkg/flextable/man/footnote.html)
+[`flextable::footnote()`](https://davidgohel.github.io/flextable/reference/footnote.html)
 cannot do this for you: it renders footnote text as an extra row inside
 the table's own `<w:tbl>` block (a "footer" table part), which is
 exactly the compliance violation this function exists to avoid. Instead,
