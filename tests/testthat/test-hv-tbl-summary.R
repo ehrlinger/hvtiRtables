@@ -61,7 +61,9 @@ test_that("hv_tbl_summary rejects a groups variable missing from data", {
   dta <- mk_tbl_summary_data()
   expect_error(
     hv_tbl_summary(
-      dta, groups = list(Vitals = c("age", "nope")), continuous = c("age", "nope")
+      dta,
+      groups = list(Vitals = c("age", "nope")),
+      continuous = c("age", "nope")
     ),
     "not found in `data`"
   )
@@ -70,7 +72,11 @@ test_that("hv_tbl_summary rejects a groups variable missing from data", {
 test_that("hv_tbl_summary rejects an unclassified groups variable", {
   dta <- mk_tbl_summary_data()
   expect_error(
-    hv_tbl_summary(dta, groups = list(Vitals = c("age", "bsa")), continuous = "age"),
+    hv_tbl_summary(
+      dta,
+      groups = list(Vitals = c("age", "bsa")),
+      continuous = "age"
+    ),
     "not classified"
   )
 })
@@ -105,7 +111,7 @@ test_that("hv_tbl_summary builds a continuous, grouped (by given) table", {
   expect_identical(tbl$table_body$groupname_col, "Vitals")
 })
 
-test_that("hv_tbl_summary does not comma-format large N (house style is plain digits)", {
+test_that("hv_tbl_summary does not comma-format large N", {
   # Both real example tables examined during design (N=7948, 4190, 3758)
   # show plain digits, not "7,948" — gtsummary's default N_obs/n
   # formatter inserts thousands separators for any value >= 1000, which
@@ -136,9 +142,12 @@ test_that("hv_tbl_summary's percentiles argument changes the glue statistic", {
     percentiles = c(10, 90)
   )
   expect_match(
-    custom_tbl$table_body$stat_0, "^[0-9]+ \\|\\|\\| [0-9.]+ \\([0-9.]+, [0-9.]+\\)$"
+    custom_tbl$table_body$stat_0,
+    "^[0-9]+ \\|\\|\\| [0-9.]+ \\([0-9.]+, [0-9.]+\\)$"
   )
-  expect_false(identical(default_tbl$table_body$stat_0, custom_tbl$table_body$stat_0))
+  expect_false(
+    identical(default_tbl$table_body$stat_0, custom_tbl$table_body$stat_0)
+  )
 })
 
 test_that("hv_tbl_summary summarizes a binary variable as a single n (%) row", {
@@ -148,10 +157,12 @@ test_that("hv_tbl_summary summarizes a binary variable as a single n (%) row", {
   )
   expect_identical(tbl$table_body$variable, "flag")
   expect_identical(tbl$table_body$row_type, "label")
-  expect_true(grepl("^[0-9]+ \\|\\|\\| [0-9]+ \\([0-9.]+%\\)$", tbl$table_body$stat_0))
+  expect_true(
+    grepl("^[0-9]+ \\|\\|\\| [0-9]+ \\([0-9.]+%\\)$", tbl$table_body$stat_0)
+  )
 })
 
-test_that("hv_tbl_summary summarizes a categorical variable with one row per level", {
+test_that("hv_tbl_summary shows one row per categorical level", {
   dta <- mk_tbl_summary_mixed_data()
   tbl <- hv_tbl_summary(
     dta, groups = list(Demography = "race"), categorical = "race"
@@ -160,7 +171,7 @@ test_that("hv_tbl_summary summarizes a categorical variable with one row per lev
   expect_setequal(levels_shown, c("White", "Black", "Other"))
 })
 
-test_that("hv_tbl_summary mixes continuous, binary, and categorical in one call", {
+test_that("hv_tbl_summary mixes all three variable types in one call", {
   dta <- mk_tbl_summary_mixed_data()
   tbl <- hv_tbl_summary(
     dta,
@@ -217,7 +228,7 @@ test_that("hv_tbl_summary compare = 'smd' adds a formatted std. diff. column", {
   expect_identical(attr(tbl, "hv_trailing"), c(hv_compare_col = "Std. Diff."))
 })
 
-test_that("hv_tbl_summary compare = 'both' combines p-value and SMD in one column", {
+test_that("hv_tbl_summary compare 'both' puts p and SMD in one column", {
   dta <- mk_tbl_summary_data()
   tbl <- hv_tbl_summary(
     dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
@@ -227,7 +238,7 @@ test_that("hv_tbl_summary compare = 'both' combines p-value and SMD in one colum
   expect_identical(attr(tbl, "hv_trailing"), c(hv_compare_col = "P (SMD)"))
 })
 
-test_that("hv_tbl_summary compare = 'both' falls back to a bare p-value when SMD is unavailable (categorical variables)", {
+test_that("hv_tbl_summary compare 'both' drops SMD where unavailable", {
   # gtsummary::add_difference(... ~ "smd") does not compute an SMD for
   # nominal categoricals, leaving `estimate` NA on the variable's header
   # row even though add_p() produced a valid chi-square p-value there.
@@ -245,7 +256,9 @@ test_that("hv_tbl_summary compare = 'both' falls back to a bare p-value when SMD
   age_val <- tb$hv_compare_col[tb$variable == "age" & tb$row_type == "label"]
   expect_true(grepl("^(<)?[0-9.]+ \\(SMD -?[0-9.]+\\)$", age_val))
 
-  race_header_val <- tb$hv_compare_col[tb$variable == "race" & tb$row_type == "label"]
+  race_header_val <- tb$hv_compare_col[
+    tb$variable == "race" & tb$row_type == "label"
+  ]
   expect_false(is.na(race_header_val))
   expect_false(grepl("SMD", race_header_val))
   expect_true(grepl("^(<)?[0-9.]+$", race_header_val))
@@ -258,11 +271,13 @@ test_that("hv_tbl_summary compare = 'both' falls back to a bare p-value when SMD
   expect_false(is.na(flag_val))
   expect_false(grepl("NA", flag_val))
 
-  race_level_vals <- tb$hv_compare_col[tb$variable == "race" & tb$row_type == "level"]
+  race_level_vals <- tb$hv_compare_col[
+    tb$variable == "race" & tb$row_type == "level"
+  ]
   expect_true(all(is.na(race_level_vals)))
 })
 
-test_that("hv_tbl_summary + hv_man_table_jtcvs reproduce the stratified example's shape", {
+test_that("hv_tbl_summary + jtcvs reproduce the stratified example", {
   # Group and `female`/`race_gp` counts taken directly from
   # summarytable_stratified_grp_res.docx (PERIMOUNT n=4190, Resilia
   # n=3758; female: 964 of 4190 PERIMOUNT, 1363 of 3758 Resilia; race_gp

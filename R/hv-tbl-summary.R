@@ -138,7 +138,11 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # during planning that tbl_summary()'s default digits= would otherwise
   # silently comma-format any N >= 1000, which both real example tables
   # actually reach. Force plain digits for N_obs and n explicitly.
+  # Used inside the `digits =` formula below; lintr's static analysis
+  # cannot see through the formula, hence the nolint.
+  # nolint start: object_usage_linter.
   no_comma <- gtsummary::label_style_number(big.mark = "")
+  # nolint end
   tbl <- gtsummary::tbl_summary(
     data,
     by = if (is.null(by)) NULL else gtsummary::all_of(by),
@@ -150,7 +154,10 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   )
   tbl <- gtsummary::modify_table_body(
     tbl,
-    function(tb) { tb$groupname_col <- unname(section_map[tb$variable]); tb }
+    function(tb) {
+      tb$groupname_col <- unname(section_map[tb$variable])
+      tb
+    }
   )
 
   attr(tbl, "hv_stat_label") <- sprintf(
@@ -192,7 +199,11 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   )
 
   tbl <- gtsummary::modify_table_body(
-    tbl, function(tb) { tb$hv_compare_col <- compare_col; tb }
+    tbl,
+    function(tb) {
+      tb$hv_compare_col <- compare_col
+      tb
+    }
   )
   attr(tbl, "hv_stat_label") <- sprintf(
     "No. (%%) or Median (%sth, %sth percentile)", p_lo, p_hi

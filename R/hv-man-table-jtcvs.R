@@ -110,7 +110,7 @@
 #'
 #' @export
 hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
-                               stat_label = "No. (%) or Mean ± SD",
+                               stat_label = "No. (%) or Mean \u00B1 SD",
                                font = "Times New Roman", font_size = 12) {
   if (!inherits(tbl, "gtsummary"))
     stop("`tbl` must be a gtsummary table object.", call. = FALSE)
