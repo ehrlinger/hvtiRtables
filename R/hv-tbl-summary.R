@@ -156,5 +156,44 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   attr(tbl, "hv_stat_label") <- sprintf(
     "No. (%%) or Median (%sth, %sth percentile)", p_lo, p_hi
   )
+
+  effective_compare <- if (is.null(by)) "none" else compare
+  if (effective_compare == "none") {
+    return(tbl)
+  }
+
+  if (effective_compare %in% c("pvalue", "both")) {
+    tbl <- gtsummary::add_p(tbl)
+  }
+  if (effective_compare %in% c("smd", "both")) {
+    tbl <- gtsummary::add_difference(tbl, gtsummary::everything() ~ "smd")
+  }
+
+  tb <- tbl$table_body
+  compare_col <- switch(
+    effective_compare,
+    pvalue = gtsummary::style_pvalue(tb$p.value, digits = 1),
+    smd    = gtsummary::style_sigfig(tb$estimate),
+    both   = ifelse(
+      is.na(tb$p.value), NA_character_,
+      sprintf(
+        "%s (SMD %s)",
+        gtsummary::style_pvalue(tb$p.value, digits = 1),
+        gtsummary::style_sigfig(tb$estimate)
+      )
+    )
+  )
+  compare_label <- switch(
+    effective_compare, pvalue = "P", smd = "Std. Diff.", both = "P (SMD)"
+  )
+
+  tbl <- gtsummary::modify_table_body(
+    tbl, function(tb) { tb$hv_compare_col <- compare_col; tb }
+  )
+  attr(tbl, "hv_stat_label") <- sprintf(
+    "No. (%%) or Median (%sth, %sth percentile)", p_lo, p_hi
+  )
+  attr(tbl, "hv_trailing") <- stats::setNames(compare_label, "hv_compare_col")
+
   tbl
 }

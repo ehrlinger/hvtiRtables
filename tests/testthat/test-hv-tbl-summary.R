@@ -176,3 +176,53 @@ test_that("hv_tbl_summary mixes continuous, binary, and categorical in one call"
     c("Vitals", "Vitals", "Demography")
   )
 })
+
+test_that("hv_tbl_summary compare is ignored (no-op) when by is NULL", {
+  dta <- mk_tbl_summary_data()
+  tbl <- hv_tbl_summary(
+    dta, groups = list(Vitals = "age"), continuous = "age", compare = "pvalue"
+  )
+  expect_false("hv_compare_col" %in% names(tbl$table_body))
+  expect_null(attr(tbl, "hv_trailing"))
+})
+
+test_that("hv_tbl_summary compare = 'none' adds no comparison column", {
+  dta <- mk_tbl_summary_data()
+  tbl <- hv_tbl_summary(
+    dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
+    compare = "none"
+  )
+  expect_false("hv_compare_col" %in% names(tbl$table_body))
+  expect_null(attr(tbl, "hv_trailing"))
+})
+
+test_that("hv_tbl_summary compare = 'pvalue' adds a formatted p-value column", {
+  dta <- mk_tbl_summary_data()
+  tbl <- hv_tbl_summary(
+    dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
+    compare = "pvalue"
+  )
+  expect_true("hv_compare_col" %in% names(tbl$table_body))
+  expect_true(grepl("^(<)?[0-9.]+$", tbl$table_body$hv_compare_col))
+  expect_identical(attr(tbl, "hv_trailing"), c(hv_compare_col = "P"))
+})
+
+test_that("hv_tbl_summary compare = 'smd' adds a formatted std. diff. column", {
+  dta <- mk_tbl_summary_data()
+  tbl <- hv_tbl_summary(
+    dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
+    compare = "smd"
+  )
+  expect_true("hv_compare_col" %in% names(tbl$table_body))
+  expect_identical(attr(tbl, "hv_trailing"), c(hv_compare_col = "Std. Diff."))
+})
+
+test_that("hv_tbl_summary compare = 'both' combines p-value and SMD in one column", {
+  dta <- mk_tbl_summary_data()
+  tbl <- hv_tbl_summary(
+    dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
+    compare = "both"
+  )
+  expect_true(grepl("SMD", tbl$table_body$hv_compare_col))
+  expect_identical(attr(tbl, "hv_trailing"), c(hv_compare_col = "P (SMD)"))
+})
