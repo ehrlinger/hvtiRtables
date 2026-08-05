@@ -71,12 +71,14 @@ hv_man_table_save_jtcvs(ft, "table1.docx", caption = "Table 1. Baseline Characte
 
 ## Migrating from the `%summarytable` SAS macro
 
-`hv_tbl_summary()` builds a baseline-characteristics table from a grouped,
-ordered variable list (the same shape as the `%summarytable` macro's
-`LIST=` block), then hands the result straight to `hv_man_table_jtcvs()`.
-It always uses a blanket non-parametric test (no per-variable Gaussian
-classification) and reports continuous variables as
-`median (P15, P85)` by default, not `mean ± SD`.
+If you already know `%summarytable`, you give `hv_tbl_summary()` the same
+thing you gave the macro: a grouped, ordered variable list (the shape of
+the macro's `LIST=` block). You get back a `gtsummary` object you hand
+straight to `hv_man_table_jtcvs()`. Two defaults differ from the macro
+and are worth knowing up front: we always use a blanket non-parametric
+test, so there is no per-variable Gaussian classification to maintain,
+and continuous variables report as `median (P15, P85)` rather than
+`mean ± SD`.
 
 | `%summarytable` parameter | `hv_tbl_summary()` argument |
 |---|---|
