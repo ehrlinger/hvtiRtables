@@ -16,7 +16,7 @@ categorical), p-values and/or standardized differences (`PVALUES`, `ASD`),
 weighting, and propensity-matched mode.
 
 Two real example outputs were examined this session (`summarytable_overall.docx`,
-`summarytable_statified_grp_res.docx`, from a Resilia tissue aortic valve study,
+`summarytable_stratified_grp_res.docx`, from a Resilia tissue aortic valve study,
 n=7948): an ungrouped "Overall" table and a 3-group ("Overall" / "PERIMOUNT" /
 "Resilia") stratified comparison with p-values. Both show a `Variable`
 (internal SAS name) column separate from `Factor` (human label), N+stat
