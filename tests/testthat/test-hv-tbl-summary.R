@@ -8,6 +8,17 @@ mk_tbl_summary_data <- function() {
   )
 }
 
+mk_tbl_summary_mixed_data <- function() {
+  set.seed(11)
+  n <- 60
+  data.frame(
+    age = round(rnorm(n, 60, 10)),
+    flag = sample(0:1, n, replace = TRUE),
+    race = factor(sample(c("White", "Black", "Other"), n, replace = TRUE)),
+    grp = factor(rep(c("A", "B"), each = n / 2))
+  )
+}
+
 test_that("hv_tbl_summary rejects a non-data-frame", {
   expect_error(
     hv_tbl_summary(list(a = 1), groups = list(X = "a"), continuous = "a"),
@@ -128,4 +139,40 @@ test_that("hv_tbl_summary's percentiles argument changes the glue statistic", {
     custom_tbl$table_body$stat_0, "^[0-9]+ \\|\\|\\| [0-9.]+ \\([0-9.]+, [0-9.]+\\)$"
   )
   expect_false(identical(default_tbl$table_body$stat_0, custom_tbl$table_body$stat_0))
+})
+
+test_that("hv_tbl_summary summarizes a binary variable as a single n (%) row", {
+  dta <- mk_tbl_summary_mixed_data()
+  tbl <- hv_tbl_summary(
+    dta, groups = list(Vitals = "flag"), binary = "flag"
+  )
+  expect_identical(tbl$table_body$variable, "flag")
+  expect_identical(tbl$table_body$row_type, "label")
+  expect_true(grepl("^[0-9]+ \\|\\|\\| [0-9]+ \\([0-9.]+%\\)$", tbl$table_body$stat_0))
+})
+
+test_that("hv_tbl_summary summarizes a categorical variable with one row per level", {
+  dta <- mk_tbl_summary_mixed_data()
+  tbl <- hv_tbl_summary(
+    dta, groups = list(Demography = "race"), categorical = "race"
+  )
+  levels_shown <- tbl$table_body$label[tbl$table_body$row_type == "level"]
+  expect_setequal(levels_shown, c("White", "Black", "Other"))
+})
+
+test_that("hv_tbl_summary mixes continuous, binary, and categorical in one call", {
+  dta <- mk_tbl_summary_mixed_data()
+  tbl <- hv_tbl_summary(
+    dta,
+    groups = list(Vitals = c("age", "flag"), Demography = "race"),
+    continuous = "age", binary = "flag", categorical = "race"
+  )
+  expect_identical(
+    tbl$table_body$variable[tbl$table_body$row_type != "level"],
+    c("age", "flag", "race")
+  )
+  expect_identical(
+    tbl$table_body$groupname_col[tbl$table_body$row_type != "level"],
+    c("Vitals", "Vitals", "Demography")
+  )
 })

@@ -111,11 +111,22 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   p_hi <- percentiles[2]
   cont_stat <- sprintf("{N_obs} ||| {median} ({p%s}, {p%s})", p_lo, p_hi)
 
+  cat_stat <- "{N_obs} ||| {n} ({p}%)"
+
   statistic <- stats::setNames(
-    as.list(rep(cont_stat, length(continuous))), continuous
+    as.list(c(
+      rep(cont_stat, length(continuous)),
+      rep(cat_stat, length(binary) + length(categorical))
+    )),
+    c(continuous, binary, categorical)
   )
   type <- stats::setNames(
-    as.list(rep("continuous", length(continuous))), continuous
+    as.list(c(
+      rep("continuous", length(continuous)),
+      rep("dichotomous", length(binary)),
+      rep("categorical", length(categorical))
+    )),
+    c(continuous, binary, categorical)
   )
 
   section_map <- stats::setNames(rep(names(groups), lengths(groups)), vars)
