@@ -261,3 +261,55 @@ test_that("hv_tbl_summary compare = 'both' falls back to a bare p-value when SMD
   race_level_vals <- tb$hv_compare_col[tb$variable == "race" & tb$row_type == "level"]
   expect_true(all(is.na(race_level_vals)))
 })
+
+test_that("hv_tbl_summary + hv_man_table_jtcvs reproduce the stratified example's shape", {
+  # Group and `female`/`race_gp` counts taken directly from
+  # summarytable_stratified_grp_res.docx (PERIMOUNT n=4190, Resilia
+  # n=3758; female: 964 of 4190 PERIMOUNT, 1363 of 3758 Resilia; race_gp
+  # "White": 3833 of 4190 PERIMOUNT, 3320 of 3758 Resilia).
+  set.seed(2026)
+  n_perimount <- 4190
+  n_resilia <- 3758
+  dta <- data.frame(
+    tissue = factor(
+      rep(c("PERIMOUNT", "Resilia"), c(n_perimount, n_resilia)),
+      levels = c("PERIMOUNT", "Resilia")
+    ),
+    female = c(
+      sample(rep(0:1, c(n_perimount - 964, 964))),
+      sample(rep(0:1, c(n_resilia - 1363, 1363)))
+    ),
+    race_gp = factor(c(
+      sample(rep(c("White", "Other"), c(3833, n_perimount - 3833))),
+      sample(rep(c("White", "Other"), c(3320, n_resilia - 3320)))
+    ))
+  )
+
+  tbl <- hv_tbl_summary(
+    dta, by = "tissue",
+    groups = list(Demography = c("female", "race_gp")),
+    binary = "female", categorical = "race_gp",
+    compare = "pvalue"
+  )
+
+  expect_identical(as.integer(table(dta$tissue)), c(4190L, 3758L))
+  female_row <- tbl$table_body[tbl$table_body$variable == "female", ]
+  expect_true(grepl("^4190 \\|\\|\\| 964 ", female_row$stat_1))
+  expect_true(grepl("^3758 \\|\\|\\| 1363 ", female_row$stat_2))
+
+  ft <- hv_man_table_jtcvs(
+    tbl,
+    groups = c(
+      stat_1 = "PERIMOUNT (n=4190)", stat_2 = "Resilia (n=3758)"
+    ),
+    trailing = attr(tbl, "hv_trailing"),
+    stat_label = attr(tbl, "hv_stat_label")
+  )
+  expect_s3_class(ft, "flextable")
+
+  body <- ft$body$dataset
+  expect_identical(body$label[1], "Demography")
+  expect_identical(body$n_stat_1[body$label == "female"], "4190")
+  expect_identical(body$n_stat_2[body$label == "female"], "3758")
+  expect_true("hv_compare_col" %in% ft$col_keys)
+})
