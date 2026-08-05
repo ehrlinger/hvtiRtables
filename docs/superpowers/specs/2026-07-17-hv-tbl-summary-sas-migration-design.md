@@ -53,9 +53,24 @@ what SAS users already know from `%summarytable` (grouped/ordered variable
 list, variable-type buckets, a comparison-statistic choice) and construct the
 correct `tbl_summary()`/`add_p()`/`add_difference()` call. Its output is a
 plain `gtsummary` object, handed to the already-built `hv_man_table_jtcvs()`
-for rendering — no new rendering logic. `hv_man_table_jtcvs()`'s existing
-`groups` mechanism already handles both the 1-group ("Overall") and N-group
-(stratified) cases uniformly, since it takes an arbitrary-length named vector.
+for rendering. `hv_man_table_jtcvs()`'s existing `groups` mechanism already
+handles both the 1-group ("Overall") and N-group (stratified) cases
+uniformly, since it takes an arbitrary-length named vector.
+
+**One small renderer change is needed, not "no new rendering logic" as
+originally stated here** (caught in Copilot review of this spec):
+`hv_man_table_jtcvs()` currently hard-codes its stat sub-header text as the
+literal string `"No. (%) or Mean ± SD"` ([R/hv-man-table-jtcvs.R:136](../../../R/hv-man-table-jtcvs.R)),
+with no override. Since `hv_tbl_summary()` produces median-based continuous
+statistics (see Statistical behavior below), that hard-coded text would be
+wrong for its output — the table would say "Mean ± SD" while actually
+showing medians. `hv_man_table_jtcvs()` needs a new optional parameter (e.g.
+`stat_label`, defaulting to the current `"No. (%) or Mean ± SD"` text so
+existing callers are unaffected) that `hv_tbl_summary()` overrides to
+`"No. (%) or Median (15th, 85th percentile)"` (see Statistical behavior).
+This is a one-parameter, backward-compatible addition to an existing
+function, not a new rendering engine — the "thin wrapper" architecture
+still holds, this is its one necessary exception.
 
 ## Interface
 
@@ -69,12 +84,18 @@ hv_tbl_summary(
                                #   SAS macro's commented, ordered LIST= block.
                                #   e.g. list(Demography = c("female","age","bsa"),
                                #             Symptoms = c("surgstat","nyha_pr"))
-  continuous = character(0),  # variable names summarized as median [P1, P2]
+  continuous = character(0),  # variable names summarized as
+                               #   median (15th, 85th percentile), matching
+                               #   hv_man_footnotes()'s existing house
+                               #   convention (see Statistical behavior)
   binary = character(0),      # 0/1 variables, summarized as n (%)
   categorical = character(0), # multi-level variables, all levels shown
                                #   (ordinal variables fold in here too — see
                                #   Deferred)
-  compare = c("pvalue", "smd", "both", "none")  # only applies when `by` given
+  compare = c("pvalue", "smd", "both", "none"), # only applies when `by` given
+  percentiles = c(15, 85)     # override for a study needing different
+                               #   percentiles than the house default
+                               #   (SAS macro equivalent: PP=)
 )
 ```
 
@@ -90,8 +111,18 @@ mis-classification.
   Gaussian/non-Gaussian classification. This is actually `gtsummary::add_p()`'s
   existing default test for continuous variables, so this requires no custom
   test-selection code, only *not* overriding it. Eliminates the SAS macro's
-  `CON2`/`CON3`/`PP` (percentile-choice) parameters and the "which test ran"
+  `CON2`/`CON3` (Gaussian-classification) parameters and the "which test ran"
   ambiguity for continuous rows — there's only ever one continuous test type.
+  Summary statistic is `median (P1, P2)`, defaulting to the **15th/85th
+  percentile** — matching `hv_man_footnotes()`'s existing house convention
+  ("Median (15th, 85th percentile).") rather than the SAS macro's own default
+  of `PP=14 86` (both example calls in this session actually used `pp=16 84`,
+  confirming SAS users already override this per study) — overridable via
+  `percentiles=`, the direct equivalent of the SAS macro's `PP=`. The stat
+  sub-header text passed to `hv_man_table_jtcvs()`'s new `stat_label`
+  parameter is generated from whatever `percentiles=` value is in effect
+  (e.g. `"No. (%) or Median (15th, 85th percentile)"` at the default), so
+  the header always states the percentiles actually used, not a fixed string.
 - **Categorical**: `gtsummary::add_p()`'s existing default — chi-square,
   automatically falling back to Fisher's exact when expected cell counts are
   too low. Same behavior the SAS macro's `c=`/`d=` footnote letters describe;
@@ -130,9 +161,11 @@ who know `%summarytable` need to translate their habits quickly, not learn
   its `hv_tbl_summary()` equivalent —
   `DATA`→`data`, `CLASS`→`by`, `CON1`/`CAT1`/`CAT2`→
   `continuous`/`binary`/`categorical`, `LIST`→`groups`, `PVALUES`/`ASD`→
-  `compare`, `TOTALCOL`/`NCOL`→handled automatically. Explicitly marked
-  **not supported in this first pass**: `WEIGHT`, `PROPENMT`, `CON2`/`CON3`/
-  `PP`, `SUBSET`, `SORTBY` (ordering comes directly from `groups`). Plus a
+  `compare`, `PP`→`percentiles`, `TOTALCOL`/`NCOL`→handled automatically.
+  Explicitly marked **not supported in this first pass**: `WEIGHT`,
+  `PROPENMT`, `CON2`/`CON3` (Gaussian-classification split — superseded by
+  the blanket-nonparametric decision), `SUBSET`, `SORTBY` (ordering comes
+  directly from `groups`). Plus a
   worked side-by-side: `dc.summarytable_JR.sas`'s actual call next to the
   equivalent `hv_tbl_summary()` call, using this session's real
   overall/stratified examples.
