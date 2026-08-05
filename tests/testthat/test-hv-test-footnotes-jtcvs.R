@@ -162,3 +162,36 @@ test_that("hv_test_footnotes_jtcvs warns on an unmapped test_name", {
     c("Pearson chi-square test.", "Fisher exact test.", "mcnemar.test")
   )
 })
+
+test_that("hv_test_footnotes_jtcvs round-trips through a saved .docx", {
+  # Characterization against the SAS example's shape: a stratified table
+  # whose letters are Kruskal-Wallis, chi-square, and Fisher. ANOVA is
+  # absent by design, since this package tests continuous variables
+  # non-parametrically throughout.
+  tbl <- mk_footnote_tbl_3grp()
+  ft <- hv_man_table_jtcvs(
+    tbl,
+    groups = c(stat_1 = "A (n=100)", stat_2 = "B (n=100)",
+               stat_3 = "C (n=100)"),
+    trailing = attr(tbl, "hv_trailing"),
+    stat_label = attr(tbl, "hv_stat_label")
+  )
+  out <- tempfile(fileext = ".docx")
+  hv_man_table_save_jtcvs(
+    ft, out, caption = "Table 1. Baseline Characteristics",
+    footnotes = hv_test_footnotes_jtcvs(tbl)
+  )
+  expect_true(file.exists(out))
+
+  xdir <- tempfile()
+  on.exit(unlink(xdir, recursive = TRUE), add = TRUE)
+  utils::unzip(out, exdir = xdir)
+  xml <- paste(
+    readLines(file.path(xdir, "word", "document.xml"), warn = FALSE),
+    collapse = ""
+  )
+  expect_true(grepl("Kruskal-Wallis test.", xml, fixed = TRUE))
+  expect_true(grepl("Pearson chi-square test.", xml, fixed = TRUE))
+  expect_true(grepl("Fisher exact test.", xml, fixed = TRUE))
+  expect_false(grepl("ANOVA", xml, fixed = TRUE))
+})
