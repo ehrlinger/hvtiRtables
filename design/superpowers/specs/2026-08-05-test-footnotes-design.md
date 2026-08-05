@@ -310,30 +310,37 @@ the cell would mean changing the column format that
 [the hv_tbl_summary() spec](2026-07-17-hv-tbl-summary-sas-migration-design.md)
 settled on.
 
-## The compare = both fix
+## The compare = both fix: done separately
 
-Two lines reordered in `hv_tbl_summary()`
-([R/hv-tbl-summary.R](../../../R/hv-tbl-summary.R)):
+Originally scoped into this feature. Split out and fixed in PR #13
+instead, since it was a wrong published statistic in its own right and did
+not need to wait for footnotes. `hv_tbl_summary()` now calls
+`add_difference()` before `add_p()`
+([R/hv-tbl-summary.R](../../../R/hv-tbl-summary.R)), so `test_name`
+survives and this feature can read it with no special case for `"both"`.
 
-```r
-# current
-if (effective_compare %in% c("pvalue", "both"))
-  tbl <- gtsummary::add_p(tbl)
-if (effective_compare %in% c("smd", "both"))
-  tbl <- gtsummary::add_difference(tbl, gtsummary::everything() ~ "smd")
+Implementing the reorder turned up more than the design anticipated. The
+old order did not merely mangle the continuous estimate; it suppressed
+SMDs entirely for binary and categorical variables:
 
-# reordered
-if (effective_compare %in% c("smd", "both"))
-  tbl <- gtsummary::add_difference(tbl, gtsummary::everything() ~ "smd")
-if (effective_compare %in% c("pvalue", "both"))
-  tbl <- gtsummary::add_p(tbl)
-```
+| variable | `add_difference()` alone | old order | new order |
+|---|---|---|---|
+| `age` (continuous) | -0.336 | -4.0 | -0.336 |
+| `flag` (binary) | -0.067 | NA | -0.067 |
+| `race` (categorical) | 0.242 | NA | 0.242 |
 
-This is in scope because the feature depends on it: without the reorder,
-`"both"` mode has no recoverable test names. It is worth doing on its own
-merits regardless, since it also fixes a wrong published statistic. It
-changes no behavior for `compare = "pvalue"`, `"smd"`, or `"none"`, each of
-which runs at most one of the two calls.
+An existing test had encoded that suppression as intended behavior,
+attributing the `NA`s to a gtsummary limitation rather than to the call
+order. PR #13 corrects it. Nothing here changes for this feature, but the
+episode is the reason its own tests pin against independently computed
+references rather than hard-coded literals.
+
+One limit worth recording, unchanged by the reorder and out of scope for
+both PRs: `add_difference()` errors when the `by` variable has more than
+two levels, so `compare = "smd"` and `compare = "both"` are two-group only.
+The motivating SAS example is 3-group, which means `compare = "pvalue"` is
+the only comparison mode available for it, and therefore the only mode
+these footnotes will be exercised against in that table.
 
 ## Save-function guard
 
@@ -365,11 +372,8 @@ New file `tests/testthat/test-hv-test-footnotes-jtcvs.R`:
   engineered to trigger Kruskal-Wallis, chi-square, and Fisher, asserting
   the three expected labels in canonical order and the absence of ANOVA.
 
-Additions to `tests/testthat/test-hv-tbl-summary.R`:
-
-- Regression test pinning `compare = "both"`'s `estimate` to the value
-  `add_difference()` alone produces, and asserting `test_name` is not
-  `"smd"`.
+No additions to `tests/testthat/test-hv-tbl-summary.R`. The `compare =
+"both"` regression tests moved to PR #13 with the fix itself.
 
 Additions to `tests/testthat/test-hv-man-table-save-jtcvs.R`:
 

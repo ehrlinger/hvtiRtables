@@ -295,12 +295,84 @@ test_that("hv_tbl_summary compare 'both' puts p and SMD in one column", {
   expect_identical(attr(tbl, "hv_trailing"), c(hv_compare_col = "P (SMD)"))
 })
 
-test_that("hv_tbl_summary compare 'both' drops SMD where unavailable", {
-  # gtsummary::add_difference(... ~ "smd") does not compute an SMD for
-  # nominal categoricals, leaving `estimate` NA on the variable's header
-  # row even though add_p() produced a valid chi-square p-value there.
-  # The `both` column must keep that p-value alone rather than rendering
-  # a literal "0.9 (SMD NA)" string into the table.
+test_that("hv_tbl_summary compare 'both' reports a true SMD", {
+  # Regression: add_difference() must run BEFORE add_p(). In the reverse
+  # order gtsummary overwrites `estimate` with a raw mean difference, so
+  # the table rendered a wildly wrong number under a header saying SMD
+  # (e.g. "0.7 (SMD -1.0)" where the true SMD is -0.03). Pinned against
+  # add_difference() computed independently rather than against a hard
+  # coded literal, so the assertion tracks the statistic and not whatever
+  # the current code happens to emit.
+  dta <- mk_tbl_summary_data()
+  tbl <- hv_tbl_summary(
+    dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
+    compare = "both"
+  )
+  tb <- tbl$table_body
+
+  reference <- gtsummary::add_difference(
+    gtsummary::tbl_summary(
+      dta,
+      by = gtsummary::all_of("grp"),
+      include = gtsummary::all_of("age"), missing = "no"
+    ),
+    gtsummary::everything() ~ "smd"
+  )
+  ref_tb <- reference$table_body
+  expected <- ref_tb$estimate[ref_tb$variable == "age"]
+
+  is_age <- tb$variable == "age" & tb$row_type == "label"
+  # unname(): add_p() leaves an empty names attribute on `estimate` that
+  # the add_difference()-only reference does not carry. Irrelevant to the
+  # statistic, so compare the values alone.
+  expect_equal(unname(tb$estimate[is_age]), unname(expected))
+})
+
+test_that("hv_tbl_summary compare 'both' preserves add_p()'s test_name", {
+  # Same root cause as the SMD regression above, different casualty:
+  # add_difference() running second also overwrites `test_name` with
+  # "smd", losing the record of which test produced the p-value.
+  #
+  # Pinned against add_p() computed independently, for the same reason the
+  # SMD test above pins against add_difference(): the invariant is that
+  # whatever add_p() selected survives, not that it selected any
+  # particular test. A literal "wilcox.test" would fail if gtsummary
+  # changed its default continuous test, or if this fixture's data
+  # changed, even while hv_tbl_summary() was still preserving correctly.
+  dta <- mk_tbl_summary_data()
+  tbl <- hv_tbl_summary(
+    dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
+    compare = "both"
+  )
+  tb <- tbl$table_body
+
+  reference <- gtsummary::add_p(
+    gtsummary::tbl_summary(
+      dta,
+      by = gtsummary::all_of("grp"),
+      include = gtsummary::all_of("age"), missing = "no"
+    )
+  )
+  ref_tb <- reference$table_body
+  expected <- ref_tb$test_name[ref_tb$variable == "age"]
+
+  is_age <- tb$variable == "age" & tb$row_type == "label"
+  expect_identical(tb$test_name[is_age], expected)
+  # Backstop: if the reference itself were ever "smd", the comparison
+  # above would pass while the bug was present. Assert the regression
+  # value directly too.
+  expect_false(identical(tb$test_name[is_age], "smd"))
+})
+
+test_that("hv_tbl_summary compare 'both' reports an SMD for every type", {
+  # This test previously asserted the opposite, that nominal categoricals
+  # get no SMD. That was not a gtsummary limitation but the
+  # add_p()-before-add_difference() ordering bug showing through: called
+  # second, add_difference() left `estimate` NA for binary and categorical
+  # variables and a raw mean difference for continuous ones. Called first
+  # it returns a valid SMD for all three. With the order corrected, every
+  # variable's header row carries one, and only the categorical *level*
+  # rows stay blank, which is where gtsummary genuinely reports nothing.
   dta <- mk_tbl_summary_mixed_data()
   tbl <- hv_tbl_summary(
     dta, by = "grp",
@@ -310,23 +382,13 @@ test_that("hv_tbl_summary compare 'both' drops SMD where unavailable", {
   )
   tb <- tbl$table_body
 
-  age_val <- tb$hv_compare_col[tb$variable == "age" & tb$row_type == "label"]
-  expect_true(grepl("^(<)?[0-9.]+ \\(SMD -?[0-9.]+\\)$", age_val))
-
-  race_header_val <- tb$hv_compare_col[
-    tb$variable == "race" & tb$row_type == "label"
-  ]
-  expect_false(is.na(race_header_val))
-  expect_false(grepl("SMD", race_header_val))
-  expect_true(grepl("^(<)?[0-9.]+$", race_header_val))
-
-  # Binary shares the same NA-estimate exposure as categorical in a
-  # mixed-type call, and the fix guards on `is.na(estimate)` rather than
-  # on variable type — assert that explicitly rather than leaving it to
-  # code-path inspection.
-  flag_val <- tb$hv_compare_col[tb$variable == "flag" & tb$row_type == "label"]
-  expect_false(is.na(flag_val))
-  expect_false(grepl("NA", flag_val))
+  # Continuous, binary, and nominal categorical alike. The old order gave
+  # a mean difference for the first and NA for the other two.
+  for (v in c("age", "flag", "race")) {
+    val <- tb$hv_compare_col[tb$variable == v & tb$row_type == "label"]
+    expect_false(is.na(val), info = v)
+    expect_match(val, "^(<)?[0-9.]+ \\(SMD -?[0-9.]+\\)$", info = v)
+  }
 
   race_level_vals <- tb$hv_compare_col[
     tb$variable == "race" & tb$row_type == "level"
