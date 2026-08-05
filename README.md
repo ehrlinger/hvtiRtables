@@ -5,8 +5,11 @@
 [![R package version](https://img.shields.io/github/r-package/v/ehrlinger/hvtiRtables)](https://github.com/ehrlinger/hvtiRtables)
 [![R-CMD-check](https://github.com/ehrlinger/hvtiRtables/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ehrlinger/hvtiRtables/actions/workflows/R-CMD-check.yaml)
 [![lint](https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml/badge.svg)](https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml)
+[![pkgdown](https://github.com/ehrlinger/hvtiRtables/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/ehrlinger/hvtiRtables/actions/workflows/pkgdown.yaml)
 [![Codecov test coverage](https://codecov.io/gh/ehrlinger/hvtiRtables/graph/badge.svg)](https://app.codecov.io/gh/ehrlinger/hvtiRtables)
 <!-- badges: end -->
+
+Full reference documentation and worked examples: [ehrlinger.github.io/hvtiRtables](https://ehrlinger.github.io/hvtiRtables/)
 
 You already know the drill: hand-copy a `gtsummary` table into a Word
 template, or run it through the SAS table macro, and by the third revision

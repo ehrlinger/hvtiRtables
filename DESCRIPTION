@@ -11,7 +11,7 @@ Description: Turns 'gtsummary' table objects into MS Word tables complying
     spanning headers and lettered cell-targeted footnotes matching that
     journal's own template.
 License: GPL-3
-URL: https://github.com/ehrlinger/hvtiRtables
+URL: https://github.com/ehrlinger/hvtiRtables, https://ehrlinger.github.io/hvtiRtables/
 BugReports: https://github.com/ehrlinger/hvtiRtables/issues
 Depends:
     R (>= 4.1.0)
