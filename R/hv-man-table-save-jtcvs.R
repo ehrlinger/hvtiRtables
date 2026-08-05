@@ -13,12 +13,13 @@
 #'   not auto-number tables for you; include the number yourself.
 #' @param footnotes Optional list of `list(row =, col =, text =)`, one per
 #'   footnote, in the order letters should be assigned (`a`, `b`, ...).
-#'   `row`/`col` address a body cell in `ft` (`col` is a `col_keys` name).
-#'   `row` indexes `ft`'s body rows as shown: for a sectioned table (built
-#'   with `groupname_col`), that includes the section-header rows
-#'   [hv_man_table_jtcvs()] interleaves into the body, so you need to count
-#'   those rows too when computing the target row index, not just the data
-#'   rows.
+#'   `col` is a single `col_keys` name. `row` may be a vector, in which
+#'   case the one letter marks every row named, which is how several rows
+#'   share a footnote. `row` indexes `ft`'s body rows as shown: for a
+#'   sectioned table (built with `groupname_col`), that includes the
+#'   section-header rows [hv_man_table_jtcvs()] interleaves into the body,
+#'   so count those too. [hv_test_footnotes_jtcvs()] computes these
+#'   indices for you when the footnotes mark statistical tests.
 #' @param abbreviations Optional named character vector, same as
 #'   [hv_man_table_save()], rendered via the shared `Key:` helper.
 #'
@@ -63,6 +64,23 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
   if (!is.null(footnotes) && length(footnotes) > length(letters_seq))
     stop("Too many footnotes (max ", length(letters_seq), " letters).",
          call. = FALSE)
+
+  if (!is.null(footnotes)) {
+    n_body <- flextable::nrow_part(ft, "body")
+    for (k in seq_along(footnotes)) {
+      fn <- footnotes[[k]]
+      if (!is.numeric(fn$row) || length(fn$row) == 0L || anyNA(fn$row) ||
+            any(fn$row < 1) || any(fn$row > n_body))
+        stop("`footnotes[[", k, "]]$row` must be body row indices between ",
+             "1 and ", n_body, ". Row indices count the section-header ",
+             "rows hv_man_table_jtcvs() interleaves; hv_test_footnotes_",
+             "jtcvs() computes them for you.", call. = FALSE)
+      if (!is.character(fn$col) || length(fn$col) != 1L ||
+            !fn$col %in% ft$col_keys)
+        stop("`footnotes[[", k, "]]$col` is not a column in `ft`: ",
+             paste(fn$col, collapse = ", "), call. = FALSE)
+    }
+  }
 
   if (!is.null(footnotes)) {
     for (k in seq_along(footnotes)) {
