@@ -30,6 +30,14 @@ navbar:
       aria-label: LinkedIn
 
 reference:
+- title: "Building Tables from Data"
+  desc: >
+    Build a grouped baseline-characteristics table straight from a data
+    frame, using an interface modeled on the SAS `%summarytable` macro.
+    Returns a `gtsummary` object for the renderers below.
+  contents:
+  - hv_tbl_summary
+
 - title: "Flat-Header Tables"
   desc: >
     Standard HVTI CORR manuscript tables: flat (non-merged) headers,
