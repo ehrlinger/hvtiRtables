@@ -2,8 +2,8 @@
 
 Date: 2026-08-05
 Status: approved, pending implementation plan
-Depends on: PR #11 (`feat/hv-tbl-summary`), which introduces
-`hv_tbl_summary()` and the `hv_compare_col` column this feature reads.
+Depends on: PR #11, merged 2026-08-05, which introduced `hv_tbl_summary()`
+and the `hv_compare_col` column this feature reads.
 
 ## Problem
 
@@ -100,9 +100,11 @@ add_difference() then add_p():   test_name = "wilcox.test", estimate = -0.030660
 ```
 
 For `gtsummary::trial$age` the correct SMD is -0.0307; -0.99996 is the raw
-mean difference. Reversing the two calls fixes the wrong statistic and
-preserves the test names this feature needs. See "The compare = both fix"
-below.
+mean difference. This reaches the page: the rendered `hv_compare_col` cell
+reads `0.7 (SMD -1.0)` against a true SMD of -0.031, confirmed against
+merged `main` after PR #11. Reversing the two calls fixes the wrong
+statistic and preserves the test names this feature needs. See "The
+compare = both fix" below.
 
 ## Architecture
 
@@ -310,8 +312,8 @@ settled on.
 
 ## The compare = both fix
 
-Two lines reordered in `hv_tbl_summary()` (`R/hv-tbl-summary.R`, which
-arrives with PR #11):
+Two lines reordered in `hv_tbl_summary()`
+([R/hv-tbl-summary.R](../../../R/hv-tbl-summary.R)):
 
 ```r
 # current
