@@ -5,13 +5,15 @@
   which(c(TRUE, tb$groupname_col[-1] != tb$groupname_col[-nrow(tb)]))
 }
 
-# Rendered flextable body row for each gtsummary table_body row. `<=`
-# rather than `<`: the header inserted before a section's first row pushes
-# that row down as well.
+# Rendered flextable body row for each gtsummary table_body row. Each row
+# shifts down by the number of section headers inserted at or before it.
+# The cumulative sum is taken over an indicator that is TRUE *at* each
+# section start, not before it: the header inserted ahead of a section's
+# first row pushes that row down as well.
 .jtcvs_body_row_index <- function(tb) {
-  starts <- .jtcvs_section_starts(tb)
-  seq_len(nrow(tb)) +
-    vapply(seq_len(nrow(tb)), function(i) sum(starts <= i), integer(1))
+  is_start <- logical(nrow(tb))
+  is_start[.jtcvs_section_starts(tb)] <- TRUE
+  seq_len(nrow(tb)) + cumsum(is_start)
 }
 
 .reshape_jtcvs_body <- function(tbl, groups, trailing = NULL) {

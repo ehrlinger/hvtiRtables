@@ -69,12 +69,18 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
     n_body <- flextable::nrow_part(ft, "body")
     for (k in seq_along(footnotes)) {
       fn <- footnotes[[k]]
+      # Fractional rows are checked explicitly: flextable accepts them
+      # silently rather than erroring, so without this they would mark
+      # whatever cell they truncate to, which is the silent-wrong-cell
+      # failure this validation exists to prevent.
       if (!is.numeric(fn$row) || length(fn$row) == 0L || anyNA(fn$row) ||
+            any(!is.finite(fn$row)) || any(fn$row %% 1 != 0) ||
             any(fn$row < 1) || any(fn$row > n_body))
-        stop("`footnotes[[", k, "]]$row` must be body row indices between ",
-             "1 and ", n_body, ". Row indices count the section-header ",
-             "rows hv_man_table_jtcvs() interleaves; hv_test_footnotes_",
-             "jtcvs() computes them for you.", call. = FALSE)
+        stop("`footnotes[[", k, "]]$row` must be whole numbers between ",
+             "1 and ", n_body, ", indexing `ft`'s body rows. Row indices ",
+             "count the section-header rows hv_man_table_jtcvs() ",
+             "interleaves; hv_test_footnotes_jtcvs() computes them for ",
+             "you.", call. = FALSE)
       if (!is.character(fn$col) || length(fn$col) != 1L ||
             !fn$col %in% ft$col_keys)
         stop("`footnotes[[", k, "]]$col` is not a column in `ft`: ",
