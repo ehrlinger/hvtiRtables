@@ -43,8 +43,11 @@ preserved).}
 
 \item{compare}{One of \code{"pvalue"} (default), \code{"smd"}, \code{"both"}, or
 \code{"none"}. Ignored (treated as \code{"none"}) when \code{by} is \code{NULL}, since
-there is nothing to compare. \verb{\%summarytable} \verb{PVALUES=}/\verb{ASD=}
-equivalent.}
+there is nothing to compare. \code{"smd"} and \code{"both"} require \code{by} to
+have exactly two groups, because a standardized mean difference is
+defined between two of them; they error otherwise. \code{"pvalue"} and
+\code{"none"} work at any number of groups. \verb{\%summarytable}
+\verb{PVALUES=}/\verb{ASD=} equivalent.}
 
 \item{percentiles}{Numeric vector of length 2, the low/high percentile
 pair for continuous summaries, as increasing whole numbers between 0
