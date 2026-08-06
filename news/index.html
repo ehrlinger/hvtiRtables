@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,14 @@
       <small>Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.4" id="hvtirtables-094">hvtiRtables 0.9.4<a class="anchor" aria-label="anchor" href="#hvtirtables-094"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-0-9-4">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-9-4"></a></h3>
+<ul><li>
+<code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> now checks up front that <code>compare = "smd"</code> or <code>"both"</code> is used with exactly two groups, and errors naming <code>by</code> and the group count if not. <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/add_difference.html" class="external-link">gtsummary::add_difference()</a></code> requires two groups and previously failed three different ways, none naming anything the caller wrote: it threw an internal message about <code>tbl_summary(by)</code> for a genuine 3+ group variable and for a single group, and, when <code>by</code> was a factor carrying an unused level, did not error at all but returned <code>estimate</code> as <code>NA</code>, silently rendering an empty comparison column. That last case now errors too, with a hint pointing at <code><a href="https://rdrr.io/r/base/droplevels.html" class="external-link">droplevels()</a></code>. <code>compare = "pvalue"</code> and <code>"none"</code> are unaffected and still work at any number of groups.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.3" id="hvtirtables-093">hvtiRtables 0.9.3<a class="anchor" aria-label="anchor" href="#hvtirtables-093"></a></h2>
 <div class="section level3">

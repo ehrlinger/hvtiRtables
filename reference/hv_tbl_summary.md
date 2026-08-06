@@ -66,7 +66,10 @@ hv_tbl_summary(
 
   One of `"pvalue"` (default), `"smd"`, `"both"`, or `"none"`. Ignored
   (treated as `"none"`) when `by` is `NULL`, since there is nothing to
-  compare. `%summarytable` `PVALUES=`/`ASD=` equivalent.
+  compare. `"smd"` and `"both"` require `by` to have exactly two groups,
+  because a standardized mean difference is defined between two of them;
+  they error otherwise. `"pvalue"` and `"none"` work at any number of
+  groups. `%summarytable` `PVALUES=`/`ASD=` equivalent.
 
 - percentiles:
 

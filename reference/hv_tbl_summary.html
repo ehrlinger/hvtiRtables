@@ -19,7 +19,7 @@ object, ready for hv_man_table_jtcvs()."><!-- dependencies from examples --></he
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -120,8 +120,11 @@ preserved).</p></dd>
 <dt id="arg-compare">compare<a class="anchor" aria-label="anchor" href="#arg-compare"></a></dt>
 <dd><p>One of <code>"pvalue"</code> (default), <code>"smd"</code>, <code>"both"</code>, or
 <code>"none"</code>. Ignored (treated as <code>"none"</code>) when <code>by</code> is <code>NULL</code>, since
-there is nothing to compare. <code>%summarytable</code> <code>PVALUES=</code>/<code>ASD=</code>
-equivalent.</p></dd>
+there is nothing to compare. <code>"smd"</code> and <code>"both"</code> require <code>by</code> to
+have exactly two groups, because a standardized mean difference is
+defined between two of them; they error otherwise. <code>"pvalue"</code> and
+<code>"none"</code> work at any number of groups. <code>%summarytable</code>
+<code>PVALUES=</code>/<code>ASD=</code> equivalent.</p></dd>
 
 
 <dt id="arg-percentiles">percentiles<a class="anchor" aria-label="anchor" href="#arg-percentiles"></a></dt>

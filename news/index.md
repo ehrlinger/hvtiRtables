@@ -1,5 +1,23 @@
 # Changelog
 
+## hvtiRtables 0.9.4
+
+### Bug fixes
+
+- [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  now checks up front that `compare = "smd"` or `"both"` is used with
+  exactly two groups, and errors naming `by` and the group count if not.
+  [`gtsummary::add_difference()`](https://www.danieldsjoberg.com/gtsummary/reference/add_difference.html)
+  requires two groups and previously failed three different ways, none
+  naming anything the caller wrote: it threw an internal message about
+  `tbl_summary(by)` for a genuine 3+ group variable and for a single
+  group, and, when `by` was a factor carrying an unused level, did not
+  error at all but returned `estimate` as `NA`, silently rendering an
+  empty comparison column. That last case now errors too, with a hint
+  pointing at [`droplevels()`](https://rdrr.io/r/base/droplevels.html).
+  `compare = "pvalue"` and `"none"` are unaffected and still work at any
+  number of groups.
+
 ## hvtiRtables 0.9.3
 
 ### New features
