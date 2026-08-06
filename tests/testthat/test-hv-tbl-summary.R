@@ -447,3 +447,82 @@ test_that("hv_tbl_summary + jtcvs reproduce the stratified example", {
   expect_identical(body$n_stat_2[body$label == "female"], "3758")
   expect_true("hv_compare_col" %in% ft$col_keys)
 })
+
+test_that("hv_tbl_summary rejects compare = 'smd' with other than two groups", {
+  # gtsummary::add_difference() requires exactly two groups. Left to
+  # itself it fails in three different ways depending on the shape of
+  # `by`, none of them naming anything the caller wrote:
+  #   3 observed / 3 levels -> throws "Cannot run add_difference() when
+  #     tbl_summary(by) column does not have exactly two levels"
+  #   2 observed / 3 levels -> does NOT throw, silently yields estimate
+  #     NA and renders a blank SMD column
+  #   1 group               -> throws the same internal message
+  # The guard keys on the number of stat_ columns gtsummary actually
+  # built, which is what add_difference() itself sees, so all three are
+  # caught before gtsummary is reached.
+  set.seed(1)
+  n <- 90
+  dta <- data.frame(
+    grp3 = factor(rep(c("A", "B", "C"), each = n / 3)),
+    age  = rnorm(n, 60, 10)
+  )
+  for (cmp in c("smd", "both")) {
+    expect_error(
+      hv_tbl_summary(
+        dta, by = "grp3", groups = list(Vitals = "age"),
+        continuous = "age", compare = cmp
+      ),
+      "requires exactly two groups"
+    )
+  }
+})
+
+test_that("hv_tbl_summary rejects an unused by level for compare = 'smd'", {
+  # The silent case: 2 observed values but 3 factor levels. gtsummary
+  # builds 3 stat columns, add_difference() returns without erroring, and
+  # `estimate` is NA, so the SMD column renders blank with no signal.
+  set.seed(1)
+  n <- 40
+  dta <- data.frame(
+    grp = factor(rep(c("A", "B"), each = n / 2), levels = c("A", "B", "C")),
+    age = rnorm(n, 60, 10)
+  )
+  expect_error(
+    hv_tbl_summary(
+      dta, by = "grp", groups = list(Vitals = "age"),
+      continuous = "age", compare = "smd"
+    ),
+    "requires exactly two groups"
+  )
+  # The hint is the actionable half: without it the message says "produced
+  # 3" for data the caller sees as two groups, which reads like a bug.
+  expect_error(
+    hv_tbl_summary(
+      dta, by = "grp", groups = list(Vitals = "age"),
+      continuous = "age", compare = "smd"
+    ),
+    "droplevels"
+  )
+})
+
+test_that("hv_tbl_summary still allows pvalue and none with 3+ groups", {
+  # The guard must not touch the modes that work at 3+ groups.
+  set.seed(1)
+  n <- 90
+  dta <- data.frame(
+    grp3 = factor(rep(c("A", "B", "C"), each = n / 3)),
+    age  = rnorm(n, 60, 10)
+  )
+  expect_no_error(
+    hv_tbl_summary(
+      dta, by = "grp3", groups = list(Vitals = "age"),
+      continuous = "age", compare = "pvalue"
+    )
+  )
+  expect_no_error(
+    hv_tbl_summary(
+      dta, by = "grp3", groups = list(Vitals = "age"),
+      continuous = "age", compare = "none"
+    )
+  )
+})

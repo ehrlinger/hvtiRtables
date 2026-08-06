@@ -45,8 +45,11 @@
 #'   preserved).
 #' @param compare One of `"pvalue"` (default), `"smd"`, `"both"`, or
 #'   `"none"`. Ignored (treated as `"none"`) when `by` is `NULL`, since
-#'   there is nothing to compare. `%summarytable` `PVALUES=`/`ASD=`
-#'   equivalent.
+#'   there is nothing to compare. `"smd"` and `"both"` require `by` to
+#'   have exactly two groups, because a standardized mean difference is
+#'   defined between two of them; they error otherwise. `"pvalue"` and
+#'   `"none"` work at any number of groups. `%summarytable`
+#'   `PVALUES=`/`ASD=` equivalent.
 #' @param percentiles Numeric vector of length 2, the low/high percentile
 #'   pair for continuous summaries, as increasing whole numbers between 0
 #'   and 100. Default `c(15, 85)`, the [hv_man_footnotes()] house
@@ -181,6 +184,37 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   effective_compare <- if (is.null(by)) "none" else compare
   if (effective_compare == "none") {
     return(tbl)
+  }
+
+  # gtsummary::add_difference() needs exactly two groups. Left to itself
+  # it fails three different ways: it throws an internal message naming
+  # `add_difference()`/`tbl_summary(by)` when `by` genuinely has 3+
+  # levels, throws the same for a single level, and, when `by` is a
+  # factor carrying an unused level, does not throw at all but returns
+  # `estimate` as NA, silently rendering an empty comparison column.
+  # Count the stat_ columns gtsummary actually built rather than the
+  # distinct values present, because that is what add_difference() sees:
+  # an unused factor level still gets its own column.
+  if (effective_compare %in% c("smd", "both")) {
+    n_groups <- sum(grepl("^stat_[0-9]+$", names(tbl$table_body)))
+    if (n_groups != 2L) {
+      hint <- ""
+      if (is.factor(data[[by]])) {
+        observed <- length(unique(stats::na.omit(data[[by]])))
+        if (observed < nlevels(data[[by]]))
+          hint <- sprintf(
+            paste0(" `%s` is a factor with %d levels but only %d appear ",
+                   "in the data; droplevels() may be what you want."),
+            by, nlevels(data[[by]]), observed
+          )
+      }
+      stop(sprintf(
+        paste0("`compare = \"%s\"` requires exactly two groups; ",
+               "`by = \"%s\"` produced %d.%s Use `compare = \"pvalue\"` ",
+               "instead."),
+        effective_compare, by, n_groups, hint
+      ), call. = FALSE)
+    }
   }
 
   # Order matters for compare = "both": add_difference() must run first.
