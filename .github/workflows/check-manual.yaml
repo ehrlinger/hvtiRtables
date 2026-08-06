@@ -3,8 +3,10 @@
 #
 # Builds the PDF manual with TinyTeX, using --as-cran WITHOUT --no-manual.
 # This is the step that catches raw Unicode in .Rd files (Greek letters,
-# combining marks) that --no-manual skips in silence. Runs on merge rather
-# than on every push because building the manual is slow.
+# combining marks) that --no-manual skips in silence. Runs on pushes to the
+# default branch rather than on pull requests, because building the manual
+# is slow -- a direct push to the default branch triggers it too, not just
+# a merge.
 on:
   push:
     branches: [main, master]
