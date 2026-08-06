@@ -159,3 +159,28 @@ hv_man_table_save_jtcvs(
   caption = "Table 1. Baseline Characteristics by Tissue Type"
 )
 ```
+
+### Lettered test footnotes
+
+`%summarytable` marks each p-value with a superscript letter naming the
+test behind it, and defines the letters below the table. Pass
+[`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md)
+to the save function to reproduce that:
+
+``` r
+
+hv_man_table_save_jtcvs(
+  ft, "table1.docx",
+  caption   = "Table 1. Baseline Characteristics by Tissue Type",
+  footnotes = hv_test_footnotes_jtcvs(tbl)
+)
+```
+
+Add study-specific footnotes alongside with
+[`c()`](https://rdrr.io/r/base/c.html); letters are assigned in list
+order.
+
+The letter set differs from the SAS macro’s by design. `%summarytable`
+classifies each continuous variable as Gaussian or non-Gaussian and
+emits `a=ANOVA` for the Gaussian ones. This package tests continuous
+variables non-parametrically throughout, so ANOVA never appears.

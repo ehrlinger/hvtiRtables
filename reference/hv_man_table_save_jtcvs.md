@@ -40,13 +40,17 @@ hv_man_table_save_jtcvs(
 - footnotes:
 
   Optional list of `list(row =, col =, text =)`, one per footnote, in
-  the order letters should be assigned (`a`, `b`, ...). `row`/`col`
-  address a body cell in `ft` (`col` is a `col_keys` name). `row`
-  indexes `ft`'s body rows as shown: for a sectioned table (built with
-  `groupname_col`), that includes the section-header rows
+  the order letters should be assigned (`a`, `b`, ...). `col` is a
+  single `col_keys` name. `row` may be a vector, in which case the one
+  letter marks every row named, which is how several rows share a
+  footnote. `row` indexes `ft`'s body rows as shown: for a sectioned
+  table (built with `groupname_col`), that includes the section-header
+  rows
   [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
-  interleaves into the body, so you need to count those rows too when
-  computing the target row index, not just the data rows.
+  interleaves into the body, so count those too.
+  [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md)
+  computes these indices for you when the footnotes mark statistical
+  tests.
 
 - abbreviations:
 

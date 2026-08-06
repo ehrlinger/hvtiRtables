@@ -13,7 +13,7 @@ matching the JTCVS template convention."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -84,12 +84,13 @@ not auto-number tables for you; include the number yourself.</p></dd>
 <dt id="arg-footnotes">footnotes<a class="anchor" aria-label="anchor" href="#arg-footnotes"></a></dt>
 <dd><p>Optional list of <code>list(row =, col =, text =)</code>, one per
 footnote, in the order letters should be assigned (<code>a</code>, <code>b</code>, ...).
-<code>row</code>/<code>col</code> address a body cell in <code>ft</code> (<code>col</code> is a <code>col_keys</code> name).
-<code>row</code> indexes <code>ft</code>'s body rows as shown: for a sectioned table (built
-with <code>groupname_col</code>), that includes the section-header rows
-<code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> interleaves into the body, so you need to count
-those rows too when computing the target row index, not just the data
-rows.</p></dd>
+<code>col</code> is a single <code>col_keys</code> name. <code>row</code> may be a vector, in which
+case the one letter marks every row named, which is how several rows
+share a footnote. <code>row</code> indexes <code>ft</code>'s body rows as shown: for a
+sectioned table (built with <code>groupname_col</code>), that includes the
+section-header rows <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> interleaves into the body,
+so count those too. <code><a href="hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code> computes these
+indices for you when the footnotes mark statistical tests.</p></dd>
 
 
 <dt id="arg-abbreviations">abbreviations<a class="anchor" aria-label="anchor" href="#arg-abbreviations"></a></dt>

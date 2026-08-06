@@ -1,5 +1,27 @@
 # Changelog
 
+## hvtiRtables 0.9.3
+
+### New features
+
+- [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md):
+  builds the lettered p-value footnotes the SAS `%summarytable` macro
+  emits, reading `gtsummary`’s `test_name` column off an
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  result and returning the list
+  [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
+  already accepts. Letters follow a fixed order (Wilcoxon,
+  Kruskal-Wallis, chi-square, Fisher), filtered to the tests used, so
+  two tables using the same tests agree. ANOVA never appears, since this
+  package tests continuous variables non-parametrically throughout.
+
+### Bug fixes
+
+- [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
+  now validates each footnote’s `row` and `col` against the table being
+  rendered. A row index computed against a different object previously
+  marked the wrong cell silently.
+
 ## hvtiRtables 0.9.2
 
 ### Bug fixes

@@ -35,3 +35,5 @@ cell-targeted footnotes matching that journal’s template.
 
 - [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
   : The house-standard manuscript table footnotes
+- [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md)
+  : Build lettered test footnotes from a gtsummary table
