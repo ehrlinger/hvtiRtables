@@ -57,6 +57,7 @@ reference:
 - title: "Footnotes"
   contents:
   - hv_man_footnotes
+  - hv_test_footnotes_jtcvs
 
 footer:
   structure:

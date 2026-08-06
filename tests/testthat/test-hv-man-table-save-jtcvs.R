@@ -85,3 +85,92 @@ test_that("hv_man_table_save_jtcvs reuses the shared Key: helper", {
   expect_true(grepl("Key:", xml, fixed = TRUE))
   expect_true(grepl("SD", xml, fixed = TRUE))
 })
+
+test_that("hv_man_table_save_jtcvs rejects an out-of-range footnote row", {
+  ft <- mk_jtcvs_ft()
+  out <- tempfile(fileext = ".docx")
+  expect_error(
+    hv_man_table_save_jtcvs(
+      ft, out, caption = "Table 1. X",
+      footnotes = list(list(row = 999, col = "n_stat_1", text = "note"))
+    ),
+    "whole numbers between"
+  )
+})
+
+test_that("hv_man_table_save_jtcvs rejects a fractional footnote row", {
+  # A fractional row previously passed validation, and flextable accepted
+  # it silently rather than erroring, writing the marker onto whatever
+  # cell it truncated to. That is precisely the silent-wrong-cell failure
+  # this guard exists to prevent, so it has to be caught here.
+  # Must be a two-row table with an in-range fractional index (1.5 lies
+  # between rows 1 and 2). On mk_jtcvs_ft()'s single body row, 1.5 would
+  # trip the range check instead and prove nothing about fractionality.
+  set.seed(42)
+  n <- 60
+  dta <- data.frame(
+    group = factor(sample(c("A", "B"), n, replace = TRUE)),
+    age = round(rnorm(n, 60, 10)),
+    bsa = round(rnorm(n, 2, 0.2), 2)
+  )
+  tbl <- dta |> tbl_summary(
+    by = group, # nolint: object_usage_linter.
+    statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
+    missing = "no"
+  )
+  ft <- hv_man_table_jtcvs(
+    tbl, groups = c(stat_1 = "Group A", stat_2 = "Group B")
+  )
+  expect_identical(flextable::nrow_part(ft, "body"), 2L)
+
+  out <- tempfile(fileext = ".docx")
+  expect_error(
+    hv_man_table_save_jtcvs(
+      ft, out, caption = "Table 1. X",
+      footnotes = list(list(row = 1.5, col = "n_stat_1", text = "note"))
+    ),
+    "whole numbers"
+  )
+})
+
+test_that("hv_man_table_save_jtcvs rejects an unknown footnote column", {
+  ft <- mk_jtcvs_ft()
+  out <- tempfile(fileext = ".docx")
+  expect_error(
+    hv_man_table_save_jtcvs(
+      ft, out, caption = "Table 1. X",
+      footnotes = list(list(row = 1, col = "nope", text = "note"))
+    ),
+    "not a column"
+  )
+})
+
+test_that("hv_man_table_save_jtcvs marks every row of a vector-valued row", {
+  # mk_jtcvs_ft() renders a single body row, so it cannot exercise a
+  # multi-row footnote. Build a two-variable table instead.
+  set.seed(42)
+  n <- 60
+  dta <- data.frame(
+    group = factor(sample(c("A", "B"), n, replace = TRUE)),
+    age = round(rnorm(n, 60, 10)),
+    bsa = round(rnorm(n, 2, 0.2), 2)
+  )
+  tbl <- dta |> tbl_summary(
+    by = group, # nolint: object_usage_linter.
+    statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
+    missing = "no"
+  )
+  ft <- hv_man_table_jtcvs(
+    tbl, groups = c(stat_1 = "Group A", stat_2 = "Group B")
+  )
+  expect_identical(flextable::nrow_part(ft, "body"), 2L)
+
+  out <- tempfile(fileext = ".docx")
+  hv_man_table_save_jtcvs(
+    ft, out, caption = "Table 1. X",
+    footnotes = list(list(row = c(1, 2), col = "n_stat_1", text = "note"))
+  )
+  xml <- read_docx_text(out)
+  # One superscript "a" per marked cell, plus one in the footnote line.
+  expect_gte(lengths(regmatches(xml, gregexpr("superscript", xml))), 3)
+})

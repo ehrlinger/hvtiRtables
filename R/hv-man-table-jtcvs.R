@@ -1,3 +1,21 @@
+# Row indices at which a new section begins. hv_man_table_jtcvs() inserts
+# one section-header row immediately before each of these.
+.jtcvs_section_starts <- function(tb) {
+  if (!"groupname_col" %in% names(tb)) return(integer(0))
+  which(c(TRUE, tb$groupname_col[-1] != tb$groupname_col[-nrow(tb)]))
+}
+
+# Rendered flextable body row for each gtsummary table_body row. Each row
+# shifts down by the number of section headers inserted at or before it.
+# The cumulative sum is taken over an indicator that is TRUE *at* each
+# section start, not before it: the header inserted ahead of a section's
+# first row pushes that row down as well.
+.jtcvs_body_row_index <- function(tb) {
+  is_start <- logical(nrow(tb))
+  is_start[.jtcvs_section_starts(tb)] <- TRUE
+  seq_len(nrow(tb)) + cumsum(is_start)
+}
+
 .reshape_jtcvs_body <- function(tbl, groups, trailing = NULL) {
   tb <- tbl$table_body
   has_sections <- "groupname_col" %in% names(tb)
@@ -30,10 +48,8 @@
     return(out)
   }
 
-  is_section <- c(TRUE, tb$groupname_col[-1] != tb$groupname_col[-nrow(tb)])
-
   # Insert one section-header row before each run of same-groupname_col rows
-  section_starts <- which(is_section)
+  section_starts <- .jtcvs_section_starts(tb)
   section_labels <- tb$groupname_col[section_starts]
   sec_rows <- out[rep(NA_integer_, length(section_starts)), , drop = FALSE]
   sec_rows$label <- section_labels

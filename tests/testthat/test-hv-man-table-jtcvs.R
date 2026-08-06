@@ -77,6 +77,38 @@ test_that(".reshape_jtcvs_body works with no groupname_col (no sections)", {
   expect_identical(nrow(reshaped), nrow(tbl$table_body))
 })
 
+test_that(".jtcvs_body_row_index agrees with .reshape_jtcvs_body's row order", {
+  # Anti-drift guard. hv_test_footnotes_jtcvs() computes rendered row
+  # indices from .jtcvs_body_row_index(); the renderer lays rows out via
+  # .reshape_jtcvs_body(). If either is edited without the other, this
+  # fails rather than silently marking the wrong cells.
+  tbl <- mk_jtcvs_tbl()
+  reshaped <- hvtiRtables:::.reshape_jtcvs_body(
+    tbl, groups = c(stat_1 = "Group A", stat_2 = "Group B")
+  )
+  expect_identical(
+    hvtiRtables:::.jtcvs_body_row_index(tbl$table_body),
+    which(!reshaped$is_section)
+  )
+})
+
+test_that(".jtcvs_body_row_index offsets every row past its section header", {
+  # mk_jtcvs_tbl() has 5 body rows in 2 sections (age under Demographics;
+  # nyha plus its 3 levels under Cardiac), rendering as:
+  #   1 Demographics  2 age  3 Cardiac  4 nyha  5 I  6 II  7 III
+  # Note row 1 maps to 2, not 1: the header inserted before a section's
+  # first row pushes that row down too. That is why the rule uses `<=`.
+  expect_identical(
+    hvtiRtables:::.jtcvs_body_row_index(mk_jtcvs_tbl()$table_body),
+    c(2L, 4L, 5L, 6L, 7L)
+  )
+})
+
+test_that(".jtcvs_section_starts returns integer(0) without groupname_col", {
+  tb <- data.frame(label = c("a", "b"), stringsAsFactors = FALSE)
+  expect_identical(hvtiRtables:::.jtcvs_section_starts(tb), integer(0))
+})
+
 # Helper for rendering and checking DOCX XML
 docx_xml_jtcvs <- function(ft) {
   out <- tempfile(fileext = ".docx")
