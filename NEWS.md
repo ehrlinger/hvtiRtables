@@ -1,5 +1,21 @@
 # hvtiRtables 0.9.4
 
+## New features
+
+- `hv_check_docx()` reads a written `.docx` and reports the three
+  constructs the CORR manuscript table rules prohibit, returning one row
+  per finding and zero rows when the file is clean: floating layers
+  (`w:framePr` paragraphs, `w:txbxContent` text boxes), hidden spacer
+  columns (a column both entirely empty and under 0.1 inch wide), and
+  footnotes written as a row inside the table rather than as text below
+  it. The first two are structural and high confidence; the third is a
+  marker-prefix heuristic, so read it as a prompt to look rather than as
+  proof. It reads the file rather
+  than the object that produced it, so it catches violations introduced
+  anywhere in the pipeline, including by a hand edit after the fact.
+  `hv_man_table_save()` and `hv_man_table_save_jtcvs()` do not call it —
+  run it on the path yourself when you want the check.
+
 ## Bug fixes
 
 - `hv_tbl_summary()` now checks up front that `compare = "smd"` or
