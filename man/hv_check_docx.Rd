@@ -28,16 +28,20 @@ Three detectors run:
 \code{w:framePr}, or floating text boxes (\code{w:txbxContent}). Table content
 belongs in the table, not in a floating layer over it.
 \item \code{"hidden_column"} (structural, high confidence): a table column that
-is both entirely empty \strong{and} narrower than 0.1 inch. Both
+is both entirely empty \strong{and} strictly narrower than 0.1 inch (a
+\code{w:gridCol} width below 144 dxa; exactly 144 does not count). Both
 conditions are required. The house's own JTCVS templates contain
 all-empty 0.5-inch gutter columns between group pairs, which are
-deliberate; width alone or emptiness alone would flag them.
-\item \code{"embedded_footnote"} (heuristic, lower confidence): a table's last
-row containing text that starts with a footnote marker (\code{*}, a
-dagger, a lettered \code{a.}/\code{b.} marker, or \verb{Key:}), the pattern
-\code{flextable::footnote()} produces when misused. This detector is
-pattern-based rather than a guaranteed structural signature, so
-treat its findings as prompts to look, not proof.
+deliberate; width alone or emptiness alone would flag them. A cell
+spanning several columns counts as filling every column it covers,
+so a merged header never makes the columns beneath it look empty.
+\item \code{"embedded_footnote"} (heuristic, lower confidence): a cell in a
+table's last row whose text starts with a footnote marker (\code{*}, a
+dagger or double dagger, a section or pilcrow sign, a lettered
+\code{a.}/\code{b.} marker, or \verb{Key:}), the pattern \code{flextable::footnote()}
+produces when misused. This detector is pattern-based rather than a
+guaranteed structural signature, so treat its findings as prompts to
+look, not proof.
 }
 }
 \examples{

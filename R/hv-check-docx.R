@@ -59,6 +59,91 @@
   do.call(rbind, out)
 }
 
+# A cell spanning n grid columns carries w:gridSpan; without it the cell
+# occupies one column. Anything unparseable counts as one, which keeps the
+# column bookkeeping conservative rather than dropping columns.
+.grid_span <- function(tc) {
+  span <- xml2::xml_find_first(tc, "./w:tcPr/w:gridSpan")
+  if (inherits(span, "xml_missing")) return(1L)
+  val <- suppressWarnings(as.integer(xml2::xml_attr(span, "val")))
+  if (is.na(val) || val < 1L) 1L else val
+}
+
+# TRUE for each grid column of `tbl` that holds text anywhere. A spanning
+# cell marks every column it covers, so a merged header never leaves the
+# columns under it looking empty.
+.col_has_text <- function(tbl, ncol) {
+  filled <- rep(FALSE, ncol)
+  for (row in xml2::xml_find_all(tbl, "./w:tr")) {
+    pos <- 1L
+    for (tc in xml2::xml_find_all(row, "./w:tc")) {
+      if (pos > ncol) break
+      span <- .grid_span(tc)
+      if (nzchar(trimws(xml2::xml_text(tc))))
+        filled[seq.int(pos, min(pos + span - 1L, ncol))] <- TRUE
+      pos <- pos + span
+    }
+  }
+  filled
+}
+
+.detect_hidden_col <- function(doc) {
+  out <- list()
+  tbls <- xml2::xml_find_all(doc, "//w:tbl")
+  for (i in seq_along(tbls)) {
+    grid <- xml2::xml_find_all(tbls[[i]], "./w:tblGrid/w:gridCol")
+    if (length(grid) == 0) next
+    widths <- suppressWarnings(as.integer(xml2::xml_attr(grid, "w")))
+    empty <- !.col_has_text(tbls[[i]], length(grid))
+    hidden <- which(!is.na(widths) & widths < .hidden_col_dxa & empty)
+    for (j in hidden)
+      out[[length(out) + 1]] <- .finding(
+        "hidden_column", i, sprintf("column %d", j),
+        sprintf(
+          paste0("Column %d is entirely empty and %d dxa wide (%.3f in), ",
+                 "below the %d dxa (0.1 in) floor: a hidden spacer column. ",
+                 "House rules require spacing from cell margins, not from a ",
+                 "column too narrow to see."),
+          j, widths[j], widths[j] / 1440, .hidden_col_dxa
+        )
+      )
+  }
+  if (length(out) == 0) return(.empty_report())
+  do.call(rbind, out)
+}
+
+# Footnote markers: asterisk, dagger, double dagger, section, pilcrow, a
+# lettered "a." / "b)" marker, or the literal "Key:". The four symbols are
+# \u escapes so the source file stays ASCII; single-backslash, since R has
+# to resolve them into characters before the regex engine sees them.
+.footnote_marker <- "^(\\*|\u2020|\u2021|\u00a7|\u00b6|[a-z][.)](\\s|$)|Key:)"
+
+.detect_embedded_footnote <- function(doc) {
+  out <- list()
+  tbls <- xml2::xml_find_all(doc, "//w:tbl")
+  for (i in seq_along(tbls)) {
+    rows <- xml2::xml_find_all(tbls[[i]], "./w:tr")
+    if (length(rows) == 0) next
+    cells <- xml2::xml_find_all(rows[[length(rows)]], "./w:tc")
+    for (k in seq_along(cells)) {
+      txt <- trimws(xml2::xml_text(cells[[k]]))
+      if (!grepl(.footnote_marker, txt)) next
+      out[[length(out) + 1]] <- .finding(
+        "embedded_footnote", i,
+        sprintf("row %d (last row), cell %d", length(rows), k),
+        sprintf(
+          paste0("Last-row text starts with a footnote marker: \"%s\". ",
+                 "House rules require footnotes as text below the table, ",
+                 "not as a row inside it."),
+          substr(txt, 1L, 60L)
+        )
+      )
+    }
+  }
+  if (length(out) == 0) return(.empty_report())
+  do.call(rbind, out)
+}
+
 #' Check a .docx for structural patterns the house rules forbid
 #'
 #' Read-only inspection of any Word document, whether written by this
@@ -73,16 +158,20 @@
 #'   `w:framePr`, or floating text boxes (`w:txbxContent`). Table content
 #'   belongs in the table, not in a floating layer over it.
 #' * `"hidden_column"` (structural, high confidence): a table column that
-#'   is both entirely empty **and** narrower than 0.1 inch. Both
+#'   is both entirely empty **and** strictly narrower than 0.1 inch (a
+#'   `w:gridCol` width below 144 dxa; exactly 144 does not count). Both
 #'   conditions are required. The house's own JTCVS templates contain
 #'   all-empty 0.5-inch gutter columns between group pairs, which are
-#'   deliberate; width alone or emptiness alone would flag them.
-#' * `"embedded_footnote"` (heuristic, lower confidence): a table's last
-#'   row containing text that starts with a footnote marker (`*`, a
-#'   dagger, a lettered `a.`/`b.` marker, or `Key:`), the pattern
-#'   `flextable::footnote()` produces when misused. This detector is
-#'   pattern-based rather than a guaranteed structural signature, so
-#'   treat its findings as prompts to look, not proof.
+#'   deliberate; width alone or emptiness alone would flag them. A cell
+#'   spanning several columns counts as filling every column it covers,
+#'   so a merged header never makes the columns beneath it look empty.
+#' * `"embedded_footnote"` (heuristic, lower confidence): a cell in a
+#'   table's last row whose text starts with a footnote marker (`*`, a
+#'   dagger or double dagger, a section or pilcrow sign, a lettered
+#'   `a.`/`b.` marker, or `Key:`), the pattern `flextable::footnote()`
+#'   produces when misused. This detector is pattern-based rather than a
+#'   guaranteed structural signature, so treat its findings as prompts to
+#'   look, not proof.
 #'
 #' @param path Path to a `.docx` file.
 #'
@@ -113,5 +202,9 @@ hv_check_docx <- function(path) {
   if (!is.character(path) || length(path) != 1L)
     stop("`path` must be a single file path.", call. = FALSE)
   doc <- .docx_body_xml(path)
-  rbind(.detect_layers(doc))
+  rbind(
+    .detect_layers(doc),
+    .detect_hidden_col(doc),
+    .detect_embedded_footnote(doc)
+  )
 }
