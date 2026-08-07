@@ -92,8 +92,9 @@ package-level architecture:
   formatters (`style_pvalue()`, `style_sigfig()`) are already
   re-exported through `gtsummary`, so `dplyr`/`tidyselect` rarely need
   to become hard Imports.
-- **CI** runs `R CMD check --as-cran`, `lintr::lint_package()`, test
-  coverage (via Codecov), and the pkgdown site build on push
+- **CI** runs `R CMD check --as-cran`,
+  [`lintr::lint_package()`](https://lintr.r-lib.org/reference/lint.html),
+  test coverage (via Codecov), and the pkgdown site build on push
   (`.github/workflows/`). All checks must pass.
 - **Versioning**: patch-digit bumps (`0.9.0` → `0.9.1`) are fine for
   incremental features and fixes as they land. Never bump the minor or

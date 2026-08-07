@@ -225,3 +225,12 @@ cell-targeted footnotes matching that journal’s template.
 - [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md)
   : Build lettered test footnotes from a gtsummary table
 
+## Checking Written Files
+
+Inspect a written `.docx` for structural layers the manuscript rules
+prohibit. Reads the file rather than the object that produced it, so it
+catches anything introduced later, including by a hand edit.
+
+- [`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md)
+  : Check a .docx for structural patterns the house rules forbid
+

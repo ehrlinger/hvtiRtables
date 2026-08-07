@@ -94,7 +94,7 @@
 <ul><li>
 <strong>New dependencies</strong> must be justified and added to the right field (<code>Imports</code> for runtime, <code>Suggests</code> for test-only). Check the target package’s own namespace exports before adding a new dependency — several tidyselect helpers (<code>all_of()</code>, <code>everything()</code>) and gtsummary formatters (<code>style_pvalue()</code>, <code>style_sigfig()</code>) are already re-exported through <code>gtsummary</code>, so <code>dplyr</code>/<code>tidyselect</code> rarely need to become hard Imports.</li>
 <li>
-<strong>CI</strong> runs <code>R CMD check --as-cran</code>, <code>lintr::lint_package()</code>, test coverage (via Codecov), and the pkgdown site build on push (<code>.github/workflows/</code>). All checks must pass.</li>
+<strong>CI</strong> runs <code>R CMD check --as-cran</code>, <code><a href="https://lintr.r-lib.org/reference/lint.html" class="external-link">lintr::lint_package()</a></code>, test coverage (via Codecov), and the pkgdown site build on push (<code>.github/workflows/</code>). All checks must pass.</li>
 <li>
 <strong>Versioning</strong>: patch-digit bumps (<code>0.9.0</code> → <code>0.9.1</code>) are fine for incremental features and fixes as they land. Never bump the minor or major digit without explicit maintainer direction — features accumulate under the current minor until a deliberate release consolidates them. Every version bump updates both <code>DESCRIPTION</code> and <code>NEWS.md</code>.</li>
 <li>
