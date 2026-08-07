@@ -92,7 +92,8 @@
 #'   `detail` (human-readable description). Zero rows means clean.
 #'
 #' @seealso [hv_man_table_save()] and [hv_man_table_save_jtcvs()], which
-#'   run this check automatically on their own output.
+#'   write the files this checks. Neither runs the check on its own
+#'   output, so call this on the path afterwards when you want it.
 #'
 #' @examples
 #' library(gtsummary)

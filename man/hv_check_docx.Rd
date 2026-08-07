@@ -56,5 +56,6 @@ hv_check_docx(out)
 }
 \seealso{
 \code{\link[=hv_man_table_save]{hv_man_table_save()}} and \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}, which
-run this check automatically on their own output.
+write the files this checks. Neither runs the check on its own
+output, so call this on the path afterwards when you want it.
 }

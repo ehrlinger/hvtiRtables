@@ -1,5 +1,15 @@
 # hvtiRtables 0.9.4
 
+## New features
+
+- `hv_check_docx()` reads a written `.docx` and reports the structural
+  layers the CORR manuscript table rules prohibit, returning one row per
+  finding and zero rows when the file is clean. It reads the file rather
+  than the object that produced it, so it catches violations introduced
+  anywhere in the pipeline, including by a hand edit after the fact.
+  `hv_man_table_save()` and `hv_man_table_save_jtcvs()` do not call it —
+  run it on the path yourself when you want the check.
+
 ## Bug fixes
 
 - `hv_tbl_summary()` now checks up front that `compare = "smd"` or
