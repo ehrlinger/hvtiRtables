@@ -59,6 +59,14 @@ reference:
   - hv_man_footnotes
   - hv_test_footnotes_jtcvs
 
+- title: "Checking Written Files"
+  desc: >
+    Inspect a written `.docx` for structural layers the manuscript rules
+    prohibit. Reads the file rather than the object that produced it, so
+    it catches anything introduced later, including by a hand edit.
+  contents:
+  - hv_check_docx
+
 footer:
   structure:
     left: developed_by
