@@ -17,7 +17,6 @@ Depends:
     R (>= 4.1.0)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 8.0.0
 Suggests:
     broom (>= 1.0.8),
     dplyr,
@@ -28,3 +27,4 @@ Imports:
     flextable (>= 0.9.0),
     gtsummary (>= 2.5.0),
     officer (>= 0.6.0)
+Config/roxygen2/version: 8.1.0
