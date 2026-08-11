@@ -46,3 +46,11 @@ catches anything introduced later, including by a hand edit.
 
 - [`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md)
   : Check a .docx for structural patterns the house rules forbid
+
+## Package overview
+
+Which rendering mode to use, and both pipelines end to end.
+
+- [`hvtiRtables`](https://ehrlinger.github.io/hvtiRtables/reference/hvtiRtables-package.md)
+  [`hvtiRtables-package`](https://ehrlinger.github.io/hvtiRtables/reference/hvtiRtables-package.md)
+  : hvtiRtables: Manuscript-Compliant Table Construction

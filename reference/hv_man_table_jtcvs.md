@@ -30,13 +30,19 @@ hv_man_table_jtcvs(
 - tbl:
 
   A `gtsummary` table object whose `statistic` argument used
-  `"{N_obs} ||| {<stat>}"` for every group column (see `groups`).
+  `"{N_obs} ||| {<stat>}"` for every group column.
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  applies this convention for you. A table without it is rejected, since
+  its cells cannot be split into their N and statistic parts.
 
 - groups:
 
   Named character vector, `stat_<k>` column name in `tbl$table_body` -\>
   spanning header label (include the group's N in the label text
-  yourself, e.g. `c(stat_1 = "Group A (n=60)")`).
+  yourself, e.g. `c(stat_1 = "Group A (n=60)")`). Every name must be a
+  column of `tbl$table_body`, and each may appear at most once; unknown
+  names are rejected with the available ones listed, and a repeated name
+  is rejected too.
 
 - trailing:
 
@@ -54,16 +60,41 @@ hv_man_table_jtcvs(
 
 - font:
 
-  Font family. Default `"Times New Roman"` (house rule).
+  Font family. Default `"Times New Roman"` (house rule). Any single
+  non-empty string is accepted: `flextable` silently substitutes an
+  unknown font name, so a typo would otherwise pass unnoticed, while a
+  deliberate override is legitimate.
 
 - font_size:
 
-  Font size in points. Default `12`; pass `11` for wide tables.
+  Font size in points. Default `12` (house rule 5); pass `11` for wide
+  tables. No other values are permitted – the same rule
+  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+  enforces.
 
 ## Value
 
 A `flextable` with a 2-row header and merged section rows, ready for
 [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md).
+
+## Common mistakes
+
+**"`tbl` was not built with the `{N_obs} ||| {stat}` convention."** The
+table came from a plain
+[`gtsummary::tbl_summary()`](https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html)
+call. Build it with
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md),
+which applies the convention automatically, or pass
+`statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ({sd})")`.
+Before this check existed, such a table rendered every cell blank.
+
+**"`groups` names must be columns in `tbl$table_body`."** Group names
+are the `stat_<k>` columns `gtsummary` creates, one per level of the
+`by` variable – not the group labels. Two groups give `stat_1` and
+`stat_2`.
+
+**"`font_size` must be 11 or 12."** House rule 5. Use `11` only for wide
+tables.
 
 ## See also
 
@@ -79,8 +110,12 @@ library(gtsummary)
 tbl <- trial |>
   tbl_summary(
     by = trt,
-    statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
-    include = c(age, grade)
+    statistic = list(
+      all_continuous() ~ "{N_obs} ||| {mean} ± {sd}",
+      all_categorical() ~ "{N_obs} ||| {n} ({p}%)"
+    ),
+    include = c(age, grade),
+    missing = "no"
   )
 ft <- hv_man_table_jtcvs(
   tbl,

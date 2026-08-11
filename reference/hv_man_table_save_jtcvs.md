@@ -29,7 +29,8 @@ hv_man_table_save_jtcvs(
 
 - file:
 
-  Output `.docx` path.
+  Output `.docx` path. The output directory (`dirname(file)`) must
+  already exist; this function does not create it.
 
 - caption:
 
@@ -62,6 +63,35 @@ hv_man_table_save_jtcvs(
 
 Invisibly, the `file` path.
 
+## Common mistakes
+
+**"`footnotes\[\[k\]\]$text` must be a single non-empty string."** Every
+footnote needs all three of `row`, `col`, and `text`, and `text` must be
+one non-empty string. Before this check existed, an entry missing `text`
+wrote a document with a dangling superscript marker and an empty
+footnote line.
+
+**"`footnotes[[k]]` must be a list of the form list(row =, col =, text
+=)."** `footnotes` is a list *of* footnotes, so a single one is
+`list(list(row = 1, col = "n_stat_1", text = "..."))`. Dropping the
+outer [`list()`](https://rdrr.io/r/base/list.html) previously failed
+with `$ operator is invalid for atomic vectors`.
+
+**"`footnotes[[k]]$row` must be whole numbers ..."** Row indices count
+the section-header rows
+[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
+interleaves into the body.
+[`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md)
+computes them for you.
+
+**"`file` must be a single non-empty file path."** Check the argument
+order: it is `(ft, file, caption)`.
+
+**"Output directory does not exist: ..."** The directory part of `file`
+(its [`dirname()`](https://rdrr.io/r/base/basename.html)) is not created
+for you; create it first with
+`dir.create(dirname(file), recursive = TRUE)`.
+
 ## See also
 
 [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
@@ -74,8 +104,12 @@ library(gtsummary)
 tbl <- trial |>
   tbl_summary(
     by = trt,
-    statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
-    include = c(age, grade)
+    statistic = list(
+      all_continuous() ~ "{N_obs} ||| {mean} ± {sd}",
+      all_categorical() ~ "{N_obs} ||| {n} ({p}%)"
+    ),
+    include = c(age, grade),
+    missing = "no"
   )
 ft <- hv_man_table_jtcvs(
   tbl,

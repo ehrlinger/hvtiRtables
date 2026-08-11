@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,7 +15,8 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/hvtiRtables.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -39,6 +40,49 @@
       <small>Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.5" id="hvtirtables-095">hvtiRtables 0.9.5<a class="anchor" aria-label="anchor" href="#hvtirtables-095"></a></h2>
+<div class="section level3">
+<h3 id="breaking-changes-0-9-5">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-9-5"></a></h3>
+<ul><li>
+<code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> now enforces <code>font_size</code> of 11 or 12, the same house rule <code><a href="../reference/hv_man_table.html">hv_man_table()</a></code> has always enforced. Calls passing any other value, or a vector, now error.</li>
+<li>
+<code>abbreviations</code> must be a character vector, as documented. A list previously worked by accident.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-9-5">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-9-5"></a></h3>
+<ul><li>
+<code>abbreviations</code> and <code>footnotes</code> are now type-checked before the empty-value shortcut. An empty value previously skipped the type check entirely, so <code>abbreviations = list()</code> was accepted while <code>abbreviations = list(N = "x")</code> errored. <code>NULL</code> and <code>character(0)</code> remain no-ops for <code>abbreviations</code>; <code>NULL</code> and <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> for <code>footnotes</code>.</li>
+<li>
+<code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> now errors when <code>tbl</code> was not built with the <code>{N_obs} ||| {stat}</code> statistic convention. It previously rendered a complete, correctly styled, entirely empty table.</li>
+<li>Both savers now enforce one footnote-text contract, through shared code. <code><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> errors when a footnote entry has no <code>text</code>; <code><a href="../reference/hv_man_table_save.html">hv_man_table_save()</a></code> now does the same for its <code>symbol -&gt; text</code> list, which previously <em>wrote</em> the <code>.docx</code> for <code>list("*" = NULL)</code> (header marked <code>Characteristic*</code>, a footnote paragraph of <code>"* "</code>), and equally for <code>NA</code> (<code>"* NA"</code>), a number (<code>"* 1"</code>), and a length-2 vector (<code>"* a* b"</code>). The two savers’ messages share the contract sentence but no longer share one fixed label or fix: each names the bad entry the way its own caller would look for it (<code>footnotes[["*"]]</code> for <code><a href="../reference/hv_man_table_save.html">hv_man_table_save()</a></code>, <code>footnotes[[k]]$text</code> for <code><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>) instead of a shared, list-position label that made a CORR caller count entries to find their symbol.</li>
+<li>
+<code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> now enforces its documented “exactly one type bucket” contract instead of failing inside <code>gtsummary</code>.</li>
+<li>
+<code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> now checks each variable’s data against the bucket it was put in, not just that the buckets don’t overlap. A non-numeric variable in <code>continuous</code> previously produced <code>"{N} ||| NA (NA, NA)"</code> cells, which satisfy the <code>|||</code> convention check because the convention genuinely is applied and only the statistic is <code>NA</code> — so the table rendered and saved as a complete, correctly styled, all-<code>NA</code> manuscript table off nothing but <code>gtsummary</code> <em>messages</em>. <code>binary</code> now requires at most two distinct non-missing values AND a form <code>gtsummary</code> can dichotomize (logical, <code>0</code>/<code>1</code>, <code>Yes</code>/<code>No</code>), which is what removes the leaked “Summary type is "dichotomous" but no summary value has been assigned.” error. A column with no non-missing values is rejected in any bucket. <code>categorical</code> keeps no type rule.</li>
+<li>
+<code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> validates <code>groups</code> names against <code>tbl$table_body</code>, replacing a base-R <code>non-character argument</code> error.</li>
+<li>
+<code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> now rejects a <code>groups</code> name given twice, replacing <code>flextable</code>’s <code>duplicated col_keys: n_stat_1, disp_stat_1</code> — internal column names the caller never wrote.</li>
+<li>
+<code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> now rejects a <code>groups</code> section holding no variables (e.g. <code>list(Demo = character(0))</code>, plausible when <code>groups</code> is built from a filter that returns nothing). <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> was already caught; a named-but-empty section leaked the base-R “<code>names</code> must be <code>NULL</code> or a character vector, not an empty integer vector.”.</li>
+<li>
+<code><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> validates <code>file</code>, replacing a base-R <code>a character vector argument expected</code> error.</li>
+<li>
+<code><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> now checks each <code>footnotes</code> entry is a list before reading its fields. Dropping the outer nesting (<code>footnotes = list(row =, col =, text =)</code>), or passing a bare string, leaked <code>$ operator is invalid for atomic vectors</code>.</li>
+<li>A footnote entry with no <code>col</code> now reports what arrived and lists <code>ft</code>’s columns. The message previously ended at a bare colon with nothing after it.</li>
+<li>
+<code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> validates <code>by</code> in the package’s own vocabulary.</li>
+<li>Every validation message’s <code>Received:</code> clause now names the class even when the value is not length 1. The clause exists for the argument-order slip, where the class mismatch is the tell, but it reported a bare <code>a vector of length 8</code> for a 200-row data frame (8 columns) and <code>a vector of length 5</code> for a <code>gtsummary</code> table — losing exactly the diagnostic it was written for. Those now read <code>tbl_df of length 8</code> and <code>tbl_summary of length 5</code>.</li>
+<li>The <code>binary</code> bucket error no longer always says “Recode to 0/1”, which was impossible advice for a constant column (already 0/1, with no event to recode — the fix is moving it to <code>categorical</code>) and for a factor whose only problem is an unused level (the fix is <code><a href="https://rdrr.io/r/base/droplevels.html" class="external-link">droplevels()</a></code>). Every other case keeps the “Recode to 0/1” fix.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-0-9-5">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-9-5"></a></h3>
+<ul><li>New <code><a href="../reference/hvtiRtables-package.html">?hvtiRtables</a></code> package topic explaining which rendering mode to use, with both pipelines end to end.</li>
+<li>New vignette walking a complete JTCVS table from data frame to checked <code>.docx</code>.</li>
+<li>Every function’s help now states its arguments’ accepted values exhaustively and carries a “Common mistakes” section.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.4" id="hvtirtables-094">hvtiRtables 0.9.4<a class="anchor" aria-label="anchor" href="#hvtirtables-094"></a></h2>
 <div class="section level3">

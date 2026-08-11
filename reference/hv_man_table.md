@@ -24,7 +24,10 @@ hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2)
 
 - font:
 
-  Font family. Default `"Times New Roman"` (house rule).
+  Font family. Default `"Times New Roman"` (house rule). Any single
+  non-empty string is accepted: `flextable` silently substitutes an
+  unknown font name, so a typo would otherwise pass unnoticed, while a
+  deliberate override is legitimate.
 
 - font_size:
 

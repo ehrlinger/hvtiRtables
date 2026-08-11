@@ -31,6 +31,12 @@ devtools::test()
 devtools::document()
 ```
 
+Run the suite with `devtools::test()` or
+[`testthat::test_local()`](https://testthat.r-lib.org/reference/test_package.html).
+Both load the package first. `testthat::test_dir("tests/testthat")` does
+not, so its failures are artifacts of the invocation rather than package
+defects.
+
 ------------------------------------------------------------------------
 
 ## Track A — Porting a SAS table macro

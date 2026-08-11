@@ -39,7 +39,8 @@ hv_man_table_save(
 
 - file:
 
-  Output `.docx` path.
+  Output `.docx` path. The output directory (`dirname(file)`) must
+  already exist; this function does not create it.
 
 - footnotes:
 
@@ -54,7 +55,9 @@ hv_man_table_save(
   the first column if no `N` column is present), and its text is
   rendered as its own paragraph below the table, in the order given.
   Every element must be named (unnamed or blank-named entries raise an
-  error); an empty list is a no-op, same as `NULL`.
+  error) and every text must be a single non-empty string (`NULL`, `NA`,
+  a number, or a multi-element vector raise an error, since each writes
+  a dangling marker); an empty list is a no-op, same as `NULL`.
 
 - abbreviations:
 

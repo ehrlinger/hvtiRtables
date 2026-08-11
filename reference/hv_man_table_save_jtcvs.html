@@ -13,7 +13,7 @@ matching the JTCVS template convention."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,7 +21,8 @@ matching the JTCVS template convention."></head><body>
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/hvtiRtables.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -73,7 +74,8 @@ matching the JTCVS template convention.</p>
 
 
 <dt id="arg-file">file<a class="anchor" aria-label="anchor" href="#arg-file"></a></dt>
-<dd><p>Output <code>.docx</code> path.</p></dd>
+<dd><p>Output <code>.docx</code> path. The output directory (<code>dirname(file)</code>)
+must already exist; this function does not create it.</p></dd>
 
 
 <dt id="arg-caption">caption<a class="anchor" aria-label="anchor" href="#arg-caption"></a></dt>
@@ -103,6 +105,28 @@ indices for you when the footnotes mark statistical tests.</p></dd>
     <p>Invisibly, the <code>file</code> path.</p>
     </div>
     <div class="section level2">
+    <h2 id="common-mistakes">Common mistakes<a class="anchor" aria-label="anchor" href="#common-mistakes"></a></h2>
+
+
+<p><strong>"<code>footnotes\[\[k\]\]$text</code> must be a single non-empty string."</strong>
+Every footnote needs all three of <code>row</code>, <code>col</code>, and <code>text</code>, and
+<code>text</code> must be one non-empty string. Before this check existed, an
+entry missing <code>text</code> wrote a document with a dangling superscript
+marker and an empty footnote line.</p>
+<p><strong>"<code>footnotes[[k]]</code> must be a list of the form list(row =, col =,
+text =)."</strong> <code>footnotes</code> is a list <em>of</em> footnotes, so a single one is
+<code>list(list(row = 1, col = "n_stat_1", text = "..."))</code>. Dropping the
+outer <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> previously failed with <code>$ operator is invalid for atomic vectors</code>.</p>
+<p><strong>"<code>footnotes[[k]]$row</code> must be whole numbers ..."</strong> Row indices
+count the section-header rows <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> interleaves
+into the body. <code><a href="hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code> computes them for you.</p>
+<p><strong>"<code>file</code> must be a single non-empty file path."</strong> Check the
+argument order: it is <code>(ft, file, caption)</code>.</p>
+<p><strong>"Output directory does not exist: ..."</strong> The directory part of
+<code>file</code> (its <code><a href="https://rdrr.io/r/base/basename.html" class="external-link">dirname()</a></code>) is not created for you; create it first
+with <code>dir.create(dirname(file), recursive = TRUE)</code>.</p>
+    </div>
+    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> to build a compliant <code>flextable</code> first.</p></div>
     </div>
@@ -113,8 +137,12 @@ indices for you when the footnotes mark statistical tests.</p></dd>
 <span class="r-in"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="va">trial</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html" class="external-link">tbl_summary</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    by <span class="op">=</span> <span class="va">trt</span>,</span></span>
-<span class="r-in"><span>    statistic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/select_helpers.html" class="external-link">all_continuous</a></span><span class="op">(</span><span class="op">)</span> <span class="op">~</span> <span class="st">"{N_obs} ||| {mean} ± {sd}"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    include <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">grade</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    statistic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/select_helpers.html" class="external-link">all_continuous</a></span><span class="op">(</span><span class="op">)</span> <span class="op">~</span> <span class="st">"{N_obs} ||| {mean} ± {sd}"</span>,</span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/select_helpers.html" class="external-link">all_categorical</a></span><span class="op">(</span><span class="op">)</span> <span class="op">~</span> <span class="st">"{N_obs} ||| {n} ({p}%)"</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span>,</span></span>
+<span class="r-in"><span>    include <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">grade</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    missing <span class="op">=</span> <span class="st">"no"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">ft</span> <span class="op">&lt;-</span> <span class="fu"><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">tbl</span>,</span></span>
