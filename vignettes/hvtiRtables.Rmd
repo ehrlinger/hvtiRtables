@@ -1,0 +1,114 @@
+---
+title: "Building a manuscript table end to end"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Building a manuscript table end to end}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+```{r setup}
+library(hvtiRtables)
+```
+
+This walks one complete JTCVS submission table, from a data frame to a
+checked `.docx`. The CORR house-style path is shorter and covered in
+`?hv_man_table`.
+
+## 1. Summarize the data
+
+`hv_tbl_summary()` takes a grouped, ordered variable list and type
+buckets, the way the SAS `%summarytable` macro does. Every variable in
+`groups` appears in exactly one of `continuous`, `binary`, or
+`categorical`.
+
+```{r}
+tbl <- hv_tbl_summary(
+  gtsummary::trial,
+  by = "trt",
+  groups = list(
+    Demography = c("age", "marker"),
+    Disease = c("stage", "grade")
+  ),
+  continuous = c("age", "marker"),
+  categorical = c("stage", "grade"),
+  compare = "pvalue"
+)
+```
+
+The result carries two attributes the renderer wants: the
+percentile-aware sub-header text, and a ready-made `trailing` argument
+for the comparison column.
+
+```{r}
+attr(tbl, "hv_stat_label")
+attr(tbl, "hv_trailing")
+```
+
+## 2. Render the JTCVS shape
+
+```{r}
+ft <- hv_man_table_jtcvs(
+  tbl,
+  groups = c(stat_1 = "Drug A (n=98)", stat_2 = "Drug B (n=102)"),
+  stat_label = attr(tbl, "hv_stat_label"),
+  trailing = attr(tbl, "hv_trailing")
+)
+```
+
+`groups` names are the `stat_<k>` columns `gtsummary` built, one per
+level of `trt`. The labels are yours, including each arm's N.
+
+## 3. Build the test footnotes
+
+`hv_test_footnotes_jtcvs()` reads which test produced each p-value and
+returns footnotes in the shape the saver expects, with the body-row
+indices already computed.
+
+```{r}
+notes <- hv_test_footnotes_jtcvs(tbl)
+length(notes)
+notes[[1]]$text
+```
+
+## 4. Save and check
+
+```{r}
+out <- tempfile(fileext = ".docx")
+hv_man_table_save_jtcvs(
+  ft, out,
+  caption = "Table 1. Baseline Characteristics",
+  footnotes = notes,
+  abbreviations = c(SMD = "standardized mean difference")
+)
+```
+
+Neither saver checks its own output, so run `hv_check_docx()` on the
+path. Zero rows means clean.
+
+```{r}
+hv_check_docx(out)
+```
+
+## What the package refuses
+
+Every public function rejects out-of-spec input with a message naming
+the fix, rather than letting it reach `gtsummary` or `flextable`.
+
+```{r, error = TRUE}
+hv_man_table_jtcvs(
+  gtsummary::tbl_summary(gtsummary::trial, by = "trt", include = "age"),
+  groups = c(stat_1 = "A", stat_2 = "B")
+)
+```
+
+```{r, error = TRUE}
+hv_tbl_summary(
+  gtsummary::trial, groups = list(D = "age"),
+  continuous = "age", binary = "age"
+)
+```

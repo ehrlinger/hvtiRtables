@@ -20,9 +20,12 @@ Roxygen: list(markdown = TRUE)
 Suggests:
     broom (>= 1.0.8),
     dplyr,
+    knitr,
+    rmarkdown,
     smd (>= 0.6.6),
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+VignetteBuilder: knitr
 Imports:
     flextable (>= 0.9.0),
     gtsummary (>= 2.5.0),
