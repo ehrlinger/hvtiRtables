@@ -204,3 +204,37 @@ test_that("hv_man_table_save_jtcvs rejects a bad abbreviations arg", {
   )
   expect_false(file.exists(out))
 })
+
+test_that("hv_man_table_save_jtcvs validates file", {
+  ft <- fx_jtcvs_ft()
+  for (bad in list(1, NA_character_, "", character(0))) {
+    expect_error(hv_man_table_save_jtcvs(ft, bad, caption = "T1."),
+                 "must be a single non-empty file")
+  }
+})
+
+test_that("hv_man_table_save_jtcvs rejects a footnote with no text", {
+  # Regression for the silent defect: this previously wrote a .docx
+  # with a dangling superscript marker and an empty footnote line.
+  ft <- fx_jtcvs_ft()
+  out <- tempfile(fileext = ".docx")
+  expect_error(
+    hv_man_table_save_jtcvs(
+      ft, out, caption = "T1.",
+      footnotes = list(list(row = 1, col = "n_stat_1"))
+    ),
+    "must be a single non-empty string"
+  )
+  expect_false(file.exists(out))
+})
+
+test_that("hv_man_table_save_jtcvs writes nothing when it rejects", {
+  ft <- fx_jtcvs_ft()
+  out <- tempfile(fileext = ".docx")
+  expect_error(
+    hv_man_table_save_jtcvs(ft, out, caption = "T1.",
+                            abbreviations = list(N = "x")),
+    "named character vector"
+  )
+  expect_false(file.exists(out))
+})

@@ -51,43 +51,17 @@
 #' @export
 hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
                                     abbreviations = NULL) {
-  if (!inherits(ft, "flextable"))
-    stop("`ft` must be a flextable object.", call. = FALSE)
-  if (!is.character(caption) || length(caption) != 1L || is.na(caption) ||
-        !nzchar(caption))
-    stop("`caption` must be a single non-empty string.", call. = FALSE)
-  out_dir <- dirname(file)
-  if (!dir.exists(out_dir))
-    stop("Output directory does not exist: ", out_dir, call. = FALSE)
+  .check_flextable(ft)
+  .check_file(file)
+  .check_string(caption, "caption")
   .check_abbreviations(abbreviations)
 
   letters_seq <- letters
   if (!is.null(footnotes) && length(footnotes) > length(letters_seq))
-    stop("Too many footnotes (max ", length(letters_seq), " letters).",
-         call. = FALSE)
+    stop("Too many footnotes (max ", length(letters_seq),
+         " letters).", call. = FALSE)
 
-  if (!is.null(footnotes)) {
-    n_body <- flextable::nrow_part(ft, "body")
-    for (k in seq_along(footnotes)) {
-      fn <- footnotes[[k]]
-      # Fractional rows are checked explicitly: flextable accepts them
-      # silently rather than erroring, so without this they would mark
-      # whatever cell they truncate to, which is the silent-wrong-cell
-      # failure this validation exists to prevent.
-      if (!is.numeric(fn$row) || length(fn$row) == 0L || anyNA(fn$row) ||
-            any(!is.finite(fn$row)) || any(fn$row %% 1 != 0) ||
-            any(fn$row < 1) || any(fn$row > n_body))
-        stop("`footnotes[[", k, "]]$row` must be whole numbers between ",
-             "1 and ", n_body, ", indexing `ft`'s body rows. Row indices ",
-             "count the section-header rows hv_man_table_jtcvs() ",
-             "interleaves; hv_test_footnotes_jtcvs() computes them for ",
-             "you.", call. = FALSE)
-      if (!is.character(fn$col) || length(fn$col) != 1L ||
-            !fn$col %in% ft$col_keys)
-        stop("`footnotes[[", k, "]]$col` is not a column in `ft`: ",
-             paste(fn$col, collapse = ", "), call. = FALSE)
-    }
-  }
+  .assert_footnote_entries(footnotes, ft)
 
   if (!is.null(footnotes)) {
     for (k in seq_along(footnotes)) {
