@@ -47,3 +47,23 @@ fx_jtcvs_ft <- function() {
     fx_jtcvs_tbl(), groups = c(stat_1 = "A", stat_2 = "B")
   )
 }
+
+# Collect every stop() call in an expression tree. A regex over
+# deparsed source cannot be trusted here: nested parentheses inside a
+# message string would end the match early and let an offender pass.
+# Blank arguments (e.g. the column index in `df[i, ]`) extract as R's
+# missing-argument sentinel: assigning it succeeds, but merely
+# *referencing* it afterwards raises "argument is missing, with no
+# default". The tryCatch has to cover that reference too, not just
+# the extraction, or a real construct like that crashes the walker.
+.fx_stop_calls <- function(expr, out = list()) {
+  if (!is.call(expr)) return(out)
+  if (identical(expr[[1]], quote(stop))) out <- c(out, list(expr))
+  for (i in seq_along(expr)) {
+    out <- tryCatch({
+      part <- expr[[i]]
+      .fx_stop_calls(part, out)
+    }, error = function(e) out)
+  }
+  out
+}
