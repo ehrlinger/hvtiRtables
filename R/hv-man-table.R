@@ -28,6 +28,9 @@
 #'
 #' @param tbl A `gtsummary` table object (must support `as_flex_table()`).
 #' @param font Font family. Default `"Times New Roman"` (house rule).
+#'   Any single non-empty string is accepted: `flextable` silently
+#'   substitutes an unknown font name, so a typo would otherwise pass
+#'   unnoticed, while a deliberate override is legitimate.
 #' @param font_size Font size in points. Default `12`; pass `11` for wide
 #'   tables, per house rule 5. No other values are permitted.
 #' @param digits Kept for interface symmetry with future callers; currently

@@ -42,13 +42,32 @@ JTCVS counterpart to \code{\link[=hv_man_table_save]{hv_man_table_save()}}: it a
 the fixed symbol set \code{\link[=hv_man_table_save]{hv_man_table_save()}} uses on the header row,
 matching the JTCVS template convention.
 }
+\section{Common mistakes}{
+
+\strong{"\code{footnotes[[k]]$text} must be a single non-empty string."} Every
+footnote needs all three of \code{row}, \code{col}, and \code{text}. Before this
+check existed, an entry missing \code{text} wrote a document with a
+dangling superscript marker and an empty footnote line.
+
+\strong{"\code{footnotes[[k]]$row} must be whole numbers ..."} Row indices
+count the section-header rows \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} interleaves
+into the body. \code{\link[=hv_test_footnotes_jtcvs]{hv_test_footnotes_jtcvs()}} computes them for you.
+
+\strong{"\code{file} must be a single non-empty file path."} Check the
+argument order: it is \verb{(ft, file, caption)}.
+}
+
 \examples{
 library(gtsummary)
 tbl <- trial |>
   tbl_summary(
     by = trt,
-    statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
-    include = c(age, grade)
+    statistic = list(
+      all_continuous() ~ "{N_obs} ||| {mean} ± {sd}",
+      all_categorical() ~ "{N_obs} ||| {n} ({p}\%)"
+    ),
+    include = c(age, grade),
+    missing = "no"
   )
 ft <- hv_man_table_jtcvs(
   tbl,

@@ -67,6 +67,12 @@ reference:
   contents:
   - hv_check_docx
 
+- title: "Package overview"
+  desc: >
+    Which rendering mode to use, and both pipelines end to end.
+  contents:
+  - hvtiRtables-package
+
 footer:
   structure:
     left: developed_by

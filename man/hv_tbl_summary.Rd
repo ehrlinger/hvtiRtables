@@ -84,12 +84,42 @@ The returned object carries two attributes for \code{\link[=hv_man_table_jtcvs]{
 \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}'s \code{trailing} argument when \code{compare} produced a
 comparison column (\code{NULL} when \code{compare = "none"}).
 }
+\section{Common mistakes}{
+
+\strong{"\verb{<var>} appears in more than one of \code{continuous}, \code{binary}, and
+\code{categorical}."} Each variable is classified exactly once. A 0/1
+variable is \code{binary}; a multi-level factor is \code{categorical}.
+
+\strong{"Variable(s) in \code{groups} not classified ..."} Every variable
+listed in \code{groups} also needs a type bucket, and every classified
+variable needs to appear in \code{groups}. The two lists must match.
+
+\strong{"\code{compare = "smd"} requires exactly two groups."} A standardized
+mean difference is defined between two groups. Use
+\code{compare = "pvalue"} for three or more. If \code{by} is a factor with an
+unused level, \code{droplevels()} is usually what you want.
+
+\strong{"\code{by} must not also be listed in \code{groups}."} \code{by} is the
+grouping variable being compared across, not a row to summarize.
+Before this check existed, the combination reached \code{gtsummary} and
+failed several calls later with "\code{names} must be \code{NULL} or a
+character vector, not an empty integer vector.", a message that
+never mentioned \code{by}. Remove the variable from \code{groups}.
+}
+
 \examples{
+# A baseline-characteristics table of the kind a study manuscript
+# actually carries: demography and disease sections, compared
+# across treatment arms.
 hv_tbl_summary(
-  mtcars,
-  groups = list(Engine = c("mpg", "cyl")),
-  continuous = "mpg",
-  categorical = "cyl"
+  gtsummary::trial,
+  by = "trt",
+  groups = list(
+    Demography = c("age", "marker"),
+    Disease = c("stage", "grade")
+  ),
+  continuous = c("age", "marker"),
+  categorical = c("stage", "grade")
 )
 
 }

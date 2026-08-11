@@ -6,6 +6,19 @@
 #' the fixed symbol set [hv_man_table_save()] uses on the header row,
 #' matching the JTCVS template convention.
 #'
+#' @section Common mistakes:
+#' **"`footnotes[[k]]$text` must be a single non-empty string."** Every
+#' footnote needs all three of `row`, `col`, and `text`. Before this
+#' check existed, an entry missing `text` wrote a document with a
+#' dangling superscript marker and an empty footnote line.
+#'
+#' **"`footnotes[[k]]$row` must be whole numbers ..."** Row indices
+#' count the section-header rows [hv_man_table_jtcvs()] interleaves
+#' into the body. [hv_test_footnotes_jtcvs()] computes them for you.
+#'
+#' **"`file` must be a single non-empty file path."** Check the
+#' argument order: it is `(ft, file, caption)`.
+#'
 #' @param ft A `flextable`, from [hv_man_table_jtcvs()].
 #' @param file Output `.docx` path.
 #' @param caption Full caption text, e.g. `"Table 1. Baseline
@@ -32,8 +45,12 @@
 #' tbl <- trial |>
 #'   tbl_summary(
 #'     by = trt,
-#'     statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
-#'     include = c(age, grade)
+#'     statistic = list(
+#'       all_continuous() ~ "{N_obs} ||| {mean} ± {sd}",
+#'       all_categorical() ~ "{N_obs} ||| {n} ({p}%)"
+#'     ),
+#'     include = c(age, grade),
+#'     missing = "no"
 #'   )
 #' ft <- hv_man_table_jtcvs(
 #'   tbl,

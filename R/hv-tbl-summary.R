@@ -24,6 +24,27 @@
 #' [hv_man_table_jtcvs()]'s `trailing` argument when `compare` produced a
 #' comparison column (`NULL` when `compare = "none"`).
 #'
+#' @section Common mistakes:
+#' **"`<var>` appears in more than one of `continuous`, `binary`, and
+#' `categorical`."** Each variable is classified exactly once. A 0/1
+#' variable is `binary`; a multi-level factor is `categorical`.
+#'
+#' **"Variable(s) in `groups` not classified ..."** Every variable
+#' listed in `groups` also needs a type bucket, and every classified
+#' variable needs to appear in `groups`. The two lists must match.
+#'
+#' **"`compare = "smd"` requires exactly two groups."** A standardized
+#' mean difference is defined between two groups. Use
+#' `compare = "pvalue"` for three or more. If `by` is a factor with an
+#' unused level, `droplevels()` is usually what you want.
+#'
+#' **"`by` must not also be listed in `groups`."** `by` is the
+#' grouping variable being compared across, not a row to summarize.
+#' Before this check existed, the combination reached `gtsummary` and
+#' failed several calls later with "`names` must be `NULL` or a
+#' character vector, not an empty integer vector.", a message that
+#' never mentioned `by`. Remove the variable from `groups`.
+#'
 #' @param data A data frame.
 #' @param by Grouping variable name as a string (`%summarytable` `CLASS=`
 #'   equivalent), or `NULL` for a single ungrouped "Overall" column.
@@ -62,11 +83,18 @@
 #'   [hv_man_footnotes()] for the percentile-footnote house convention.
 #'
 #' @examples
+#' # A baseline-characteristics table of the kind a study manuscript
+#' # actually carries: demography and disease sections, compared
+#' # across treatment arms.
 #' hv_tbl_summary(
-#'   mtcars,
-#'   groups = list(Engine = c("mpg", "cyl")),
-#'   continuous = "mpg",
-#'   categorical = "cyl"
+#'   gtsummary::trial,
+#'   by = "trt",
+#'   groups = list(
+#'     Demography = c("age", "marker"),
+#'     Disease = c("stage", "grade")
+#'   ),
+#'   continuous = c("age", "marker"),
+#'   categorical = c("stage", "grade")
 #' )
 #'
 #' @export
