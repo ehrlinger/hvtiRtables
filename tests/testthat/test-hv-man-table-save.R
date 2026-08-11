@@ -155,6 +155,29 @@ test_that("hv_man_table_save rejects footnote text that is not a string", {
   }
 })
 
+test_that("footnote text error names the offending symbol", {
+  # `footnotes` is a named list keyed by symbol, not by position, so a
+  # positional "entry 2" label would force a CORR caller to count list
+  # entries to find the bad one. Put the bad entry second so a
+  # positional label would visibly be wrong.
+  ft <- mk_ft()
+  f <- tempfile(fileext = ".docx")
+  msg <- tryCatch(
+    hv_man_table_save(
+      ft, f, footnotes = list(`*` = "fine", `†` = NULL)
+    ),
+    error = conditionMessage
+  )
+  expect_identical(
+    msg,
+    paste0("`footnotes[[\"†\"]]` must be a single non-empty ",
+           "string; it is missing. A marker whose text is missing ",
+           "renders as a dangling reference with nothing after it. ",
+           "Give the entry text, e.g. \"Values are median ",
+           "(P15, P85).\"")
+  )
+})
+
 test_that("footnotes = list() is a no-op, same as NULL", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")

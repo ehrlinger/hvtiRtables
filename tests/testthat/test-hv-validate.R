@@ -200,11 +200,9 @@ test_that(".assert_footnote_entries requires a non-empty text", {
       ),
       error = conditionMessage
     ),
-    paste0("`footnotes` entry 1 must be a single non-empty string of ",
-           "footnote text; it is missing. A marker whose text is ",
-           "missing renders as a dangling reference with nothing ",
-           "after it. Give the entry text, e.g. ",
-           "\"Values are median (P15, P85).\"")
+    paste0("`footnotes[[1]]$text` must be a single non-empty ",
+           "string; it is missing. Each footnote needs ",
+           "list(row =, col =, text =).")
   )
   expect_error(
     .assert_footnote_entries(

@@ -64,10 +64,13 @@ test_that("ft-class contract is identical across both savers", {
   expect_identical(m1, m2)
 })
 
-test_that("footnote-text contract is identical across both savers", {
-  # The two savers reach the text check by different routes -- CORR by
-  # symbol, JTCVS by list entry -- but a footnote marker with no text
-  # is one defect, so it must be one sentence.
+test_that("footnote-text contract shares its tail across both savers", {
+  # The two savers take genuinely different footnote *shapes* -- CORR:
+  # a named list, symbol -> text; JTCVS: list(row =, col =, text =) --
+  # so their labels (`footnotes[["*"]]` vs `footnotes[[1]]$text`) and
+  # closing fixes (a list has no `row`/`col` to tell a CORR caller
+  # about) differ on purpose. What must stay identical is the rule
+  # itself: the contract sentence in the middle of both messages.
   ft_corr <- hv_man_table(fx_plain_tbl())
   ft_jt <- fx_jtcvs_ft()
   for (bad in list(NULL, NA, 1, c("a", "b"), "")) {
@@ -83,7 +86,12 @@ test_that("footnote-text contract is identical across both savers", {
       ),
       error = conditionMessage
     )
-    expect_identical(m1, m2)
+    # Strips the leading "`<label>` " and the trailing " <closing fix>",
+    # leaving just "must be a single non-empty string; it is <what
+    # arrived>." -- the shared rule.
+    tail_of <- function(msg) sub("^`[^`]+` (.*?\\.) .*$", "\\1", msg,
+                                 perl = TRUE)
+    expect_identical(tail_of(m1), tail_of(m2))
   }
 })
 

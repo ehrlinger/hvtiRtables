@@ -14,12 +14,18 @@
   `{N_obs} ||| {stat}` statistic convention. It previously rendered a
   complete, correctly styled, entirely empty table.
 - Both savers now enforce one footnote-text contract, through shared
-  code and with the same message. `hv_man_table_save_jtcvs()` errors
-  when a footnote entry has no `text`; `hv_man_table_save()` now does
-  the same for its `symbol -> text` list, which previously *wrote* the
-  `.docx` for `list("*" = NULL)` (header marked `Characteristic*`, a
-  footnote paragraph of `"* "`), and equally for `NA` (`"* NA"`), a
-  number (`"* 1"`), and a length-2 vector (`"* a* b"`).
+  code. `hv_man_table_save_jtcvs()` errors when a footnote entry has no
+  `text`; `hv_man_table_save()` now does the same for its `symbol ->
+  text` list, which previously *wrote* the `.docx` for `list("*" =
+  NULL)` (header marked `Characteristic*`, a footnote paragraph of
+  `"* "`), and equally for `NA` (`"* NA"`), a number (`"* 1"`), and a
+  length-2 vector (`"* a* b"`). The two savers' messages share the
+  contract sentence but no longer share one fixed label or fix: each
+  names the bad entry the way its own caller would look for it
+  (`footnotes[["*"]]` for `hv_man_table_save()`,
+  `footnotes[[k]]$text` for `hv_man_table_save_jtcvs()`) instead of a
+  shared, list-position label that made a CORR caller count entries to
+  find their symbol.
 - `hv_tbl_summary()` now enforces its documented "exactly one type
   bucket" contract instead of failing inside `gtsummary`.
 - `hv_tbl_summary()` now checks each variable's data against the bucket

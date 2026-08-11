@@ -74,17 +74,21 @@
 # as a document paragraph, so anything that is not one non-empty string
 # writes a malformed document rather than failing: NULL and "" give a
 # dangling "* " with nothing after it, NA gives "* NA", a number gives
-# "* 1", and a length-2 vector gives "* a* b". Shared so the two savers
-# state one contract in one sentence (see test-contract-parity.R).
-.check_footnote_text <- function(x, k, arg = "footnotes") {
+# "* 1", and a length-2 vector gives "* a* b". But the two savers take
+# genuinely different footnote *shapes* -- CORR: a named list, symbol
+# -> text; JTCVS: list(row =, col =, text =) -- so only the contract
+# sentence is shared (see test-contract-parity.R). `label` is each
+# caller's own accessor path to the bad value (naming the symbol for
+# CORR, `[[k]]$text` for JTCVS, rather than a position that forces
+# counting list entries), and `closing` is each caller's own fix,
+# since a JTCVS caller has `row`/`col` to be told about and a CORR
+# caller does not.
+.check_footnote_text <- function(x, label, closing) {
   if (is.character(x) && length(x) == 1L && !is.na(x) && nzchar(x))
     return(invisible(x))
   got <- if (is.null(x)) "missing" else .describe(x)
-  stop("`", arg, "` entry ", k, " must be a single non-empty string of ",
-       "footnote text; it is ", got, ". A marker whose text is missing ",
-       "renders as a dangling reference with nothing after it. Give the ",
-       "entry text, e.g. \"Values are median (P15, P85).\"",
-       call. = FALSE)
+  stop("`", label, "` must be a single non-empty string; it is ", got,
+       ". ", closing, call. = FALSE)
 }
 
 .check_abbreviations <- function(x, arg = "abbreviations") {
@@ -374,7 +378,10 @@
            ". Each footnote needs list(row =, col =, text =).",
            call. = FALSE)
     }
-    .check_footnote_text(fn$text, k, arg)
+    .check_footnote_text(
+      fn$text, sprintf("%s[[%d]]$text", arg, k),
+      "Each footnote needs list(row =, col =, text =)."
+    )
   }
   invisible(NULL)
 }

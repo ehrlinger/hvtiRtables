@@ -45,10 +45,10 @@ matching the JTCVS template convention.
 }
 \section{Common mistakes}{
 
-\strong{"\code{footnotes} entry k must be a single non-empty string of footnote
-text."} Every footnote needs all three of \code{row}, \code{col}, and \code{text},
-and \code{text} must be one non-empty string. Before this check existed,
-an entry missing \code{text} wrote a document with a dangling superscript
+\strong{"\verb{footnotes\[\[k\]\]$text} must be a single non-empty string."}
+Every footnote needs all three of \code{row}, \code{col}, and \code{text}, and
+\code{text} must be one non-empty string. Before this check existed, an
+entry missing \code{text} wrote a document with a dangling superscript
 marker and an empty footnote line.
 
 \strong{"\code{footnotes[[k]]} must be a list of the form list(row =, col =,

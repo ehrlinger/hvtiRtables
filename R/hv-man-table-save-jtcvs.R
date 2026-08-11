@@ -7,10 +7,10 @@
 #' matching the JTCVS template convention.
 #'
 #' @section Common mistakes:
-#' **"`footnotes` entry k must be a single non-empty string of footnote
-#' text."** Every footnote needs all three of `row`, `col`, and `text`,
-#' and `text` must be one non-empty string. Before this check existed,
-#' an entry missing `text` wrote a document with a dangling superscript
+#' **"`footnotes\[\[k\]\]$text` must be a single non-empty string."**
+#' Every footnote needs all three of `row`, `col`, and `text`, and
+#' `text` must be one non-empty string. Before this check existed, an
+#' entry missing `text` wrote a document with a dangling superscript
 #' marker and an empty footnote line.
 #'
 #' **"`footnotes[[k]]` must be a list of the form list(row =, col =,

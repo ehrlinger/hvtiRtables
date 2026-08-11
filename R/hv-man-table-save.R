@@ -76,7 +76,12 @@ hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
     # with no usable text never reaches print(doc): the defect this
     # prevents is a written .docx, not a bad object.
     for (k in seq_along(footnotes))
-      .check_footnote_text(footnotes[[k]], k)
+      .check_footnote_text(
+        footnotes[[k]], sprintf('footnotes[["%s"]]', fn_names[k]),
+        paste0("A marker whose text is missing renders as a ",
+               "dangling reference with nothing after it. Give the ",
+               "entry text, e.g. \"Values are median (P15, P85).\"")
+      )
     n_col <- if ("n" %in% ft$col_keys) "n" else ft$col_keys[1]
     j <- which(ft$col_keys == n_col)
     for (sym in fn_names) {
