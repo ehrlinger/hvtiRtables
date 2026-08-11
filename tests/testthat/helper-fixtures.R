@@ -51,19 +51,27 @@ fx_jtcvs_ft <- function() {
 # Collect every stop() call in an expression tree. A regex over
 # deparsed source cannot be trusted here: nested parentheses inside a
 # message string would end the match early and let an offender pass.
-# Blank arguments (e.g. the column index in `df[i, ]`) extract as R's
-# missing-argument sentinel: assigning it succeeds, but merely
-# *referencing* it afterwards raises "argument is missing, with no
-# default". The tryCatch has to cover that reference too, not just
-# the extraction, or a real construct like that crashes the walker.
+# Matches both `stop(...)` and a fully-qualified `pkg::stop(...)` --
+# the latter's call head is the `::` call, not the `stop` symbol, so
+# checking only `expr[[1]]` against `quote(stop)` would miss it.
 .fx_stop_calls <- function(expr, out = list()) {
   if (!is.call(expr)) return(out)
-  if (identical(expr[[1]], quote(stop))) out <- c(out, list(expr))
+  head <- expr[[1]]
+  is_stop <- identical(head, quote(stop)) ||
+    (is.call(head) && identical(head[[1]], quote(`::`)) &&
+       identical(head[[3]], quote(stop)))
+  if (is_stop) out <- c(out, list(expr))
   for (i in seq_along(expr)) {
-    out <- tryCatch({
-      part <- expr[[i]]
-      .fx_stop_calls(part, out)
-    }, error = function(e) out)
+    # Blank arguments (e.g. the column index in `df[i, ]`) extract as
+    # R's missing-argument sentinel. Binding it to a local variable
+    # and then merely *referencing* that variable raises "argument is
+    # missing, with no default" -- so the sentinel is tested inline,
+    # via list-style `expr[[i]]` extraction rather than a variable
+    # lookup, and skipped. Every other error is left to propagate, so
+    # an unrelated future failure while walking the AST still fails
+    # loud instead of silently truncating the walk.
+    if (identical(expr[[i]], quote(expr = ))) next
+    out <- .fx_stop_calls(expr[[i]], out)
   }
   out
 }
