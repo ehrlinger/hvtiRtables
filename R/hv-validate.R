@@ -191,9 +191,17 @@
 }
 
 # The event level of a dichotomizable column -- the "1" side, the one
-# whose count gtsummary reports. Returns the value as it appears in the
-# data (so a lowercase "yes" stays lowercase), because gtsummary matches
-# it against the column, not against a normalized form.
+# whose count gtsummary reports.
+#
+# The two families deliberately differ. Logical and numeric return a
+# canonical TRUE/1 rather than a value lifted out of the column:
+# gtsummary compares by value, so storage type and class do not matter,
+# and 1 == 1L == a haven_labelled 1. Verified against integer, double,
+# and haven_labelled columns of both base types -- a canonical 1 and
+# the column's own 1 produce identical tables, so the simpler form is
+# the one kept. Yes/No is the opposite: the level MUST come from the
+# data, because .is_dichotomizable() accepts any casing and gtsummary
+# will not match a normalized "YES" against a column holding "yes".
 #
 # Only ever called on a column .is_dichotomizable() has accepted, so the
 # branches are exhaustive by construction; the final NULL is unreachable
