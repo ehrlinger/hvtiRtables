@@ -20,6 +20,7 @@ Roxygen: list(markdown = TRUE)
 Suggests:
     broom (>= 1.0.8),
     dplyr,
+    haven,
     knitr,
     rmarkdown,
     smd (>= 0.6.6),

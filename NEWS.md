@@ -10,6 +10,14 @@
 
 ## Bug fixes
 
+- `binary` variables now pass an explicit event value to `gtsummary`
+  instead of letting it infer one. Its inference is type-sensitive in a
+  way that hit the SAS import path: a `haven_labelled` column over a
+  *double* base type -- what `haven::read_sas()` produces, since every
+  SAS numeric is an 8-byte float -- failed with `Summary type is
+  "dichotomous" but no summary value has been assigned.`, while the
+  otherwise-identical integer-backed column worked. The event is the
+  `TRUE`, `1`, or `Yes` side in every accepted encoding.
 - `abbreviations` and `footnotes` are now type-checked before the
   empty-value shortcut. An empty value previously skipped the type check
   entirely, so `abbreviations = list()` was accepted while

@@ -742,3 +742,47 @@ test_that("hv_tbl_summary rejects a groups section with no variables", {
            "list(Demo = c(\"age\")). Drop the empty section.")
   )
 })
+
+test_that("binary passes an explicit event value to gtsummary", {
+  # Without `value =`, gtsummary guesses the event level and fails on a
+  # haven_labelled column over a DOUBLE base type -- which is exactly
+  # what haven::read_sas() produces, since every SAS numeric is an
+  # 8-byte float. The integer-backed form happens to work, so this
+  # reproduces only with as.double().
+  skip_if_not_installed("haven")
+  d <- data.frame(
+    grp = factor(rep(c("A", "B"), each = 20)),
+    flag = haven::labelled(as.double(rep(0:1, 20)), c(No = 0, Yes = 1))
+  )
+  expect_s3_class(
+    suppressWarnings(hv_tbl_summary(
+      d, by = "grp", groups = list(G = "flag"),
+      binary = "flag", compare = "none"
+    )),
+    "gtsummary"
+  )
+})
+
+test_that("every accepted binary shape counts the right event", {
+  # The event is the "1"/TRUE/"Yes" side in each accepted encoding.
+  # The split is deliberately uneven -- 15 events in each group of 20 --
+  # because a 50/50 split renders identically whichever level is
+  # counted, so it could not tell a correct event from an inverted one.
+  # Correct is "15 (75%)"; counting the wrong side gives "5 (25%)".
+  ev <- c(TRUE, TRUE, TRUE, FALSE)
+  shapes <- list(
+    integer = as.integer(rep(ev, 10)),
+    double = as.double(rep(ev, 10)),
+    logical = rep(ev, 10),
+    factor_yn = factor(ifelse(rep(ev, 10), "Yes", "No")),
+    char_lower = ifelse(rep(ev, 10), "yes", "no")
+  )
+  for (nm in names(shapes)) {
+    d <- data.frame(grp = factor(rep(c("A", "B"), each = 20)),
+                    flag = shapes[[nm]])
+    tbl <- hv_tbl_summary(d, by = "grp", groups = list(G = "flag"),
+                          binary = "flag", compare = "none")
+    expect_identical(tbl$table_body$stat_1[1], "20 ||| 15 (75%)",
+                     info = nm)
+  }
+})
