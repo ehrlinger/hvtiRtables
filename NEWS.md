@@ -10,6 +10,11 @@
 
 ## Bug fixes
 
+- `abbreviations` and `footnotes` are now type-checked before the
+  empty-value shortcut. An empty value previously skipped the type check
+  entirely, so `abbreviations = list()` was accepted while
+  `abbreviations = list(N = "x")` errored. `NULL` and `character(0)`
+  remain no-ops for `abbreviations`; `NULL` and `list()` for `footnotes`.
 - `hv_man_table_jtcvs()` now errors when `tbl` was not built with the
   `{N_obs} ||| {stat}` statistic convention. It previously rendered a
   complete, correctly styled, entirely empty table.

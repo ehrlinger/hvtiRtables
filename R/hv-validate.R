@@ -91,12 +91,17 @@
        ". ", closing, call. = FALSE)
 }
 
+# The type check precedes the empty-value shortcut deliberately. Taking
+# them the other way round skipped the type check for anything empty, so
+# `list()` was accepted while `list(N = "x")` errored -- the same type
+# treated two ways on length alone. NULL and character(0) stay no-ops.
 .check_abbreviations <- function(x, arg = "abbreviations") {
-  if (is.null(x) || length(x) == 0L) return(invisible(x))
+  if (is.null(x)) return(invisible(x))
   if (!is.character(x))
     stop("`", arg, "` must be a named character vector ",
          "(c(ABBR = \"expansion\", ...)). Received: ", .describe(x),
          ".", call. = FALSE)
+  if (length(x) == 0L) return(invisible(x))
   nms <- names(x)
   if (is.null(nms) || anyNA(nms) || any(!nzchar(nms)))
     stop("`", arg, "` must be a named character vector ",
@@ -333,6 +338,13 @@
 .assert_footnote_entries <- function(footnotes, ft,
                                      arg = "footnotes") {
   if (is.null(footnotes)) return(invisible(NULL))
+  # Checked before the loop rather than inside it: seq_along() is empty
+  # for any zero-length value, so a wrong-typed empty one (character(0))
+  # would otherwise pass by never entering the loop at all.
+  if (!is.list(footnotes))
+    stop("`", arg, "` must be a list of the form ",
+         "list(list(row =, col =, text =), ...). Received: ",
+         .describe(footnotes), ".", call. = FALSE)
   n_body <- flextable::nrow_part(ft, "body")
   for (k in seq_along(footnotes)) {
     fn <- footnotes[[k]]

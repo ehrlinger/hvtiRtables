@@ -291,3 +291,23 @@ test_that(".assert_footnote_entries says what arrived for col", {
     "it is \"nope\"", fixed = TRUE
   )
 })
+
+test_that(".check_abbreviations checks type before allowing empty", {
+  # An empty value skipped the type check entirely, so `list()` was
+  # accepted while `list(N = "x")` errored -- the same type treated two
+  # ways on length alone.
+  expect_silent(.check_abbreviations(NULL))
+  expect_silent(.check_abbreviations(character(0)))
+  expect_error(.check_abbreviations(list()), "named character vector")
+  expect_error(.check_abbreviations(numeric(0)), "named character vector")
+})
+
+test_that(".assert_footnote_entries rejects a non-list of entries", {
+  ft <- fx_jtcvs_ft()
+  # list() is a well-formed empty entry list; character(0) is not a
+  # list at all and was accepted only because seq_along() was empty.
+  expect_silent(.assert_footnote_entries(NULL, ft))
+  expect_silent(.assert_footnote_entries(list(), ft))
+  expect_error(.assert_footnote_entries(character(0), ft),
+               "must be a list of the form")
+})
