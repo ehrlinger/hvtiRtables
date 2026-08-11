@@ -608,8 +608,10 @@ defect fixes depend on it.
 - Modify: `R/hv-man-table.R:51-59`
 - Modify: `R/hv-man-table-save.R:51-58`, `R/hv-man-table-save.R:101-107`
 - Modify: `R/hv-check-docx.R:201-203`
+- Modify: `R/hv-test-footnotes-jtcvs.R:78-79`
 - Test: existing `tests/testthat/test-hv-man-table.R`,
-  `test-hv-man-table-save.R`, `test-hv-check-docx.R`
+  `test-hv-man-table-save.R`, `test-hv-check-docx.R`,
+  `test-hv-test-footnotes-jtcvs.R`
 
 **Interfaces:**
 - Consumes: `.check_gtsummary()`, `.check_flextable()`,
@@ -699,18 +701,36 @@ In `R/hv-check-docx.R`, replace lines 202-203 with:
   .check_string(path, "path")
 ```
 
-- [ ] **Step 6: Run the full suite**
+- [ ] **Step 6: Route `hv_test_footnotes_jtcvs()` through the validator**
+
+This function also checks `tbl`'s class, and Task 7 asserts its message
+is identical to the other two consumers'. In
+`R/hv-test-footnotes-jtcvs.R`, replace lines 78-79:
+
+```r
+  if (!inherits(tbl, "gtsummary"))
+    stop("`tbl` must be a gtsummary table object.", call. = FALSE)
+```
+
+with:
+
+```r
+  .check_gtsummary(tbl)
+```
+
+- [ ] **Step 7: Run the full suite**
 
 Run: `Rscript -e 'devtools::test()'`
 Expected: PASS. The three tightenings — `font` shape, `abbreviations`
 type, `path` non-empty — are the only behavior changes; existing tests
-assert on message fragments (`"font_size"`, `"flextable"`), which the
-appended `Received:` clause does not disturb.
+assert on message fragments (`"font_size"`, `"flextable"`,
+`"gtsummary"`), which the appended `Received:` clause does not disturb.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add R/hv-man-table.R R/hv-man-table-save.R R/hv-check-docx.R \
+  R/hv-test-footnotes-jtcvs.R \
   tests/testthat/test-hv-man-table.R \
   tests/testthat/test-hv-man-table-save.R
 git commit -m "refactor: adopt shared validators in the CORR branch"
