@@ -80,6 +80,16 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 
   if (!is.data.frame(data))
     stop("`data` must be a data frame.", call. = FALSE)
+  .assert_type_buckets(continuous, binary, categorical)
+  # `by` fails the same way `groups` variables do, in this function's
+  # own words. gtsummary's own error here is unusually good, but having
+  # `by` fail differently from `groups` inside one function is exactly
+  # the inconsistency this contract removes.
+  if (!is.null(by)) {
+    .check_string(by, "by")
+    if (!by %in% names(data))
+      stop("Variable(s) not found in `data`: ", by, call. = FALSE)
+  }
   if (!is.list(groups) || is.null(names(groups)) ||
         any(!nzchar(names(groups))))
     stop("`groups` must be a named list, e.g. ",

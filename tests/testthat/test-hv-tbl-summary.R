@@ -526,3 +526,41 @@ test_that("hv_tbl_summary still allows pvalue and none with 3+ groups", {
     )
   )
 })
+
+test_that("hv_tbl_summary rejects a variable in two type buckets", {
+  expect_identical(
+    tryCatch(
+      hv_tbl_summary(mtcars, groups = list(Engine = "mpg"),
+                     continuous = "mpg", binary = "mpg"),
+      error = conditionMessage
+    ),
+    paste0("`mpg` appears in more than one of `continuous`, `binary`, ",
+           "and `categorical`. Every variable must be classified ",
+           "exactly once. Overlapping: mpg (continuous, binary).")
+  )
+})
+
+test_that("hv_tbl_summary validates by in the package's own words", {
+  expect_error(
+    hv_tbl_summary(mtcars, by = "nope", groups = list(E = "mpg"),
+                   continuous = "mpg"),
+    "Variable(s) not found in `data`: nope", fixed = TRUE
+  )
+  expect_error(
+    hv_tbl_summary(mtcars, by = c("am", "vs"),
+                   groups = list(E = "mpg"), continuous = "mpg"),
+    "`by`"
+  )
+  expect_error(
+    hv_tbl_summary(mtcars, by = 1, groups = list(E = "mpg"),
+                   continuous = "mpg"),
+    "`by`"
+  )
+})
+
+test_that("hv_tbl_summary rejects non-character type buckets", {
+  expect_error(
+    hv_tbl_summary(mtcars, groups = list(E = "mpg"), continuous = 1),
+    "`continuous` must be a character vector"
+  )
+})
