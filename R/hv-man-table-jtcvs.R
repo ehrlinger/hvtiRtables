@@ -128,19 +128,23 @@
 hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
                                stat_label = "No. (%) or Mean \u00B1 SD",
                                font = "Times New Roman", font_size = 12) {
-  if (!inherits(tbl, "gtsummary"))
-    stop("`tbl` must be a gtsummary table object.", call. = FALSE)
-  if (is.null(names(groups)) || any(!nzchar(names(groups))))
-    stop("`groups` must be a named character vector.", call. = FALSE)
+  .check_gtsummary(tbl)
+  .assert_jtcvs_groups(tbl, groups)
+  .check_string(stat_label, "stat_label")
+  .check_string(font, "font")
+  .check_font_size(font_size)
   if (!is.null(trailing)) {
     if (!is.character(trailing) || length(trailing) != 1L ||
           is.null(names(trailing)) || !nzchar(names(trailing)))
       stop("`trailing` must be a named character vector of length 1 ",
            "(e.g. c(std_diff = \"Std. Diff.\")).", call. = FALSE)
     if (!names(trailing) %in% names(tbl$table_body))
-      stop("`trailing` name `", names(trailing), "` is not a column in ",
-           "`tbl$table_body`.", call. = FALSE)
+      stop("`trailing` name `", names(trailing), "` is not a column ",
+           "in `tbl$table_body`.", call. = FALSE)
   }
+  # Runs before .reshape_jtcvs_body(), so a table lacking the
+  # convention errors rather than rendering every cell blank.
+  .assert_stat_convention(tbl$table_body, groups)
 
   reshaped <- .reshape_jtcvs_body(tbl, groups, trailing)
 
