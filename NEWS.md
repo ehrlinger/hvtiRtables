@@ -61,6 +61,11 @@
   columns) and `a vector of length 5` for a `gtsummary` table — losing
   exactly the diagnostic it was written for. Those now read
   `tbl_df of length 8` and `tbl_summary of length 5`.
+- The `binary` bucket error no longer always says "Recode to 0/1",
+  which was impossible advice for a constant column (already 0/1,
+  with no event to recode — the fix is moving it to `categorical`)
+  and for a factor whose only problem is an unused level (the fix is
+  `droplevels()`). Every other case keeps the "Recode to 0/1" fix.
 
 ## Documentation
 

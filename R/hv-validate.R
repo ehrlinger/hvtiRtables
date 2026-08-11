@@ -223,13 +223,36 @@
            "variable as a single \"n (%)\" row, so it accepts at ",
            "most 2 distinct values. Move `", v, "` to `",
            .suggest_bucket(x), "`.", call. = FALSE)
-    if (!.is_dichotomizable(x))
-      stop("`binary` lists `", v, "`, but `", v, "` has ",
-           .describe_column(x), ". `binary` renders one \"n (%)\" ",
-           "row and so needs an unambiguous event value: it accepts ",
-           "logical, 0/1, or Yes/No data. Recode `", v, "` to 0/1, ",
-           "or move it to `categorical`, which shows every level.",
-           call. = FALSE)
+    if (!.is_dichotomizable(x)) {
+      # The "Recode to 0/1" fix below is impossible advice for two
+      # real cases, so those get their own closing sentence: a
+      # constant column already IS 0/1 (there is no event to
+      # recode), and a factor whose only problem is an unused level
+      # is fixed by droplevels(), not a recode. The contract sentence
+      # itself never changes -- only the fix at the end does.
+      contract <- paste0(
+        "`binary` lists `", v, "`, but `", v, "` has ",
+        .describe_column(x), ". `binary` renders one \"n (%)\" ",
+        "row and so needs an unambiguous event value: it accepts ",
+        "logical, 0/1, or Yes/No data."
+      )
+      vals <- unique(stats::na.omit(x))
+      if (length(vals) == 1L)
+        stop(contract, " A column with no variation has no event ",
+             "to count; move `", v, "` to `categorical`, which ",
+             "shows every level.", call. = FALSE)
+      if (is.factor(x)) {
+        dropped <- droplevels(x)
+        if (nlevels(dropped) < nlevels(x) && .is_dichotomizable(dropped))
+          stop(contract, sprintf(
+                 " `%s` is a factor with %d levels but only %d ",
+                 v, nlevels(x), nlevels(dropped)
+               ), "appear in the data; droplevels() may be what ",
+               "you want.", call. = FALSE)
+      }
+      stop(contract, " Recode `", v, "` to 0/1, or move it to ",
+           "`categorical`, which shows every level.", call. = FALSE)
+    }
   }
   invisible(NULL)
 }

@@ -635,6 +635,53 @@ test_that("hv_tbl_summary rejects a binary gtsummary cannot dichotomize", {
   )
 })
 
+test_that("hv_tbl_summary sends a constant binary column to categorical", {
+  # A zero-event indicator (e.g. no complications in a baseline table)
+  # already IS 0/1 -- "Recode to 0/1" is impossible advice here, since
+  # gtsummary cannot dichotomize a column with no variation at all.
+  dta <- data.frame(grp = factor(rep(c("A", "B"), each = 10)),
+                    complication = rep(0L, 20))
+  msg <- tryCatch(
+    hv_tbl_summary(dta, by = "grp", groups = list(D = "complication"),
+                   binary = "complication"),
+    error = conditionMessage
+  )
+  expect_identical(
+    msg,
+    paste0("`binary` lists `complication`, but `complication` has 1 ",
+           "distinct non-missing value (0). `binary` renders one ",
+           "\"n (%)\" row and so needs an unambiguous event value: it ",
+           "accepts logical, 0/1, or Yes/No data. A column with no ",
+           "variation has no event to count; move `complication` to ",
+           "`categorical`, which shows every level.")
+  )
+})
+
+test_that("hv_tbl_summary suggests droplevels for an orphaned level", {
+  # `elig` carries an unused "Maybe" level (e.g. after subsetting), so
+  # nlevels() is 3 even though only Yes/No values are present. "Recode
+  # to 0/1" is impossible advice here -- droplevels() is the real fix.
+  dta <- data.frame(
+    grp = factor(rep(c("A", "B"), each = 5)),
+    elig = factor(c(rep("Yes", 5), rep("No", 5)),
+                  levels = c("No", "Yes", "Maybe"))
+  )
+  msg <- tryCatch(
+    hv_tbl_summary(dta, by = "grp", groups = list(D = "elig"),
+                   binary = "elig"),
+    error = conditionMessage
+  )
+  expect_identical(
+    msg,
+    paste0("`binary` lists `elig`, but `elig` has 2 distinct ",
+           "non-missing values (No, Yes). `binary` renders one ",
+           "\"n (%)\" row and so needs an unambiguous event value: it ",
+           "accepts logical, 0/1, or Yes/No data. `elig` is a factor ",
+           "with 3 levels but only 2 appear in the data; droplevels() ",
+           "may be what you want.")
+  )
+})
+
 test_that("hv_tbl_summary accepts every binary form gtsummary can use", {
   n <- 20
   dta <- data.frame(
