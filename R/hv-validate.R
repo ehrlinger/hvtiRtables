@@ -165,12 +165,18 @@
           if (n > 3L) ", ..." else "")
 }
 
-# gtsummary assigns a dichotomous "event" value only for logical data,
-# numeric data whose values are exactly 0 and 1, or yes/no
-# character/factor data. Any other two-valued column reaches gtsummary
-# and dies with "Summary type is \"dichotomous\" but no summary value
-# has been assigned." -- banned vocabulary, so `binary` needs this
-# rule as well as the at-most-2-values one.
+# The encodings this package is willing to read an "event" out of, for
+# a `binary` (SAS CAT1=) variable: logical, numeric 0/1, or yes/no
+# character/factor. `.event_value()` below names the event for each, and
+# hv_tbl_summary() passes it to gtsummary as `value =`, so this is the
+# package's own definition rather than a mirror of gtsummary's internal
+# guesser -- gtsummary is told the answer and never guesses.
+#
+# It has to stay a rule of ours regardless: a two-valued column in some
+# other encoding has no event we could name, and left to itself
+# gtsummary dies with "Summary type is \"dichotomous\" but no summary
+# value has been assigned.", which is banned vocabulary. So `binary`
+# needs this alongside the at-most-2-values rule.
 .is_dichotomizable <- function(x) {
   if (is.logical(x)) return(TRUE)
   vals <- unique(stats::na.omit(x))
@@ -182,6 +188,32 @@
     return(length(vals) == 2L &&
              setequal(toupper(vals), c("NO", "YES")))
   FALSE
+}
+
+# The event level of a dichotomizable column -- the "1" side, the one
+# whose count gtsummary reports.
+#
+# The two families deliberately differ. Logical and numeric return a
+# canonical TRUE/1 rather than a value lifted out of the column:
+# gtsummary compares by value, so storage type and class do not matter,
+# and 1 == 1L == a haven_labelled 1. Verified against integer, double,
+# and haven_labelled columns of both base types -- a canonical 1 and
+# the column's own 1 produce identical tables, so the simpler form is
+# the one kept. Yes/No is the opposite: the level MUST come from the
+# data, because .is_dichotomizable() accepts any casing and gtsummary
+# will not match a normalized "YES" against a column holding "yes".
+#
+# Only ever called on a column .is_dichotomizable() has accepted, so the
+# branches are exhaustive by construction; the final NULL is unreachable
+# and exists so a future encoding added to one function but not the
+# other fails at gtsummary rather than returning a silently wrong event.
+.event_value <- function(x) {
+  if (is.logical(x)) return(TRUE)
+  if (is.numeric(x)) return(1)
+  levs <- if (is.factor(x)) levels(x) else unique(stats::na.omit(x))
+  hit <- levs[toupper(levs) == "YES"]
+  if (length(hit) == 1L) return(hit)
+  NULL
 }
 
 # Which bucket the data actually suits, for the "Move `x` to ..." fix.

@@ -76,7 +76,10 @@
 #'   named column must have at most 2 distinct non-`NA` values, and
 #'   must be logical, `0`/`1`, or `Yes`/`No` data, so that the "event"
 #'   the single row counts is unambiguous. Anything else belongs in
-#'   `categorical`, which shows every level.
+#'   `categorical`, which shows every level. The event is the `TRUE`,
+#'   `1`, or `Yes` side, and is stated to `gtsummary` explicitly rather
+#'   than inferred, so columns read from SAS with `haven::read_sas()`
+#'   summarize the same as their plain-vector equivalents.
 #' @param categorical Character vector of multi-level variable names
 #'   (`%summarytable` `CAT2=` equivalent), summarized as `n (%)` per
 #'   level. No type rule applies: factors, characters, and
@@ -228,6 +231,17 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     c(continuous, binary, categorical)
   )
 
+  # Tell gtsummary which level is the event rather than letting it
+  # guess. Its guesser is type-sensitive in a way that bites the SAS
+  # import path: a haven_labelled column over a DOUBLE base type (what
+  # haven::read_sas() yields, since every SAS numeric is an 8-byte
+  # float) failed with "Summary type is \"dichotomous\" but no summary
+  # value has been assigned." while the integer-backed form worked.
+  # .is_dichotomizable() has already accepted every column named here.
+  value <- stats::setNames(
+    lapply(binary, function(v) .event_value(data[[v]])), binary
+  )
+
   section_map <- stats::setNames(rep(names(groups), lengths(groups)), vars)
 
   # gtsummary's default N/n formatter inserts thousands separators
@@ -246,7 +260,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     data,
     by = if (is.null(by)) NULL else gtsummary::all_of(by),
     include = gtsummary::all_of(vars),
-    statistic = statistic, type = type, missing = "no",
+    statistic = statistic, type = type, value = value, missing = "no",
     digits = list(
       gtsummary::everything() ~ list(N_obs = no_comma, n = no_comma)
     )

@@ -39,7 +39,10 @@ appear in \code{groups}.}
 named column must have at most 2 distinct non-\code{NA} values, and
 must be logical, \code{0}/\code{1}, or \code{Yes}/\code{No} data, so that the "event"
 the single row counts is unambiguous. Anything else belongs in
-\code{categorical}, which shows every level.}
+\code{categorical}, which shows every level. The event is the \code{TRUE},
+\code{1}, or \code{Yes} side, and is stated to \code{gtsummary} explicitly rather
+than inferred, so columns read from SAS with \code{haven::read_sas()}
+summarize the same as their plain-vector equivalents.}
 
 \item{categorical}{Character vector of multi-level variable names
 (\verb{\%summarytable} \verb{CAT2=} equivalent), summarized as \verb{n (\%)} per
