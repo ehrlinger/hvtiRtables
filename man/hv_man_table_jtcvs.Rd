@@ -23,8 +23,9 @@ their N and statistic parts.}
 \item{groups}{Named character vector, \verb{stat_<k>} column name in
 \code{tbl$table_body} -> spanning header label (include the group's N
 in the label text yourself, e.g. \code{c(stat_1 = "Group A (n=60)")}).
-Every name must be a column of \code{tbl$table_body}; unknown names
-are rejected with the available ones listed.}
+Every name must be a column of \code{tbl$table_body}, and each may
+appear at most once; unknown names are rejected with the available
+ones listed, and a repeated name is rejected too.}
 
 \item{trailing}{Optional named character vector of length 1, an existing
 \code{tbl$table_body} column name -> header label, for a trailing

@@ -23,7 +23,9 @@ equivalent), or \code{NULL} for a single ungrouped "Overall" column.}
 
 \item{groups}{Named list, section label -> variable names in display
 order (\verb{\%summarytable} \verb{LIST=} equivalent), e.g.
-\code{list(Demography = c("age", "female"), Symptoms = c("nyha"))}. Every
+\code{list(Demography = c("age", "female"), Symptoms = c("nyha"))}. Each
+section must name at least one variable; a section holding
+\code{character(0)} is an error, not an empty section. Every
 variable named here must appear in exactly one of \code{continuous},
 \code{binary}, or \code{categorical}, and every classified variable must
 appear in \code{groups}.}

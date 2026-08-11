@@ -339,3 +339,15 @@ test_that("hv_man_table_jtcvs accepts an hv_tbl_summary table", {
                            c(stat_1 = "A", stat_2 = "B"))
   expect_s3_class(ft, "flextable")
 })
+
+test_that("hv_man_table_jtcvs rejects a duplicated groups name", {
+  # Left to flextable this leaked "duplicated col_keys: n_stat_1,
+  # disp_stat_1" -- internal column names the user never wrote and
+  # cannot find in any help page.
+  msg <- tryCatch(
+    hv_man_table_jtcvs(fx_jtcvs_tbl(), c(stat_1 = "A", stat_1 = "B")),
+    error = conditionMessage
+  )
+  expect_false(grepl("col_keys", msg, fixed = TRUE))
+  expect_match(msg, "must name each column at most once", fixed = TRUE)
+})

@@ -205,3 +205,16 @@ test_that(".assert_footnote_entries keeps the row and col checks", {
     "is not a column in `ft`"
   )
 })
+
+test_that(".assert_jtcvs_groups rejects a duplicated column name", {
+  tbl <- fx_jtcvs_tbl()
+  expect_identical(
+    tryCatch(
+      .assert_jtcvs_groups(tbl, c(stat_1 = "A", stat_1 = "B")),
+      error = conditionMessage
+    ),
+    paste0("`groups` must name each column at most once. Duplicated: ",
+           "stat_1. Each stat_<k> column gets one spanning label, ",
+           "e.g. c(stat_1 = \"A\", stat_2 = \"B\").")
+  )
+})

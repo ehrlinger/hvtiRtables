@@ -62,7 +62,9 @@
 #'   equivalent), or `NULL` for a single ungrouped "Overall" column.
 #' @param groups Named list, section label -> variable names in display
 #'   order (`%summarytable` `LIST=` equivalent), e.g.
-#'   `list(Demography = c("age", "female"), Symptoms = c("nyha"))`. Every
+#'   `list(Demography = c("age", "female"), Symptoms = c("nyha"))`. Each
+#'   section must name at least one variable; a section holding
+#'   `character(0)` is an error, not an empty section. Every
 #'   variable named here must appear in exactly one of `continuous`,
 #'   `binary`, or `categorical`, and every classified variable must
 #'   appear in `groups`.
@@ -148,6 +150,18 @@ hv_tbl_summary <- function(data, by = NULL, groups,
         any(!nzchar(names(groups))))
     stop("`groups` must be a named list, e.g. ",
          "list(Demography = c(\"age\")).", call. = FALSE)
+  # list() is caught above (it has no names); a named-but-empty section
+  # is not, and left to gtsummary it fails with "`names` must be `NULL`
+  # or a character vector, not an empty integer vector." -- byte
+  # identical to the base-R message the `by`-in-`groups` check above
+  # exists to prevent. Plausible whenever `groups` is built
+  # programmatically from a filter that returns nothing.
+  empty_sections <- names(groups)[lengths(groups) == 0L]
+  if (length(empty_sections) > 0)
+    stop("`groups` section `", empty_sections[1], "` lists no ",
+         "variables. Every section must name at least one variable, ",
+         "e.g. list(", empty_sections[1], " = c(\"age\")). Drop the ",
+         "empty section.", call. = FALSE)
   if (!is.numeric(percentiles) || length(percentiles) != 2L)
     stop("`percentiles` must be a numeric vector of length 2, ",
          "e.g. c(15, 85).", call. = FALSE)

@@ -112,8 +112,9 @@
 #' @param groups Named character vector, `stat_<k>` column name in
 #'   `tbl$table_body` -> spanning header label (include the group's N
 #'   in the label text yourself, e.g. `c(stat_1 = "Group A (n=60)")`).
-#'   Every name must be a column of `tbl$table_body`; unknown names
-#'   are rejected with the available ones listed.
+#'   Every name must be a column of `tbl$table_body`, and each may
+#'   appear at most once; unknown names are rejected with the available
+#'   ones listed, and a repeated name is rejected too.
 #' @param trailing Optional named character vector of length 1, an existing
 #'   `tbl$table_body` column name -> header label, for a trailing
 #'   comparison column (e.g. `c(std_diff = "Std. Diff.")` or

@@ -675,3 +675,23 @@ test_that("hv_tbl_summary imposes no type rule on categorical", {
                         categorical = "nyha", compare = "none")
   expect_s3_class(tbl, "gtsummary")
 })
+
+test_that("hv_tbl_summary rejects a groups section with no variables", {
+  # Plausible whenever `groups` is built programmatically from a filter
+  # that returns nothing. list() was already caught; a named-but-empty
+  # section was not, and leaked a base-R message byte-identical to the
+  # one the `by`-in-`groups` check was added to prevent.
+  msg <- tryCatch(
+    hv_tbl_summary(gtsummary::trial, by = "trt",
+                   groups = list(Demo = character(0)),
+                   continuous = character(0)),
+    error = conditionMessage
+  )
+  expect_false(grepl("empty integer vector", msg, fixed = TRUE))
+  expect_identical(
+    msg,
+    paste0("`groups` section `Demo` lists no variables. Every section ",
+           "must name at least one variable, e.g. ",
+           "list(Demo = c(\"age\")). Drop the empty section.")
+  )
+})

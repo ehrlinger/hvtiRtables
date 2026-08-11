@@ -255,6 +255,16 @@
          ". Available: ", paste(shown, collapse = ", "), ".",
          call. = FALSE)
   }
+  # A repeated name builds the same n_/disp_ column pair twice, and
+  # flextable rejects that with "duplicated col_keys: n_stat_1,
+  # disp_stat_1" -- internal column names the caller never wrote and
+  # cannot find in any help page.
+  dup <- unique(nms[duplicated(nms)])
+  if (length(dup) > 0L)
+    stop("`", arg, "` must name each column at most once. Duplicated: ",
+         paste(dup, collapse = ", "), ". Each stat_<k> column gets one ",
+         "spanning label, e.g. c(stat_1 = \"A\", stat_2 = \"B\").",
+         call. = FALSE)
   invisible(groups)
 }
 

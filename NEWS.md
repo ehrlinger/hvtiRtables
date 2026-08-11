@@ -36,6 +36,14 @@
   values is rejected in any bucket. `categorical` keeps no type rule.
 - `hv_man_table_jtcvs()` validates `groups` names against
   `tbl$table_body`, replacing a base-R `non-character argument` error.
+- `hv_man_table_jtcvs()` now rejects a `groups` name given twice,
+  replacing `flextable`'s `duplicated col_keys: n_stat_1, disp_stat_1`
+  — internal column names the caller never wrote.
+- `hv_tbl_summary()` now rejects a `groups` section holding no
+  variables (e.g. `list(Demo = character(0))`, plausible when `groups`
+  is built from a filter that returns nothing). `list()` was already
+  caught; a named-but-empty section leaked the base-R "`names` must be
+  `NULL` or a character vector, not an empty integer vector.".
 - `hv_man_table_save_jtcvs()` validates `file`, replacing a base-R
   `a character vector argument expected` error.
 - `hv_tbl_summary()` validates `by` in the package's own vocabulary.
