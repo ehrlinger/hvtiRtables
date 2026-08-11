@@ -140,6 +140,97 @@
        "duplicate from `", nm, "`.", call. = FALSE)
 }
 
+# Compact, bounded account of what a column actually holds. Bounded
+# because a continuous column has hundreds of distinct values and the
+# message has to stay one readable sentence.
+.describe_column <- function(x) {
+  vals <- sort(unique(stats::na.omit(x)))
+  n <- length(vals)
+  if (n == 0L) return("no non-missing values")
+  shown <- as.character(vals[seq_len(min(3L, n))])
+  sprintf("%d distinct non-missing value%s (%s%s)", n,
+          if (n == 1L) "" else "s", paste(shown, collapse = ", "),
+          if (n > 3L) ", ..." else "")
+}
+
+# gtsummary assigns a dichotomous "event" value only for logical data,
+# numeric data whose values are exactly 0 and 1, or yes/no
+# character/factor data. Any other two-valued column reaches gtsummary
+# and dies with "Summary type is \"dichotomous\" but no summary value
+# has been assigned." -- banned vocabulary, so `binary` needs this
+# rule as well as the at-most-2-values one.
+.is_dichotomizable <- function(x) {
+  if (is.logical(x)) return(TRUE)
+  vals <- unique(stats::na.omit(x))
+  if (is.numeric(x)) return(setequal(vals, c(0, 1)))
+  if (is.factor(x))
+    return(nlevels(x) == 2L &&
+             setequal(toupper(levels(x)), c("NO", "YES")))
+  if (is.character(x))
+    return(length(vals) == 2L &&
+             setequal(toupper(vals), c("NO", "YES")))
+  FALSE
+}
+
+# Which bucket the data actually suits, for the "Move `x` to ..." fix.
+.suggest_bucket <- function(x) {
+  if (.is_dichotomizable(x)) return("binary")
+  if (is.numeric(x)) return("continuous")
+  "categorical"
+}
+
+# .assert_type_buckets() checks that the buckets do not overlap; this
+# checks that a variable's DATA suits the bucket it was put in. Without
+# it, `continuous` on a factor produced "{N} ||| NA (NA, NA)" cells --
+# which satisfy .assert_stat_convention(), because the convention
+# genuinely is applied and only the statistic is NA -- so the table
+# rendered and saved as a complete, correctly styled, all-NA
+# manuscript table. `categorical` (SAS CAT2=) gets no type rule:
+# factors, characters, and small-integer codes are all legitimate.
+.assert_bucket_data <- function(data, continuous, binary, categorical) {
+  buckets <- list(continuous = continuous, binary = binary,
+                  categorical = categorical)
+  # Checked first, and for every bucket: an all-missing column gives
+  # the same all-NA table the type rules below exist to prevent, and
+  # would otherwise be reported as a type error instead.
+  for (nm in names(buckets)) {
+    for (v in buckets[[nm]]) {
+      if (length(stats::na.omit(data[[v]])) > 0L) next
+      stop("`", nm, "` lists `", v, "`, but `", v, "` has no ",
+           "non-missing values, so every statistic for it would be ",
+           "NA. Drop `", v, "` from `groups` and `", nm,
+           "`, or check the data.", call. = FALSE)
+    }
+  }
+  for (v in continuous) {
+    x <- data[[v]]
+    if (is.numeric(x)) next
+    stop("`continuous` lists `", v, "`, but `", v, "` is ",
+         class(x)[1], " data with ", .describe_column(x),
+         ". `continuous` summarizes numeric columns as a median and ",
+         "percentiles, so non-numeric data gives a table of NA ",
+         "statistics. Move `", v, "` to `", .suggest_bucket(x), "`.",
+         call. = FALSE)
+  }
+  for (v in binary) {
+    x <- data[[v]]
+    if (length(unique(stats::na.omit(x))) > 2L)
+      stop("`binary` lists `", v, "`, but `", v, "` has ",
+           .describe_column(x), ". `binary` summarizes a two-valued ",
+           "variable as a single \"n (%)\" row, so it accepts at ",
+           "most 2 distinct values. Move `", v, "` to `",
+           .suggest_bucket(x), "`.", call. = FALSE)
+    if (!.is_dichotomizable(x))
+      stop("`binary` lists `", v, "`, but `", v, "` has ",
+           .describe_column(x), ". `binary` renders one \"n (%)\" ",
+           "row and so needs an unambiguous event value: it accepts ",
+           "logical, 0/1, or Yes/No data. Recode `", v, "` to 0/1, ",
+           "or move it to `categorical`, which shows every level.",
+           call. = FALSE)
+  }
+  invisible(NULL)
+}
+
 .assert_jtcvs_groups <- function(tbl, groups, arg = "groups") {
   if (!is.character(groups) || length(groups) == 0L || anyNA(groups))
     stop("`", arg, "` must be a named character vector, stat_<k> ",

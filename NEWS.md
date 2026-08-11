@@ -22,6 +22,18 @@
   number (`"* 1"`), and a length-2 vector (`"* a* b"`).
 - `hv_tbl_summary()` now enforces its documented "exactly one type
   bucket" contract instead of failing inside `gtsummary`.
+- `hv_tbl_summary()` now checks each variable's data against the bucket
+  it was put in, not just that the buckets don't overlap. A non-numeric
+  variable in `continuous` previously produced `"{N} ||| NA (NA, NA)"`
+  cells, which satisfy the `|||` convention check because the
+  convention genuinely is applied and only the statistic is `NA` — so
+  the table rendered and saved as a complete, correctly styled, all-`NA`
+  manuscript table off nothing but `gtsummary` *messages*. `binary` now
+  requires at most two distinct non-missing values AND a form
+  `gtsummary` can dichotomize (logical, `0`/`1`, `Yes`/`No`), which is
+  what removes the leaked "Summary type is \"dichotomous\" but no
+  summary value has been assigned." error. A column with no non-missing
+  values is rejected in any bucket. `categorical` keeps no type rule.
 - `hv_man_table_jtcvs()` validates `groups` names against
   `tbl$table_body`, replacing a base-R `non-character argument` error.
 - `hv_man_table_save_jtcvs()` validates `file`, replacing a base-R

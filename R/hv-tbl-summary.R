@@ -29,6 +29,18 @@
 #' `categorical`."** Each variable is classified exactly once. A 0/1
 #' variable is `binary`; a multi-level factor is `categorical`.
 #'
+#' **"`continuous` lists `<var>`, but `<var>` is factor data ..."** The
+#' bucket has to suit the data, not just be free of overlaps. A
+#' non-numeric variable in `continuous` used to reach `gtsummary`,
+#' which only *messages* about it, and produced a complete, correctly
+#' styled table whose every statistic was `NA`.
+#'
+#' **"`binary` lists `<var>`, but `<var>` has ..."** `binary` renders
+#' one `n (%)` row, so it takes at most two distinct values and needs
+#' an unambiguous event value: logical, `0`/`1`, or `Yes`/`No`. A
+#' three-level factor, or a two-level one like `F`/`M`, belongs in
+#' `categorical`.
+#'
 #' **"Variable(s) in `groups` not classified ..."** Every variable
 #' listed in `groups` also needs a type bucket, and every classified
 #' variable needs to appear in `groups`. The two lists must match.
@@ -56,14 +68,19 @@
 #'   appear in `groups`.
 #' @param continuous Character vector of continuous variable names
 #'   (`%summarytable` `CON1=` equivalent), summarized as
-#'   `median (P<low>, P<high>)`.
+#'   `median (P<low>, P<high>)`. Each named column must be numeric.
 #' @param binary Character vector of 0/1 variable names (`%summarytable`
-#'   `CAT1=` equivalent), summarized as `n (%)` on a single row.
+#'   `CAT1=` equivalent), summarized as `n (%)` on a single row. Each
+#'   named column must have at most 2 distinct non-`NA` values, and
+#'   must be logical, `0`/`1`, or `Yes`/`No` data, so that the "event"
+#'   the single row counts is unambiguous. Anything else belongs in
+#'   `categorical`, which shows every level.
 #' @param categorical Character vector of multi-level variable names
 #'   (`%summarytable` `CAT2=` equivalent), summarized as `n (%)` per
-#'   level. Ordinal variables belong here too; this function does not
-#'   run a trend test (`%summarytable`'s `ORD1=` distinction is not
-#'   preserved).
+#'   level. No type rule applies: factors, characters, and
+#'   small-integer codes are all accepted. Ordinal variables belong
+#'   here too; this function does not run a trend test
+#'   (`%summarytable`'s `ORD1=` distinction is not preserved).
 #' @param compare One of `"pvalue"` (default), `"smd"`, `"both"`, or
 #'   `"none"`. Ignored (treated as `"none"`) when `by` is `NULL`, since
 #'   there is nothing to compare. `"smd"` and `"both"` require `by` to
@@ -170,6 +187,10 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   if (length(extra) > 0)
     stop("Variable(s) classified but not present in `groups`: ",
          paste(extra, collapse = ", "), call. = FALSE)
+  # Runs last of the entry checks, since it needs every variable to
+  # exist in `data`. Buckets that don't overlap can still be wrong
+  # about the data they name.
+  .assert_bucket_data(data, continuous, binary, categorical)
 
   p_lo <- percentiles[1]
   p_hi <- percentiles[2]

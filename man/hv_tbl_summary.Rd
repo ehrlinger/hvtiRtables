@@ -30,16 +30,21 @@ appear in \code{groups}.}
 
 \item{continuous}{Character vector of continuous variable names
 (\verb{\%summarytable} \verb{CON1=} equivalent), summarized as
-\verb{median (P<low>, P<high>)}.}
+\verb{median (P<low>, P<high>)}. Each named column must be numeric.}
 
 \item{binary}{Character vector of 0/1 variable names (\verb{\%summarytable}
-\verb{CAT1=} equivalent), summarized as \verb{n (\%)} on a single row.}
+\verb{CAT1=} equivalent), summarized as \verb{n (\%)} on a single row. Each
+named column must have at most 2 distinct non-\code{NA} values, and
+must be logical, \code{0}/\code{1}, or \code{Yes}/\code{No} data, so that the "event"
+the single row counts is unambiguous. Anything else belongs in
+\code{categorical}, which shows every level.}
 
 \item{categorical}{Character vector of multi-level variable names
 (\verb{\%summarytable} \verb{CAT2=} equivalent), summarized as \verb{n (\%)} per
-level. Ordinal variables belong here too; this function does not
-run a trend test (\verb{\%summarytable}'s \verb{ORD1=} distinction is not
-preserved).}
+level. No type rule applies: factors, characters, and
+small-integer codes are all accepted. Ordinal variables belong
+here too; this function does not run a trend test
+(\verb{\%summarytable}'s \verb{ORD1=} distinction is not preserved).}
 
 \item{compare}{One of \code{"pvalue"} (default), \code{"smd"}, \code{"both"}, or
 \code{"none"}. Ignored (treated as \code{"none"}) when \code{by} is \code{NULL}, since
@@ -89,6 +94,18 @@ comparison column (\code{NULL} when \code{compare = "none"}).
 \strong{"\verb{<var>} appears in more than one of \code{continuous}, \code{binary}, and
 \code{categorical}."} Each variable is classified exactly once. A 0/1
 variable is \code{binary}; a multi-level factor is \code{categorical}.
+
+\strong{"\code{continuous} lists \verb{<var>}, but \verb{<var>} is factor data ..."} The
+bucket has to suit the data, not just be free of overlaps. A
+non-numeric variable in \code{continuous} used to reach \code{gtsummary},
+which only \emph{messages} about it, and produced a complete, correctly
+styled table whose every statistic was \code{NA}.
+
+\strong{"\code{binary} lists \verb{<var>}, but \verb{<var>} has ..."} \code{binary} renders
+one \verb{n (\%)} row, so it takes at most two distinct values and needs
+an unambiguous event value: logical, \code{0}/\code{1}, or \code{Yes}/\code{No}. A
+three-level factor, or a two-level one like \code{F}/\code{M}, belongs in
+\code{categorical}.
 
 \strong{"Variable(s) in \code{groups} not classified ..."} Every variable
 listed in \code{groups} also needs a type bucket, and every classified
