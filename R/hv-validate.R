@@ -80,3 +80,114 @@
          "non-empty name.", call. = FALSE)
   invisible(x)
 }
+
+# ---- Layer 2: precondition assertions ----------------------------
+
+.assert_type_buckets <- function(continuous, binary, categorical) {
+  buckets <- list(continuous = continuous, binary = binary,
+                  categorical = categorical)
+  for (nm in names(buckets)) {
+    b <- buckets[[nm]]
+    if (!is.character(b) || anyNA(b))
+      stop("`", nm, "` must be a character vector of variable names. ",
+           "Received: ", .describe(b), ".", call. = FALSE)
+  }
+  all_vars <- unlist(buckets, use.names = FALSE)
+  dup <- unique(all_vars[duplicated(all_vars)])
+  if (length(dup) == 0L) return(invisible(NULL))
+  where <- vapply(dup, function(v) {
+    hits <- names(buckets)[
+      vapply(buckets, function(b) v %in% b, logical(1))
+    ]
+    sprintf("%s (%s)", v, paste(hits, collapse = ", "))
+  }, character(1))
+  stop("`", dup[1], "` appears in more than one of `continuous`, ",
+       "`binary`, and `categorical`. Every variable must be ",
+       "classified exactly once. Overlapping: ",
+       paste(where, collapse = "; "), ".", call. = FALSE)
+}
+
+.assert_jtcvs_groups <- function(tbl, groups, arg = "groups") {
+  if (!is.character(groups) || length(groups) == 0L || anyNA(groups))
+    stop("`", arg, "` must be a named character vector, stat_<k> ",
+         "column name -> spanning header label, e.g. ",
+         "c(stat_1 = \"Drug A (n=98)\"). Received: ",
+         .describe(groups), ".", call. = FALSE)
+  nms <- names(groups)
+  if (is.null(nms) || anyNA(nms) || any(!nzchar(nms)))
+    stop("`", arg, "` must be a named character vector; every element ",
+         "must have a non-empty name, e.g. ",
+         "c(stat_1 = \"Drug A (n=98)\").", call. = FALSE)
+  available <- names(tbl$table_body)
+  not_found <- setdiff(nms, available)
+  if (length(not_found) > 0L) {
+    # Show the stat_ columns, which is what a group name always is.
+    # Fall back to every column when a hand-built object has none, so
+    # the message never ends with an empty "Available:".
+    shown <- grep("^stat_", available, value = TRUE)
+    if (length(shown) == 0L) shown <- available
+    stop("`", arg, "` names must be columns in `tbl$table_body`. ",
+         "Not found: ", paste(not_found, collapse = ", "),
+         ". Available: ", paste(shown, collapse = ", "), ".",
+         call. = FALSE)
+  }
+  invisible(groups)
+}
+
+# The non-NA qualifier is load-bearing and was established empirically:
+# a valid hv_tbl_summary() table carries NA stat cells on the parent
+# label row of a multi-level categorical variable. A rule requiring
+# every cell to split would reject correct tables.
+.assert_stat_convention <- function(tb, groups, arg = "tbl") {
+  for (col in names(groups)) {
+    vals <- tb[[col]]
+    keep <- !is.na(vals)
+    if (!any(keep)) next
+    parts <- strsplit(vals[keep], " \\|\\|\\| ")
+    bad <- which(lengths(parts) != 2L)
+    if (length(bad) == 0L) next
+    stop("`", arg, "` was not built with the \"{N_obs} ||| {stat}\" ",
+         "convention hv_man_table_jtcvs() requires, so column `", col,
+         "` cannot be split into its N and statistic parts. Build it ",
+         "with hv_tbl_summary(), or pass statistic = ",
+         "list(all_continuous() ~ \"{N_obs} ||| {mean} ± {sd}\")",
+         ". First unparseable value: \"", vals[keep][bad[1]], "\".",
+         call. = FALSE)
+  }
+  invisible(NULL)
+}
+
+.assert_footnote_entries <- function(footnotes, ft,
+                                     arg = "footnotes") {
+  if (is.null(footnotes)) return(invisible(NULL))
+  n_body <- flextable::nrow_part(ft, "body")
+  for (k in seq_along(footnotes)) {
+    fn <- footnotes[[k]]
+    # Fractional rows are checked explicitly: flextable accepts them
+    # silently rather than erroring, so without this they would mark
+    # whatever cell they truncate to, which is the silent-wrong-cell
+    # failure this validation exists to prevent.
+    if (!is.numeric(fn$row) || length(fn$row) == 0L ||
+          anyNA(fn$row) || any(!is.finite(fn$row)) ||
+          any(fn$row %% 1 != 0) || any(fn$row < 1) ||
+          any(fn$row > n_body))
+      stop("`", arg, "[[", k, "]]$row` must be whole numbers between ",
+           "1 and ", n_body, ", indexing `ft`'s body rows. Row ",
+           "indices count the section-header rows ",
+           "hv_man_table_jtcvs() interleaves; ",
+           "hv_test_footnotes_jtcvs() computes them for you.",
+           call. = FALSE)
+    if (!is.character(fn$col) || length(fn$col) != 1L ||
+          !fn$col %in% ft$col_keys)
+      stop("`", arg, "[[", k, "]]$col` is not a column in `ft`: ",
+           paste(fn$col, collapse = ", "), call. = FALSE)
+    if (!is.character(fn$text) || length(fn$text) != 1L ||
+          is.na(fn$text) || !nzchar(fn$text)) {
+      got <- if (is.null(fn$text)) "missing" else .describe(fn$text)
+      stop("`", arg, "[[", k, "]]$text` must be a single non-empty ",
+           "string; it is ", got, ". Each footnote needs ",
+           "list(row =, col =, text =).", call. = FALSE)
+    }
+  }
+  invisible(NULL)
+}
