@@ -1,3 +1,38 @@
+# hvtiRtables 0.9.5
+
+## Breaking changes
+
+- `hv_man_table_jtcvs()` now enforces `font_size` of 11 or 12, the same
+  house rule `hv_man_table()` has always enforced. Calls passing any
+  other value, or a vector, now error.
+- `abbreviations` must be a character vector, as documented. A list
+  previously worked by accident.
+
+## Bug fixes
+
+- `hv_man_table_jtcvs()` now errors when `tbl` was not built with the
+  `{N_obs} ||| {stat}` statistic convention. It previously rendered a
+  complete, correctly styled, entirely empty table.
+- `hv_man_table_save_jtcvs()` now errors when a footnote entry has no
+  `text`. It previously wrote a document with a dangling superscript
+  marker and an empty footnote line.
+- `hv_tbl_summary()` now enforces its documented "exactly one type
+  bucket" contract instead of failing inside `gtsummary`.
+- `hv_man_table_jtcvs()` validates `groups` names against
+  `tbl$table_body`, replacing a base-R `non-character argument` error.
+- `hv_man_table_save_jtcvs()` validates `file`, replacing a base-R
+  `a character vector argument expected` error.
+- `hv_tbl_summary()` validates `by` in the package's own vocabulary.
+
+## Documentation
+
+- New `?hvtiRtables` package topic explaining which rendering mode to
+  use, with both pipelines end to end.
+- New vignette walking a complete JTCVS table from data frame to
+  checked `.docx`.
+- Every function's help now states its arguments' accepted values
+  exhaustively and carries a "Common mistakes" section.
+
 # hvtiRtables 0.9.4
 
 ## New features

@@ -175,7 +175,7 @@
          "convention hv_man_table_jtcvs() requires, so column `", col,
          "` cannot be split into its N and statistic parts. Build it ",
          "with hv_tbl_summary(), or pass statistic = ",
-         "list(all_continuous() ~ \"{N_obs} ||| {mean} ± {sd}\")",
+         "list(all_continuous() ~ \"{N_obs} ||| {mean} \u00B1 {sd}\")",
          ". First unparseable value: \"", vals[keep][bad[1]], "\".",
          call. = FALSE)
   }
