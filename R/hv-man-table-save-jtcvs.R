@@ -59,6 +59,7 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
   out_dir <- dirname(file)
   if (!dir.exists(out_dir))
     stop("Output directory does not exist: ", out_dir, call. = FALSE)
+  .check_abbreviations(abbreviations)
 
   letters_seq <- letters
   if (!is.null(footnotes) && length(footnotes) > length(letters_seq))

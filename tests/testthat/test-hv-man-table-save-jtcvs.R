@@ -174,3 +174,33 @@ test_that("hv_man_table_save_jtcvs marks every row of a vector-valued row", {
   # One superscript "a" per marked cell, plus one in the footnote line.
   expect_gte(lengths(regmatches(xml, gregexpr("superscript", xml))), 3)
 })
+
+test_that("hv_man_table_save_jtcvs rejects a bad abbreviations arg", {
+  # Regression: .add_abbreviations_key()'s own name-validation was moved
+  # out to .check_abbreviations() at hv_man_table_save()'s entry, but
+  # this function's entry was never updated to call it too. A bad
+  # `abbreviations` used to either write a malformed .docx (unnamed
+  # element) or crash with an opaque officer/flextable internal error
+  # (a `list`), instead of the package's own clear validation message,
+  # and always after writing no file.
+  ft <- fx_jtcvs_ft()
+
+  out <- tempfile(fileext = ".docx")
+  expect_error(
+    hv_man_table_save_jtcvs(
+      ft, out, caption = "Table 1. X", abbreviations = c("no name")
+    ),
+    "non-empty name"
+  )
+  expect_false(file.exists(out))
+
+  out <- tempfile(fileext = ".docx")
+  expect_error(
+    hv_man_table_save_jtcvs(
+      ft, out, caption = "Table 1. X",
+      abbreviations = list(SD = "standard deviation")
+    ),
+    "named character vector"
+  )
+  expect_false(file.exists(out))
+})
