@@ -1,10 +1,34 @@
 test_that(".describe reports class and length, never the value", {
   expect_identical(.describe(NULL), "NULL")
-  expect_identical(.describe(c(11, 12)), "a vector of length 2")
-  expect_identical(.describe(character(0)), "a vector of length 0")
+  expect_identical(.describe(c(11, 12)), "numeric of length 2")
+  expect_identical(.describe(character(0)), "character of length 0")
   expect_identical(.describe(NA), "NA")
   expect_identical(.describe(10), "numeric of length 1")
   expect_identical(.describe("x"), "character of length 1")
+})
+
+test_that(".describe keeps the class in the length-not-1 branch", {
+  # The clause exists for the argument-order slip, where the class
+  # mismatch is the tell -- so the length-not-1 branch must report the
+  # class too. "a vector of length 8" for a 200-row data frame (8
+  # columns) was actively misleading.
+  expect_identical(.describe(gtsummary::trial),
+                   "tbl_df of length 8")
+  expect_identical(.describe(fx_plain_tbl()),
+                   "tbl_summary of length 5")
+  expect_identical(
+    tryCatch(hv_man_table(gtsummary::trial), error = conditionMessage),
+    paste0("`tbl` must be a gtsummary table object. Received: ",
+           "tbl_df of length 8.")
+  )
+  expect_identical(
+    tryCatch(
+      hv_man_table_save(fx_plain_tbl(), tempfile(fileext = ".docx")),
+      error = conditionMessage
+    ),
+    paste0("`ft` must be a flextable object. Received: ",
+           "tbl_summary of length 5.")
+  )
 })
 
 test_that(".check_font_size accepts only 11 and 12", {
@@ -20,7 +44,7 @@ test_that(".check_font_size message names the house rule", {
   expect_identical(
     tryCatch(.check_font_size(c(11, 12)), error = conditionMessage),
     paste0("`font_size` must be 11 or 12 (house rule: 12pt, 11pt ",
-           "permitted for wide tables). Received: a vector of ",
+           "permitted for wide tables). Received: numeric of ",
            "length 2.")
   )
 })

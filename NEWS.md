@@ -54,6 +54,13 @@
   `ft`'s columns. The message previously ended at a bare colon with
   nothing after it.
 - `hv_tbl_summary()` validates `by` in the package's own vocabulary.
+- Every validation message's `Received:` clause now names the class
+  even when the value is not length 1. The clause exists for the
+  argument-order slip, where the class mismatch is the tell, but it
+  reported a bare `a vector of length 8` for a 200-row data frame (8
+  columns) and `a vector of length 5` for a `gtsummary` table — losing
+  exactly the diagnostic it was written for. Those now read
+  `tbl_df of length 8` and `tbl_summary of length 5`.
 
 ## Documentation
 

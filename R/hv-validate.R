@@ -15,11 +15,14 @@
 # The "Received:" clause. Reports class and length rather than the
 # value, which keeps the message short for a data frame or a connection,
 # and is the most diagnostic thing for the commonest real mistake -- an
-# argument-order slip, where the class mismatch is the tell.
+# argument-order slip, where the class mismatch is the tell. Both
+# branches report the class for exactly that reason: a bare "a vector
+# of length 8" for a 200-row data frame (8 columns) threw away the one
+# thing this clause exists to say.
 .describe <- function(x) {
   if (is.null(x)) return("NULL")
   if (length(x) != 1L)
-    return(sprintf("a vector of length %d", length(x)))
+    return(sprintf("%s of length %d", class(x)[1], length(x)))
   if (is.atomic(x) && is.na(x)) return("NA")
   sprintf("%s of length 1", class(x)[1])
 }
