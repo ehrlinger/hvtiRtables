@@ -95,16 +95,32 @@
   all_vars <- unlist(buckets, use.names = FALSE)
   dup <- unique(all_vars[duplicated(all_vars)])
   if (length(dup) == 0L) return(invisible(NULL))
-  where <- vapply(dup, function(v) {
-    hits <- names(buckets)[
-      vapply(buckets, function(b) v %in% b, logical(1))
-    ]
-    sprintf("%s (%s)", v, paste(hits, collapse = ", "))
-  }, character(1))
-  stop("`", dup[1], "` appears in more than one of `continuous`, ",
-       "`binary`, and `categorical`. Every variable must be ",
-       "classified exactly once. Overlapping: ",
-       paste(where, collapse = "; "), ".", call. = FALSE)
+  hits_for <- function(v) {
+    names(buckets)[vapply(buckets, function(b) v %in% b, logical(1))]
+  }
+  # A name duplicated *within* one bucket looks identical to a name
+  # that spans two buckets once unlist() flattens them -- both show
+  # up as `dup`. Split on bucket-set membership (length(hits) > 1)
+  # so the two get their own, non-contradictory messages below.
+  cross <- dup[vapply(dup, function(v) length(hits_for(v)) > 1L,
+                      logical(1))]
+  if (length(cross) > 0L) {
+    where <- vapply(cross, function(v) {
+      sprintf("%s (%s)", v, paste(hits_for(v), collapse = ", "))
+    }, character(1))
+    stop("`", cross[1], "` appears in more than one of `continuous`, ",
+         "`binary`, and `categorical`. Every variable must be ",
+         "classified exactly once. Overlapping: ",
+         paste(where, collapse = "; "), ".", call. = FALSE)
+  }
+  # Remaining `dup` entries are duplicated inside a single bucket
+  # only (e.g. c("age", "age") passed as `continuous`); a variable
+  # spanning buckets is already handled above.
+  intra <- setdiff(dup, cross)[1]
+  nm <- hits_for(intra)
+  stop("`", nm, "` lists `", intra, "` more than once. Each variable ",
+       "name may appear at most once per bucket. Remove the ",
+       "duplicate from `", nm, "`.", call. = FALSE)
 }
 
 .assert_jtcvs_groups <- function(tbl, groups, arg = "groups") {
@@ -140,6 +156,15 @@
 # every cell to split would reject correct tables.
 .assert_stat_convention <- function(tb, groups, arg = "tbl") {
   for (col in names(groups)) {
+    # tb[[col]] is NULL for a missing column, and !any(logical(0)) is
+    # TRUE, so without this guard the loop would `next` past an
+    # unknown column instead of erroring -- a silent pass inside the
+    # function whose job is catching a silent failure.
+    # .assert_jtcvs_groups() is the user-facing name check (with its
+    # "Available:" listing) and normally runs first; this is only a
+    # defensive backstop for callers that don't run it first.
+    if (!col %in% names(tb))
+      stop("`", arg, "` has no column `", col, "`.", call. = FALSE)
     vals <- tb[[col]]
     keep <- !is.na(vals)
     if (!any(keep)) next

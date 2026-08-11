@@ -81,6 +81,36 @@ test_that(".assert_type_buckets requires character vectors", {
                "`continuous` must be a character vector")
 })
 
+test_that(".assert_type_buckets flags duplication within one bucket", {
+  expect_identical(
+    tryCatch(
+      .assert_type_buckets(c("age", "age"), character(0),
+                           character(0)),
+      error = conditionMessage
+    ),
+    paste0("`continuous` lists `age` more than once. Each variable ",
+           "name may appear at most once per bucket. Remove the ",
+           "duplicate from `continuous`.")
+  )
+})
+
+test_that(".assert_type_buckets: cross-bucket beats intra-bucket", {
+  # "age" is both duplicated inside `continuous` AND present in
+  # `binary`. The cross-bucket reading wins: it is the classification
+  # conflict that matters (which bucket does "age" belong to?), and
+  # its message already reports every bucket the name appears in, so
+  # it is never contradicted by the intra-bucket duplicate.
+  expect_identical(
+    tryCatch(
+      .assert_type_buckets(c("age", "age"), c("age"), character(0)),
+      error = conditionMessage
+    ),
+    paste0("`age` appears in more than one of `continuous`, `binary`, ",
+           "and `categorical`. Every variable must be classified ",
+           "exactly once. Overlapping: age (continuous, binary).")
+  )
+})
+
 test_that(".assert_jtcvs_groups checks names exist in table_body", {
   tbl <- fx_jtcvs_tbl()
   expect_silent(
@@ -109,6 +139,18 @@ test_that(".assert_stat_convention accepts NA cells", {
   expect_silent(
     .assert_stat_convention(tbl$table_body,
                             c(stat_1 = "A", stat_2 = "B"))
+  )
+})
+
+test_that(".assert_stat_convention errors on a column absent from tb", {
+  # Unreachable via the wired call path (.assert_jtcvs_groups() runs
+  # first and rejects an unknown name), but nothing enforces that
+  # ordering, so this function must not silently pass a `groups`
+  # column that isn't in `tb`.
+  tbl <- fx_jtcvs_tbl()
+  expect_error(
+    .assert_stat_convention(tbl$table_body, c(stat_9 = "Z")),
+    "`tbl` has no column `stat_9`", fixed = TRUE
   )
 })
 
