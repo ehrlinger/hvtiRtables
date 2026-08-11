@@ -89,6 +89,15 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     .check_string(by, "by")
     if (!by %in% names(data))
       stop("Variable(s) not found in `data`: ", by, call. = FALSE)
+    # `by` is compared across, not summarized as a row -- the same
+    # mistake as putting a SAS %summarytable CLASS= variable into
+    # LIST=. Left to gtsummary this dies several calls later with
+    # "`names` must be `NULL` or a character vector, not an empty
+    # integer vector.", which never mentions `by` or `groups`.
+    if (by %in% unlist(groups, use.names = FALSE))
+      stop("`by` must not also be listed in `groups`: `", by,
+           "` is the grouping variable, not a row to summarize. ",
+           "Remove it from `groups`.", call. = FALSE)
   }
   if (!is.list(groups) || is.null(names(groups)) ||
         any(!nzchar(names(groups))))

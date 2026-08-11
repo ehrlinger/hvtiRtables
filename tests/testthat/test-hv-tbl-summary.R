@@ -558,6 +558,19 @@ test_that("hv_tbl_summary validates by in the package's own words", {
   )
 })
 
+test_that("hv_tbl_summary rejects by also listed in groups", {
+  # The SAS %summarytable equivalent of putting a CLASS= variable into
+  # LIST= too. Left to gtsummary this dies with "`names` must be NULL
+  # or a character vector, not an empty integer vector.", which never
+  # mentions `by` or `groups` -- the package's stated standard is that
+  # users never see upstream error vocabulary from a public API.
+  expect_error(
+    hv_tbl_summary(mtcars, by = "mpg", groups = list(E = "mpg"),
+                   continuous = "mpg"),
+    "`by`.*`groups`"
+  )
+})
+
 test_that("hv_tbl_summary rejects non-character type buckets", {
   expect_error(
     hv_tbl_summary(mtcars, groups = list(E = "mpg"), continuous = 1),
