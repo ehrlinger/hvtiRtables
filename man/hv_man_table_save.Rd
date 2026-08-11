@@ -26,7 +26,10 @@ symbol is appended as a superscript reference mark to the table's \code{N}
 column header cell (or the first column if no \code{N} column is present),
 and its text is rendered as its own paragraph below the table, in the
 order given. Every element must be named (unnamed or blank-named
-entries raise an error); an empty list is a no-op, same as \code{NULL}.}
+entries raise an error) and every text must be a single non-empty
+string (\code{NULL}, \code{NA}, a number, or a multi-element vector raise an
+error, since each writes a dangling marker); an empty list is a
+no-op, same as \code{NULL}.}
 
 \item{abbreviations}{Optional named character vector, \code{c(ABBR = "expansion", ...)}. Rendered as one \verb{Key:} paragraph below any
 footnotes, sorted alphabetically by abbreviation, abbreviation

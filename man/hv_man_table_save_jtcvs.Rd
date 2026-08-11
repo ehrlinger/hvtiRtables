@@ -45,10 +45,16 @@ matching the JTCVS template convention.
 }
 \section{Common mistakes}{
 
-\strong{"\code{footnotes[[k]]$text} must be a single non-empty string."} Every
-footnote needs all three of \code{row}, \code{col}, and \code{text}. Before this
-check existed, an entry missing \code{text} wrote a document with a
-dangling superscript marker and an empty footnote line.
+\strong{"\code{footnotes} entry k must be a single non-empty string of footnote
+text."} Every footnote needs all three of \code{row}, \code{col}, and \code{text},
+and \code{text} must be one non-empty string. Before this check existed,
+an entry missing \code{text} wrote a document with a dangling superscript
+marker and an empty footnote line.
+
+\strong{"\code{footnotes[[k]]} must be a list of the form list(row =, col =,
+text =)."} \code{footnotes} is a list \emph{of} footnotes, so a single one is
+\code{list(list(row = 1, col = "n_stat_1", text = "..."))}. Dropping the
+outer \code{list()} previously failed with \verb{$ operator is invalid for atomic vectors}.
 
 \strong{"\code{footnotes[[k]]$row} must be whole numbers ..."} Row indices
 count the section-header rows \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} interleaves

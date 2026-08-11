@@ -228,6 +228,21 @@ test_that("hv_man_table_save_jtcvs rejects a footnote with no text", {
   expect_false(file.exists(out))
 })
 
+test_that("hv_man_table_save_jtcvs rejects non-string footnote text", {
+  ft <- fx_jtcvs_ft()
+  for (bad in list(NULL, NA, 1, c("a", "b"), "")) {
+    out <- tempfile(fileext = ".docx")
+    expect_error(
+      hv_man_table_save_jtcvs(
+        ft, out, caption = "T1.",
+        footnotes = list(list(row = 1, col = "n_stat_1", text = bad))
+      ),
+      "must be a single non-empty string"
+    )
+    expect_false(file.exists(out))
+  }
+})
+
 test_that("hv_man_table_save_jtcvs writes nothing when it rejects", {
   ft <- fx_jtcvs_ft()
   out <- tempfile(fileext = ".docx")

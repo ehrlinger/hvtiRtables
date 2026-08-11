@@ -140,6 +140,21 @@ test_that("rejects footnotes with an NA name (Copilot C1)", {
   )
 })
 
+test_that("hv_man_table_save rejects footnote text that is not a string", {
+  # Regression for the silent defect: each of these previously WROTE the
+  # .docx, with a header marked `Characteristic*` and a footnote
+  # paragraph of "* " (or "* NA", "* 1", "* a* b") -- a dangling marker.
+  ft <- mk_ft()
+  for (bad in list(NULL, NA, 1, c("a", "b"), "")) {
+    f <- tempfile(fileext = ".docx")
+    expect_error(
+      hv_man_table_save(ft, f, footnotes = list(`*` = bad)),
+      "must be a single non-empty string"
+    )
+    expect_false(file.exists(f))
+  }
+})
+
 test_that("footnotes = list() is a no-op, same as NULL", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")

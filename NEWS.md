@@ -13,9 +13,13 @@
 - `hv_man_table_jtcvs()` now errors when `tbl` was not built with the
   `{N_obs} ||| {stat}` statistic convention. It previously rendered a
   complete, correctly styled, entirely empty table.
-- `hv_man_table_save_jtcvs()` now errors when a footnote entry has no
-  `text`. It previously wrote a document with a dangling superscript
-  marker and an empty footnote line.
+- Both savers now enforce one footnote-text contract, through shared
+  code and with the same message. `hv_man_table_save_jtcvs()` errors
+  when a footnote entry has no `text`; `hv_man_table_save()` now does
+  the same for its `symbol -> text` list, which previously *wrote* the
+  `.docx` for `list("*" = NULL)` (header marked `Characteristic*`, a
+  footnote paragraph of `"* "`), and equally for `NA` (`"* NA"`), a
+  number (`"* 1"`), and a length-2 vector (`"* a* b"`).
 - `hv_tbl_summary()` now enforces its documented "exactly one type
   bucket" contract instead of failing inside `gtsummary`.
 - `hv_man_table_jtcvs()` validates `groups` names against

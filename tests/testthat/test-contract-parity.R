@@ -64,6 +64,29 @@ test_that("ft-class contract is identical across both savers", {
   expect_identical(m1, m2)
 })
 
+test_that("footnote-text contract is identical across both savers", {
+  # The two savers reach the text check by different routes -- CORR by
+  # symbol, JTCVS by list entry -- but a footnote marker with no text
+  # is one defect, so it must be one sentence.
+  ft_corr <- hv_man_table(fx_plain_tbl())
+  ft_jt <- fx_jtcvs_ft()
+  for (bad in list(NULL, NA, 1, c("a", "b"), "")) {
+    m1 <- tryCatch(
+      hv_man_table_save(ft_corr, tempfile(fileext = ".docx"),
+                        footnotes = list(`*` = bad)),
+      error = conditionMessage
+    )
+    m2 <- tryCatch(
+      hv_man_table_save_jtcvs(
+        ft_jt, tempfile(fileext = ".docx"), caption = "T1.",
+        footnotes = list(list(row = 1, col = "n_stat_1", text = bad))
+      ),
+      error = conditionMessage
+    )
+    expect_identical(m1, m2)
+  }
+})
+
 test_that("every stop() in the package passes call. = FALSE", {
   ns <- asNamespace("hvtiRtables")
   offenders <- character(0)

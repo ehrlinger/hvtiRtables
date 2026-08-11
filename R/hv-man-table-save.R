@@ -28,7 +28,10 @@
 #'   column header cell (or the first column if no `N` column is present),
 #'   and its text is rendered as its own paragraph below the table, in the
 #'   order given. Every element must be named (unnamed or blank-named
-#'   entries raise an error); an empty list is a no-op, same as `NULL`.
+#'   entries raise an error) and every text must be a single non-empty
+#'   string (`NULL`, `NA`, a number, or a multi-element vector raise an
+#'   error, since each writes a dangling marker); an empty list is a
+#'   no-op, same as `NULL`.
 #' @param abbreviations Optional named character vector, `c(ABBR =
 #'   "expansion", ...)`. Rendered as one `Key:` paragraph below any
 #'   footnotes, sorted alphabetically by abbreviation, abbreviation
@@ -69,6 +72,11 @@ hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
       stop("Invalid footnote symbol(s): ", paste(bad, collapse = ", "),
            ". Must be one of: ", paste(valid_symbols, collapse = " "),
            call. = FALSE)
+    # Validated at entry, alongside the symbol check, so a footnote
+    # with no usable text never reaches print(doc): the defect this
+    # prevents is a written .docx, not a bad object.
+    for (k in seq_along(footnotes))
+      .check_footnote_text(footnotes[[k]], k)
     n_col <- if ("n" %in% ft$col_keys) "n" else ft$col_keys[1]
     j <- which(ft$col_keys == n_col)
     for (sym in fn_names) {

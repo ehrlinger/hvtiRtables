@@ -7,10 +7,17 @@
 #' matching the JTCVS template convention.
 #'
 #' @section Common mistakes:
-#' **"`footnotes[[k]]$text` must be a single non-empty string."** Every
-#' footnote needs all three of `row`, `col`, and `text`. Before this
-#' check existed, an entry missing `text` wrote a document with a
-#' dangling superscript marker and an empty footnote line.
+#' **"`footnotes` entry k must be a single non-empty string of footnote
+#' text."** Every footnote needs all three of `row`, `col`, and `text`,
+#' and `text` must be one non-empty string. Before this check existed,
+#' an entry missing `text` wrote a document with a dangling superscript
+#' marker and an empty footnote line.
+#'
+#' **"`footnotes[[k]]` must be a list of the form list(row =, col =,
+#' text =)."** `footnotes` is a list *of* footnotes, so a single one is
+#' `list(list(row = 1, col = "n_stat_1", text = "..."))`. Dropping the
+#' outer `list()` previously failed with `$ operator is invalid for
+#' atomic vectors`.
 #'
 #' **"`footnotes[[k]]$row` must be whole numbers ..."** Row indices
 #' count the section-header rows [hv_man_table_jtcvs()] interleaves
