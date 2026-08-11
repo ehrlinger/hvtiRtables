@@ -17,7 +17,8 @@
 #' output; see the package README for the paste-in workflow.
 #'
 #' @param ft A `flextable` object, typically from [hv_man_table()].
-#' @param file Output `.docx` path.
+#' @param file Output `.docx` path. The output directory (`dirname(file)`)
+#'   must already exist; this function does not create it.
 #' @param footnotes Optional named list, symbol -> footnote text. Defaults to
 #'   [hv_man_footnotes()] (the house-universal N and median/percentile
 #'   footnotes). Pass `NULL` to suppress both, or compose with

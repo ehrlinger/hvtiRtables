@@ -15,7 +15,8 @@ hv_man_table_save_jtcvs(
 \arguments{
 \item{ft}{A \code{flextable}, from \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}.}
 
-\item{file}{Output \code{.docx} path.}
+\item{file}{Output \code{.docx} path. The output directory (\code{dirname(file)})
+must already exist; this function does not create it.}
 
 \item{caption}{Full caption text, e.g. \code{"Table 1. Baseline Characteristics"}, rendered bold above the table. This function does
 not auto-number tables for you; include the number yourself.}
@@ -55,6 +56,10 @@ into the body. \code{\link[=hv_test_footnotes_jtcvs]{hv_test_footnotes_jtcvs()}}
 
 \strong{"\code{file} must be a single non-empty file path."} Check the
 argument order: it is \verb{(ft, file, caption)}.
+
+\strong{"Output directory does not exist: ..."} The directory part of
+\code{file} (its \code{dirname()}) is not created for you; create it first
+with \code{dir.create(dirname(file), recursive = TRUE)}.
 }
 
 \examples{

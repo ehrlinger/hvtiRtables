@@ -19,8 +19,13 @@
 #' **"`file` must be a single non-empty file path."** Check the
 #' argument order: it is `(ft, file, caption)`.
 #'
+#' **"Output directory does not exist: ..."** The directory part of
+#' `file` (its `dirname()`) is not created for you; create it first
+#' with `dir.create(dirname(file), recursive = TRUE)`.
+#'
 #' @param ft A `flextable`, from [hv_man_table_jtcvs()].
-#' @param file Output `.docx` path.
+#' @param file Output `.docx` path. The output directory (`dirname(file)`)
+#'   must already exist; this function does not create it.
 #' @param caption Full caption text, e.g. `"Table 1. Baseline
 #'   Characteristics"`, rendered bold above the table. This function does
 #'   not auto-number tables for you; include the number yourself.

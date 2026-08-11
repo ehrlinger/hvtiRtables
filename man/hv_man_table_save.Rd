@@ -14,7 +14,8 @@ hv_man_table_save(
 \arguments{
 \item{ft}{A \code{flextable} object, typically from \code{\link[=hv_man_table]{hv_man_table()}}.}
 
-\item{file}{Output \code{.docx} path.}
+\item{file}{Output \code{.docx} path. The output directory (\code{dirname(file)})
+must already exist; this function does not create it.}
 
 \item{footnotes}{Optional named list, symbol -> footnote text. Defaults to
 \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} (the house-universal N and median/percentile
