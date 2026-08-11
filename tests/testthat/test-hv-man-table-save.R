@@ -196,6 +196,16 @@ test_that("abbreviations = character(0) is a no-op, same as NULL", {
   expect_false(grepl("Key:", xml, fixed = TRUE))
 })
 
+test_that("hv_man_table_save rejects a non-character abbreviations", {
+  ft <- mk_ft()
+  f <- tempfile(fileext = ".docx")
+  expect_error(
+    hv_man_table_save(ft, f, abbreviations = list(N = "x")),
+    "named character vector"
+  )
+  expect_false(file.exists(f))
+})
+
 test_that("hv_man_table_save still renders the Key: block after refactor", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")

@@ -199,8 +199,7 @@
 #'
 #' @export
 hv_check_docx <- function(path) {
-  if (!is.character(path) || length(path) != 1L)
-    stop("`path` must be a single file path.", call. = FALSE)
+  .check_string(path, "path")
   doc <- .docx_body_xml(path)
   rbind(
     .detect_layers(doc),

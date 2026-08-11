@@ -50,13 +50,11 @@
 #' @export
 hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
                               abbreviations = NULL) {
-  if (!inherits(ft, "flextable"))
-    stop("`ft` must be a flextable object.", call. = FALSE)
-  if (!is.character(file) || length(file) != 1L || is.na(file) || !nzchar(file))
-    stop("`file` must be a single non-empty file path.", call. = FALSE)
-  out_dir <- dirname(file)
-  if (!dir.exists(out_dir))
-    stop("Output directory does not exist: ", out_dir, call. = FALSE)
+  .check_flextable(ft)
+  .check_file(file)
+  # Hoisted out of .add_abbreviations_key() so it fires at entry
+  # rather than mid-render: no partial .docx on a bad argument.
+  .check_abbreviations(abbreviations)
 
   valid_symbols <- c("*", "\u2020", "\u2021", "\u00A7", "\u00B6", "||")
   if (!is.null(footnotes) && length(footnotes) > 0) {
@@ -100,11 +98,6 @@ hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
 
 .add_abbreviations_key <- function(doc, abbreviations) {
   if (is.null(abbreviations) || length(abbreviations) == 0) return(doc)
-  abbr_names <- names(abbreviations)
-  if (is.null(abbr_names) || anyNA(abbr_names) || any(!nzchar(abbr_names)))
-    stop("`abbreviations` must be a named character vector ",
-         "(c(ABBR = \"expansion\", ...)); every element must have a ",
-         "non-empty name.", call. = FALSE)
   ordered <- abbreviations[order(names(abbreviations))]
   runs <- list(officer::ftext("Key: "))
   italic_prop <- officer::fp_text(italic = TRUE)

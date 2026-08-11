@@ -50,13 +50,9 @@
 #' @export
 hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
                          digits = 2) {
-  if (!inherits(tbl, "gtsummary"))
-    stop("`tbl` must be a gtsummary table object.", call. = FALSE)
-  if (!is.numeric(font_size) || length(font_size) != 1L ||
-        !(font_size %in% c(11, 12)))
-    stop("`font_size` must be 11 or 12 (house rule: 12pt, ",
-         "11pt permitted for wide tables).",
-         call. = FALSE)
+  .check_gtsummary(tbl)
+  .check_string(font, "font")
+  .check_font_size(font_size)
 
   ft <- gtsummary::as_flex_table(tbl)
   ft <- flextable::merge_none(ft)
