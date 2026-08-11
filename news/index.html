@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,6 +40,14 @@
       <small>Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.6" id="hvtirtables-096">hvtiRtables 0.9.6<a class="anchor" aria-label="anchor" href="#hvtirtables-096"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-0-9-6">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-9-6"></a></h3>
+<ul><li>
+<code>binary</code> variables now pass an explicit event value to <code>gtsummary</code> instead of letting it infer one. Its inference is type-sensitive in a way that hit the SAS import path: a <code>haven_labelled</code> column over a <em>double</em> base type – what <code><a href="https://haven.tidyverse.org/reference/read_sas.html" class="external-link">haven::read_sas()</a></code> produces, since every SAS numeric is an 8-byte float – failed with <code>Summary type is "dichotomous" but no summary value has been assigned.</code>, while the otherwise-identical integer-backed column worked. The event is the <code>TRUE</code>, <code>1</code>, or <code>Yes</code> side in every accepted encoding.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.5" id="hvtirtables-095">hvtiRtables 0.9.5<a class="anchor" aria-label="anchor" href="#hvtirtables-095"></a></h2>
 <div class="section level3">

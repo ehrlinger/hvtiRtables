@@ -59,7 +59,11 @@ hv_tbl_summary(
   must have at most 2 distinct non-`NA` values, and must be logical,
   `0`/`1`, or `Yes`/`No` data, so that the "event" the single row counts
   is unambiguous. Anything else belongs in `categorical`, which shows
-  every level.
+  every level. The event is the `TRUE`, `1`, or `Yes` side, and is
+  stated to `gtsummary` explicitly rather than inferred, so columns read
+  from SAS with
+  [`haven::read_sas()`](https://haven.tidyverse.org/reference/read_sas.html)
+  summarize the same as their plain-vector equivalents.
 
 - categorical:
 

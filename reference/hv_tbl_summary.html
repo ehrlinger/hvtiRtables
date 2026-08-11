@@ -19,7 +19,7 @@ object, ready for hv_man_table_jtcvs()."><!-- dependencies from examples --></he
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -113,7 +113,10 @@ appear in <code>groups</code>.</p></dd>
 named column must have at most 2 distinct non-<code>NA</code> values, and
 must be logical, <code>0</code>/<code>1</code>, or <code>Yes</code>/<code>No</code> data, so that the "event"
 the single row counts is unambiguous. Anything else belongs in
-<code>categorical</code>, which shows every level.</p></dd>
+<code>categorical</code>, which shows every level. The event is the <code>TRUE</code>,
+<code>1</code>, or <code>Yes</code> side, and is stated to <code>gtsummary</code> explicitly rather
+than inferred, so columns read from SAS with <code><a href="https://haven.tidyverse.org/reference/read_sas.html" class="external-link">haven::read_sas()</a></code>
+summarize the same as their plain-vector equivalents.</p></dd>
 
 
 <dt id="arg-categorical">categorical<a class="anchor" aria-label="anchor" href="#arg-categorical"></a></dt>
