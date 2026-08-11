@@ -24,25 +24,65 @@
 #' [hv_man_table_jtcvs()]'s `trailing` argument when `compare` produced a
 #' comparison column (`NULL` when `compare = "none"`).
 #'
+#' @section Common mistakes:
+#' **"`<var>` appears in more than one of `continuous`, `binary`, and
+#' `categorical`."** Each variable is classified exactly once. A 0/1
+#' variable is `binary`; a multi-level factor is `categorical`.
+#'
+#' **"`continuous` lists `<var>`, but `<var>` is factor data ..."** The
+#' bucket has to suit the data, not just be free of overlaps. A
+#' non-numeric variable in `continuous` used to reach `gtsummary`,
+#' which only *messages* about it, and produced a complete, correctly
+#' styled table whose every statistic was `NA`.
+#'
+#' **"`binary` lists `<var>`, but `<var>` has ..."** `binary` renders
+#' one `n (%)` row, so it takes at most two distinct values and needs
+#' an unambiguous event value: logical, `0`/`1`, or `Yes`/`No`. A
+#' three-level factor, or a two-level one like `F`/`M`, belongs in
+#' `categorical`.
+#'
+#' **"Variable(s) in `groups` not classified ..."** Every variable
+#' listed in `groups` also needs a type bucket, and every classified
+#' variable needs to appear in `groups`. The two lists must match.
+#'
+#' **"`compare = "smd"` requires exactly two groups."** A standardized
+#' mean difference is defined between two groups. Use
+#' `compare = "pvalue"` for three or more. If `by` is a factor with an
+#' unused level, `droplevels()` is usually what you want.
+#'
+#' **"`by` must not also be listed in `groups`."** `by` is the
+#' grouping variable being compared across, not a row to summarize.
+#' Before this check existed, the combination reached `gtsummary` and
+#' failed several calls later with "`names` must be `NULL` or a
+#' character vector, not an empty integer vector.", a message that
+#' never mentioned `by`. Remove the variable from `groups`.
+#'
 #' @param data A data frame.
 #' @param by Grouping variable name as a string (`%summarytable` `CLASS=`
 #'   equivalent), or `NULL` for a single ungrouped "Overall" column.
 #' @param groups Named list, section label -> variable names in display
 #'   order (`%summarytable` `LIST=` equivalent), e.g.
-#'   `list(Demography = c("age", "female"), Symptoms = c("nyha"))`. Every
+#'   `list(Demography = c("age", "female"), Symptoms = c("nyha"))`. Each
+#'   section must name at least one variable; a section holding
+#'   `character(0)` is an error, not an empty section. Every
 #'   variable named here must appear in exactly one of `continuous`,
 #'   `binary`, or `categorical`, and every classified variable must
 #'   appear in `groups`.
 #' @param continuous Character vector of continuous variable names
 #'   (`%summarytable` `CON1=` equivalent), summarized as
-#'   `median (P<low>, P<high>)`.
+#'   `median (P<low>, P<high>)`. Each named column must be numeric.
 #' @param binary Character vector of 0/1 variable names (`%summarytable`
-#'   `CAT1=` equivalent), summarized as `n (%)` on a single row.
+#'   `CAT1=` equivalent), summarized as `n (%)` on a single row. Each
+#'   named column must have at most 2 distinct non-`NA` values, and
+#'   must be logical, `0`/`1`, or `Yes`/`No` data, so that the "event"
+#'   the single row counts is unambiguous. Anything else belongs in
+#'   `categorical`, which shows every level.
 #' @param categorical Character vector of multi-level variable names
 #'   (`%summarytable` `CAT2=` equivalent), summarized as `n (%)` per
-#'   level. Ordinal variables belong here too; this function does not
-#'   run a trend test (`%summarytable`'s `ORD1=` distinction is not
-#'   preserved).
+#'   level. No type rule applies: factors, characters, and
+#'   small-integer codes are all accepted. Ordinal variables belong
+#'   here too; this function does not run a trend test
+#'   (`%summarytable`'s `ORD1=` distinction is not preserved).
 #' @param compare One of `"pvalue"` (default), `"smd"`, `"both"`, or
 #'   `"none"`. Ignored (treated as `"none"`) when `by` is `NULL`, since
 #'   there is nothing to compare. `"smd"` and `"both"` require `by` to
@@ -62,11 +102,18 @@
 #'   [hv_man_footnotes()] for the percentile-footnote house convention.
 #'
 #' @examples
+#' # A baseline-characteristics table of the kind a study manuscript
+#' # actually carries: demography and disease sections, compared
+#' # across treatment arms.
 #' hv_tbl_summary(
-#'   mtcars,
-#'   groups = list(Engine = c("mpg", "cyl")),
-#'   continuous = "mpg",
-#'   categorical = "cyl"
+#'   gtsummary::trial,
+#'   by = "trt",
+#'   groups = list(
+#'     Demography = c("age", "marker"),
+#'     Disease = c("stage", "grade")
+#'   ),
+#'   continuous = c("age", "marker"),
+#'   categorical = c("stage", "grade")
 #' )
 #'
 #' @export
@@ -80,10 +127,41 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 
   if (!is.data.frame(data))
     stop("`data` must be a data frame.", call. = FALSE)
+  .assert_type_buckets(continuous, binary, categorical)
+  # `by` fails the same way `groups` variables do, in this function's
+  # own words. gtsummary's own error here is unusually good, but having
+  # `by` fail differently from `groups` inside one function is exactly
+  # the inconsistency this contract removes.
+  if (!is.null(by)) {
+    .check_string(by, "by")
+    if (!by %in% names(data))
+      stop("Variable(s) not found in `data`: ", by, call. = FALSE)
+    # `by` is compared across, not summarized as a row -- the same
+    # mistake as putting a SAS %summarytable CLASS= variable into
+    # LIST=. Left to gtsummary this dies several calls later with
+    # "`names` must be `NULL` or a character vector, not an empty
+    # integer vector.", which never mentions `by` or `groups`.
+    if (by %in% unlist(groups, use.names = FALSE))
+      stop("`by` must not also be listed in `groups`: `", by,
+           "` is the grouping variable, not a row to summarize. ",
+           "Remove it from `groups`.", call. = FALSE)
+  }
   if (!is.list(groups) || is.null(names(groups)) ||
         any(!nzchar(names(groups))))
     stop("`groups` must be a named list, e.g. ",
          "list(Demography = c(\"age\")).", call. = FALSE)
+  # list() is caught above (it has no names); a named-but-empty section
+  # is not, and left to gtsummary it fails with "`names` must be `NULL`
+  # or a character vector, not an empty integer vector." -- byte
+  # identical to the base-R message the `by`-in-`groups` check above
+  # exists to prevent. Plausible whenever `groups` is built
+  # programmatically from a filter that returns nothing.
+  empty_sections <- names(groups)[lengths(groups) == 0L]
+  if (length(empty_sections) > 0)
+    stop("`groups` section `", empty_sections[1], "` lists no ",
+         "variables. Every section must name at least one variable, ",
+         "e.g. list(", empty_sections[1], " = c(\"age\")). Drop the ",
+         "empty section.", call. = FALSE)
   if (!is.numeric(percentiles) || length(percentiles) != 2L)
     stop("`percentiles` must be a numeric vector of length 2, ",
          "e.g. c(15, 85).", call. = FALSE)
@@ -123,6 +201,10 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   if (length(extra) > 0)
     stop("Variable(s) classified but not present in `groups`: ",
          paste(extra, collapse = ", "), call. = FALSE)
+  # Runs last of the entry checks, since it needs every variable to
+  # exist in `data`. Buckets that don't overlap can still be wrong
+  # about the data they name.
+  .assert_bucket_data(data, continuous, binary, categorical)
 
   p_lo <- percentiles[1]
   p_hi <- percentiles[2]

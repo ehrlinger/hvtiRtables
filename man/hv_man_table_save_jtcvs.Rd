@@ -15,7 +15,8 @@ hv_man_table_save_jtcvs(
 \arguments{
 \item{ft}{A \code{flextable}, from \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}.}
 
-\item{file}{Output \code{.docx} path.}
+\item{file}{Output \code{.docx} path. The output directory (\code{dirname(file)})
+must already exist; this function does not create it.}
 
 \item{caption}{Full caption text, e.g. \code{"Table 1. Baseline Characteristics"}, rendered bold above the table. This function does
 not auto-number tables for you; include the number yourself.}
@@ -42,13 +43,42 @@ JTCVS counterpart to \code{\link[=hv_man_table_save]{hv_man_table_save()}}: it a
 the fixed symbol set \code{\link[=hv_man_table_save]{hv_man_table_save()}} uses on the header row,
 matching the JTCVS template convention.
 }
+\section{Common mistakes}{
+
+\strong{"\verb{footnotes\[\[k\]\]$text} must be a single non-empty string."}
+Every footnote needs all three of \code{row}, \code{col}, and \code{text}, and
+\code{text} must be one non-empty string. Before this check existed, an
+entry missing \code{text} wrote a document with a dangling superscript
+marker and an empty footnote line.
+
+\strong{"\code{footnotes[[k]]} must be a list of the form list(row =, col =,
+text =)."} \code{footnotes} is a list \emph{of} footnotes, so a single one is
+\code{list(list(row = 1, col = "n_stat_1", text = "..."))}. Dropping the
+outer \code{list()} previously failed with \verb{$ operator is invalid for atomic vectors}.
+
+\strong{"\code{footnotes[[k]]$row} must be whole numbers ..."} Row indices
+count the section-header rows \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} interleaves
+into the body. \code{\link[=hv_test_footnotes_jtcvs]{hv_test_footnotes_jtcvs()}} computes them for you.
+
+\strong{"\code{file} must be a single non-empty file path."} Check the
+argument order: it is \verb{(ft, file, caption)}.
+
+\strong{"Output directory does not exist: ..."} The directory part of
+\code{file} (its \code{dirname()}) is not created for you; create it first
+with \code{dir.create(dirname(file), recursive = TRUE)}.
+}
+
 \examples{
 library(gtsummary)
 tbl <- trial |>
   tbl_summary(
     by = trt,
-    statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
-    include = c(age, grade)
+    statistic = list(
+      all_continuous() ~ "{N_obs} ||| {mean} ± {sd}",
+      all_categorical() ~ "{N_obs} ||| {n} ({p}\%)"
+    ),
+    include = c(age, grade),
+    missing = "no"
   )
 ft <- hv_man_table_jtcvs(
   tbl,

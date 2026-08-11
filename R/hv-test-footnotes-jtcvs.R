@@ -75,8 +75,7 @@
 #'
 #' @export
 hv_test_footnotes_jtcvs <- function(tbl) {
-  if (!inherits(tbl, "gtsummary"))
-    stop("`tbl` must be a gtsummary table object.", call. = FALSE)
+  .check_gtsummary(tbl)
 
   tb <- tbl$table_body
   trailing <- attr(tbl, "hv_trailing")

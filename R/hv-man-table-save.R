@@ -17,7 +17,8 @@
 #' output; see the package README for the paste-in workflow.
 #'
 #' @param ft A `flextable` object, typically from [hv_man_table()].
-#' @param file Output `.docx` path.
+#' @param file Output `.docx` path. The output directory (`dirname(file)`)
+#'   must already exist; this function does not create it.
 #' @param footnotes Optional named list, symbol -> footnote text. Defaults to
 #'   [hv_man_footnotes()] (the house-universal N and median/percentile
 #'   footnotes). Pass `NULL` to suppress both, or compose with
@@ -27,7 +28,10 @@
 #'   column header cell (or the first column if no `N` column is present),
 #'   and its text is rendered as its own paragraph below the table, in the
 #'   order given. Every element must be named (unnamed or blank-named
-#'   entries raise an error); an empty list is a no-op, same as `NULL`.
+#'   entries raise an error) and every text must be a single non-empty
+#'   string (`NULL`, `NA`, a number, or a multi-element vector raise an
+#'   error, since each writes a dangling marker); an empty list is a
+#'   no-op, same as `NULL`.
 #' @param abbreviations Optional named character vector, `c(ABBR =
 #'   "expansion", ...)`. Rendered as one `Key:` paragraph below any
 #'   footnotes, sorted alphabetically by abbreviation, abbreviation
@@ -50,13 +54,11 @@
 #' @export
 hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
                               abbreviations = NULL) {
-  if (!inherits(ft, "flextable"))
-    stop("`ft` must be a flextable object.", call. = FALSE)
-  if (!is.character(file) || length(file) != 1L || is.na(file) || !nzchar(file))
-    stop("`file` must be a single non-empty file path.", call. = FALSE)
-  out_dir <- dirname(file)
-  if (!dir.exists(out_dir))
-    stop("Output directory does not exist: ", out_dir, call. = FALSE)
+  .check_flextable(ft)
+  .check_file(file)
+  # Hoisted out of .add_abbreviations_key() so it fires at entry
+  # rather than mid-render: no partial .docx on a bad argument.
+  .check_abbreviations(abbreviations)
 
   valid_symbols <- c("*", "\u2020", "\u2021", "\u00A7", "\u00B6", "||")
   if (!is.null(footnotes) && length(footnotes) > 0) {
@@ -70,6 +72,16 @@ hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
       stop("Invalid footnote symbol(s): ", paste(bad, collapse = ", "),
            ". Must be one of: ", paste(valid_symbols, collapse = " "),
            call. = FALSE)
+    # Validated at entry, alongside the symbol check, so a footnote
+    # with no usable text never reaches print(doc): the defect this
+    # prevents is a written .docx, not a bad object.
+    for (k in seq_along(footnotes))
+      .check_footnote_text(
+        footnotes[[k]], sprintf('footnotes[["%s"]]', fn_names[k]),
+        paste0("A marker whose text is missing renders as a ",
+               "dangling reference with nothing after it. Give the ",
+               "entry text, e.g. \"Values are median (P15, P85).\"")
+      )
     n_col <- if ("n" %in% ft$col_keys) "n" else ft$col_keys[1]
     j <- which(ft$col_keys == n_col)
     for (sym in fn_names) {
@@ -100,11 +112,6 @@ hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
 
 .add_abbreviations_key <- function(doc, abbreviations) {
   if (is.null(abbreviations) || length(abbreviations) == 0) return(doc)
-  abbr_names <- names(abbreviations)
-  if (is.null(abbr_names) || anyNA(abbr_names) || any(!nzchar(abbr_names)))
-    stop("`abbreviations` must be a named character vector ",
-         "(c(ABBR = \"expansion\", ...)); every element must have a ",
-         "non-empty name.", call. = FALSE)
   ordered <- abbreviations[order(names(abbreviations))]
   runs <- list(officer::ftext("Key: "))
   italic_prop <- officer::fp_text(italic = TRUE)

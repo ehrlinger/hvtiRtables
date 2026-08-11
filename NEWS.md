@@ -1,3 +1,92 @@
+# hvtiRtables 0.9.5
+
+## Breaking changes
+
+- `hv_man_table_jtcvs()` now enforces `font_size` of 11 or 12, the same
+  house rule `hv_man_table()` has always enforced. Calls passing any
+  other value, or a vector, now error.
+- `abbreviations` must be a character vector, as documented. A list
+  previously worked by accident.
+
+## Bug fixes
+
+- `abbreviations` and `footnotes` are now type-checked before the
+  empty-value shortcut. An empty value previously skipped the type check
+  entirely, so `abbreviations = list()` was accepted while
+  `abbreviations = list(N = "x")` errored. `NULL` and `character(0)`
+  remain no-ops for `abbreviations`; `NULL` and `list()` for `footnotes`.
+- `hv_man_table_jtcvs()` now errors when `tbl` was not built with the
+  `{N_obs} ||| {stat}` statistic convention. It previously rendered a
+  complete, correctly styled, entirely empty table.
+- Both savers now enforce one footnote-text contract, through shared
+  code. `hv_man_table_save_jtcvs()` errors when a footnote entry has no
+  `text`; `hv_man_table_save()` now does the same for its `symbol ->
+  text` list, which previously *wrote* the `.docx` for `list("*" =
+  NULL)` (header marked `Characteristic*`, a footnote paragraph of
+  `"* "`), and equally for `NA` (`"* NA"`), a number (`"* 1"`), and a
+  length-2 vector (`"* a* b"`). The two savers' messages share the
+  contract sentence but no longer share one fixed label or fix: each
+  names the bad entry the way its own caller would look for it
+  (`footnotes[["*"]]` for `hv_man_table_save()`,
+  `footnotes[[k]]$text` for `hv_man_table_save_jtcvs()`) instead of a
+  shared, list-position label that made a CORR caller count entries to
+  find their symbol.
+- `hv_tbl_summary()` now enforces its documented "exactly one type
+  bucket" contract instead of failing inside `gtsummary`.
+- `hv_tbl_summary()` now checks each variable's data against the bucket
+  it was put in, not just that the buckets don't overlap. A non-numeric
+  variable in `continuous` previously produced `"{N} ||| NA (NA, NA)"`
+  cells, which satisfy the `|||` convention check because the
+  convention genuinely is applied and only the statistic is `NA` — so
+  the table rendered and saved as a complete, correctly styled, all-`NA`
+  manuscript table off nothing but `gtsummary` *messages*. `binary` now
+  requires at most two distinct non-missing values AND a form
+  `gtsummary` can dichotomize (logical, `0`/`1`, `Yes`/`No`), which is
+  what removes the leaked "Summary type is \"dichotomous\" but no
+  summary value has been assigned." error. A column with no non-missing
+  values is rejected in any bucket. `categorical` keeps no type rule.
+- `hv_man_table_jtcvs()` validates `groups` names against
+  `tbl$table_body`, replacing a base-R `non-character argument` error.
+- `hv_man_table_jtcvs()` now rejects a `groups` name given twice,
+  replacing `flextable`'s `duplicated col_keys: n_stat_1, disp_stat_1`
+  — internal column names the caller never wrote.
+- `hv_tbl_summary()` now rejects a `groups` section holding no
+  variables (e.g. `list(Demo = character(0))`, plausible when `groups`
+  is built from a filter that returns nothing). `list()` was already
+  caught; a named-but-empty section leaked the base-R "`names` must be
+  `NULL` or a character vector, not an empty integer vector.".
+- `hv_man_table_save_jtcvs()` validates `file`, replacing a base-R
+  `a character vector argument expected` error.
+- `hv_man_table_save_jtcvs()` now checks each `footnotes` entry is a
+  list before reading its fields. Dropping the outer nesting
+  (`footnotes = list(row =, col =, text =)`), or passing a bare string,
+  leaked `$ operator is invalid for atomic vectors`.
+- A footnote entry with no `col` now reports what arrived and lists
+  `ft`'s columns. The message previously ended at a bare colon with
+  nothing after it.
+- `hv_tbl_summary()` validates `by` in the package's own vocabulary.
+- Every validation message's `Received:` clause now names the class
+  even when the value is not length 1. The clause exists for the
+  argument-order slip, where the class mismatch is the tell, but it
+  reported a bare `a vector of length 8` for a 200-row data frame (8
+  columns) and `a vector of length 5` for a `gtsummary` table — losing
+  exactly the diagnostic it was written for. Those now read
+  `tbl_df of length 8` and `tbl_summary of length 5`.
+- The `binary` bucket error no longer always says "Recode to 0/1",
+  which was impossible advice for a constant column (already 0/1,
+  with no event to recode — the fix is moving it to `categorical`)
+  and for a factor whose only problem is an unused level (the fix is
+  `droplevels()`). Every other case keeps the "Recode to 0/1" fix.
+
+## Documentation
+
+- New `?hvtiRtables` package topic explaining which rendering mode to
+  use, with both pipelines end to end.
+- New vignette walking a complete JTCVS table from data frame to
+  checked `.docx`.
+- Every function's help now states its arguments' accepted values
+  exhaustively and carries a "Common mistakes" section.
+
 # hvtiRtables 0.9.4
 
 ## New features

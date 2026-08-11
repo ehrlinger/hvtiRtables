@@ -23,23 +23,30 @@ equivalent), or \code{NULL} for a single ungrouped "Overall" column.}
 
 \item{groups}{Named list, section label -> variable names in display
 order (\verb{\%summarytable} \verb{LIST=} equivalent), e.g.
-\code{list(Demography = c("age", "female"), Symptoms = c("nyha"))}. Every
+\code{list(Demography = c("age", "female"), Symptoms = c("nyha"))}. Each
+section must name at least one variable; a section holding
+\code{character(0)} is an error, not an empty section. Every
 variable named here must appear in exactly one of \code{continuous},
 \code{binary}, or \code{categorical}, and every classified variable must
 appear in \code{groups}.}
 
 \item{continuous}{Character vector of continuous variable names
 (\verb{\%summarytable} \verb{CON1=} equivalent), summarized as
-\verb{median (P<low>, P<high>)}.}
+\verb{median (P<low>, P<high>)}. Each named column must be numeric.}
 
 \item{binary}{Character vector of 0/1 variable names (\verb{\%summarytable}
-\verb{CAT1=} equivalent), summarized as \verb{n (\%)} on a single row.}
+\verb{CAT1=} equivalent), summarized as \verb{n (\%)} on a single row. Each
+named column must have at most 2 distinct non-\code{NA} values, and
+must be logical, \code{0}/\code{1}, or \code{Yes}/\code{No} data, so that the "event"
+the single row counts is unambiguous. Anything else belongs in
+\code{categorical}, which shows every level.}
 
 \item{categorical}{Character vector of multi-level variable names
 (\verb{\%summarytable} \verb{CAT2=} equivalent), summarized as \verb{n (\%)} per
-level. Ordinal variables belong here too; this function does not
-run a trend test (\verb{\%summarytable}'s \verb{ORD1=} distinction is not
-preserved).}
+level. No type rule applies: factors, characters, and
+small-integer codes are all accepted. Ordinal variables belong
+here too; this function does not run a trend test
+(\verb{\%summarytable}'s \verb{ORD1=} distinction is not preserved).}
 
 \item{compare}{One of \code{"pvalue"} (default), \code{"smd"}, \code{"both"}, or
 \code{"none"}. Ignored (treated as \code{"none"}) when \code{by} is \code{NULL}, since
@@ -84,12 +91,54 @@ The returned object carries two attributes for \code{\link[=hv_man_table_jtcvs]{
 \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}'s \code{trailing} argument when \code{compare} produced a
 comparison column (\code{NULL} when \code{compare = "none"}).
 }
+\section{Common mistakes}{
+
+\strong{"\verb{<var>} appears in more than one of \code{continuous}, \code{binary}, and
+\code{categorical}."} Each variable is classified exactly once. A 0/1
+variable is \code{binary}; a multi-level factor is \code{categorical}.
+
+\strong{"\code{continuous} lists \verb{<var>}, but \verb{<var>} is factor data ..."} The
+bucket has to suit the data, not just be free of overlaps. A
+non-numeric variable in \code{continuous} used to reach \code{gtsummary},
+which only \emph{messages} about it, and produced a complete, correctly
+styled table whose every statistic was \code{NA}.
+
+\strong{"\code{binary} lists \verb{<var>}, but \verb{<var>} has ..."} \code{binary} renders
+one \verb{n (\%)} row, so it takes at most two distinct values and needs
+an unambiguous event value: logical, \code{0}/\code{1}, or \code{Yes}/\code{No}. A
+three-level factor, or a two-level one like \code{F}/\code{M}, belongs in
+\code{categorical}.
+
+\strong{"Variable(s) in \code{groups} not classified ..."} Every variable
+listed in \code{groups} also needs a type bucket, and every classified
+variable needs to appear in \code{groups}. The two lists must match.
+
+\strong{"\code{compare = "smd"} requires exactly two groups."} A standardized
+mean difference is defined between two groups. Use
+\code{compare = "pvalue"} for three or more. If \code{by} is a factor with an
+unused level, \code{droplevels()} is usually what you want.
+
+\strong{"\code{by} must not also be listed in \code{groups}."} \code{by} is the
+grouping variable being compared across, not a row to summarize.
+Before this check existed, the combination reached \code{gtsummary} and
+failed several calls later with "\code{names} must be \code{NULL} or a
+character vector, not an empty integer vector.", a message that
+never mentioned \code{by}. Remove the variable from \code{groups}.
+}
+
 \examples{
+# A baseline-characteristics table of the kind a study manuscript
+# actually carries: demography and disease sections, compared
+# across treatment arms.
 hv_tbl_summary(
-  mtcars,
-  groups = list(Engine = c("mpg", "cyl")),
-  continuous = "mpg",
-  categorical = "cyl"
+  gtsummary::trial,
+  by = "trt",
+  groups = list(
+    Demography = c("age", "marker"),
+    Disease = c("stage", "grade")
+  ),
+  continuous = c("age", "marker"),
+  categorical = c("stage", "grade")
 )
 
 }

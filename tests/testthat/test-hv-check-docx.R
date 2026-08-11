@@ -91,6 +91,13 @@ test_that("hv_check_docx rejects a missing or non-docx path", {
   expect_error(hv_check_docx(bad), "valid .docx")
 })
 
+test_that("hv_check_docx rejects an empty string or NA path", {
+  # Tightened onto .check_string(), which rejects these shapes before
+  # any filesystem check; never tested until now.
+  expect_error(hv_check_docx(""), "non-empty string")
+  expect_error(hv_check_docx(NA_character_), "non-empty string")
+})
+
 test_that("hv_check_docx reports zero findings on the package's own output", {
   out <- tempfile(fileext = ".docx")
   on.exit(unlink(out), add = TRUE)

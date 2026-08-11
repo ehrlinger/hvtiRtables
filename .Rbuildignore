@@ -8,3 +8,7 @@
 ^codecov\.yml$
 ^LICENSE\.md$
 ^CONTRIBUTING\.md$
+^doc$
+^Meta$
+^\.lintr$
+^\.claude$

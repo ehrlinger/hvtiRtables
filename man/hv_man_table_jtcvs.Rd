@@ -14,12 +14,18 @@ hv_man_table_jtcvs(
 )
 }
 \arguments{
-\item{tbl}{A \code{gtsummary} table object whose \code{statistic} argument used
-\code{"{N_obs} ||| {<stat>}"} for every group column (see \code{groups}).}
+\item{tbl}{A \code{gtsummary} table object whose \code{statistic} argument
+used \code{"{N_obs} ||| {<stat>}"} for every group column.
+\code{\link[=hv_tbl_summary]{hv_tbl_summary()}} applies this convention for you. A table
+without it is rejected, since its cells cannot be split into
+their N and statistic parts.}
 
 \item{groups}{Named character vector, \verb{stat_<k>} column name in
-\code{tbl$table_body} -> spanning header label (include the group's N in
-the label text yourself, e.g. \code{c(stat_1 = "Group A (n=60)")}).}
+\code{tbl$table_body} -> spanning header label (include the group's N
+in the label text yourself, e.g. \code{c(stat_1 = "Group A (n=60)")}).
+Every name must be a column of \code{tbl$table_body}, and each may
+appear at most once; unknown names are rejected with the available
+ones listed, and a repeated name is rejected too.}
 
 \item{trailing}{Optional named character vector of length 1, an existing
 \code{tbl$table_body} column name -> header label, for a trailing
@@ -31,10 +37,14 @@ Default \code{"No. (\%) or Mean ± SD"} (house default for mean/SD
 tables). Pass e.g. \code{"No. (\%) or Median (15th, 85th percentile)"} when
 the table's continuous statistic is a median, not a mean.}
 
-\item{font}{Font family. Default \code{"Times New Roman"} (house rule).}
+\item{font}{Font family. Default \code{"Times New Roman"} (house rule).
+Any single non-empty string is accepted: \code{flextable} silently
+substitutes an unknown font name, so a typo would otherwise pass
+unnoticed, while a deliberate override is legitimate.}
 
-\item{font_size}{Font size in points. Default \code{12}; pass \code{11} for wide
-tables.}
+\item{font_size}{Font size in points. Default \code{12} (house rule 5);
+pass \code{11} for wide tables. No other values are permitted -- the
+same rule \code{\link[=hv_man_table]{hv_man_table()}} enforces.}
 }
 \value{
 A \code{flextable} with a 2-row header and merged section rows, ready
@@ -50,13 +60,35 @@ a separate mode, not a replacement for \code{\link[=hv_man_table]{hv_man_table()
 CORR house style; the two exist because CORR reports and JTCVS
 submissions want different things from the same header row.
 }
+\section{Common mistakes}{
+
+\strong{"\code{tbl} was not built with the \verb{\{N_obs\} ||| \{stat\}} convention."}
+The table came from a plain \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} call. Build
+it with \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}, which applies the convention
+automatically, or pass
+\code{statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ({sd})")}.
+Before this check existed, such a table rendered every cell blank.
+
+\strong{"\code{groups} names must be columns in \code{tbl$table_body}."} Group
+names are the \verb{stat_<k>} columns \code{gtsummary} creates, one per level
+of the \code{by} variable -- not the group labels. Two groups give
+\code{stat_1} and \code{stat_2}.
+
+\strong{"\code{font_size} must be 11 or 12."} House rule 5. Use \code{11} only for
+wide tables.
+}
+
 \examples{
 library(gtsummary)
 tbl <- trial |>
   tbl_summary(
     by = trt,
-    statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
-    include = c(age, grade)
+    statistic = list(
+      all_continuous() ~ "{N_obs} ||| {mean} ± {sd}",
+      all_categorical() ~ "{N_obs} ||| {n} ({p}\%)"
+    ),
+    include = c(age, grade),
+    missing = "no"
   )
 ft <- hv_man_table_jtcvs(
   tbl,

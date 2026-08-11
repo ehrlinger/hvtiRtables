@@ -79,3 +79,9 @@ test_that("hv_man_table validates its inputs", {
   expect_error(hv_man_table("not a gtsummary object"), "gtsummary")
   expect_error(hv_man_table(mk_tbl(), font_size = 10), "font_size")
 })
+
+test_that("hv_man_table validates font", {
+  expect_error(hv_man_table(mk_tbl(), font = 12), "`font`")
+  expect_error(hv_man_table(mk_tbl(), font = c("a", "b")), "`font`")
+  expect_error(hv_man_table(mk_tbl(), font = ""), "`font`")
+})

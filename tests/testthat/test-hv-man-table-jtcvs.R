@@ -292,3 +292,62 @@ test_that("hv_man_table_jtcvs reproduces template's header/section shape", {
   expect_identical(body$n_stat_1[2], "392")
   expect_identical(body$n_stat_2[2], "133")
 })
+
+test_that("hv_man_table_jtcvs enforces the house font_size rule", {
+  tbl <- fx_jtcvs_tbl()
+  g <- c(stat_1 = "A", stat_2 = "B")
+  expect_s3_class(hv_man_table_jtcvs(tbl, g, font_size = 11),
+                  "flextable")
+  for (bad in list(10, c(11, 12), "12", NA_real_, numeric(0))) {
+    expect_error(hv_man_table_jtcvs(tbl, g, font_size = bad),
+                 "must be 11 or 12")
+  }
+})
+
+test_that("hv_man_table_jtcvs validates font and stat_label", {
+  tbl <- fx_jtcvs_tbl()
+  g <- c(stat_1 = "A", stat_2 = "B")
+  expect_error(hv_man_table_jtcvs(tbl, g, font = 12), "`font`")
+  expect_error(hv_man_table_jtcvs(tbl, g, stat_label = ""),
+               "`stat_label`")
+})
+
+test_that("hv_man_table_jtcvs rejects unknown groups names", {
+  tbl <- fx_jtcvs_tbl()
+  expect_identical(
+    tryCatch(hv_man_table_jtcvs(tbl, c(stat_3 = "C")),
+             error = conditionMessage),
+    paste0("`groups` names must be columns in `tbl$table_body`. ",
+           "Not found: stat_3. Available: stat_1, stat_2.")
+  )
+})
+
+test_that("hv_man_table_jtcvs refuses a table lacking the convention", {
+  # Regression for the silent defect: this previously returned a
+  # complete, correctly styled, entirely empty flextable.
+  tbl <- fx_plain_tbl()
+  expect_error(
+    hv_man_table_jtcvs(tbl, c(stat_1 = "A", stat_2 = "B")),
+    "was not built with the"
+  )
+})
+
+test_that("hv_man_table_jtcvs accepts an hv_tbl_summary table", {
+  # Guards the non-NA qualifier: this table has NA stat cells and must
+  # still render.
+  ft <- hv_man_table_jtcvs(fx_hv_tbl(),
+                           c(stat_1 = "A", stat_2 = "B"))
+  expect_s3_class(ft, "flextable")
+})
+
+test_that("hv_man_table_jtcvs rejects a duplicated groups name", {
+  # Left to flextable this leaked "duplicated col_keys: n_stat_1,
+  # disp_stat_1" -- internal column names the user never wrote and
+  # cannot find in any help page.
+  msg <- tryCatch(
+    hv_man_table_jtcvs(fx_jtcvs_tbl(), c(stat_1 = "A", stat_1 = "B")),
+    error = conditionMessage
+  )
+  expect_false(grepl("col_keys", msg, fixed = TRUE))
+  expect_match(msg, "must name each column at most once", fixed = TRUE)
+})

@@ -28,6 +28,9 @@
 #'
 #' @param tbl A `gtsummary` table object (must support `as_flex_table()`).
 #' @param font Font family. Default `"Times New Roman"` (house rule).
+#'   Any single non-empty string is accepted: `flextable` silently
+#'   substitutes an unknown font name, so a typo would otherwise pass
+#'   unnoticed, while a deliberate override is legitimate.
 #' @param font_size Font size in points. Default `12`; pass `11` for wide
 #'   tables, per house rule 5. No other values are permitted.
 #' @param digits Kept for interface symmetry with future callers; currently
@@ -50,13 +53,9 @@
 #' @export
 hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
                          digits = 2) {
-  if (!inherits(tbl, "gtsummary"))
-    stop("`tbl` must be a gtsummary table object.", call. = FALSE)
-  if (!is.numeric(font_size) || length(font_size) != 1L ||
-        !(font_size %in% c(11, 12)))
-    stop("`font_size` must be 11 or 12 (house rule: 12pt, ",
-         "11pt permitted for wide tables).",
-         call. = FALSE)
+  .check_gtsummary(tbl)
+  .check_string(font, "font")
+  .check_font_size(font_size)
 
   ft <- gtsummary::as_flex_table(tbl)
   ft <- flextable::merge_none(ft)

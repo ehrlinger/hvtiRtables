@@ -9,7 +9,10 @@ hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2)
 \arguments{
 \item{tbl}{A \code{gtsummary} table object (must support \code{as_flex_table()}).}
 
-\item{font}{Font family. Default \code{"Times New Roman"} (house rule).}
+\item{font}{Font family. Default \code{"Times New Roman"} (house rule).
+Any single non-empty string is accepted: \code{flextable} silently
+substitutes an unknown font name, so a typo would otherwise pass
+unnoticed, while a deliberate override is legitimate.}
 
 \item{font_size}{Font size in points. Default \code{12}; pass \code{11} for wide
 tables, per house rule 5. No other values are permitted.}

@@ -526,3 +526,219 @@ test_that("hv_tbl_summary still allows pvalue and none with 3+ groups", {
     )
   )
 })
+
+test_that("hv_tbl_summary rejects a variable in two type buckets", {
+  expect_identical(
+    tryCatch(
+      hv_tbl_summary(mtcars, groups = list(Engine = "mpg"),
+                     continuous = "mpg", binary = "mpg"),
+      error = conditionMessage
+    ),
+    paste0("`mpg` appears in more than one of `continuous`, `binary`, ",
+           "and `categorical`. Every variable must be classified ",
+           "exactly once. Overlapping: mpg (continuous, binary).")
+  )
+})
+
+test_that("hv_tbl_summary validates by in the package's own words", {
+  expect_error(
+    hv_tbl_summary(mtcars, by = "nope", groups = list(E = "mpg"),
+                   continuous = "mpg"),
+    "Variable(s) not found in `data`: nope", fixed = TRUE
+  )
+  expect_error(
+    hv_tbl_summary(mtcars, by = c("am", "vs"),
+                   groups = list(E = "mpg"), continuous = "mpg"),
+    "`by`"
+  )
+  expect_error(
+    hv_tbl_summary(mtcars, by = 1, groups = list(E = "mpg"),
+                   continuous = "mpg"),
+    "`by`"
+  )
+})
+
+test_that("hv_tbl_summary rejects by also listed in groups", {
+  # The SAS %summarytable equivalent of putting a CLASS= variable into
+  # LIST= too. Left to gtsummary this dies with "`names` must be NULL
+  # or a character vector, not an empty integer vector.", which never
+  # mentions `by` or `groups` -- the package's stated standard is that
+  # users never see upstream error vocabulary from a public API.
+  expect_error(
+    hv_tbl_summary(mtcars, by = "mpg", groups = list(E = "mpg"),
+                   continuous = "mpg"),
+    "`by`.*`groups`"
+  )
+})
+
+test_that("hv_tbl_summary rejects non-character type buckets", {
+  expect_error(
+    hv_tbl_summary(mtcars, groups = list(E = "mpg"), continuous = 1),
+    "`continuous` must be a character vector"
+  )
+})
+
+test_that("hv_tbl_summary rejects a non-numeric variable in continuous", {
+  # The flagship silent failure. gtsummary only *messages* here, so the
+  # stat cells came back "98 ||| NA (NA, NA)" -- which SATISFIES
+  # .assert_stat_convention(), because the convention genuinely is
+  # applied and only the statistic is NA. The table then rendered and
+  # saved as a complete, correctly styled, all-NA manuscript table.
+  expect_identical(
+    tryCatch(
+      hv_tbl_summary(gtsummary::trial, by = "trt",
+                     groups = list(D = "grade"), continuous = "grade",
+                     compare = "none"),
+      error = conditionMessage
+    ),
+    paste0("`continuous` lists `grade`, but `grade` is factor data ",
+           "with 3 distinct non-missing values (I, II, III). ",
+           "`continuous` summarizes numeric columns as a median and ",
+           "percentiles, so non-numeric data gives a table of NA ",
+           "statistics. Move `grade` to `categorical`.")
+  )
+})
+
+test_that("hv_tbl_summary rejects a many-valued variable in binary", {
+  # Left to gtsummary this leaked "Summary type is \"dichotomous\" but
+  # no summary value has been assigned.". `dichotomous` is gtsummary's
+  # vocabulary, not this package's.
+  msg <- tryCatch(
+    hv_tbl_summary(gtsummary::trial, by = "trt",
+                   groups = list(D = "age"), binary = "age"),
+    error = conditionMessage
+  )
+  expect_false(grepl("dichotomous", msg, fixed = TRUE))
+  expect_match(msg, "`binary` lists `age`", fixed = TRUE)
+  expect_match(msg, "Move `age` to `continuous`.", fixed = TRUE)
+})
+
+test_that("hv_tbl_summary rejects a binary gtsummary cannot dichotomize", {
+  # Two distinct values is necessary but not sufficient: gtsummary
+  # assigns a dichotomous "event" value only for logical, 0/1, and
+  # yes/no data, and leaks `dichotomous` for anything else.
+  dta <- data.frame(grp = factor(rep(c("A", "B"), each = 10)),
+                    sex = factor(rep(c("F", "M"), 10)))
+  msg <- tryCatch(
+    hv_tbl_summary(dta, by = "grp", groups = list(D = "sex"),
+                   binary = "sex"),
+    error = conditionMessage
+  )
+  expect_false(grepl("dichotomous", msg, fixed = TRUE))
+  expect_identical(
+    msg,
+    paste0("`binary` lists `sex`, but `sex` has 2 distinct ",
+           "non-missing values (F, M). `binary` renders one ",
+           "\"n (%)\" row and so needs an unambiguous event value: it ",
+           "accepts logical, 0/1, or Yes/No data. Recode `sex` to ",
+           "0/1, or move it to `categorical`, which shows every level.")
+  )
+})
+
+test_that("hv_tbl_summary sends a constant binary column to categorical", {
+  # A zero-event indicator (e.g. no complications in a baseline table)
+  # already IS 0/1 -- "Recode to 0/1" is impossible advice here, since
+  # gtsummary cannot dichotomize a column with no variation at all.
+  dta <- data.frame(grp = factor(rep(c("A", "B"), each = 10)),
+                    complication = rep(0L, 20))
+  msg <- tryCatch(
+    hv_tbl_summary(dta, by = "grp", groups = list(D = "complication"),
+                   binary = "complication"),
+    error = conditionMessage
+  )
+  expect_identical(
+    msg,
+    paste0("`binary` lists `complication`, but `complication` has 1 ",
+           "distinct non-missing value (0). `binary` renders one ",
+           "\"n (%)\" row and so needs an unambiguous event value: it ",
+           "accepts logical, 0/1, or Yes/No data. A column with no ",
+           "variation has no event to count; move `complication` to ",
+           "`categorical`, which shows every level.")
+  )
+})
+
+test_that("hv_tbl_summary suggests droplevels for an orphaned level", {
+  # `elig` carries an unused "Maybe" level (e.g. after subsetting), so
+  # nlevels() is 3 even though only Yes/No values are present. "Recode
+  # to 0/1" is impossible advice here -- droplevels() is the real fix.
+  dta <- data.frame(
+    grp = factor(rep(c("A", "B"), each = 5)),
+    elig = factor(c(rep("Yes", 5), rep("No", 5)),
+                  levels = c("No", "Yes", "Maybe"))
+  )
+  msg <- tryCatch(
+    hv_tbl_summary(dta, by = "grp", groups = list(D = "elig"),
+                   binary = "elig"),
+    error = conditionMessage
+  )
+  expect_identical(
+    msg,
+    paste0("`binary` lists `elig`, but `elig` has 2 distinct ",
+           "non-missing values (No, Yes). `binary` renders one ",
+           "\"n (%)\" row and so needs an unambiguous event value: it ",
+           "accepts logical, 0/1, or Yes/No data. `elig` is a factor ",
+           "with 3 levels but only 2 appear in the data; droplevels() ",
+           "may be what you want.")
+  )
+})
+
+test_that("hv_tbl_summary accepts every binary form gtsummary can use", {
+  n <- 20
+  dta <- data.frame(
+    grp = factor(rep(c("A", "B"), each = n / 2)),
+    zero_one = rep(0:1, n / 2),
+    lgl = rep(c(TRUE, FALSE), n / 2),
+    yn = factor(rep(c("Yes", "No"), n / 2), levels = c("No", "Yes"))
+  )
+  for (v in c("zero_one", "lgl", "yn")) {
+    tbl <- hv_tbl_summary(dta, by = "grp", groups = list(D = v),
+                          binary = v, compare = "none")
+    expect_false(anyNA(tbl$table_body$stat_1))
+  }
+})
+
+test_that("hv_tbl_summary rejects a column with no non-missing values", {
+  dta <- data.frame(grp = factor(rep(c("A", "B"), each = 5)),
+                    empty = rep(NA_character_, 10))
+  expect_identical(
+    tryCatch(
+      hv_tbl_summary(dta, by = "grp", groups = list(D = "empty"),
+                     categorical = "empty", compare = "none"),
+      error = conditionMessage
+    ),
+    paste0("`categorical` lists `empty`, but `empty` has no ",
+           "non-missing values, so every statistic for it would be ",
+           "NA. Drop `empty` from `groups` and `categorical`, or ",
+           "check the data.")
+  )
+})
+
+test_that("hv_tbl_summary imposes no type rule on categorical", {
+  # Factors, characters, and small-integer codes are all legitimate
+  # CAT2= data; only the all-missing rule applies here.
+  dta <- data.frame(grp = factor(rep(c("A", "B"), each = 10)),
+                    nyha = rep(1:4, 5))
+  tbl <- hv_tbl_summary(dta, by = "grp", groups = list(D = "nyha"),
+                        categorical = "nyha", compare = "none")
+  expect_s3_class(tbl, "gtsummary")
+})
+
+test_that("hv_tbl_summary rejects a groups section with no variables", {
+  # Plausible whenever `groups` is built programmatically from a filter
+  # that returns nothing. list() was already caught; a named-but-empty
+  # section was not, and leaked a base-R message byte-identical to the
+  # one the `by`-in-`groups` check was added to prevent.
+  msg <- tryCatch(
+    hv_tbl_summary(gtsummary::trial, by = "trt",
+                   groups = list(Demo = character(0)),
+                   continuous = character(0)),
+    error = conditionMessage
+  )
+  expect_false(grepl("empty integer vector", msg, fixed = TRUE))
+  expect_identical(
+    msg,
+    paste0("`groups` section `Demo` lists no variables. Every section ",
+           "must name at least one variable, e.g. ",
+           "list(Demo = c(\"age\")). Drop the empty section.")
+  )
+})

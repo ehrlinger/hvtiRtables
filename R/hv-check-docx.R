@@ -189,8 +189,9 @@
 #' tbl <- trial |>
 #'   tbl_summary(
 #'     by = trt,
-#'     statistic = list(all_continuous() ~ "{N_obs} ||| {mean}"),
-#'     include = age
+#'     statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
+#'     include = age,
+#'     missing = "no"
 #'   )
 #' ft <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
 #' out <- tempfile(fileext = ".docx")
@@ -199,8 +200,7 @@
 #'
 #' @export
 hv_check_docx <- function(path) {
-  if (!is.character(path) || length(path) != 1L)
-    stop("`path` must be a single file path.", call. = FALSE)
+  .check_string(path, "path")
   doc <- .docx_body_xml(path)
   rbind(
     .detect_layers(doc),

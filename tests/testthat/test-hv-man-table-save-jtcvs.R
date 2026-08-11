@@ -174,3 +174,97 @@ test_that("hv_man_table_save_jtcvs marks every row of a vector-valued row", {
   # One superscript "a" per marked cell, plus one in the footnote line.
   expect_gte(lengths(regmatches(xml, gregexpr("superscript", xml))), 3)
 })
+
+test_that("hv_man_table_save_jtcvs rejects a bad abbreviations arg", {
+  # Regression: .add_abbreviations_key()'s own name-validation was moved
+  # out to .check_abbreviations() at hv_man_table_save()'s entry, but
+  # this function's entry was never updated to call it too. A bad
+  # `abbreviations` used to either write a malformed .docx (unnamed
+  # element) or crash with an opaque officer/flextable internal error
+  # (a `list`), instead of the package's own clear validation message,
+  # and always after writing no file.
+  ft <- fx_jtcvs_ft()
+
+  out <- tempfile(fileext = ".docx")
+  expect_error(
+    hv_man_table_save_jtcvs(
+      ft, out, caption = "Table 1. X", abbreviations = c("no name")
+    ),
+    "non-empty name"
+  )
+  expect_false(file.exists(out))
+
+  out <- tempfile(fileext = ".docx")
+  expect_error(
+    hv_man_table_save_jtcvs(
+      ft, out, caption = "Table 1. X",
+      abbreviations = list(SD = "standard deviation")
+    ),
+    "named character vector"
+  )
+  expect_false(file.exists(out))
+})
+
+test_that("hv_man_table_save_jtcvs validates file", {
+  ft <- fx_jtcvs_ft()
+  for (bad in list(1, NA_character_, "", character(0))) {
+    expect_error(hv_man_table_save_jtcvs(ft, bad, caption = "T1."),
+                 "must be a single non-empty file")
+  }
+})
+
+test_that("hv_man_table_save_jtcvs rejects a footnote with no text", {
+  # Regression for the silent defect: this previously wrote a .docx
+  # with a dangling superscript marker and an empty footnote line.
+  ft <- fx_jtcvs_ft()
+  out <- tempfile(fileext = ".docx")
+  expect_error(
+    hv_man_table_save_jtcvs(
+      ft, out, caption = "T1.",
+      footnotes = list(list(row = 1, col = "n_stat_1"))
+    ),
+    "must be a single non-empty string"
+  )
+  expect_false(file.exists(out))
+})
+
+test_that("hv_man_table_save_jtcvs rejects non-string footnote text", {
+  ft <- fx_jtcvs_ft()
+  for (bad in list(NULL, NA, 1, c("a", "b"), "")) {
+    out <- tempfile(fileext = ".docx")
+    expect_error(
+      hv_man_table_save_jtcvs(
+        ft, out, caption = "T1.",
+        footnotes = list(list(row = 1, col = "n_stat_1", text = bad))
+      ),
+      "must be a single non-empty string"
+    )
+    expect_false(file.exists(out))
+  }
+})
+
+test_that("hv_man_table_save_jtcvs writes nothing when it rejects", {
+  ft <- fx_jtcvs_ft()
+  out <- tempfile(fileext = ".docx")
+  expect_error(
+    hv_man_table_save_jtcvs(ft, out, caption = "T1.",
+                            abbreviations = list(N = "x")),
+    "named character vector"
+  )
+  expect_false(file.exists(out))
+})
+
+test_that("hv_man_table_save_jtcvs rejects a flat footnotes list", {
+  ft <- fx_jtcvs_ft()
+  out <- tempfile(fileext = ".docx")
+  msg <- tryCatch(
+    hv_man_table_save_jtcvs(
+      ft, out, caption = "T",
+      footnotes = list(row = 1, col = "label", text = "x")
+    ),
+    error = conditionMessage
+  )
+  expect_false(grepl("$ operator", msg, fixed = TRUE))
+  expect_match(msg, "must be a list of the form", fixed = TRUE)
+  expect_false(file.exists(out))
+})

@@ -140,6 +140,44 @@ test_that("rejects footnotes with an NA name (Copilot C1)", {
   )
 })
 
+test_that("hv_man_table_save rejects footnote text that is not a string", {
+  # Regression for the silent defect: each of these previously WROTE the
+  # .docx, with a header marked `Characteristic*` and a footnote
+  # paragraph of "* " (or "* NA", "* 1", "* a* b") -- a dangling marker.
+  ft <- mk_ft()
+  for (bad in list(NULL, NA, 1, c("a", "b"), "")) {
+    f <- tempfile(fileext = ".docx")
+    expect_error(
+      hv_man_table_save(ft, f, footnotes = list(`*` = bad)),
+      "must be a single non-empty string"
+    )
+    expect_false(file.exists(f))
+  }
+})
+
+test_that("footnote text error names the offending symbol", {
+  # `footnotes` is a named list keyed by symbol, not by position, so a
+  # positional "entry 2" label would force a CORR caller to count list
+  # entries to find the bad one. Put the bad entry second so a
+  # positional label would visibly be wrong.
+  ft <- mk_ft()
+  f <- tempfile(fileext = ".docx")
+  msg <- tryCatch(
+    hv_man_table_save(
+      ft, f, footnotes = list(`*` = "fine", `†` = NULL)
+    ),
+    error = conditionMessage
+  )
+  expect_identical(
+    msg,
+    paste0("`footnotes[[\"†\"]]` must be a single non-empty ",
+           "string; it is missing. A marker whose text is missing ",
+           "renders as a dangling reference with nothing after it. ",
+           "Give the entry text, e.g. \"Values are median ",
+           "(P15, P85).\"")
+  )
+})
+
 test_that("footnotes = list() is a no-op, same as NULL", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")
@@ -194,6 +232,16 @@ test_that("abbreviations = character(0) is a no-op, same as NULL", {
   expect_no_error(hv_man_table_save(ft, f, abbreviations = character(0)))
   xml <- read_docx_text(f)
   expect_false(grepl("Key:", xml, fixed = TRUE))
+})
+
+test_that("hv_man_table_save rejects a non-character abbreviations", {
+  ft <- mk_ft()
+  f <- tempfile(fileext = ".docx")
+  expect_error(
+    hv_man_table_save(ft, f, abbreviations = list(N = "x")),
+    "named character vector"
+  )
+  expect_false(file.exists(f))
 })
 
 test_that("hv_man_table_save still renders the Key: block after refactor", {
