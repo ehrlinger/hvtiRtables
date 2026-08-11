@@ -46,6 +46,13 @@
   `NULL` or a character vector, not an empty integer vector.".
 - `hv_man_table_save_jtcvs()` validates `file`, replacing a base-R
   `a character vector argument expected` error.
+- `hv_man_table_save_jtcvs()` now checks each `footnotes` entry is a
+  list before reading its fields. Dropping the outer nesting
+  (`footnotes = list(row =, col =, text =)`), or passing a bare string,
+  leaked `$ operator is invalid for atomic vectors`.
+- A footnote entry with no `col` now reports what arrived and lists
+  `ft`'s columns. The message previously ended at a bare colon with
+  nothing after it.
 - `hv_tbl_summary()` validates `by` in the package's own vocabulary.
 
 ## Documentation

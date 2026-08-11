@@ -306,6 +306,17 @@
   n_body <- flextable::nrow_part(ft, "body")
   for (k in seq_along(footnotes)) {
     fn <- footnotes[[k]]
+    # Guards every fn$ access below. Dropping the outer nesting is the
+    # likeliest mistake against a documented list(list(row =, col =,
+    # text =)) shape, and it used to die on the first fn$ with
+    # "$ operator is invalid for atomic vectors" -- as did
+    # footnotes = "a note" and footnotes = list("a note").
+    if (!is.list(fn))
+      stop("`", arg, "[[", k, "]]` must be a list of the form ",
+           "list(row =, col =, text =). Received: ", .describe(fn),
+           ". `", arg, "` is a list *of* footnotes, so one footnote ",
+           "is list(list(row = 1, col = \"n_stat_1\", ",
+           "text = \"...\")).", call. = FALSE)
     # Fractional rows are checked explicitly: flextable accepts them
     # silently rather than erroring, so without this they would mark
     # whatever cell they truncate to, which is the silent-wrong-cell
@@ -321,9 +332,22 @@
            "hv_test_footnotes_jtcvs() computes them for you.",
            call. = FALSE)
     if (!is.character(fn$col) || length(fn$col) != 1L ||
-          !fn$col %in% ft$col_keys)
-      stop("`", arg, "[[", k, "]]$col` is not a column in `ft`: ",
-           paste(fn$col, collapse = ", "), call. = FALSE)
+          !fn$col %in% ft$col_keys) {
+      # A missing `col` used to leave this message ending at a bare
+      # colon with nothing after it. Report the name when there is
+      # one, and .describe() the shape when there isn't.
+      got <- if (is.null(fn$col)) {
+        "missing"
+      } else if (is.character(fn$col) && length(fn$col) == 1L) {
+        sprintf("\"%s\"", fn$col)
+      } else {
+        .describe(fn$col)
+      }
+      stop("`", arg, "[[", k, "]]$col` is not a column in `ft`; it is ",
+           got, ". Available: ", paste(ft$col_keys, collapse = ", "),
+           ". Each footnote needs list(row =, col =, text =).",
+           call. = FALSE)
+    }
     .check_footnote_text(fn$text, k, arg)
   }
   invisible(NULL)

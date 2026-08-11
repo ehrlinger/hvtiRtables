@@ -253,3 +253,18 @@ test_that("hv_man_table_save_jtcvs writes nothing when it rejects", {
   )
   expect_false(file.exists(out))
 })
+
+test_that("hv_man_table_save_jtcvs rejects a flat footnotes list", {
+  ft <- fx_jtcvs_ft()
+  out <- tempfile(fileext = ".docx")
+  msg <- tryCatch(
+    hv_man_table_save_jtcvs(
+      ft, out, caption = "T",
+      footnotes = list(row = 1, col = "label", text = "x")
+    ),
+    error = conditionMessage
+  )
+  expect_false(grepl("$ operator", msg, fixed = TRUE))
+  expect_match(msg, "must be a list of the form", fixed = TRUE)
+  expect_false(file.exists(out))
+})

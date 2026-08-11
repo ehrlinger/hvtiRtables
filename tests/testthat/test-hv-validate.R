@@ -218,3 +218,54 @@ test_that(".assert_jtcvs_groups rejects a duplicated column name", {
            "e.g. c(stat_1 = \"A\", stat_2 = \"B\").")
   )
 })
+
+test_that(".assert_footnote_entries rejects a non-list entry", {
+  # Forgetting the outer nesting is the likeliest mistake against a
+  # documented list(list(row =, col =, text =)) shape, and it leaked
+  # "$ operator is invalid for atomic vectors" from the first fn$ access.
+  ft <- fx_jtcvs_ft()
+  for (bad in list(list(row = 1, col = "label", text = "x"),
+                   "a note", list("a note"))) {
+    msg <- tryCatch(.assert_footnote_entries(bad, ft),
+                    error = conditionMessage)
+    expect_false(grepl("$ operator", msg, fixed = TRUE))
+    expect_match(msg, "must be a list of the form", fixed = TRUE)
+  }
+  expect_identical(
+    tryCatch(
+      .assert_footnote_entries(
+        list(row = 1, col = "label", text = "x"), ft
+      ),
+      error = conditionMessage
+    ),
+    paste0("`footnotes[[1]]` must be a list of the form ",
+           "list(row =, col =, text =). Received: numeric of ",
+           "length 1. `footnotes` is a list *of* footnotes, so one ",
+           "footnote is list(list(row = 1, col = \"n_stat_1\", ",
+           "text = \"...\")).")
+  )
+})
+
+test_that(".assert_footnote_entries says what arrived for col", {
+  # The message used to end at a trailing colon with nothing after it
+  # whenever fn$col was NULL: no "Received:", no runnable fix.
+  ft <- fx_jtcvs_ft()
+  expect_identical(
+    tryCatch(
+      .assert_footnote_entries(list(list(row = 1, text = "x")), ft),
+      error = conditionMessage
+    ),
+    paste0("`footnotes[[1]]$col` is not a column in `ft`; it is ",
+           "missing. Available: ", paste(ft$col_keys, collapse = ", "),
+           ". Each footnote needs list(row =, col =, text =).")
+  )
+  expect_match(
+    tryCatch(
+      .assert_footnote_entries(
+        list(list(row = 1, col = "nope", text = "x")), ft
+      ),
+      error = conditionMessage
+    ),
+    "it is \"nope\"", fixed = TRUE
+  )
+})
