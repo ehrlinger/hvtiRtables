@@ -89,8 +89,9 @@ test_that("footnote-text contract shares its tail across both savers", {
     # Strips the leading "`<label>` " and the trailing " <closing fix>",
     # leaving just "must be a single non-empty string; it is <what
     # arrived>." -- the shared rule.
-    tail_of <- function(msg) sub("^`[^`]+` (.*?\\.) .*$", "\\1", msg,
-                                 perl = TRUE)
+    tail_of <- function(msg) {
+      sub("^`[^`]+` (.*?\\.) .*$", "\\1", msg, perl = TRUE)
+    }
     expect_identical(tail_of(m1), tail_of(m2))
   }
 })

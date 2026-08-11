@@ -248,10 +248,10 @@
       if (is.factor(x)) {
         dropped <- droplevels(x)
         if (nlevels(dropped) < nlevels(x) && .is_dichotomizable(dropped))
-          stop(contract, sprintf(
-                 " `%s` is a factor with %d levels but only %d ",
-                 v, nlevels(x), nlevels(dropped)
-               ), "appear in the data; droplevels() may be what ",
+          stop(contract,
+               sprintf(" `%s` is a factor with %d levels but only %d ",
+                       v, nlevels(x), nlevels(dropped)),
+               "appear in the data; droplevels() may be what ",
                "you want.", call. = FALSE)
       }
       stop(contract, " Recode `", v, "` to 0/1, or move it to ",
