@@ -58,9 +58,14 @@ test_that("an unsupported macro parameter says so and names no argument", {
 })
 
 test_that("CON1 explains the statistic change rather than mapping silently", {
+  # Tightened to a substring unique to the *corrected* mapping (this
+  # regressed once already, when CON1's note pointed at itself instead
+  # of naming CON3= as the behavior `continuous` actually reproduces).
+  # A bare "mean" substring would also match a reintroduced-bug message
+  # like "CON1= now maps to mean +/- SD directly".
   expect_error(
     .check_sas_args(list(con1 = "age"), "hv_tbl_summary"),
-    "mean",
+    "the `CON3=` behavior",
     fixed = TRUE
   )
 })
@@ -134,6 +139,72 @@ test_that("each public function routes SAS names through the glossary", {
     hv_man_table_save_jtcvs(ft, tempfile(fileext = ".docx"),
                             caption = "T1", addfn = "note"),
     "`footnotes =`", fixed = TRUE
+  )
+})
+
+test_that("ADDFN= gives a family-appropriate note for each saver", {
+  # hv_man_table_save()'s `footnotes` is a named symbol -> text list;
+  # hv_man_table_save_jtcvs()'s is a list of list(row=, col=, text=).
+  # Following the CORR note in a JTCVS call errors immediately, so the
+  # note text must differ by family, not be shared verbatim.
+  expect_error(
+    .check_sas_args(list(addfn = "note"), "hv_man_table_save"),
+    "pass a named list, symbol -> footnote text", fixed = TRUE
+  )
+  expect_error(
+    .check_sas_args(list(addfn = "note"), "hv_man_table_save_jtcvs"),
+    "list(row =, col =, text =)", fixed = TRUE
+  )
+})
+
+test_that("PRINTFN= gives a family-appropriate note for each saver", {
+  expect_error(
+    .check_sas_args(list(printfn = "note"), "hv_man_table_save"),
+    "pass `hv_man_footnotes()`, or `NULL` for none", fixed = TRUE
+  )
+  expect_error(
+    .check_sas_args(list(printfn = "note"), "hv_man_table_save_jtcvs"),
+    "hv_test_footnotes_jtcvs()", fixed = TRUE
+  )
+})
+
+test_that("all-positional extra arguments error instead of being swallowed", {
+  # names(dots) is NULL, not character(0), for a fully positional dots
+  # list -- the old `length(nms) == 0` guard treated that as "no
+  # extras" and returned silently.
+  expect_error(
+    .check_sas_args(list("JUNK"), "hv_man_table"),
+    "unused argument (position 5)", fixed = TRUE
+  )
+  expect_error(
+    hv_man_table(gtsummary::tbl_summary(gtsummary::trial, include = "age"),
+                 "Times New Roman", 12, 2, "JUNK"),
+    "unused argument (position 5)", fixed = TRUE
+  )
+})
+
+test_that("a mixed named-and-positional dots list is handled sensibly", {
+  # A positional extra followed by an unrecognized named one: reported
+  # by position, not the old nonsense "unused argument ()".
+  expect_error(
+    .check_sas_args(list("JUNK", colour = "red"), "hv_man_table"),
+    "unused argument (position 5)", fixed = TRUE
+  )
+  # A positional extra followed by a *recognized* macro name: the
+  # helpful macro-specific message wins over the positional one.
+  expect_error(
+    .check_sas_args(list("JUNK", class = "trt"), "hv_tbl_summary"),
+    "Use `by =`", fixed = TRUE
+  )
+})
+
+test_that("a recognized macro name is not masked by an earlier typo", {
+  # Regression for "only nms[1] is inspected": a generic typo in the
+  # first position previously produced a bare "unused argument (colour)"
+  # even when a real, more actionable %summarytable name followed it.
+  expect_error(
+    .check_sas_args(list(colour = "red", class = "trt"), "hv_tbl_summary"),
+    "Use `by =`", fixed = TRUE
   )
 })
 

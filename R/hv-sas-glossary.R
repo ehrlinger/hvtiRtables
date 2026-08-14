@@ -1,7 +1,6 @@
 # The one static map from %summarytable parameter to this package's
 # four-stage split. Two consumers: .check_sas_args() below, and the
-# parameter table in vignettes/sas-migration.Rmd, which is written from
-# this list so the two can never disagree.
+# parameter table in vignettes/sas-migration.Rmd.
 #
 # `arg = NA` means the parameter has no equivalent here; `note` then
 # carries the reason. Where a parameter maps but the behavior differs,
@@ -14,11 +13,16 @@
 # parameter would send half the callers to the wrong sibling, and for
 # TBLTITLE= to an argument that does not exist. `only` marks a parameter
 # that exists in one family alone; `note_other` is what the other family
-# is told instead.
+# is told instead. `note_corr`/`note_jtcvs` are for a parameter that is
+# valid in BOTH families but whose note text differs because the
+# argument shape differs between the siblings (e.g. `footnotes`); when
+# only one of a plain `note` or the `note_corr`/`note_jtcvs` pair is
+# needed, use whichever fits.
 #
 # Deliberately not exhaustive over the macro's ~60 parameters. The
-# purely typographic ones (f1..f4, pfmt, perfmt, labeln, out, rtfout)
-# have no analogue worth a message and would bury the ones that matter.
+# purely typographic ones (f1..f4, pfmt, perfmt, labeln, out, rtfout,
+# cwidth1, cwidth2, cwidth3) have no analogue worth a message and would
+# bury the ones that matter.
 
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
@@ -81,9 +85,24 @@
       "document, or use the JTCVS pair if the journal wants one"
     )
   ),
-  addfn    = list(arg = "footnotes", stage = "save"),
-  printfn  = list(arg = "footnotes", stage = "save",
-                  note = "pass `hv_man_footnotes()`, or `NULL` for none"),
+  addfn    = list(
+    arg = "footnotes", stage = "save",
+    note_corr = paste0(
+      "pass a named list, symbol -> footnote text (see hv_man_table_save())"
+    ),
+    note_jtcvs = paste0(
+      "pass a list of list(row =, col =, text =) entries -- see ",
+      "hv_man_table_save_jtcvs() and hv_test_footnotes_jtcvs()"
+    )
+  ),
+  printfn  = list(
+    arg = "footnotes", stage = "save",
+    note_corr = "pass `hv_man_footnotes()`, or `NULL` for none",
+    note_jtcvs = paste0(
+      "pass `hv_test_footnotes_jtcvs()`, a list of ",
+      "list(row =, col =, text =) entries, or `NULL` for none"
+    )
+  ),
   rtffile  = list(arg = "file",      stage = "save",
                   note = "output is `.docx`"),
   pdffile  = list(arg = "file",      stage = "save",
@@ -117,6 +136,11 @@
                      "count is below 5, where `CUTEXACT=50` used a ",
                      "50% threshold"
                    )),
+  ncol      = list(arg = NA_character_, stage = NA_character_,
+                   note = paste0(
+                     "per-group Ns are always shown automatically; ",
+                     "`NCOL=3`'s overall N needs `overall = TRUE`"
+                   )),
   style     = list(arg = NA_character_, stage = NA_character_,
                    note = "house font and rounding are fixed"),
   page      = list(arg = NA_character_, stage = NA_character_,
@@ -125,26 +149,51 @@
                    note = "page setup belongs to the Word document")
 )
 
+# Number of formals a function takes before its `...`, used to translate
+# a positional extra's index within `dots` into its position in the full
+# call (dots[i] is call-argument number `.sas_dots_offset(fn) + i`).
+.sas_dots_offset <- function(fn) {
+  f <- tryCatch(get(fn, mode = "function"), error = function(e) NULL)
+  if (is.null(f)) return(0L)
+  form <- names(formals(f))
+  idx <- match("...", form)
+  if (is.na(idx)) length(form) else idx - 1L
+}
+
 # Errors on any name in `dots`. Macro names get a message routing them to
 # the right argument and stage; anything else gets the message R itself
 # would have given had the function not taken `...`. Taking `...` is what
 # makes the macro messages possible, so this restores the default
 # strictness that `...` silently removed.
+#
+# `names(dots)` is NULL, not a length-0 vector, when every extra argument
+# is positional -- checking `length(nms) == 0` for "no extras" is wrong
+# and silently accepted any number of trailing positional arguments.
 .check_sas_args <- function(dots, fn) {
-  nms <- names(dots)
-  if (length(nms) == 0L) return(invisible(NULL))
+  n <- length(dots)
+  if (n == 0L) return(invisible(NULL))
 
-  key <- tolower(nms[1])
-  entry <- .sas_param_map[[key]]
+  nms <- names(dots) %||% character(n)
+  nms[is.na(nms)] <- ""
 
-  if (is.null(entry))
+  # A recognized macro name can appear anywhere among several unused
+  # arguments; find the first one the map actually recognizes so it is
+  # not masked by an unrelated typo or positional extra that happens to
+  # come first.
+  hit <- Find(
+    function(i) nzchar(nms[i]) && !is.null(.sas_param_map[[tolower(nms[i])]]),
+    seq_len(n)
+  )
+
+  if (is.null(hit)) {
+    if (!nzchar(nms[1]))
+      stop("unused argument (position ", .sas_dots_offset(fn) + 1L, ")",
+           call. = FALSE)
     stop("unused argument (", nms[1], ")", call. = FALSE)
+  }
 
-  note <- entry$note %||% ""
-
-  if (is.na(entry$arg))
-    stop("`", toupper(key), "=` is a `%summarytable` parameter: ", note, ".",
-         call. = FALSE)
+  key <- tolower(nms[hit])
+  entry <- .sas_param_map[[key]]
 
   fam <- .family_of(fn)
 
@@ -158,6 +207,15 @@
     fam <- entry$only
   }
   if (is.na(fam)) fam <- "corr"
+
+  # `note` covers a parameter whose note text does not depend on family;
+  # `note_corr`/`note_jtcvs` cover one where it does (the two savers'
+  # `footnotes` argument shapes differ).
+  note <- entry$note %||% entry[[paste0("note_", fam)]] %||% ""
+
+  if (is.na(entry$arg))
+    stop("`", toupper(key), "=` is a `%summarytable` parameter: ", note, ".",
+         call. = FALSE)
 
   target <- .stage_fns[[entry$stage]][[fam]]
 
