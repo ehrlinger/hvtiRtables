@@ -8,6 +8,8 @@ the macro's `LIST=` equivalent) and variable-type buckets
 (`continuous`/`binary`/ `categorical`, the `CON1=`/`CAT1=`/`CAT2=`
 equivalents), rather than gtsummary's own tidyselect-based interface.
 Returns a plain `gtsummary` object, ready for
+[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+or
 [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md).
 
 ## Usage
@@ -94,8 +96,13 @@ hv_tbl_summary(
 ## Value
 
 A `gtsummary` object, ready for
+[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+or
 [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md).
-See Details for the `hv_stat_label`/`hv_trailing` attributes.
+See Details for the `hv_stat_label`/ `hv_trailing` attributes, which
+only
+[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
+reads.
 
 ## Details
 
@@ -154,6 +161,8 @@ variable from `groups`.
 
 ## See also
 
+[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+or
 [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
 to render the result.
 [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)

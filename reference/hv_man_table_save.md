@@ -51,13 +51,17 @@ hv_man_table_save(
   [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
   to override or extend (see its documentation). Symbols must be drawn
   from `c("*", "†", "‡", "§", "¶", "||")`. Each symbol is appended as a
-  superscript reference mark to the table's `N` column header cell (or
-  the first column if no `N` column is present), and its text is
-  rendered as its own paragraph below the table, in the order given.
-  Every element must be named (unnamed or blank-named entries raise an
-  error) and every text must be a single non-empty string (`NULL`, `NA`,
-  a number, or a multi-element vector raise an error, since each writes
-  a dangling marker); an empty list is a no-op, same as `NULL`.
+  superscript reference mark to the table's count-column header cell — a
+  column named `n`, else the first `n_stat_<k>` column
+  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+  creates when it splits an
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  table, else the first column — and its text is rendered as its own
+  paragraph below the table, in the order given. Every element must be
+  named (unnamed or blank-named entries raise an error) and every text
+  must be a single non-empty string (`NULL`, `NA`, a number, or a
+  multi-element vector raise an error, since each writes a dangling
+  marker); an empty list is a no-op, same as `NULL`.
 
 - abbreviations:
 

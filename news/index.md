@@ -1,5 +1,41 @@
 # Changelog
 
+## hvtiRtables 0.9.7
+
+### New features
+
+- [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+  now accepts an
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  table. It splits each `"{N_obs} ||| {stat}"` cell into a flat `No.`
+  column immediately before the statistic it counts — the same two
+  values the JTCVS renderer puts under a merged spanning header, without
+  the merge. Previously the separator rendered literally into the Word
+  table (`98 ||| 46 (32, 63)`), so the SAS-macro interface was usable
+  only in JTCVS mode. The count is kept rather than discarded because
+  house rule 8 requires it and
+  [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
+  ships a `*` footnote describing it. A plain
+  [`gtsummary::tbl_summary()`](https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html)
+  table carries no such convention and passes through unchanged.
+- A table where only *some* cells carry the convention is now rejected,
+  through the same assertion the JTCVS renderer uses. Splitting it would
+  have left the rest blank.
+
+### Bug fixes
+
+- The house footnote symbols now attach to the count column when the
+  table has one. With the split above, a sectioned table’s first column
+  is `groupname_col`, so the marker would otherwise have landed on the
+  section-label column.
+- A CORR table missing the `"{N_obs} ||| {stat}"` convention now raises
+  an error naming
+  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md),
+  not
+  [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md).
+  The internal assertion the two renderers share previously hardcoded
+  the JTCVS renderer’s name in its message.
+
 ## hvtiRtables 0.9.6
 
 ### Bug fixes

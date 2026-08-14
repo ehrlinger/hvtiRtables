@@ -21,6 +21,10 @@ hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2)
 
   A `gtsummary` table object (must support
   [`as_flex_table()`](https://www.danieldsjoberg.com/gtsummary/reference/as_flex_table.html)).
+  A table from
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  is split as described above; any other `gtsummary` object renders
+  as-is.
 
 - font:
 
@@ -72,6 +76,36 @@ Submitting to JTCVS instead? Use
 which builds the two-row merged spanning header that journal's template
 expects: CORR house style and JTCVS submission format want different
 things from the same header row.
+
+A table from
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+works here as well as in the JTCVS renderer. That function writes each
+cell as `"{N_obs} ||| {stat}"`, and this one splits the two apart into a
+flat `No.` column immediately before the statistic it counts — the same
+two values JTCVS mode puts under a merged spanning header, without the
+merge. House rule 8 wants that non-missing count, and
+[`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)'s
+`*` footnote describes it, so it is kept rather than discarded. A plain
+[`gtsummary::tbl_summary()`](https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html)
+table carries no such convention and passes through unchanged.
+
+## Common mistakes
+
+**Cells read `98 ||| 46 (32, 63)`.** You are on a version before the
+split; upgrade. `|||` is the internal separator
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+writes between the count and the statistic, never intended to reach a
+rendered table.
+
+**"`tbl` was not built with the `{N_obs} ||| {stat}` convention."** Only
+some cells carry the separator, which means `statistic` was set for part
+of the table. Splitting would leave the rest blank, so it is rejected.
+Either apply the convention to every variable or to none;
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+does the former for you.
+
+**"`font_size` must be 11 or 12."** House rule 5. Use `11` only for wide
+tables.
 
 ## See also
 

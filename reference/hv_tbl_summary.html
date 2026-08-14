@@ -5,13 +5,13 @@ a grouped, ordered variable list (groups, the macro's LIST=
 equivalent) and variable-type buckets (continuous/binary/
 categorical, the CON1=/CAT1=/CAT2= equivalents), rather than
 gtsummary's own tidyselect-based interface. Returns a plain gtsummary
-object, ready for hv_man_table_jtcvs()."><meta property="og:description" content="Thin wrapper over gtsummary::tbl_summary() modeled on the interface
+object, ready for hv_man_table() or hv_man_table_jtcvs()."><meta property="og:description" content="Thin wrapper over gtsummary::tbl_summary() modeled on the interface
 biostats team members already know from the %summarytable SAS macro:
 a grouped, ordered variable list (groups, the macro's LIST=
 equivalent) and variable-type buckets (continuous/binary/
 categorical, the CON1=/CAT1=/CAT2= equivalents), rather than
 gtsummary's own tidyselect-based interface. Returns a plain gtsummary
-object, ready for hv_man_table_jtcvs()."><!-- dependencies from examples --></head><body>
+object, ready for hv_man_table() or hv_man_table_jtcvs()."><!-- dependencies from examples --></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -19,7 +19,7 @@ object, ready for hv_man_table_jtcvs()."><!-- dependencies from examples --></he
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,7 +60,7 @@ a grouped, ordered variable list (<code>groups</code>, the macro's <code>LIST=</
 equivalent) and variable-type buckets (<code>continuous</code>/<code>binary</code>/
 <code>categorical</code>, the <code>CON1=</code>/<code>CAT1=</code>/<code>CAT2=</code> equivalents), rather than
 gtsummary's own tidyselect-based interface. Returns a plain <code>gtsummary</code>
-object, ready for <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>.</p>
+object, ready for <code><a href="hv_man_table.html">hv_man_table()</a></code> or <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>.</p>
     </div>
 
     <div class="section level2">
@@ -147,8 +147,9 @@ convention (<code>%summarytable</code> <code>PP=</code> equivalent).</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>gtsummary</code> object, ready for <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>. See
-Details for the <code>hv_stat_label</code>/<code>hv_trailing</code> attributes.</p>
+    <p>A <code>gtsummary</code> object, ready for <code><a href="hv_man_table.html">hv_man_table()</a></code> or
+<code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>. See Details for the <code>hv_stat_label</code>/
+<code>hv_trailing</code> attributes, which only <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> reads.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -200,8 +201,9 @@ never mentioned <code>by</code>. Remove the variable from <code>groups</code>.</
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> to render the result.
-<code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code> for the percentile-footnote house convention.</p></div>
+    <div class="dont-index"><p><code><a href="hv_man_table.html">hv_man_table()</a></code> or <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> to render the
+result. <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code> for the percentile-footnote house
+convention.</p></div>
     </div>
 
     <div class="section level2">

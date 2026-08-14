@@ -17,7 +17,7 @@ and Times New Roman at the house font size."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -70,7 +70,9 @@ and Times New Roman at the house font size.</p>
 
 
 <dl><dt id="arg-tbl">tbl<a class="anchor" aria-label="anchor" href="#arg-tbl"></a></dt>
-<dd><p>A <code>gtsummary</code> table object (must support <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/as_flex_table.html" class="external-link">as_flex_table()</a></code>).</p></dd>
+<dd><p>A <code>gtsummary</code> table object (must support <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/as_flex_table.html" class="external-link">as_flex_table()</a></code>).
+A table from <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> is split as described above; any
+other <code>gtsummary</code> object renders as-is.</p></dd>
 
 
 <dt id="arg-font">font<a class="anchor" aria-label="anchor" href="#arg-font"></a></dt>
@@ -115,6 +117,31 @@ using <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/style_si
 two-row merged spanning header that journal's template expects: CORR
 house style and JTCVS submission format want different things from the
 same header row.</p>
+<p>A table from <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> works here as well as in the JTCVS
+renderer. That function writes each cell as <code>"{N_obs} ||| {stat}"</code>, and
+this one splits the two apart into a flat <code>No.</code> column immediately
+before the statistic it counts — the same two values JTCVS mode puts
+under a merged spanning header, without the merge. House rule 8 wants
+that non-missing count, and <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>'s <code>*</code> footnote
+describes it, so it is kept rather than discarded. A plain
+<code><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html" class="external-link">gtsummary::tbl_summary()</a></code> table carries no such convention and passes
+through unchanged.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="common-mistakes">Common mistakes<a class="anchor" aria-label="anchor" href="#common-mistakes"></a></h2>
+
+
+<p><strong>Cells read <code>98 ||| 46 (32, 63)</code>.</strong> You are on a version before the
+split; upgrade. <code>|||</code> is the internal separator <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>
+writes between the count and the statistic, never intended to reach a
+rendered table.</p>
+<p><strong>"<code>tbl</code> was not built with the <code>{N_obs} ||| {stat}</code> convention."</strong>
+Only some cells carry the separator, which means <code>statistic</code> was set
+for part of the table. Splitting would leave the rest blank, so it is
+rejected. Either apply the convention to every variable or to none;
+<code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> does the former for you.</p>
+<p><strong>"<code>font_size</code> must be 11 or 12."</strong> House rule 5. Use <code>11</code> only for
+wide tables.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

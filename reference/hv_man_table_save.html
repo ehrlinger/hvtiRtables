@@ -35,7 +35,7 @@ output; see the package README for the paste-in workflow."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -116,10 +116,12 @@ must already exist; this function does not create it.</p></dd>
 footnotes). Pass <code>NULL</code> to suppress both, or compose with
 <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code> to override or extend (see its documentation).
 Symbols must be drawn from <code>c("*", "†", "‡", "§", "¶", "||")</code>. Each
-symbol is appended as a superscript reference mark to the table's <code>N</code>
-column header cell (or the first column if no <code>N</code> column is present),
-and its text is rendered as its own paragraph below the table, in the
-order given. Every element must be named (unnamed or blank-named
+symbol is appended as a superscript reference mark to the table's
+count-column header cell — a column named <code>n</code>, else the first
+<code>n_stat_&lt;k&gt;</code> column <code><a href="hv_man_table.html">hv_man_table()</a></code> creates when it splits an
+<code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> table, else the first column — and its text is
+rendered as its own paragraph below the table, in the order given.
+Every element must be named (unnamed or blank-named
 entries raise an error) and every text must be a single non-empty
 string (<code>NULL</code>, <code>NA</code>, a number, or a multi-element vector raise an
 error, since each writes a dangling marker); an empty list is a
