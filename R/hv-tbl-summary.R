@@ -4,7 +4,7 @@
 #' biostats team members already know from the `%summarytable` SAS macro:
 #' a grouped, ordered variable list (`groups`, the macro's `LIST=`
 #' equivalent) and variable-type buckets (`continuous`/`binary`/
-#' `categorical`, the `CON1=`/`CAT1=`/`CAT2=` equivalents), rather than
+#' `categorical`, the `CON3=`/`CAT1=`/`CAT2=` equivalents), rather than
 #' gtsummary's own tidyselect-based interface. Returns a plain `gtsummary`
 #' object, ready for [hv_man_table_jtcvs()].
 #'
@@ -69,8 +69,12 @@
 #'   `binary`, or `categorical`, and every classified variable must
 #'   appear in `groups`.
 #' @param continuous Character vector of continuous variable names
-#'   (`%summarytable` `CON1=` equivalent), summarized as
-#'   `median (P<low>, P<high>)`. Each named column must be numeric.
+#'   (`%summarytable` `CON3=` equivalent), summarized as
+#'   `median (P<low>, P<high>)`. Variables the macro classified as
+#'   `CON1=` (mean +/- SD, one-way ANOVA) or `CON2=` (median with
+#'   min and max) belong here too, but their statistic and test
+#'   change: every continuous variable is summarized as a median and
+#'   tested non-parametrically. Each named column must be numeric.
 #' @param binary Character vector of 0/1 variable names (`%summarytable`
 #'   `CAT1=` equivalent), summarized as `n (%)` on a single row. Each
 #'   named column must have at most 2 distinct non-`NA` values, and
