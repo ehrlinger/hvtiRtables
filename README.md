@@ -48,11 +48,16 @@ hv_man_table_save(ft, "table1.docx")
 
 ## JTCVS submission format
 
-When you're submitting to JTCVS, swap in `hv_man_table_jtcvs()` /
-`hv_man_table_save_jtcvs()` for `hv_man_table()` / `hv_man_table_save()`.
-The merged spanning header and lettered footnotes match the journal's own
-submission template, so you're not hand-reformatting the table a second
-time after the flat-header version is already done:
+When you're submitting to JTCVS, use `hv_man_table_jtcvs()` /
+`hv_man_table_save_jtcvs()` instead of `hv_man_table()` /
+`hv_man_table_save()`. This is not a drop-in swap: the JTCVS pair
+requires a `groups` argument naming each `stat_<k>` column (no default),
+requires the table's statistic to follow the `{N_obs} ||| {stat}`
+convention, and requires a `caption` string at save time. The merged
+spanning header and lettered footnotes match the journal's own
+submission template, so once those three things are supplied you're not
+hand-reformatting the table a second time after the flat-header version
+is already done:
 
 ``` r
 library(gtsummary)
@@ -81,14 +86,16 @@ spread across separate calls:
 | Stage | Function | Macro parameters |
 |---|---|---|
 | Compute | `hv_tbl_summary()` | `CLASS=`, `CON*=`, `CAT*=`, `LIST=`, `PP=`, `PVALUES=`, `TOTALCOL=` |
-| Shape | `hv_man_table()` / `hv_man_table_jtcvs()` | `STYLE=`, `PAGE=` |
+| Shape | `hv_man_table()` / `hv_man_table_jtcvs()` | *(none - house style is fixed)* |
 | Write | `hv_man_table_save*()` | `RTFFILE=`, `ADDFN=`, `TBLTITLE=` (JTCVS only) |
 | Verify | `hv_check_docx()` | *(no analogue)* |
 
 The one thing worth knowing before you start: `CON1=` variables change
 statistic. The macro reported them as mean +/- SD with one-way ANOVA; every
 continuous variable here is a median with a non-parametric test, which is
-the `CON3=` behavior. Nothing else silently changes a number.
+the `CON3=` behavior. It's the largest of five defaults that produce
+different numbers from a faithful-looking port; the vignette's "Defaults
+that differ" table lists all five.
 
 Full parameter map, the five defaults that differ, and the `QNTLDEF`
 quantile trap: **[Porting a `%summarytable` program to R](https://ehrlinger.github.io/hvtiRtables/articles/sas-migration.html)**.

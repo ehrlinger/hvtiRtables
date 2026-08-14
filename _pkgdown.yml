@@ -38,7 +38,7 @@ reference:
   contents:
   - hv_tbl_summary
 
-- title: "2. Shape the table — `STYLE=` / `PAGE=`"
+- title: "2. Shape the table - house style is fixed"
   desc: >
     House style is fixed, so the only choice here is the header shape.
     Flat single-row headers for CORR reports and manuscripts; merged

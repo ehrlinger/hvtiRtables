@@ -5,9 +5,10 @@
 * `hv_tbl_summary()` gains `overall =`, the `%summarytable` `TOTALCOL=`
   equivalent, adding an Overall column across all groups. Defaults to
   `FALSE`; the macro's own default is `TOTALCOL=1`.
-* Every public function now errors on a `%summarytable` parameter name,
-  naming the R argument and the function that takes it, rather than
-  silently ignoring it.
+* `hv_tbl_summary()`, `hv_man_table()`, `hv_man_table_jtcvs()`,
+  `hv_man_table_save()`, and `hv_man_table_save_jtcvs()` now error on a
+  `%summarytable` parameter name, naming the R argument and the function
+  that takes it, rather than silently ignoring it.
 * New vignette, "Porting a `%summarytable` program to R".
 
 ## Documentation

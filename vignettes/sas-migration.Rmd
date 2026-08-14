@@ -30,8 +30,8 @@ the parameters you know are distributed across separate calls:
 | Stage | Function | Macro parameters that land here |
 |---|---|---|
 | Compute stats and tests | `hv_tbl_summary()` | `DATA=`, `CLASS=`, `CON*=`, `CAT*=`, `ORD1=`, `LIST=`, `PP=`, `PVALUES=`, `ASD=`, `TOTALCOL=` |
-| Shape the table | `hv_man_table()`, `hv_man_table_jtcvs()` | `STYLE=`, `PAGE=` |
-| Write the file | `hv_man_table_save()`, `hv_man_table_save_jtcvs()` | `RTFFILE=`, `PDFFILE=`, `TBLTITLE=`, `ADDFN=`, `PRINTFN=` |
+| Shape the table | `hv_man_table()`, `hv_man_table_jtcvs()` | *(none - house style is fixed)* |
+| Write the file | `hv_man_table_save()`, `hv_man_table_save_jtcvs()` | `RTFFILE=`, `PDFFILE=`, `XMLFILE=`, `TBLTITLE=`, `ADDFN=`, `PRINTFN=` |
 | Verify the file | `hv_check_docx()` | *(no analogue)* |
 
 If you pass a macro parameter to the wrong stage, the error says which
@@ -122,7 +122,7 @@ tbl <- hv_tbl_summary(
 | `NCOL=` | automatic | per-group Ns always shown; `NCOL=3`'s overall N needs `overall = TRUE` |
 | `TBLTITLE=` | `caption` | **JTCVS only** - `hv_man_table_save()` writes no caption |
 | `ADDFN=` | `footnotes` | on the save function |
-| `PRINTFN=` | `footnotes = hv_man_footnotes()` | on the save function |
+| `PRINTFN=` | `footnotes = hv_man_footnotes()` | on the save function; the house block assumes the default `percentiles` (15th, 85th) and must be overridden if `percentiles` is |
 | `RTFFILE=`, `PDFFILE=`, `XMLFILE=` | `file` | output is always `.docx` |
 
 The save stage is a sibling pair, and the two do not take the same
@@ -162,8 +162,12 @@ Medians agree at every n; Q1, Q3 and `pNN` diverge silently. `gtsummary`'s
 SAS without intervention. **Any `stats::quantile()` call you write by hand
 in ported code does not** - pin `type = 2` explicitly.
 
-The percentiles actually used are always printed in the sub-header, so a
-table can never silently misreport which pair produced a column:
+The percentiles actually used are recorded on the table object as
+`attr(tbl, "hv_stat_label")`, but nothing consumes that attribute
+automatically. `hv_man_table_jtcvs()`'s `stat_label` argument defaults to
+a literal mean-and-SD string, so a `percentiles = c(16, 84)` table
+rendered without an explicit `stat_label =` claims mean/SD over median
+columns. You MUST pass it yourself:
 
 ```{r}
 tbl <- hv_tbl_summary(
@@ -173,6 +177,14 @@ tbl <- hv_tbl_summary(
   percentiles = c(16, 84)
 )
 attr(tbl, "hv_stat_label")
+```
+
+```{r eval = FALSE}
+ft <- hv_man_table_jtcvs(
+  tbl,
+  groups = c(stat_1 = "Drug A", stat_2 = "Drug B"),
+  stat_label = attr(tbl, "hv_stat_label")
+)
 ```
 
 ## Reading the SAS data in
