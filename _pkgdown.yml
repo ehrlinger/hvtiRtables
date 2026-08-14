@@ -72,6 +72,13 @@ reference:
   contents:
   - hvtiRtables-package
 
+articles:
+- title: "Guides"
+  navbar: ~
+  contents:
+  - hvtiRtables
+  - sas-migration
+
 footer:
   structure:
     left: developed_by
