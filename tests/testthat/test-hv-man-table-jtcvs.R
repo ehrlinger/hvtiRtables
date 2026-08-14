@@ -332,6 +332,20 @@ test_that("hv_man_table_jtcvs refuses a table lacking the convention", {
   )
 })
 
+test_that("hv_man_table_jtcvs's convention error still names itself", {
+  # Regression for PR #23 review: .assert_stat_convention() gained a
+  # `caller` argument so hv_man_table() could get its own name in this
+  # message. The JTCVS caller passes nothing, relying on the default, so
+  # its message must be byte-identical to before the change.
+  tbl <- fx_plain_tbl()
+  msg <- tryCatch(
+    hv_man_table_jtcvs(tbl, c(stat_1 = "A", stat_2 = "B")),
+    error = conditionMessage
+  )
+  expect_match(msg, "hv_man_table_jtcvs() requires", fixed = TRUE)
+  expect_false(grepl("hv_man_table()", msg, fixed = TRUE))
+})
+
 test_that("hv_man_table_jtcvs accepts an hv_tbl_summary table", {
   # Guards the non-NA qualifier: this table has NA stat cells and must
   # still render.

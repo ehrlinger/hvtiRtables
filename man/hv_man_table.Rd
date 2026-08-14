@@ -7,7 +7,9 @@
 hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2, ...)
 }
 \arguments{
-\item{tbl}{A \code{gtsummary} table object (must support \code{as_flex_table()}).}
+\item{tbl}{A \code{gtsummary} table object (must support \code{as_flex_table()}).
+A table from \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} is split as described above; any
+other \code{gtsummary} object renders as-is.}
 
 \item{font}{Font family. Default \code{"Times New Roman"} (house rule).
 Any single non-empty string is accepted: \code{flextable} silently
@@ -61,7 +63,34 @@ Submitting to JTCVS instead? Use \code{\link[=hv_man_table_jtcvs]{hv_man_table_j
 two-row merged spanning header that journal's template expects: CORR
 house style and JTCVS submission format want different things from the
 same header row.
+
+A table from \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} works here as well as in the JTCVS
+renderer. That function writes each cell as \code{"{N_obs} ||| {stat}"}, and
+this one splits the two apart into a flat \code{No.} column immediately
+before the statistic it counts — the same two values JTCVS mode puts
+under a merged spanning header, without the merge. House rule 8 wants
+that non-missing count, and \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}'s \code{*} footnote
+describes it, so it is kept rather than discarded. A plain
+\code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} table carries no such convention and passes
+through unchanged.
 }
+\section{Common mistakes}{
+
+\strong{Cells read \verb{98 ||| 46 (32, 63)}.} You are on a version before the
+split; upgrade. \verb{|||} is the internal separator \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}
+writes between the count and the statistic, never intended to reach a
+rendered table.
+
+\strong{"\code{tbl} was not built with the \verb{\{N_obs\} ||| \{stat\}} convention."}
+Only some cells carry the separator, which means \code{statistic} was set
+for part of the table. Splitting would leave the rest blank, so it is
+rejected. Either apply the convention to every variable or to none;
+\code{\link[=hv_tbl_summary]{hv_tbl_summary()}} does the former for you.
+
+\strong{"\code{font_size} must be 11 or 12."} House rule 5. Use \code{11} only for
+wide tables.
+}
+
 \examples{
 library(gtsummary)
 tbl <- tbl_summary(trial, by = trt, include = c(age, grade))

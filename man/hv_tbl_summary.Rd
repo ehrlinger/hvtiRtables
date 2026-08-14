@@ -80,8 +80,9 @@ so adding a column by default would silently break existing calls.}
 produce an error naming the argument to use instead.}
 }
 \value{
-A \code{gtsummary} object, ready for \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}. See
-Details for the \code{hv_stat_label}/\code{hv_trailing} attributes.
+A \code{gtsummary} object, ready for \code{\link[=hv_man_table]{hv_man_table()}} or
+\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}. See Details for the \code{hv_stat_label}/
+\code{hv_trailing} attributes, which only \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} reads.
 }
 \description{
 Thin wrapper over \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} modeled on the interface
@@ -90,7 +91,7 @@ a grouped, ordered variable list (\code{groups}, the macro's \verb{LIST=}
 equivalent) and variable-type buckets (\code{continuous}/\code{binary}/
 \code{categorical}, the \verb{CON3=}/\verb{CAT1=}/\verb{CAT2=} equivalents), rather than
 gtsummary's own tidyselect-based interface. Returns a plain \code{gtsummary}
-object, ready for \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}.
+object, ready for \code{\link[=hv_man_table]{hv_man_table()}} or \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}.
 }
 \details{
 Every continuous variable is summarized as
@@ -161,6 +162,7 @@ hv_tbl_summary(
 
 }
 \seealso{
-\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} to render the result.
-\code{\link[=hv_man_footnotes]{hv_man_footnotes()}} for the percentile-footnote house convention.
+\code{\link[=hv_man_table]{hv_man_table()}} or \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} to render the
+result. \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} for the percentile-footnote house
+convention.
 }

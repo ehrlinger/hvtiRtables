@@ -32,10 +32,12 @@
 #'   compose with [hv_man_footnotes()] to override or extend (see its
 #'   documentation).
 #'   Symbols must be drawn from `c("*", "†", "‡", "§", "¶", "||")`. Each
-#'   symbol is appended as a superscript reference mark to the table's `N`
-#'   column header cell (or the first column if no `N` column is present),
-#'   and its text is rendered as its own paragraph below the table, in the
-#'   order given. Every element must be named (unnamed or blank-named
+#'   symbol is appended as a superscript reference mark to the table's
+#'   count-column header cell — a column named `n`, else the first
+#'   `n_stat_<k>` column [hv_man_table()] creates when it splits an
+#'   [hv_tbl_summary()] table, else the first column — and its text is
+#'   rendered as its own paragraph below the table, in the order given.
+#'   Every element must be named (unnamed or blank-named
 #'   entries raise an error) and every text must be a single non-empty
 #'   string (`NULL`, `NA`, a number, or a multi-element vector raise an
 #'   error, since each writes a dangling marker); an empty list is a
@@ -94,8 +96,7 @@ hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
                "dangling reference with nothing after it. Give the ",
                "entry text, e.g. \"Values are median (P15, P85).\"")
       )
-    n_col <- if ("n" %in% ft$col_keys) "n" else ft$col_keys[1]
-    j <- which(ft$col_keys == n_col)
+    j <- which(ft$col_keys == .footnote_col(ft))
     for (sym in fn_names) {
       ft <- flextable::append_chunks(ft, i = 1, j = j, part = "header",
                                      flextable::as_sup(sym))
@@ -138,4 +139,20 @@ hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
   }
   key_par <- do.call(officer::fpar, runs)
   officer::body_add_fpar(doc, key_par, style = "Normal")
+}
+
+# Header cell the house footnote symbols attach to. `*` is "Number of
+# non-missing values." (house rule 8), so it belongs on the N column
+# when the table has one.
+#
+# hv_man_table() splits the "{N_obs} ||| {stat}" convention into
+# `n_stat_<k>` columns, and for a sectioned table col_keys[1] is
+# `groupname_col` -- so without this the marker would land on the
+# section-label column. The bare "n" case is kept for a hand-built
+# flextable that names its count column that way.
+.footnote_col <- function(ft) {
+  if ("n" %in% ft$col_keys) return("n")
+  n_stat <- grep("^n_stat_[0-9]+$", ft$col_keys, value = TRUE)
+  if (length(n_stat) > 0L) return(n_stat[1])
+  ft$col_keys[1]
 }
