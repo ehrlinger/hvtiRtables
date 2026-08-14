@@ -74,102 +74,21 @@ hv_man_table_save_jtcvs(ft, "table1.docx", caption = "Table 1. Baseline Characte
 
 ## Migrating from the `%summarytable` SAS macro
 
-If you already know `%summarytable`, you give `hv_tbl_summary()` the same
-thing you gave the macro: a grouped, ordered variable list (the shape of
-the macro's `LIST=` block). You get back a `gtsummary` object you hand
-straight to `hv_man_table_jtcvs()`. Two defaults differ from the macro
-and are worth knowing up front: we always use a blanket non-parametric
-test, so there is no per-variable Gaussian classification to maintain,
-and continuous variables report as `median (P15, P85)` rather than
-`mean ± SD`.
+`%summarytable` computes the table and writes the document in one call.
+This package splits that into stages, so the parameters you know are
+spread across separate calls:
 
-| `%summarytable` parameter | `hv_tbl_summary()` argument |
-|---|---|
-| `DATA=` | `data` |
-| `CLASS=` | `by` |
-| `LIST=` | `groups` |
-| `CON1=` | `continuous` |
-| `CAT1=` | `binary` |
-| `CAT2=` | `categorical` |
-| `PVALUES=` / `ASD=` | `compare` |
-| `PP=` | `percentiles` |
-| `TOTALCOL=` / `NCOL=` | handled automatically |
+| Stage | Function | Macro parameters |
+|---|---|---|
+| Compute | `hv_tbl_summary()` | `CLASS=`, `CON*=`, `CAT*=`, `LIST=`, `PP=`, `PVALUES=`, `TOTALCOL=` |
+| Shape | `hv_man_table()` / `hv_man_table_jtcvs()` | `STYLE=`, `PAGE=` |
+| Write | `hv_man_table_save*()` | `RTFFILE=`, `ADDFN=`, `TBLTITLE=` (JTCVS only) |
+| Verify | `hv_check_docx()` | *(no analogue)* |
 
-Not supported in this first pass: `WEIGHT=` (weighted summaries), `PROPENMT=`
-(propensity-matched mode), `CON2=`/`CON3=` (Gaussian-classification split,
-superseded by the blanket-nonparametric default), `SUBSET=`, `SORTBY=`
-(ordering comes directly from `groups`). Ordinal variables (`ORD1=` in the
-macro) fold into `categorical` here; no trend test is run.
+The one thing worth knowing before you start: `CON1=` variables change
+statistic. The macro reported them as mean +/- SD with one-way ANOVA; every
+continuous variable here is a median with a non-parametric test, which is
+the `CON3=` behavior. Nothing else silently changes a number.
 
-A real `%summarytable` call, next to its `hv_tbl_summary()` equivalent:
-
-``` sas
-%summarytable(data=built,
-              class=grp_res,
-              con1=&gaussian.,
-              cat1=&binary.,
-              cat2=&catg.,
-              pp=16 84,
-              pvalues=1,
-              list=
-    /* Demography */
-       female AGE BSA race_gp
-
-    /* Symptoms */
-       surgstat nyha_pr
-);
-```
-
-``` r
-library(gtsummary)
-library(hvtiRtables)
-
-tbl <- hv_tbl_summary(
-  built,
-  by = "grp_res",
-  groups = list(
-    Demography = c("female", "AGE", "BSA", "race_gp"),
-    Symptoms   = c("surgstat", "nyha_pr")
-  ),
-  continuous  = c("AGE", "BSA"),
-  binary      = c("female", "surgstat"),
-  categorical = c("race_gp", "nyha_pr"),
-  compare     = "pvalue",
-  percentiles = c(16, 84)
-)
-ft <- hv_man_table_jtcvs(
-  tbl,
-  groups = c(
-    stat_1 = "PERIMOUNT (n=4190)", stat_2 = "Resilia (n=3758)"
-  ),
-  trailing = attr(tbl, "hv_trailing"),
-  stat_label = attr(tbl, "hv_stat_label")
-)
-hv_man_table_save_jtcvs(
-  ft, "table1.docx",
-  caption = "Table 1. Baseline Characteristics by Tissue Type"
-)
-```
-
-
-### Lettered test footnotes
-
-`%summarytable` marks each p-value with a superscript letter naming the
-test behind it, and defines the letters below the table. Pass
-`hv_test_footnotes_jtcvs()` to the save function to reproduce that:
-
-```r
-hv_man_table_save_jtcvs(
-  ft, "table1.docx",
-  caption   = "Table 1. Baseline Characteristics by Tissue Type",
-  footnotes = hv_test_footnotes_jtcvs(tbl)
-)
-```
-
-Add study-specific footnotes alongside with `c()`; letters are assigned in
-list order.
-
-The letter set differs from the SAS macro's by design. `%summarytable`
-classifies each continuous variable as Gaussian or non-Gaussian and emits
-`a=ANOVA` for the Gaussian ones. This package tests continuous variables
-non-parametrically throughout, so ANOVA never appears.
+Full parameter map, the five defaults that differ, and the `QNTLDEF`
+quantile trap: **[Porting a `%summarytable` program to R](https://ehrlinger.github.io/hvtiRtables/articles/sas-migration.html)**.

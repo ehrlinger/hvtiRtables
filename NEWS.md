@@ -1,5 +1,21 @@
 # hvtiRtables 0.9.6
 
+## New features
+
+* `hv_tbl_summary()` gains `overall =`, the `%summarytable` `TOTALCOL=`
+  equivalent, adding an Overall column across all groups. Defaults to
+  `FALSE`; the macro's own default is `TOTALCOL=1`.
+* Every public function now errors on a `%summarytable` parameter name,
+  naming the R argument and the function that takes it, rather than
+  silently ignoring it.
+* New vignette, "Porting a `%summarytable` program to R".
+
+## Documentation
+
+* The README's migration table stated that `CON1=` maps to `continuous`.
+  It does not: `CON1=` was mean +/- SD with ANOVA, and `continuous`
+  reproduces `CON3=`. Corrected.
+
 ## Bug fixes
 
 - `binary` variables now pass an explicit event value to `gtsummary`
