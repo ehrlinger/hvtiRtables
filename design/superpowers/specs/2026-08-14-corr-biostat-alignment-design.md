@@ -232,8 +232,28 @@ detail lives in the vignette, in one place. The factually wrong `CON1=` row
   selection. Documented as a divergence; changing it would mean re-implementing
   test selection, which the thin-wrapper architecture exists to avoid.
 
-## Open decision for the maintainer
+## Versioning
 
 D4 adds an argument and D3 adds errors on input previously ignored, so this is
-a behavior change, not a documentation-only release. Version digit is the
-maintainer's call.
+a behavior change, not a documentation-only release.
+
+**The maintainer's stated intent (2026-08-14) is that this work leads to
+`1.0.0`** — the point at which the package is claimed as the CORR group's
+supported table interface rather than a working draft. That is a deliberate,
+human-reviewed release, not a digit bumped when the last task passes.
+
+Two consequences the implementation must respect:
+
+1. **Do not set `1.0.0` from this plan.** Work accumulates under the current
+   `0.9.x` patch line. The maintainer cuts `1.0.0` when the feature set is
+   complete, in a separate release commit.
+2. **`1.0.0` triggers the full release gate**, internal destination
+   notwithstanding: complete CRAN Cookbook audit, `R CMD check --as-cran`
+   **with** the manual built and vignettes built, overall check time under ten
+   minutes, reverse-dependency check, and `urlchecker::url_check()`. The new
+   vignette adds to check time and the new pkgdown `articles:` block adds URLs,
+   so both gates are live concerns for this work specifically, not boilerplate.
+
+What is *not* yet decided is whether `1.0.0` is cut from this spec's work alone
+or waits on further alignment (most plausibly the `dc` prefix landing, per the
+separate macro-allocation work). That remains the maintainer's call.
