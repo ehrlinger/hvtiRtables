@@ -804,11 +804,32 @@ test_that("overall = TRUE adds exactly one column", {
 })
 
 test_that("overall = FALSE reproduces the previous output exactly", {
-  a <- hv_tbl_summary(
-    gtsummary::trial, by = "trt",
-    groups = list(Demography = "age"), continuous = "age"
+  # A real comparison against a table built directly from gtsummary
+  # primitives with the same statistic/type/digits arguments
+  # hv_tbl_summary() itself uses -- not just the absence of stat_0, which
+  # would also pass for a table with the wrong stat_1/stat_2 values.
+  dta <- mk_tbl_summary_data()
+  actual <- hv_tbl_summary(
+    dta, by = "grp", groups = list(Vitals = "age"), continuous = "age"
   )
-  expect_false("stat_0" %in% names(a$table_body))
+
+  no_comma <- gtsummary::label_style_number(big.mark = "")
+  reference <- gtsummary::tbl_summary(
+    dta,
+    by = gtsummary::all_of("grp"),
+    include = gtsummary::all_of("age"),
+    statistic = list(age = "{N_obs} ||| {median} ({p15}, {p85})"),
+    type = list(age = "continuous"),
+    missing = "no",
+    digits = list(
+      gtsummary::everything() ~ list(N_obs = no_comma, n = no_comma)
+    )
+  )
+
+  expect_false("stat_0" %in% names(actual$table_body))
+  expect_identical(actual$table_body$variable, reference$table_body$variable)
+  expect_identical(actual$table_body$stat_1, reference$table_body$stat_1)
+  expect_identical(actual$table_body$stat_2, reference$table_body$stat_2)
 })
 
 test_that("overall = TRUE without `by` errors rather than doing nothing", {
