@@ -22,6 +22,10 @@
   table has one. With the split above, a sectioned table's first column
   is `groupname_col`, so the marker would otherwise have landed on the
   section-label column.
+- A CORR table missing the `"{N_obs} ||| {stat}"` convention now raises
+  an error naming `hv_man_table()`, not `hv_man_table_jtcvs()`. The
+  internal assertion the two renderers share previously hardcoded the
+  JTCVS renderer's name in its message.
 
 # hvtiRtables 0.9.6
 

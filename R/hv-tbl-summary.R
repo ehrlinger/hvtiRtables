@@ -6,7 +6,7 @@
 #' equivalent) and variable-type buckets (`continuous`/`binary`/
 #' `categorical`, the `CON1=`/`CAT1=`/`CAT2=` equivalents), rather than
 #' gtsummary's own tidyselect-based interface. Returns a plain `gtsummary`
-#' object, ready for [hv_man_table_jtcvs()].
+#' object, ready for [hv_man_table()] or [hv_man_table_jtcvs()].
 #'
 #' Every continuous variable is summarized as
 #' `median (P<low>, P<high>)` using a blanket non-parametric test
@@ -98,11 +98,13 @@
 #'   and 100. Default `c(15, 85)`, the [hv_man_footnotes()] house
 #'   convention (`%summarytable` `PP=` equivalent).
 #'
-#' @return A `gtsummary` object, ready for [hv_man_table_jtcvs()]. See
-#'   Details for the `hv_stat_label`/`hv_trailing` attributes.
+#' @return A `gtsummary` object, ready for [hv_man_table()] or
+#'   [hv_man_table_jtcvs()]. See Details for the `hv_stat_label`/
+#'   `hv_trailing` attributes, which only [hv_man_table_jtcvs()] reads.
 #'
-#' @seealso [hv_man_table_jtcvs()] to render the result.
-#'   [hv_man_footnotes()] for the percentile-footnote house convention.
+#' @seealso [hv_man_table()] or [hv_man_table_jtcvs()] to render the
+#'   result. [hv_man_footnotes()] for the percentile-footnote house
+#'   convention.
 #'
 #' @examples
 #' # A baseline-characteristics table of the kind a study manuscript

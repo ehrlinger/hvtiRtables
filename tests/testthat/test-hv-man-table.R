@@ -133,6 +133,23 @@ test_that("hv_man_table rejects a partially-sentineled table", {
   expect_error(hv_man_table(tbl), "was not built with the")
 })
 
+test_that("hv_man_table's convention error names itself, not JTCVS", {
+  # Regression for PR #23 Copilot review: .assert_stat_convention()
+  # hardcoded "hv_man_table_jtcvs()" in its message, so a CORR user
+  # hitting a partially-sentineled table was told the JTCVS renderer
+  # required a convention they never asked for. A fixed = TRUE substring
+  # check for "hv_man_table()" alone would pass even with the wrong name
+  # still present (it's a substring of "hv_man_table_jtcvs()"), so the
+  # negative assertion below is the one that actually catches the defect.
+  tbl <- gtsummary::tbl_summary(
+    gtsummary::trial, by = "trt", include = c("age", "grade"),
+    statistic = list(gtsummary::all_continuous() ~ "{N_obs} ||| {mean}")
+  )
+  msg <- tryCatch(hv_man_table(tbl), error = conditionMessage)
+  expect_match(msg, "hv_man_table() requires", fixed = TRUE)
+  expect_false(grepl("hv_man_table_jtcvs()", msg, fixed = TRUE))
+})
+
 test_that("the house N footnote targets the N column when one exists", {
   # hv_man_footnotes()'s `*` is "Number of non-missing values." (house
   # rule 8). Splitting introduces the column it describes, so the marker

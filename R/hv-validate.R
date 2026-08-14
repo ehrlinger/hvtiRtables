@@ -339,7 +339,8 @@
 # a valid hv_tbl_summary() table carries NA stat cells on the parent
 # label row of a multi-level categorical variable. A rule requiring
 # every cell to split would reject correct tables.
-.assert_stat_convention <- function(tb, groups, arg = "tbl") {
+.assert_stat_convention <- function(tb, groups, arg = "tbl",
+                                    caller = "hv_man_table_jtcvs") {
   for (col in names(groups)) {
     # tb[[col]] is NULL for a missing column, and !any(logical(0)) is
     # TRUE, so without this guard the loop would `next` past an
@@ -357,7 +358,7 @@
     bad <- which(lengths(parts) != 2L)
     if (length(bad) == 0L) next
     stop("`", arg, "` was not built with the \"{N_obs} ||| {stat}\" ",
-         "convention hv_man_table_jtcvs() requires, so column `", col,
+         "convention ", caller, "() requires, so column `", col,
          "` cannot be split into its N and statistic parts. Build it ",
          "with hv_tbl_summary(), or pass statistic = ",
          "list(all_continuous() ~ \"{N_obs} ||| {mean} \u00B1 {sd}\")",

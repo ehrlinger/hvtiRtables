@@ -189,6 +189,26 @@ test_that(".assert_stat_convention rejects a table without |||", {
   expect_match(msg, "First unparseable value:", fixed = TRUE)
 })
 
+test_that(".assert_stat_convention names the caller in its message", {
+  # `caller` defaults to "hv_man_table_jtcvs" so the original wired
+  # caller's message is unchanged; hv_man_table() passes its own name so
+  # a CORR user isn't pointed at the JTCVS renderer (PR #23 review).
+  tbl <- fx_plain_tbl()
+  default_msg <- tryCatch(
+    .assert_stat_convention(tbl$table_body, c(stat_1 = "A")),
+    error = conditionMessage
+  )
+  expect_match(default_msg, "hv_man_table_jtcvs() requires", fixed = TRUE)
+
+  corr_msg <- tryCatch(
+    .assert_stat_convention(tbl$table_body, c(stat_1 = "A"),
+                            caller = "hv_man_table"),
+    error = conditionMessage
+  )
+  expect_match(corr_msg, "hv_man_table() requires", fixed = TRUE)
+  expect_false(grepl("hv_man_table_jtcvs()", corr_msg, fixed = TRUE))
+})
+
 test_that(".assert_footnote_entries requires a non-empty text", {
   ft <- fx_jtcvs_ft()
   ok <- list(list(row = 1, col = "n_stat_1", text = "Note."))

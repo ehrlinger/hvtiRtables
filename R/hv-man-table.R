@@ -130,7 +130,8 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   # exists to prevent -- so it fails the same way the JTCVS renderer
   # does, through the same assertion.
   .assert_stat_convention(
-    tb, stats::setNames(as.list(stat_cols), stat_cols)
+    tb, stats::setNames(as.list(stat_cols), stat_cols),
+    caller = "hv_man_table"
   )
 
   # gtsummary writes a header footnote describing each stat column,
