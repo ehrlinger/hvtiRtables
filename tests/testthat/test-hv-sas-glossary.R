@@ -91,21 +91,26 @@ test_that("no dots is silent", {
 })
 
 test_that("every map entry is well formed", {
+  # Every field access below uses `[[` against an exact name, never `$`
+  # -- `$` partial-matches on a list, so e.g. `entry$note` on an entry
+  # with only `note_corr` would silently return that text instead of
+  # NULL, masking exactly the malformed-entry cases this test exists to
+  # catch.
   for (nm in names(.sas_param_map)) {
     entry <- .sas_param_map[[nm]]
     expect_true(is.list(entry), info = nm)
     expect_true(all(c("arg", "stage") %in% names(entry)), info = nm)
     # An entry either routes somewhere or explains why it does not.
-    if (is.na(entry$arg)) {
-      expect_true(is.na(entry$stage), info = nm)
-      expect_true(nzchar(entry$note %||% ""), info = nm)
+    if (is.na(entry[["arg"]])) {
+      expect_true(is.na(entry[["stage"]]), info = nm)
+      expect_true(nzchar(entry[["note"]] %||% ""), info = nm)
     } else {
-      expect_true(entry$stage %in% names(.stage_fns), info = nm)
+      expect_true(entry[["stage"]] %in% names(.stage_fns), info = nm)
     }
     # A family-restricted entry must say what the other family gets.
-    if (!is.null(entry$only)) {
-      expect_true(entry$only %in% c("corr", "jtcvs"), info = nm)
-      expect_true(nzchar(entry$note_other %||% ""), info = nm)
+    if (!is.null(entry[["only"]])) {
+      expect_true(entry[["only"]] %in% c("corr", "jtcvs"), info = nm)
+      expect_true(nzchar(entry[["note_other"]] %||% ""), info = nm)
     }
   }
 })
@@ -140,6 +145,64 @@ test_that("each public function routes SAS names through the glossary", {
                             caption = "T1", addfn = "note"),
     "`footnotes =`", fixed = TRUE
   )
+})
+
+test_that("TBLTITLE= to the JTCVS saver does not leak the CORR-only note", {
+  # `$` partial-matches on a list: the `tbltitle` entry has only
+  # `note_other` (no plain `note`), so `entry$note` silently resolved to
+  # `note_other` -- text that says the CORR saver has no caption -- even
+  # for a JTCVS caller, which DOES have `caption`. Confirmed to fail
+  # against the pre-fix code (quoted in the session log): the message
+  # read "...Use `caption =`. Note: the CORR saver writes no caption;
+  # add the table title in the document, or use the JTCVS pair if the
+  # journal wants one." for a caller that already IS the JTCVS pair.
+  msg <- tryCatch(
+    .check_sas_args(list(tbltitle = "T"), "hv_man_table_save_jtcvs"),
+    error = conditionMessage
+  )
+  expect_false(grepl("the CORR saver writes no caption", msg, fixed = TRUE))
+  expect_false(grepl("Note:", msg, fixed = TRUE))
+
+  msg_neutral <- tryCatch(
+    .check_sas_args(list(tbltitle = "T"), "hv_tbl_summary"),
+    error = conditionMessage
+  )
+  expect_false(
+    grepl("the CORR saver writes no caption", msg_neutral, fixed = TRUE)
+  )
+})
+
+test_that("an entry with only note_corr yields no note for a JTCVS caller", {
+  # Forward-looking regression for the same `$`-partial-match class of
+  # bug: a future map entry defining only `note_corr` (no `note`, no
+  # `note_jtcvs`) must not leak that CORR-only text to a JTCVS-family
+  # caller. `addfn`/`printfn` can't exercise this today -- both carry
+  # BOTH `note_corr` and `note_jtcvs`, so `$` partial matching is
+  # ambiguous and returns NULL rather than picking one -- so this
+  # injects a synthetic entry to prove the lookup is exact-name, not
+  # partial-match, regardless of how many "note*" fields an entry has.
+  ns <- asNamespace("hvtiRtables")
+  old_map <- get(".sas_param_map", envir = ns)
+  on.exit({
+    unlockBinding(".sas_param_map", ns)
+    assign(".sas_param_map", old_map, envir = ns)
+    lockBinding(".sas_param_map", ns)
+  }, add = TRUE)
+
+  test_map <- old_map
+  test_map[["zzztest"]] <- list(
+    arg = "footnotes", stage = "save", note_corr = "CORR ONLY TEXT"
+  )
+  unlockBinding(".sas_param_map", ns)
+  assign(".sas_param_map", test_map, envir = ns)
+  lockBinding(".sas_param_map", ns)
+
+  msg <- tryCatch(
+    .check_sas_args(list(zzztest = "x"), "hv_man_table_save_jtcvs"),
+    error = conditionMessage
+  )
+  expect_false(grepl("CORR ONLY TEXT", msg, fixed = TRUE))
+  expect_false(grepl("Note:", msg, fixed = TRUE))
 })
 
 test_that("ADDFN= gives a family-appropriate note for each saver", {

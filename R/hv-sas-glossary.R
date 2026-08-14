@@ -15,9 +15,16 @@
 # that exists in one family alone; `note_other` is what the other family
 # is told instead. `note_corr`/`note_jtcvs` are for a parameter that is
 # valid in BOTH families but whose note text differs because the
-# argument shape differs between the siblings (e.g. `footnotes`); when
-# only one of a plain `note` or the `note_corr`/`note_jtcvs` pair is
-# needed, use whichever fits.
+# argument shape differs between the siblings (e.g. `footnotes`); an
+# entry uses `note` OR the `note_corr`/`note_jtcvs` pair, never both.
+#
+# WARNING: every one of these fields must be read with `[[` against an
+# exact name (`entry[["note"]]`), never `entry$note` or similar. `$`
+# partial-matches on a list -- `list(note_corr = "x")$note` silently
+# returns `"x"` instead of `NULL` -- so an entry carrying only
+# `note_corr`/`note_jtcvs`/`note_other` would leak that text to a
+# caller who should see no note, or the wrong family's note, and no
+# error or lint would catch it.
 #
 # Deliberately not exhaustive over the macro's ~60 parameters. The
 # purely typographic ones (f1..f4, pfmt, perfmt, labeln, out, rtfout,
@@ -200,31 +207,35 @@
   # A family-restricted parameter: the family that lacks the argument is
   # told so plainly rather than sent to an argument that does not exist.
   # A family-neutral caller is routed to the family that has it.
-  if (!is.null(entry$only)) {
-    if (!is.na(fam) && !identical(fam, entry$only))
+  if (!is.null(entry[["only"]])) {
+    if (!is.na(fam) && !identical(fam, entry[["only"]]))
       stop("`", toupper(key), "=` is a `%summarytable` parameter: ",
-           entry$note_other, ".", call. = FALSE)
-    fam <- entry$only
+           entry[["note_other"]], ".", call. = FALSE)
+    fam <- entry[["only"]]
   }
   if (is.na(fam)) fam <- "corr"
 
   # `note` covers a parameter whose note text does not depend on family;
   # `note_corr`/`note_jtcvs` cover one where it does (the two savers'
-  # `footnotes` argument shapes differ).
-  note <- entry$note %||% entry[[paste0("note_", fam)]] %||% ""
+  # `footnotes` argument shapes differ). Exact `[[` lookups only -- `$`
+  # partial-matches on a list, so `entry$note` would silently resolve to
+  # `note_other`/`note_corr`/`note_jtcvs` on an entry that has no plain
+  # `note` field, serving the wrong family's text (or the `only`
+  # rejection text) to a caller who should get no note at all.
+  note <- entry[["note"]] %||% entry[[paste0("note_", fam)]] %||% ""
 
-  if (is.na(entry$arg))
+  if (is.na(entry[["arg"]]))
     stop("`", toupper(key), "=` is a `%summarytable` parameter: ", note, ".",
          call. = FALSE)
 
-  target <- .stage_fns[[entry$stage]][[fam]]
+  target <- .stage_fns[[entry[["stage"]]]][[fam]]
 
   fix <- if (identical(target, fn)) {
-    paste0("`", key, "` is the `%summarytable` name for `", entry$arg,
-           "`. Use `", entry$arg, " =`.")
+    paste0("`", key, "` is the `%summarytable` name for `", entry[["arg"]],
+           "`. Use `", entry[["arg"]], " =`.")
   } else {
     paste0("`", key, "` is a `%summarytable` parameter this package handles ",
-           "at a different stage: pass `", entry$arg, " =` to `", target,
+           "at a different stage: pass `", entry[["arg"]], " =` to `", target,
            "()`.")
   }
 

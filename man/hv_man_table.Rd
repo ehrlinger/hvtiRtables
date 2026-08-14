@@ -30,9 +30,10 @@ A \code{flextable} object with a single header row and no merged
 cells, ready for \code{\link[=hv_man_table_save]{hv_man_table_save()}}.
 }
 \description{
-Stage 2 of the \verb{\%summarytable} split: shapes the table. The macro did
-this with \verb{STYLE=} and \verb{PAGE=}; here the house style is fixed and the
-only choice is flat header versus JTCVS spanning header.
+Stage 2 of the \verb{\%summarytable} split: shapes the table. The macro
+controlled this with \verb{STYLE=} and \verb{PAGE=}, which have no equivalent
+here -- house style is fixed, and the only choice is flat header
+versus JTCVS spanning header.
 }
 \details{
 You give this a \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} (or any gtsummary table object

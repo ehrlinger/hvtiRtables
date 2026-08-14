@@ -25,8 +25,12 @@
 #'   `RTFFILE=`/`PDFFILE=` equivalent; output here is always `.docx`).
 #' @param footnotes Optional named list, symbol -> footnote text. Defaults to
 #'   [hv_man_footnotes()] (the house-universal N and median/percentile
-#'   footnotes). Pass `NULL` to suppress both, or compose with
-#'   [hv_man_footnotes()] to override or extend (see its documentation).
+#'   footnotes). That default text hardcodes the 15th/85th percentile pair;
+#'   if the table was built with [hv_tbl_summary()]'s `percentiles =` set
+#'   to anything else, override it (see below) or the footnote will
+#'   misstate what the table shows. Pass `NULL` to suppress both, or
+#'   compose with [hv_man_footnotes()] to override or extend (see its
+#'   documentation).
 #'   Symbols must be drawn from `c("*", "†", "‡", "§", "¶", "||")`. Each
 #'   symbol is appended as a superscript reference mark to the table's `N`
 #'   column header cell (or the first column if no `N` column is present),

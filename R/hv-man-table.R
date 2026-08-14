@@ -1,8 +1,9 @@
 #' Convert a gtsummary table into a flextable matching HVTI CORR's table rules
 #'
-#' Stage 2 of the `%summarytable` split: shapes the table. The macro did
-#' this with `STYLE=` and `PAGE=`; here the house style is fixed and the
-#' only choice is flat header versus JTCVS spanning header.
+#' Stage 2 of the `%summarytable` split: shapes the table. The macro
+#' controlled this with `STYLE=` and `PAGE=`, which have no equivalent
+#' here -- house style is fixed, and the only choice is flat header
+#' versus JTCVS spanning header.
 #'
 #' You give this a [gtsummary::tbl_summary()] (or any gtsummary table object
 #' supporting [gtsummary::as_flex_table()]), and you get back a `flextable`

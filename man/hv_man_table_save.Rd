@@ -21,8 +21,12 @@ must already exist; this function does not create it. (\verb{\%summarytable}
 
 \item{footnotes}{Optional named list, symbol -> footnote text. Defaults to
 \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} (the house-universal N and median/percentile
-footnotes). Pass \code{NULL} to suppress both, or compose with
-\code{\link[=hv_man_footnotes]{hv_man_footnotes()}} to override or extend (see its documentation).
+footnotes). That default text hardcodes the 15th/85th percentile pair;
+if the table was built with \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s \verb{percentiles =} set
+to anything else, override it (see below) or the footnote will
+misstate what the table shows. Pass \code{NULL} to suppress both, or
+compose with \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} to override or extend (see its
+documentation).
 Symbols must be drawn from \code{c("*", "†", "‡", "§", "¶", "||")}. Each
 symbol is appended as a superscript reference mark to the table's \code{N}
 column header cell (or the first column if no \code{N} column is present),

@@ -79,9 +79,10 @@
 
 #' Build a JTCVS-format manuscript table with merged spanning headers
 #'
-#' Stage 2 of the `%summarytable` split: shapes the table. The macro did
-#' this with `STYLE=` and `PAGE=`; here the house style is fixed and the
-#' only choice is flat header versus JTCVS spanning header.
+#' Stage 2 of the `%summarytable` split: shapes the table. The macro
+#' controlled this with `STYLE=` and `PAGE=`, which have no equivalent
+#' here -- house style is fixed, and the only choice is flat header
+#' versus JTCVS spanning header.
 #'
 #' Use this instead of [hv_man_table()] when you're building the shape
 #' editorial actually needs at JTCVS submission: a 2-row header (group name
