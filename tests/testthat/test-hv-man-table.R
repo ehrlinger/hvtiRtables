@@ -85,3 +85,101 @@ test_that("hv_man_table validates font", {
   expect_error(hv_man_table(mk_tbl(), font = c("a", "b")), "`font`")
   expect_error(hv_man_table(mk_tbl(), font = ""), "`font`")
 })
+
+test_that("hv_man_table splits the ||| sentinel into flat N and stat columns", {
+  # hv_tbl_summary() applies the "{N_obs} ||| {stat}" convention for the
+  # JTCVS renderer. hv_man_table() used to hand it straight to
+  # as_flex_table(), so a CORR table rendered the sentinel literally as
+  # "98 ||| 46 (32, 63)". House rule 8 wants the non-missing count as its
+  # own column, so the fix splits rather than strips.
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = c("age", "grade")),
+    continuous = "age", categorical = "grade", compare = "none"
+  )
+  ft <- hv_man_table(tbl)
+  expect_true(all(c("n_stat_1", "stat_1", "n_stat_2", "stat_2")
+                  %in% ft$col_keys))
+  d <- ft$body$dataset
+  expect_false(any(grepl("|||", unlist(d), fixed = TRUE)))
+  expect_identical(d$n_stat_1[1], "98")
+  expect_identical(d$stat_1[1], "46 (32, 63)")
+  # The N column sits immediately before the statistic it counts.
+  expect_identical(
+    which(ft$col_keys == "n_stat_1") + 1L,
+    which(ft$col_keys == "stat_1")
+  )
+})
+
+test_that("hv_man_table leaves a plain tbl_summary table untouched", {
+  # The documented CORR path takes a plain gtsummary table with no
+  # sentinel; it must pass through with no columns invented.
+  tbl <- gtsummary::tbl_summary(
+    gtsummary::trial, by = "trt", include = c("age", "grade")
+  )
+  ft <- hv_man_table(tbl)
+  expect_false(any(grepl("^n_stat_", ft$col_keys)))
+  expect_true(all(c("label", "stat_1", "stat_2") %in% ft$col_keys))
+})
+
+test_that("hv_man_table rejects a partially-sentineled table", {
+  # Some cells carrying the convention and some not means the caller set
+  # `statistic` for only part of the table; splitting would leave the
+  # rest blank, which is the silent-empty failure this package exists to
+  # prevent.
+  tbl <- gtsummary::tbl_summary(
+    gtsummary::trial, by = "trt", include = c("age", "grade"),
+    statistic = list(gtsummary::all_continuous() ~ "{N_obs} ||| {mean}")
+  )
+  expect_error(hv_man_table(tbl), "was not built with the")
+})
+
+test_that("the house N footnote targets the N column when one exists", {
+  # hv_man_footnotes()'s `*` is "Number of non-missing values." (house
+  # rule 8). Splitting introduces the column it describes, so the marker
+  # must move there. Without this the marker would land on col_keys[1],
+  # which for a sectioned table is `groupname_col` -- a regression the
+  # split itself would have introduced.
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = "age"),
+    continuous = "age", compare = "none"
+  )
+  ft <- hv_man_table(tbl)
+  expect_identical(ft$col_keys[1], "groupname_col")
+  expect_identical(.footnote_col(ft), "n_stat_1")
+})
+
+test_that(".footnote_col prefers n, then n_stat_*, then the first key", {
+  expect_identical(.footnote_col(list(col_keys = c("label", "n", "x"))), "n")
+  expect_identical(
+    .footnote_col(list(col_keys = c("groupname_col", "label", "n_stat_2",
+                                    "n_stat_1"))),
+    "n_stat_2"
+  )
+  expect_identical(
+    .footnote_col(list(col_keys = c("label", "stat_1"))), "label"
+  )
+})
+
+test_that("no sentinel survives into the rendered .docx", {
+  # Splitting the cells was not enough: gtsummary also writes a header
+  # footnote built from the glue string, which read "No. obs. ||| Median
+  # (15% Centile, 85% Centile)" and carried the separator into the
+  # document even with every cell correct. Asserting on the flextable
+  # alone missed it -- this checks the artifact the user actually opens.
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = "age", Disease = "grade"),
+    continuous = "age", categorical = "grade", compare = "none"
+  )
+  out <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(tbl), out)
+  x <- tempfile()
+  utils::unzip(out, files = "word/document.xml", exdir = x)
+  txt <- xml2::xml_text(
+    xml2::read_xml(file.path(x, "word", "document.xml"))
+  )
+  expect_false(grepl("|||", txt, fixed = TRUE))
+  # The house footnotes still describe both halves.
+  expect_true(grepl("Number of non-missing values", txt, fixed = TRUE))
+  expect_true(grepl("No.", txt, fixed = TRUE))
+})

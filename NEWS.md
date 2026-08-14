@@ -1,3 +1,28 @@
+# hvtiRtables 0.9.7
+
+## New features
+
+- `hv_man_table()` now accepts an `hv_tbl_summary()` table. It splits
+  each `"{N_obs} ||| {stat}"` cell into a flat `No.` column immediately
+  before the statistic it counts — the same two values the JTCVS
+  renderer puts under a merged spanning header, without the merge.
+  Previously the separator rendered literally into the Word table
+  (`98 ||| 46 (32, 63)`), so the SAS-macro interface was usable only in
+  JTCVS mode. The count is kept rather than discarded because house
+  rule 8 requires it and `hv_man_footnotes()` ships a `*` footnote
+  describing it. A plain `gtsummary::tbl_summary()` table carries no
+  such convention and passes through unchanged.
+- A table where only *some* cells carry the convention is now rejected,
+  through the same assertion the JTCVS renderer uses. Splitting it would
+  have left the rest blank.
+
+## Bug fixes
+
+- The house footnote symbols now attach to the count column when the
+  table has one. With the split above, a sectioned table's first column
+  is `groupname_col`, so the marker would otherwise have landed on the
+  section-label column.
+
 # hvtiRtables 0.9.6
 
 ## Bug fixes
