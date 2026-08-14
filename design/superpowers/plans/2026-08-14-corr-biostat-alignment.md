@@ -50,7 +50,13 @@
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: `.sas_param_map` — a named list; each name is a lowercased `%summarytable` parameter, each value a list with `arg` (character, the R argument name, or `NA_character_` when there is no equivalent), `fn` (character, the function taking it, or `NA_character_` when `arg` is `NA`), and optional `note` (character, one clause explaining a behavior difference or why it is unsupported). Also produces `.check_sas_args(dots, fn)` — takes the result of `list(...)` and the calling function's name as a string, errors if any name is in `.sas_param_map`, otherwise errors generically on any unused argument, returns `invisible(NULL)`.
+- Produces:
+  - `.sas_param_map` — named list, each name a lowercased `%summarytable` parameter. Fields: `arg` (character R argument name, or `NA_character_` when unsupported); `stage` (`"compute"` / `"shape"` / `"save"`, or `NA_character_` when `arg` is `NA`); optional `note` (one clause on a behavior difference or why unsupported); optional `only` (`"corr"` / `"jtcvs"` — the family that has this argument) with a required `note_other` for the family that does not.
+  - `.stage_fns` — the stage → family → function name table.
+  - `.family_of(fn)` — `"jtcvs"`, `"corr"`, or `NA_character_` for family-neutral callers.
+  - `.check_sas_args(dots, fn)` — takes `list(...)` and the calling function's name, errors on any name, returns `invisible(NULL)`.
+
+**Why stage rather than a function name.** `hv_man_table_save()` and `hv_man_table_save_jtcvs()` are siblings with *different argument sets* — only the JTCVS saver has `caption`. A map storing one function per parameter sends half the callers to the wrong sibling, and in the `TBLTITLE=` case to an argument that does not exist. The stage is resolved against the caller's family at message time.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -67,9 +73,44 @@ test_that("a same-stage macro name names the R argument to use", {
 
 test_that("a different-stage macro name names the function to pass it to", {
   expect_error(
-    .check_sas_args(list(tbltitle = "Table 1"), "hv_tbl_summary"),
-    "pass `caption =` to `hv_man_table_save()`",
+    .check_sas_args(list(addfn = "note"), "hv_tbl_summary"),
+    "pass `footnotes =` to `hv_man_table_save()`",
     fixed = TRUE
+  )
+})
+
+test_that("the message names the sibling matching the caller's family", {
+  # Same parameter, two families, two different destination functions.
+  expect_error(
+    .check_sas_args(list(addfn = "note"), "hv_man_table_save_jtcvs"),
+    "Use `footnotes =`", fixed = TRUE
+  )
+  expect_error(
+    .check_sas_args(list(rtffile = "t.rtf"), "hv_man_table_jtcvs"),
+    "pass `file =` to `hv_man_table_save_jtcvs()`", fixed = TRUE
+  )
+  expect_error(
+    .check_sas_args(list(rtffile = "t.rtf"), "hv_man_table"),
+    "pass `file =` to `hv_man_table_save()`", fixed = TRUE
+  )
+})
+
+test_that("TBLTITLE= is honest that the CORR saver has no caption", {
+  # hv_man_table_save() genuinely has no `caption` argument; naming one
+  # would send the reader to an argument that does not exist.
+  expect_error(
+    .check_sas_args(list(tbltitle = "Table 1"), "hv_man_table_save"),
+    "the CORR saver writes no caption",
+    fixed = TRUE
+  )
+  expect_error(
+    .check_sas_args(list(tbltitle = "Table 1"), "hv_man_table_save_jtcvs"),
+    "Use `caption =`", fixed = TRUE
+  )
+  # A family-neutral caller is routed to the family that has the argument.
+  expect_error(
+    .check_sas_args(list(tbltitle = "Table 1"), "hv_tbl_summary"),
+    "pass `caption =` to `hv_man_table_save_jtcvs()`", fixed = TRUE
   )
 })
 
@@ -113,13 +154,18 @@ test_that("every map entry is well formed", {
   for (nm in names(.sas_param_map)) {
     entry <- .sas_param_map[[nm]]
     expect_true(is.list(entry), info = nm)
-    expect_true(all(c("arg", "fn") %in% names(entry)), info = nm)
+    expect_true(all(c("arg", "stage") %in% names(entry)), info = nm)
     # An entry either routes somewhere or explains why it does not.
     if (is.na(entry$arg)) {
-      expect_true(is.na(entry$fn), info = nm)
+      expect_true(is.na(entry$stage), info = nm)
       expect_true(nzchar(entry$note %||% ""), info = nm)
     } else {
-      expect_true(nzchar(entry$fn), info = nm)
+      expect_true(entry$stage %in% names(.stage_fns), info = nm)
+    }
+    # A family-restricted entry must say what the other family gets.
+    if (!is.null(entry$only)) {
+      expect_true(entry$only %in% c("corr", "jtcvs"), info = nm)
+      expect_true(nzchar(entry$note_other %||% ""), info = nm)
     }
   }
 })
@@ -149,28 +195,50 @@ Create `R/hv-sas-glossary.R`:
 # `note` carries the difference -- silently accepting the mapping would
 # be worse than erroring, because the number changes without saying so.
 #
+# Entries store a STAGE, not a function name, because the shape and save
+# stages are CORR/JTCVS sibling pairs with different argument sets --
+# only hv_man_table_save_jtcvs() has `caption`. Storing one function per
+# parameter would send half the callers to the wrong sibling, and for
+# TBLTITLE= to an argument that does not exist. `only` marks a parameter
+# that exists in one family alone; `note_other` is what the other family
+# is told instead.
+#
 # Deliberately not exhaustive over the macro's ~60 parameters. The
 # purely typographic ones (f1..f4, pfmt, perfmt, labeln, out, rtfout)
 # have no analogue worth a message and would bury the ones that matter.
 
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
+.stage_fns <- list(
+  compute = c(corr = "hv_tbl_summary",      jtcvs = "hv_tbl_summary"),
+  shape   = c(corr = "hv_man_table",        jtcvs = "hv_man_table_jtcvs"),
+  save    = c(corr = "hv_man_table_save",   jtcvs = "hv_man_table_save_jtcvs")
+)
+
+# hv_tbl_summary() is family-neutral: its output feeds either renderer,
+# so it returns NA and the caller decides what to do with that.
+.family_of <- function(fn) {
+  if (grepl("_jtcvs$", fn)) return("jtcvs")
+  if (fn %in% c("hv_man_table", "hv_man_table_save")) return("corr")
+  NA_character_
+}
+
 .sas_param_map <- list(
   # Stage 1 -- compute
-  data     = list(arg = "data",        fn = "hv_tbl_summary"),
-  class    = list(arg = "by",          fn = "hv_tbl_summary"),
-  list     = list(arg = "groups",      fn = "hv_tbl_summary"),
-  con3     = list(arg = "continuous",  fn = "hv_tbl_summary"),
-  cat1     = list(arg = "binary",      fn = "hv_tbl_summary"),
-  cat2     = list(arg = "categorical", fn = "hv_tbl_summary"),
-  pp       = list(arg = "percentiles", fn = "hv_tbl_summary"),
-  pvalues  = list(arg = "compare",     fn = "hv_tbl_summary"),
-  asd      = list(arg = "compare",     fn = "hv_tbl_summary",
+  data     = list(arg = "data",        stage = "compute"),
+  class    = list(arg = "by",          stage = "compute"),
+  list     = list(arg = "groups",      stage = "compute"),
+  con3     = list(arg = "continuous",  stage = "compute"),
+  cat1     = list(arg = "binary",      stage = "compute"),
+  cat2     = list(arg = "categorical", stage = "compute"),
+  pp       = list(arg = "percentiles", stage = "compute"),
+  pvalues  = list(arg = "compare",     stage = "compute"),
+  asd      = list(arg = "compare",     stage = "compute",
                   note = "use `compare = \"smd\"` or `compare = \"both\"`"),
-  totalcol = list(arg = "overall",     fn = "hv_tbl_summary"),
+  totalcol = list(arg = "overall",     stage = "compute"),
 
   con1 = list(
-    arg = "continuous", fn = "hv_tbl_summary",
+    arg = "continuous", stage = "compute",
     note = paste0(
       "`CON1=` reported mean +/- SD with one-way ANOVA; every continuous ",
       "variable here is summarized as median (percentiles) and tested ",
@@ -178,14 +246,14 @@ Create `R/hv-sas-glossary.R`:
     )
   ),
   con2 = list(
-    arg = "continuous", fn = "hv_tbl_summary",
+    arg = "continuous", stage = "compute",
     note = paste0(
       "`CON2=` reported median (min, max); this package reports ",
       "median (percentiles), set by `percentiles =`"
     )
   ),
   ord1 = list(
-    arg = "categorical", fn = "hv_tbl_summary",
+    arg = "categorical", stage = "compute",
     note = paste0(
       "ordinal variables fold into `categorical` and are tested with ",
       "chi-square, not the Kruskal-Wallis test `ORD1=` used"
@@ -193,48 +261,54 @@ Create `R/hv-sas-glossary.R`:
   ),
 
   # Stage 3 -- write
-  tbltitle = list(arg = "caption",   fn = "hv_man_table_save"),
-  addfn    = list(arg = "footnotes", fn = "hv_man_table_save"),
-  printfn  = list(arg = "footnotes", fn = "hv_man_table_save",
+  tbltitle = list(
+    arg = "caption", stage = "save", only = "jtcvs",
+    note_other = paste0(
+      "the CORR saver writes no caption; add the table title in the ",
+      "document, or use the JTCVS pair if the journal wants one"
+    )
+  ),
+  addfn    = list(arg = "footnotes", stage = "save"),
+  printfn  = list(arg = "footnotes", stage = "save",
                   note = "pass `hv_man_footnotes()`, or `NULL` for none"),
-  rtffile  = list(arg = "file",      fn = "hv_man_table_save",
+  rtffile  = list(arg = "file",      stage = "save",
                   note = "output is `.docx`"),
-  pdffile  = list(arg = "file",      fn = "hv_man_table_save",
+  pdffile  = list(arg = "file",      stage = "save",
                   note = "output is `.docx`"),
-  xmlfile  = list(arg = "file",      fn = "hv_man_table_save",
+  xmlfile  = list(arg = "file",      stage = "save",
                   note = "output is `.docx`"),
 
   # No equivalent
-  weight    = list(arg = NA_character_, fn = NA_character_,
+  weight    = list(arg = NA_character_, stage = NA_character_,
                    note = "weighted summaries are not supported"),
-  propenmt  = list(arg = NA_character_, fn = NA_character_,
+  propenmt  = list(arg = NA_character_, stage = NA_character_,
                    note = "propensity-matched mode is not supported"),
-  mwoutcomes = list(arg = NA_character_, fn = NA_character_,
+  mwoutcomes = list(arg = NA_character_, stage = NA_character_,
                     note = "matching-weighted outcomes are not supported"),
-  subset    = list(arg = NA_character_, fn = NA_character_,
+  subset    = list(arg = NA_character_, stage = NA_character_,
                    note = "subset the data frame before calling"),
-  sortby    = list(arg = NA_character_, fn = NA_character_,
+  sortby    = list(arg = NA_character_, stage = NA_character_,
                    note = "display order comes from `groups`"),
-  colpct    = list(arg = NA_character_, fn = NA_character_,
+  colpct    = list(arg = NA_character_, stage = NA_character_,
                    note = "percentages are always column percentages"),
-  misscol   = list(arg = NA_character_, fn = NA_character_,
+  misscol   = list(arg = NA_character_, stage = NA_character_,
                    note = "a missing-count column is not supported"),
-  adhoc     = list(arg = NA_character_, fn = NA_character_,
+  adhoc     = list(arg = NA_character_, stage = NA_character_,
                    note = "ad-hoc pairwise comparisons are not supported"),
-  oddsratios = list(arg = NA_character_, fn = NA_character_,
+  oddsratios = list(arg = NA_character_, stage = NA_character_,
                     note = "odds-ratio columns are not supported"),
-  cutexact  = list(arg = NA_character_, fn = NA_character_,
+  cutexact  = list(arg = NA_character_, stage = NA_character_,
                    note = paste0(
                      "the chi-square/Fisher switch is not tunable; ",
                      "gtsummary uses Fisher's exact when any expected ",
                      "count is below 5, where `CUTEXACT=50` used a ",
                      "50% threshold"
                    )),
-  style     = list(arg = NA_character_, fn = NA_character_,
+  style     = list(arg = NA_character_, stage = NA_character_,
                    note = "house font and rounding are fixed"),
-  page      = list(arg = NA_character_, fn = NA_character_,
+  page      = list(arg = NA_character_, stage = NA_character_,
                    note = "page setup belongs to the Word document"),
-  papersize = list(arg = NA_character_, fn = NA_character_,
+  papersize = list(arg = NA_character_, stage = NA_character_,
                    note = "page setup belongs to the Word document")
 )
 
@@ -259,12 +333,28 @@ Create `R/hv-sas-glossary.R`:
     stop("`", toupper(key), "=` is a `%summarytable` parameter: ", note, ".",
          call. = FALSE)
 
-  fix <- if (identical(entry$fn, fn)) {
+  fam <- .family_of(fn)
+
+  # A family-restricted parameter: the family that lacks the argument is
+  # told so plainly rather than sent to an argument that does not exist.
+  # A family-neutral caller is routed to the family that has it.
+  if (!is.null(entry$only)) {
+    if (!is.na(fam) && !identical(fam, entry$only))
+      stop("`", toupper(key), "=` is a `%summarytable` parameter: ",
+           entry$note_other, ".", call. = FALSE)
+    fam <- entry$only
+  }
+  if (is.na(fam)) fam <- "corr"
+
+  target <- .stage_fns[[entry$stage]][[fam]]
+
+  fix <- if (identical(target, fn)) {
     paste0("`", key, "` is the `%summarytable` name for `", entry$arg,
            "`. Use `", entry$arg, " =`.")
   } else {
     paste0("`", key, "` is a `%summarytable` parameter this package handles ",
-           "at a later stage: pass `", entry$arg, " =` to `", entry$fn, "()`.")
+           "at a different stage: pass `", entry$arg, " =` to `", target,
+           "()`.")
   }
 
   stop(fix, if (nzchar(note)) paste0(" Note: ", note, "."), call. = FALSE)
@@ -274,7 +364,7 @@ Create `R/hv-sas-glossary.R`:
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `Rscript -e 'devtools::load_all("."); testthat::test_file("tests/testthat/test-hv-sas-glossary.R")'`
-Expected: PASS, 9 tests.
+Expected: PASS, 11 tests.
 
 - [ ] **Step 5: Commit**
 
@@ -319,7 +409,7 @@ test_that("each public function routes SAS names through the glossary", {
   )
   expect_error(
     hv_man_table_save(ft, tempfile(fileext = ".docx"), tbltitle = "T1"),
-    "pass `caption =` to `hv_man_table_save()`", fixed = TRUE
+    "the CORR saver writes no caption", fixed = TRUE
   )
   expect_error(
     hv_man_table_save_jtcvs(ft, tempfile(fileext = ".docx"),
@@ -789,10 +879,14 @@ tbl <- hv_tbl_summary(
 | `ASD=` | `compare = "smd"` / `"both"` | |
 | `TOTALCOL=` | `overall` | default differs — see above |
 | `NCOL=` | automatic | per-group Ns always shown; `NCOL=3`'s overall N needs `overall = TRUE` |
-| `TBLTITLE=` | `caption` | on the save function |
+| `TBLTITLE=` | `caption` | **JTCVS only** — `hv_man_table_save()` writes no caption |
 | `ADDFN=` | `footnotes` | on the save function |
 | `PRINTFN=` | `footnotes = hv_man_footnotes()` | on the save function |
 | `RTFFILE=`, `PDFFILE=`, `XMLFILE=` | `file` | output is always `.docx` |
+
+The save stage is a sibling pair, and the two do not take the same
+arguments: only `hv_man_table_save_jtcvs()` has `caption`. For a flat-header
+CORR table the title goes in the document, not the call.
 
 Not supported: `WEIGHT=`, `PROPENMT=`, `MWOUTCOMES=`, `SUBSET=` (subset the
 data frame first), `SORTBY=` (order comes from `groups`), `COLPCT=0` (row
@@ -911,7 +1005,7 @@ spread across separate calls:
 |---|---|---|
 | Compute | `hv_tbl_summary()` | `CLASS=`, `CON*=`, `CAT*=`, `LIST=`, `PP=`, `PVALUES=`, `TOTALCOL=` |
 | Shape | `hv_man_table()` / `hv_man_table_jtcvs()` | `STYLE=`, `PAGE=` |
-| Write | `hv_man_table_save*()` | `RTFFILE=`, `TBLTITLE=`, `ADDFN=` |
+| Write | `hv_man_table_save*()` | `RTFFILE=`, `ADDFN=`, `TBLTITLE=` (JTCVS only) |
 | Verify | `hv_check_docx()` | *(no analogue)* |
 
 The one thing worth knowing before you start: `CON1=` variables change

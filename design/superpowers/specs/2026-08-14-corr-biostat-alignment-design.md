@@ -50,7 +50,7 @@ inferred.
 | # | Current documentation | Actual behavior |
 |---|---|---|
 | 1 | README maps `CON1=` to `continuous`, and lists `CON2=`/`CON3=` as unsupported. | Backwards. `CON1=` is mean ± SD with one-way ANOVA. `hv_tbl_summary()`'s continuous behavior is exactly `CON3=` (`median [P(1), P(2)]`, Kruskal-Wallis) plus `PP=`. `CON3=` is the parameter that survives; `CON1=`/`CON2=` are the ones with no equivalent. |
-| 2 | Silent. | `%summarytable` fuses computation and document output. `RTFFILE=`, `PDFFILE=`, `XMLFILE=`, `TBLTITLE=`, `ADDFN=`, `PRINTFN=`, `STYLE=`, `PAGE=`, `CWIDTH1-3=`, `PAPERSIZE=` are output parameters in the same call as `CON1=`. The README's mapping table covers only the computation half, so a reader looking up `TBLTITLE=` or `ADDFN=` finds nothing — the answers are `caption =` and `footnotes =` on the save functions. |
+| 2 | Silent. | `%summarytable` fuses computation and document output. `RTFFILE=`, `PDFFILE=`, `XMLFILE=`, `TBLTITLE=`, `ADDFN=`, `PRINTFN=`, `STYLE=`, `PAGE=`, `CWIDTH1-3=`, `PAPERSIZE=` are output parameters in the same call as `CON1=`. The README's mapping table covers only the computation half, so a reader looking up `TBLTITLE=` or `ADDFN=` finds nothing — the answers are `caption =` and `footnotes =` on the save functions. The save stage is a CORR/JTCVS sibling pair with *different argument sets* — only `hv_man_table_save_jtcvs()` has `caption`, so `TBLTITLE=` has no CORR-path equivalent at all. |
 | 3 | README: `TOTALCOL=`/`NCOL=` "handled automatically". | `NCOL=` yes, via the `{N_obs}` pair. `TOTALCOL=` no: `hv_tbl_summary()` never calls `gtsummary::add_overall()`, so there is no way to produce the Overall column the macro adds by default. This is a feature gap, not a documentation gap. (`NCOL=3` is "both overall and per-group Ns"; the package produces per-group only, i.e. `NCOL=2` behavior.) |
 | 4 | Spec and README: "chi-square, automatically falling back to Fisher's exact". | True on both sides, at **different thresholds**. `CUTEXACT=50` fires Fisher's exact when ≥50% of cells have expected count <5. `gtsummary` fires when *any* expected count is <5. The same data can select a different test, and therefore print a different footnote letter. |
 | 5 | Unsupported list names `WEIGHT=`, `PROPENMT=`, `CON2=`/`CON3=`, `SUBSET=`, `SORTBY=`. | Also unsupported and unlisted: `COLPCT=0` (row percentages), `MISSCOL=`, `ADHOC=`, `ODDSRATIOS=`, `CUTEXACT=`, and the output-formatting parameters from finding 2 that have no R equivalent (`STYLE=`, `PAGE=`, `CWIDTH*=`, `PAPERSIZE=`). |
@@ -89,7 +89,7 @@ first thing a macro-fluent reader must internalize.
 |---|---|---|
 | Compute stats and tests | `hv_tbl_summary()` | `DATA=`, `CLASS=`, `CON*=`, `CAT*=`, `ORD1=`, `LIST=`, `PP=`, `PVALUES=`, `ASD=`, `TOTALCOL=` |
 | Shape the table | `hv_man_table()`, `hv_man_table_jtcvs()` | `STYLE=`, `PAGE=`, header options |
-| Write the file | `hv_man_table_save()`, `hv_man_table_save_jtcvs()` | `RTFFILE=`, `PDFFILE=`, `TBLTITLE=`, `ADDFN=`, `PRINTFN=` |
+| Write the file | `hv_man_table_save()`, `hv_man_table_save_jtcvs()` | `RTFFILE=`, `PDFFILE=`, `ADDFN=`, `PRINTFN=`, and `TBLTITLE=` for JTCVS only |
 | Verify the file | `hv_check_docx()` | *(no analogue — new capability)* |
 
 Flat-header versus JTCVS is a journal choice within stage 2, not a stage of
@@ -112,7 +112,8 @@ Each section's `desc:` states the SAS analogue first.
 the same treatment to the functions that received none:
 
 - `hv_man_table_save()` / `hv_man_table_save_jtcvs()`: `caption` names
-  `TBLTITLE=`; `footnotes` names `ADDFN=` and `PRINTFN=`; the output path names
+  `TBLTITLE=` on the JTCVS saver only; `footnotes` names `ADDFN=` and
+  `PRINTFN=`; the output path names
   `RTFFILE=`/`PDFFILE=`.
 - `hv_man_table()` / `hv_man_table_jtcvs()`: `stat_label`, `groups`, `trailing`
   described against what the macro emitted in the same position.
