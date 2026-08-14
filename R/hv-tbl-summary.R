@@ -97,6 +97,11 @@
 #'   pair for continuous summaries, as increasing whole numbers between 0
 #'   and 100. Default `c(15, 85)`, the [hv_man_footnotes()] house
 #'   convention (`%summarytable` `PP=` equivalent).
+#' @param overall Single `TRUE`/`FALSE`. When `TRUE`, prepends an Overall
+#'   column across all groups (`%summarytable` `TOTALCOL=` equivalent).
+#'   Requires `by`. Defaults to `FALSE`, unlike the macro's `TOTALCOL=1`:
+#'   the renderers take a `groups` vector naming each `stat_<k>` column,
+#'   so adding a column by default would silently break existing calls.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
@@ -128,6 +133,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
                            categorical = character(0),
                            compare = c("pvalue", "smd", "both", "none"),
                            percentiles = c(15, 85),
+                           overall = FALSE,
                            ...) {
   .check_sas_args(list(...), "hv_tbl_summary")
   compare <- match.arg(compare)
@@ -183,6 +189,15 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   if (percentiles[1] >= percentiles[2])
     stop("`percentiles` must be increasing: the low percentile must be ",
          "less than the high one, e.g. c(15, 85).", call. = FALSE)
+  if (!is.logical(overall) || length(overall) != 1L || is.na(overall))
+    stop("`overall` must be TRUE or FALSE.", call. = FALSE)
+  # The macro's TOTALCOL= only ever produced an Overall column alongside
+  # class levels; with no CLASS= the single column already is the
+  # overall one. Erroring rather than ignoring, because a caller who
+  # passed it believes a column is coming.
+  if (overall && is.null(by))
+    stop("`overall = TRUE` needs a `by` variable; with `by = NULL` the ",
+         "single column is already the overall one.", call. = FALSE)
 
   vars <- unlist(groups, use.names = FALSE)
   if (!is.character(vars) || anyNA(vars) || any(!nzchar(vars)))
@@ -276,6 +291,12 @@ hv_tbl_summary <- function(data, by = NULL, groups,
       tb
     }
   )
+
+  # add_overall() must run before add_p()/add_difference() below --
+  # gtsummary requires it ahead of comparison columns so the comparison
+  # column stays rightmost.
+  if (overall)
+    tbl <- gtsummary::add_overall(tbl, last = FALSE)
 
   attr(tbl, "hv_stat_label") <- sprintf(
     "No. (%%) or Median (%sth, %sth percentile)", p_lo, p_hi

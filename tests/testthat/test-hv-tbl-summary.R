@@ -786,3 +786,55 @@ test_that("every accepted binary shape counts the right event", {
                      info = nm)
   }
 })
+
+test_that("overall = TRUE adds exactly one column", {
+  base <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = "age"), continuous = "age"
+  )
+  with_total <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = "age"), continuous = "age",
+    overall = TRUE
+  )
+  expect_equal(
+    ncol(with_total$table_body) - ncol(base$table_body), 1L
+  )
+  expect_true("stat_0" %in% names(with_total$table_body))
+})
+
+test_that("overall = FALSE reproduces the previous output exactly", {
+  a <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = "age"), continuous = "age"
+  )
+  expect_false("stat_0" %in% names(a$table_body))
+})
+
+test_that("overall = TRUE without `by` errors rather than doing nothing", {
+  expect_error(
+    hv_tbl_summary(gtsummary::trial, groups = list(D = "age"),
+                   continuous = "age", overall = TRUE),
+    "`overall = TRUE` needs a `by` variable",
+    fixed = TRUE
+  )
+})
+
+test_that("overall must be a single TRUE or FALSE", {
+  expect_error(
+    hv_tbl_summary(gtsummary::trial, by = "trt",
+                   groups = list(D = "age"), continuous = "age",
+                   overall = "yes"),
+    "`overall` must be TRUE or FALSE", fixed = TRUE
+  )
+})
+
+test_that("SAS QNTLDEF=5 corresponds to quantile type 2, not R's default", {
+  # Guards the equivalence vignettes/sas-migration.Rmd documents. If a
+  # future change routes percentiles through stats::quantile() directly
+  # rather than gtsummary's {pXX}, this is the value that must hold.
+  expect_equal(stats::quantile(c(1, 2, 3, 4), 0.25, type = 2,
+                               names = FALSE), 1.5)
+  expect_equal(stats::quantile(c(1, 2, 3, 4), 0.25, type = 7,
+                               names = FALSE), 1.75)
+})

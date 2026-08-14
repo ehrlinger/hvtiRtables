@@ -13,6 +13,7 @@ hv_tbl_summary(
   categorical = character(0),
   compare = c("pvalue", "smd", "both", "none"),
   percentiles = c(15, 85),
+  overall = FALSE,
   ...
 )
 }
@@ -64,6 +65,12 @@ defined between two of them; they error otherwise. \code{"pvalue"} and
 pair for continuous summaries, as increasing whole numbers between 0
 and 100. Default \code{c(15, 85)}, the \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} house
 convention (\verb{\%summarytable} \verb{PP=} equivalent).}
+
+\item{overall}{Single \code{TRUE}/\code{FALSE}. When \code{TRUE}, prepends an Overall
+column across all groups (\verb{\%summarytable} \verb{TOTALCOL=} equivalent).
+Requires \code{by}. Defaults to \code{FALSE}, unlike the macro's \code{TOTALCOL=1}:
+the renderers take a \code{groups} vector naming each \verb{stat_<k>} column,
+so adding a column by default would silently break existing calls.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.}
