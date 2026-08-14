@@ -17,6 +17,10 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/hvtiRtables.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/sas-migration.html">Porting a %summarytable program to R</a></li>
+  </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -40,9 +44,11 @@
     </div>
 
     <div class="section level2">
-      <h2 id="building-tables-from-data">Building Tables from Data<a class="anchor" aria-label="anchor" href="#building-tables-from-data"></a></h2>
+      <h2 id="-compute-the-table-summarytable-"></h2><li>Compute the table — <code>%summarytable</code>
+</li>
 
-      <div class="section-desc"><p>Build a grouped baseline-characteristics table straight from a data frame, using an interface modeled on the SAS <code>%summarytable</code> macro. Returns a <code>gtsummary</code> object for the renderers below.</p></div>
+
+      <div class="section-desc"><p>Where the macro’s <code>CON*=</code>, <code>CAT*=</code>, <code>LIST=</code>, <code>PP=</code>, <code>PVALUES=</code> and <code>TOTALCOL=</code> land. Takes a grouped, ordered variable list and returns a <code>gtsummary</code> object for the stages below.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -56,9 +62,10 @@
         </dt>
         <dd>Build a gtsummary table from a SAS %summarytable-style grouped variable list</dd>
       </dl></div><div class="section level2">
-      <h2 id="flat-header-tables">Flat-Header Tables<a class="anchor" aria-label="anchor" href="#flat-header-tables"></a></h2>
+      <h2 id="-shape-the-table-house-style-is-fixed"></h2><li>Shape the table - house style is fixed</li>
 
-      <div class="section-desc"><p>Standard HVTI CORR manuscript tables: flat (non-merged) headers, no hidden spacer columns, footnotes as text below the table.</p></div>
+
+      <div class="section-desc"><p>House style is fixed, so the only choice here is the header shape. Flat single-row headers for CORR reports and manuscripts; merged spanning headers for a JTCVS submission.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -74,14 +81,16 @@
 
         <dt>
 
-          <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code>
+          <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>
 
         </dt>
-        <dd>Write an hv_man_table() table to a compliant .docx</dd>
+        <dd>Build a JTCVS-format manuscript table with merged spanning headers</dd>
       </dl></div><div class="section level2">
-      <h2 id="jtcvs-merged-header-tables">JTCVS Merged-Header Tables<a class="anchor" aria-label="anchor" href="#jtcvs-merged-header-tables"></a></h2>
+      <h2 id="-write-the-document-rtffile-pdffile-"></h2><li>Write the document — <code>RTFFILE=</code> / <code>PDFFILE=</code>
+</li>
 
-      <div class="section-desc"><p>JTCVS submission mode, with merged spanning group headers and lettered cell-targeted footnotes matching that journal’s template.</p></div>
+
+      <div class="section-desc"><p>The macro’s output block: <code>TBLTITLE=</code> becomes <code>caption</code>, <code>ADDFN=</code> and <code>PRINTFN=</code> become <code>footnotes</code>. Output is always <code>.docx</code>.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -90,10 +99,10 @@
 
       <dl><dt>
 
-          <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>
+          <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code>
 
         </dt>
-        <dd>Build a JTCVS-format manuscript table with merged spanning headers</dd>
+        <dd>Write an hv_man_table() table to a compliant .docx</dd>
 
         <dt>
 
@@ -101,17 +110,8 @@
 
         </dt>
         <dd>Write an hv_man_table_jtcvs() table to a compliant .docx</dd>
-      </dl></div><div class="section level2">
-      <h2 id="footnotes">Footnotes<a class="anchor" aria-label="anchor" href="#footnotes"></a></h2>
 
-
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
+        <dt>
 
           <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>
 
@@ -125,9 +125,10 @@
         </dt>
         <dd>Build lettered test footnotes from a gtsummary table</dd>
       </dl></div><div class="section level2">
-      <h2 id="checking-written-files">Checking Written Files<a class="anchor" aria-label="anchor" href="#checking-written-files"></a></h2>
+      <h2 id="-verify-the-written-file"></h2><li>Verify the written file</li>
 
-      <div class="section-desc"><p>Inspect a written <code>.docx</code> for structural layers the manuscript rules prohibit. Reads the file rather than the object that produced it, so it catches anything introduced later, including by a hand edit.</p></div>
+
+      <div class="section-desc"><p>No macro analogue. Inspects a written <code>.docx</code> for structural layers the manuscript rules prohibit, reading the file rather than the object that produced it — so it catches anything introduced later, including by a hand edit.</p></div>
 
       <dl></dl></div><div class="section level2">
 

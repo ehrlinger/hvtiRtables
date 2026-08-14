@@ -1,13 +1,9 @@
 # Build lettered test footnotes from a gtsummary table
 
-The SAS `%summarytable` macro marks every p-value with a superscript
-letter naming the test behind it. This builds those footnotes from the
-`test_name` column
-[`gtsummary::add_p()`](https://www.danieldsjoberg.com/gtsummary/reference/add_p.html)
-records, in the format
-[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)'s
-`footnotes` argument expects, so you do not have to map test identifiers
-or count body rows by hand.
+Reproduces the macro's lettered test footnotes. The letters differ by
+design: `%summarytable` emitted `a=ANOVA` for `CON1=` variables, and
+this package tests every continuous variable non-parametrically, so
+ANOVA never appears.
 
 ## Usage
 
@@ -34,6 +30,15 @@ ready to pass as
 there is nothing to mark.
 
 ## Details
+
+The SAS `%summarytable` macro marks every p-value with a superscript
+letter naming the test behind it. This builds those footnotes from the
+`test_name` column
+[`gtsummary::add_p()`](https://www.danieldsjoberg.com/gtsummary/reference/add_p.html)
+records, in the format
+[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)'s
+`footnotes` argument expects, so you do not have to map test identifiers
+or count body rows by hand.
 
 Takes the `gtsummary` object rather than the `flextable`, because
 [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
@@ -73,7 +78,9 @@ which renders the result.
 [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md),
 which produces a suitable `tbl`.
 [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
-for the house-universal footnotes.
+for the house-universal footnotes, which are CORR-shaped and belong to
+[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md),
+not to this function's JTCVS output.
 
 ## Examples
 

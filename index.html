@@ -35,6 +35,12 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="articles/hvtiRtables.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="articles/sas-migration.html">Porting a %summarytable program to R</a></li>
+  </ul>
+</li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -87,7 +93,7 @@
 <div class="section level2">
 <h2 id="jtcvs-submission-format">JTCVS submission format<a class="anchor" aria-label="anchor" href="#jtcvs-submission-format"></a>
 </h2>
-<p>When you’re submitting to JTCVS, swap in <code><a href="reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> / <code><a href="reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> for <code><a href="reference/hv_man_table.html">hv_man_table()</a></code> / <code><a href="reference/hv_man_table_save.html">hv_man_table_save()</a></code>. The merged spanning header and lettered footnotes match the journal’s own submission template, so you’re not hand-reformatting the table a second time after the flat-header version is already done:</p>
+<p>When you’re submitting to JTCVS, use <code><a href="reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> / <code><a href="reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> instead of <code><a href="reference/hv_man_table.html">hv_man_table()</a></code> / <code><a href="reference/hv_man_table_save.html">hv_man_table_save()</a></code>. This is not a drop-in swap: the JTCVS pair requires a <code>groups</code> argument naming each <code>stat_&lt;k&gt;</code> column (no default), requires the table’s statistic to follow the <code>{N_obs} ||| {stat}</code> convention, and requires a <code>caption</code> string at save time. The merged spanning header and lettered footnotes match the journal’s own submission template, so once those three things are supplied you’re not hand-reformatting the table a second time after the flat-header version is already done:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ddsjoberg/gtsummary" class="external-link">gtsummary</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ehrlinger/hvtiRtables" class="external-link">hvtiRtables</a></span><span class="op">)</span></span>
@@ -108,115 +114,48 @@
 <div class="section level2">
 <h2 id="migrating-from-the-summarytable-sas-macro">Migrating from the <code>%summarytable</code> SAS macro<a class="anchor" aria-label="anchor" href="#migrating-from-the-summarytable-sas-macro"></a>
 </h2>
-<p>If you already know <code>%summarytable</code>, you give <code><a href="reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> the same thing you gave the macro: a grouped, ordered variable list (the shape of the macro’s <code>LIST=</code> block). You get back a <code>gtsummary</code> object you hand straight to <code><a href="reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>. Two defaults differ from the macro and are worth knowing up front: we always use a blanket non-parametric test, so there is no per-variable Gaussian classification to maintain, and continuous variables report as <code>median (P15, P85)</code> rather than <code>mean ± SD</code>.</p>
+<p><code>%summarytable</code> computes the table and writes the document in one call. This package splits that into stages, so the parameters you know are spread across separate calls:</p>
 <table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
 <thead><tr>
-<th>
-<code>%summarytable</code> parameter</th>
-<th>
-<code><a href="reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> argument</th>
+<th>Stage</th>
+<th>Function</th>
+<th>Macro parameters</th>
 </tr></thead>
 <tbody>
 <tr>
-<td><code>DATA=</code></td>
-<td><code>data</code></td>
-</tr>
-<tr>
-<td><code>CLASS=</code></td>
-<td><code>by</code></td>
-</tr>
-<tr>
-<td><code>LIST=</code></td>
-<td><code>groups</code></td>
-</tr>
-<tr>
-<td><code>CON1=</code></td>
-<td><code>continuous</code></td>
-</tr>
-<tr>
-<td><code>CAT1=</code></td>
-<td><code>binary</code></td>
-</tr>
-<tr>
-<td><code>CAT2=</code></td>
-<td><code>categorical</code></td>
-</tr>
-<tr>
+<td>Compute</td>
+<td><code><a href="reference/hv_tbl_summary.html">hv_tbl_summary()</a></code></td>
 <td>
-<code>PVALUES=</code> / <code>ASD=</code>
+<code>CLASS=</code>, <code>CON*=</code>, <code>CAT*=</code>, <code>LIST=</code>, <code>PP=</code>, <code>PVALUES=</code>, <code>TOTALCOL=</code>
 </td>
-<td><code>compare</code></td>
 </tr>
 <tr>
-<td><code>PP=</code></td>
-<td><code>percentiles</code></td>
-</tr>
-<tr>
+<td>Shape</td>
 <td>
-<code>TOTALCOL=</code> / <code>NCOL=</code>
+<code><a href="reference/hv_man_table.html">hv_man_table()</a></code> / <code><a href="reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>
 </td>
-<td>handled automatically</td>
+<td><em>(none - house style is fixed)</em></td>
+</tr>
+<tr>
+<td>Write</td>
+<td><code>hv_man_table_save*()</code></td>
+<td>
+<code>RTFFILE=</code>, <code>ADDFN=</code>, <code>TBLTITLE=</code> (JTCVS only)</td>
+</tr>
+<tr>
+<td>Verify</td>
+<td><code><a href="reference/hv_check_docx.html">hv_check_docx()</a></code></td>
+<td><em>(no analogue)</em></td>
 </tr>
 </tbody>
 </table>
-<p>Not supported in this first pass: <code>WEIGHT=</code> (weighted summaries), <code>PROPENMT=</code> (propensity-matched mode), <code>CON2=</code>/<code>CON3=</code> (Gaussian-classification split, superseded by the blanket-nonparametric default), <code>SUBSET=</code>, <code>SORTBY=</code> (ordering comes directly from <code>groups</code>). Ordinal variables (<code>ORD1=</code> in the macro) fold into <code>categorical</code> here; no trend test is run.</p>
-<p>A real <code>%summarytable</code> call, next to its <code><a href="reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> equivalent:</p>
-<pre class="sas"><code>%summarytable(data=built,
-              class=grp_res,
-              con1=&amp;gaussian.,
-              cat1=&amp;binary.,
-              cat2=&amp;catg.,
-              pp=16 84,
-              pvalues=1,
-              list=
-    /* Demography */
-       female AGE BSA race_gp
-
-    /* Symptoms */
-       surgstat nyha_pr
-);</code></pre>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ddsjoberg/gtsummary" class="external-link">gtsummary</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ehrlinger/hvtiRtables" class="external-link">hvtiRtables</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hv_tbl_summary.html">hv_tbl_summary</a></span><span class="op">(</span></span>
-<span>  <span class="va">built</span>,</span>
-<span>  by <span class="op">=</span> <span class="st">"grp_res"</span>,</span>
-<span>  groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    Demography <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"female"</span>, <span class="st">"AGE"</span>, <span class="st">"BSA"</span>, <span class="st">"race_gp"</span><span class="op">)</span>,</span>
-<span>    Symptoms   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surgstat"</span>, <span class="st">"nyha_pr"</span><span class="op">)</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  continuous  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"AGE"</span>, <span class="st">"BSA"</span><span class="op">)</span>,</span>
-<span>  binary      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"female"</span>, <span class="st">"surgstat"</span><span class="op">)</span>,</span>
-<span>  categorical <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"race_gp"</span>, <span class="st">"nyha_pr"</span><span class="op">)</span>,</span>
-<span>  compare     <span class="op">=</span> <span class="st">"pvalue"</span>,</span>
-<span>  percentiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">16</span>, <span class="fl">84</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">ft</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs</a></span><span class="op">(</span></span>
-<span>  <span class="va">tbl</span>,</span>
-<span>  groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    stat_1 <span class="op">=</span> <span class="st">"PERIMOUNT (n=4190)"</span>, stat_2 <span class="op">=</span> <span class="st">"Resilia (n=3758)"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  trailing <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="st">"hv_trailing"</span><span class="op">)</span>,</span>
-<span>  stat_label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="st">"hv_stat_label"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs</a></span><span class="op">(</span></span>
-<span>  <span class="va">ft</span>, <span class="st">"table1.docx"</span>,</span>
-<span>  caption <span class="op">=</span> <span class="st">"Table 1. Baseline Characteristics by Tissue Type"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<div class="section level3">
-<h3 id="lettered-test-footnotes">Lettered test footnotes<a class="anchor" aria-label="anchor" href="#lettered-test-footnotes"></a>
-</h3>
-<p><code>%summarytable</code> marks each p-value with a superscript letter naming the test behind it, and defines the letters below the table. Pass <code><a href="reference/hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code> to the save function to reproduce that:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs</a></span><span class="op">(</span></span>
-<span>  <span class="va">ft</span>, <span class="st">"table1.docx"</span>,</span>
-<span>  caption   <span class="op">=</span> <span class="st">"Table 1. Baseline Characteristics by Tissue Type"</span>,</span>
-<span>  footnotes <span class="op">=</span> <span class="fu"><a href="reference/hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>Add study-specific footnotes alongside with <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code>; letters are assigned in list order.</p>
-<p>The letter set differs from the SAS macro’s by design. <code>%summarytable</code> classifies each continuous variable as Gaussian or non-Gaussian and emits <code>a=ANOVA</code> for the Gaussian ones. This package tests continuous variables non-parametrically throughout, so ANOVA never appears.</p>
-</div>
+<p>The one thing worth knowing before you start: <code>CON1=</code> variables change statistic. The macro reported them as mean +/- SD with one-way ANOVA; every continuous variable here is a median with a non-parametric test, which is the <code>CON3=</code> behavior. It’s the largest of five defaults that produce different numbers from a faithful-looking port; the vignette’s “Defaults that differ” table lists all five.</p>
+<p>Full parameter map, the five defaults that differ, and the <code>QNTLDEF</code> quantile trap: <strong><a href="https://ehrlinger.github.io/hvtiRtables/articles/sas-migration.html">Porting a <code>%summarytable</code> program to R</a></strong>.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="package-badges">

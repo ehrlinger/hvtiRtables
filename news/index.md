@@ -38,6 +38,28 @@
 
 ## hvtiRtables 0.9.6
 
+### New features
+
+- [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  gains `overall =`, the `%summarytable` `TOTALCOL=` equivalent, adding
+  an Overall column across all groups. Defaults to `FALSE`; the macro’s
+  own default is `TOTALCOL=1`.
+- [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md),
+  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md),
+  [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md),
+  [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md),
+  and
+  [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
+  now error on a `%summarytable` parameter name, naming the R argument
+  and the function that takes it, rather than silently ignoring it.
+- New vignette, “Porting a `%summarytable` program to R”.
+
+### Documentation
+
+- The README’s migration table stated that `CON1=` maps to `continuous`.
+  It does not: `CON1=` was mean +/- SD with ANOVA, and `continuous`
+  reproduces `CON3=`. Corrected.
+
 ### Bug fixes
 
 - `binary` variables now pass an explicit event value to `gtsummary`

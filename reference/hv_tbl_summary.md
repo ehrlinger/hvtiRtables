@@ -5,7 +5,7 @@ Thin wrapper over
 modeled on the interface biostats team members already know from the
 `%summarytable` SAS macro: a grouped, ordered variable list (`groups`,
 the macro's `LIST=` equivalent) and variable-type buckets
-(`continuous`/`binary`/ `categorical`, the `CON1=`/`CAT1=`/`CAT2=`
+(`continuous`/`binary`/ `categorical`, the `CON3=`/`CAT1=`/`CAT2=`
 equivalents), rather than gtsummary's own tidyselect-based interface.
 Returns a plain `gtsummary` object, ready for
 [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
@@ -23,7 +23,9 @@ hv_tbl_summary(
   binary = character(0),
   categorical = character(0),
   compare = c("pvalue", "smd", "both", "none"),
-  percentiles = c(15, 85)
+  percentiles = c(15, 85),
+  overall = FALSE,
+  ...
 )
 ```
 
@@ -50,9 +52,12 @@ hv_tbl_summary(
 
 - continuous:
 
-  Character vector of continuous variable names (`%summarytable` `CON1=`
-  equivalent), summarized as `median (P<low>, P<high>)`. Each named
-  column must be numeric.
+  Character vector of continuous variable names (`%summarytable` `CON3=`
+  equivalent), summarized as `median (P<low>, P<high>)`. Variables the
+  macro classified as `CON1=` (mean +/- SD, one-way ANOVA) or `CON2=`
+  (median with min and max) belong here too, but their statistic and
+  test change: every continuous variable is summarized as a median and
+  tested non-parametrically. Each named column must be numeric.
 
 - binary:
 
@@ -92,6 +97,19 @@ hv_tbl_summary(
   Default `c(15, 85)`, the
   [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
   house convention (`%summarytable` `PP=` equivalent).
+
+- overall:
+
+  Single `TRUE`/`FALSE`. When `TRUE`, prepends an Overall column across
+  all groups (`%summarytable` `TOTALCOL=` equivalent). Requires `by`.
+  Defaults to `FALSE`, unlike the macro's `TOTALCOL=1`: the renderers
+  take a `groups` vector naming each `stat_<k>` column, so adding a
+  column by default would silently break existing calls.
+
+- ...:
+
+  Not used. Present so that `%summarytable` parameter names produce an
+  error naming the argument to use instead.
 
 ## Value
 

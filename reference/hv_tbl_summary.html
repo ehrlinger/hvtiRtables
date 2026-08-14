@@ -3,13 +3,13 @@
 biostats team members already know from the %summarytable SAS macro:
 a grouped, ordered variable list (groups, the macro's LIST=
 equivalent) and variable-type buckets (continuous/binary/
-categorical, the CON1=/CAT1=/CAT2= equivalents), rather than
+categorical, the CON3=/CAT1=/CAT2= equivalents), rather than
 gtsummary's own tidyselect-based interface. Returns a plain gtsummary
 object, ready for hv_man_table() or hv_man_table_jtcvs()."><meta property="og:description" content="Thin wrapper over gtsummary::tbl_summary() modeled on the interface
 biostats team members already know from the %summarytable SAS macro:
 a grouped, ordered variable list (groups, the macro's LIST=
 equivalent) and variable-type buckets (continuous/binary/
-categorical, the CON1=/CAT1=/CAT2= equivalents), rather than
+categorical, the CON3=/CAT1=/CAT2= equivalents), rather than
 gtsummary's own tidyselect-based interface. Returns a plain gtsummary
 object, ready for hv_man_table() or hv_man_table_jtcvs()."><!-- dependencies from examples --></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -29,6 +29,10 @@ object, ready for hv_man_table() or hv_man_table_jtcvs()."><!-- dependencies fro
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/hvtiRtables.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/sas-migration.html">Porting a %summarytable program to R</a></li>
+  </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -58,7 +62,7 @@ object, ready for hv_man_table() or hv_man_table_jtcvs()."><!-- dependencies fro
 biostats team members already know from the <code>%summarytable</code> SAS macro:
 a grouped, ordered variable list (<code>groups</code>, the macro's <code>LIST=</code>
 equivalent) and variable-type buckets (<code>continuous</code>/<code>binary</code>/
-<code>categorical</code>, the <code>CON1=</code>/<code>CAT1=</code>/<code>CAT2=</code> equivalents), rather than
+<code>categorical</code>, the <code>CON3=</code>/<code>CAT1=</code>/<code>CAT2=</code> equivalents), rather than
 gtsummary's own tidyselect-based interface. Returns a plain <code>gtsummary</code>
 object, ready for <code><a href="hv_man_table.html">hv_man_table()</a></code> or <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>.</p>
     </div>
@@ -73,7 +77,9 @@ object, ready for <code><a href="hv_man_table.html">hv_man_table()</a></code> or
 <span>  binary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  categorical <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  compare <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pvalue"</span>, <span class="st">"smd"</span>, <span class="st">"both"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
-<span>  percentiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">85</span><span class="op">)</span></span>
+<span>  percentiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">85</span><span class="op">)</span>,</span>
+<span>  overall <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -103,8 +109,12 @@ appear in <code>groups</code>.</p></dd>
 
 <dt id="arg-continuous">continuous<a class="anchor" aria-label="anchor" href="#arg-continuous"></a></dt>
 <dd><p>Character vector of continuous variable names
-(<code>%summarytable</code> <code>CON1=</code> equivalent), summarized as
-<code>median (P&lt;low&gt;, P&lt;high&gt;)</code>. Each named column must be numeric.</p></dd>
+(<code>%summarytable</code> <code>CON3=</code> equivalent), summarized as
+<code>median (P&lt;low&gt;, P&lt;high&gt;)</code>. Variables the macro classified as
+<code>CON1=</code> (mean +/- SD, one-way ANOVA) or <code>CON2=</code> (median with
+min and max) belong here too, but their statistic and test
+change: every continuous variable is summarized as a median and
+tested non-parametrically. Each named column must be numeric.</p></dd>
 
 
 <dt id="arg-binary">binary<a class="anchor" aria-label="anchor" href="#arg-binary"></a></dt>
@@ -143,6 +153,19 @@ defined between two of them; they error otherwise. <code>"pvalue"</code> and
 pair for continuous summaries, as increasing whole numbers between 0
 and 100. Default <code>c(15, 85)</code>, the <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code> house
 convention (<code>%summarytable</code> <code>PP=</code> equivalent).</p></dd>
+
+
+<dt id="arg-overall">overall<a class="anchor" aria-label="anchor" href="#arg-overall"></a></dt>
+<dd><p>Single <code>TRUE</code>/<code>FALSE</code>. When <code>TRUE</code>, prepends an Overall
+column across all groups (<code>%summarytable</code> <code>TOTALCOL=</code> equivalent).
+Requires <code>by</code>. Defaults to <code>FALSE</code>, unlike the macro's <code>TOTALCOL=1</code>:
+the renderers take a <code>groups</code> vector naming each <code>stat_&lt;k&gt;</code> column,
+so adding a column by default would silently break existing calls.</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>Not used. Present so that <code>%summarytable</code> parameter names
+produce an error naming the argument to use instead.</p></dd>
 
 </dl></div>
     <div class="section level2">

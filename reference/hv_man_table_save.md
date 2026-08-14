@@ -1,5 +1,81 @@
 # Write an hv_man_table() table to a compliant .docx
 
+Stage 3 of the `%summarytable` split: writes the document. Replaces the
+macro's `RTFFILE=`/`PDFFILE=` output block.
+
+## Usage
+
+``` r
+hv_man_table_save(
+  ft,
+  file,
+  footnotes = hv_man_footnotes(),
+  abbreviations = NULL,
+  ...
+)
+```
+
+## Arguments
+
+- ft:
+
+  A `flextable` object, typically from
+  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md).
+
+- file:
+
+  Output `.docx` path. The output directory (`dirname(file)`) must
+  already exist; this function does not create it. (`%summarytable`
+  `RTFFILE=`/`PDFFILE=` equivalent; output here is always `.docx`).
+
+- footnotes:
+
+  Optional named list, symbol -\> footnote text. Defaults to
+  [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
+  (the house-universal N and median/percentile footnotes). That default
+  text hardcodes the 15th/85th percentile pair; if the table was built
+  with
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)'s
+  `percentiles =` set to anything else, override it (see below) or the
+  footnote will misstate what the table shows. Pass `NULL` to suppress
+  both, or compose with
+  [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
+  to override or extend (see its documentation). Symbols must be drawn
+  from `c("*", "†", "‡", "§", "¶", "||")`. Each symbol is appended as a
+  superscript reference mark to the table's count-column header cell — a
+  column named `n`, else the first `n_stat_<k>` column
+  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+  creates when it splits an
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  table, else the first column — and its text is rendered as its own
+  paragraph below the table, in the order given. Every element must be
+  named (unnamed or blank-named entries raise an error) and every text
+  must be a single non-empty string (`NULL`, `NA`, a number, or a
+  multi-element vector raise an error, since each writes a dangling
+  marker); an empty list is a no-op, same as `NULL`. (`%summarytable`
+  `ADDFN=` equivalent; `PRINTFN=1`'s house block is
+  [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)).
+
+- abbreviations:
+
+  Optional named character vector, `c(ABBR = "expansion", ...)`.
+  Rendered as one `Key:` paragraph below any footnotes, sorted
+  alphabetically by abbreviation, abbreviation italicized, pairs
+  separated by `"; "` (house rule 14). Every element must be named
+  (unnamed or blank-named entries raise an error); an empty or `NULL`
+  vector is a no-op.
+
+- ...:
+
+  Not used. Present so that `%summarytable` parameter names produce an
+  error naming the argument to use instead.
+
+## Value
+
+Invisibly, the `file` path.
+
+## Details
+
 You hand this a `flextable` (typically from
 [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)),
 and it writes a Word document with footnotes and an abbreviation key
@@ -18,63 +94,6 @@ which keeps vertical cell alignment controllable if you later reformat
 the surrounding document to 1.5- or double-spacing. House rule 2
 concerns the *insertion point* in the destination document, not this
 function's output; see the package README for the paste-in workflow.
-
-## Usage
-
-``` r
-hv_man_table_save(
-  ft,
-  file,
-  footnotes = hv_man_footnotes(),
-  abbreviations = NULL
-)
-```
-
-## Arguments
-
-- ft:
-
-  A `flextable` object, typically from
-  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md).
-
-- file:
-
-  Output `.docx` path. The output directory (`dirname(file)`) must
-  already exist; this function does not create it.
-
-- footnotes:
-
-  Optional named list, symbol -\> footnote text. Defaults to
-  [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
-  (the house-universal N and median/percentile footnotes). Pass `NULL`
-  to suppress both, or compose with
-  [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
-  to override or extend (see its documentation). Symbols must be drawn
-  from `c("*", "†", "‡", "§", "¶", "||")`. Each symbol is appended as a
-  superscript reference mark to the table's count-column header cell — a
-  column named `n`, else the first `n_stat_<k>` column
-  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
-  creates when it splits an
-  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
-  table, else the first column — and its text is rendered as its own
-  paragraph below the table, in the order given. Every element must be
-  named (unnamed or blank-named entries raise an error) and every text
-  must be a single non-empty string (`NULL`, `NA`, a number, or a
-  multi-element vector raise an error, since each writes a dangling
-  marker); an empty list is a no-op, same as `NULL`.
-
-- abbreviations:
-
-  Optional named character vector, `c(ABBR = "expansion", ...)`.
-  Rendered as one `Key:` paragraph below any footnotes, sorted
-  alphabetically by abbreviation, abbreviation italicized, pairs
-  separated by `"; "` (house rule 14). Every element must be named
-  (unnamed or blank-named entries raise an error); an empty or `NULL`
-  vector is a no-op.
-
-## Value
-
-Invisibly, the `file` path.
 
 ## See also
 

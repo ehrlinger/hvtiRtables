@@ -1,16 +1,9 @@
 # Build a JTCVS-format manuscript table with merged spanning headers
 
-Use this instead of
-[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
-when you're building the shape editorial actually needs at JTCVS
-submission: a 2-row header (group name spanning `na`/stat sub-columns)
-and bold, light-blue-shaded, row-spanning section headers in the body,
-matching the canonical "Table Construction for Manuscripts" house
-example (section-header fill `#CAEDFB`). This is a separate mode, not a
-replacement for
-[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)'s
-flat-header CORR house style; the two exist because CORR reports and
-JTCVS submissions want different things from the same header row.
+Stage 2 of the `%summarytable` split: shapes the table. The macro
+controlled this with `STYLE=` and `PAGE=`, which have no equivalent here
+– house style is fixed, and the only choice is flat header versus JTCVS
+spanning header.
 
 ## Usage
 
@@ -21,7 +14,8 @@ hv_man_table_jtcvs(
   trailing = NULL,
   stat_label = "No. (%) or Mean ± SD",
   font = "Times New Roman",
-  font_size = 12
+  font_size = 12,
+  ...
 )
 ```
 
@@ -72,10 +66,29 @@ hv_man_table_jtcvs(
   [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
   enforces.
 
+- ...:
+
+  Not used. Present so that `%summarytable` parameter names produce an
+  error naming the argument to use instead.
+
 ## Value
 
 A `flextable` with a 2-row header and merged section rows, ready for
 [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md).
+
+## Details
+
+Use this instead of
+[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+when you're building the shape editorial actually needs at JTCVS
+submission: a 2-row header (group name spanning `na`/stat sub-columns)
+and bold, light-blue-shaded, row-spanning section headers in the body,
+matching the canonical "Table Construction for Manuscripts" house
+example (section-header fill `#CAEDFB`). This is a separate mode, not a
+replacement for
+[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)'s
+flat-header CORR house style; the two exist because CORR reports and
+JTCVS submissions want different things from the same header row.
 
 ## Common mistakes
 

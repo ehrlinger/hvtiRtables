@@ -1,12 +1,7 @@
 # Write an hv_man_table_jtcvs() table to a compliant .docx
 
-JTCVS counterpart to
-[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md):
-it adds a bold `Table N. Caption` paragraph before the table, and
-renders footnotes as lettered (`a.`, `b.`, ...) markers attached to
-specific body cells rather than the fixed symbol set
-[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
-uses on the header row, matching the JTCVS template convention.
+Stage 3 of the `%summarytable` split: writes the document. Replaces the
+macro's `RTFFILE=`/`PDFFILE=` output block.
 
 ## Usage
 
@@ -16,7 +11,8 @@ hv_man_table_save_jtcvs(
   file,
   caption,
   footnotes = NULL,
-  abbreviations = NULL
+  abbreviations = NULL,
+  ...
 )
 ```
 
@@ -30,13 +26,15 @@ hv_man_table_save_jtcvs(
 - file:
 
   Output `.docx` path. The output directory (`dirname(file)`) must
-  already exist; this function does not create it.
+  already exist; this function does not create it. (`%summarytable`
+  `RTFFILE=`/`PDFFILE=` equivalent; output here is always `.docx`).
 
 - caption:
 
   Full caption text, e.g. `"Table 1. Baseline Characteristics"`,
   rendered bold above the table. This function does not auto-number
-  tables for you; include the number yourself.
+  tables for you; include the number yourself. (`%summarytable`
+  `TBLTITLE=` equivalent).
 
 - footnotes:
 
@@ -51,7 +49,12 @@ hv_man_table_save_jtcvs(
   interleaves into the body, so count those too.
   [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md)
   computes these indices for you when the footnotes mark statistical
-  tests.
+  tests. (`%summarytable` `ADDFN=` equivalent. `PRINTFN=1`'s house block
+  is
+  [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md),
+  which is CORR-shaped and cannot be passed here: build the equivalent
+  entries in this function's `list(row =, col =, text =)` shape
+  instead.)
 
 - abbreviations:
 
@@ -59,9 +62,24 @@ hv_man_table_save_jtcvs(
   [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md),
   rendered via the shared `Key:` helper.
 
+- ...:
+
+  Not used. Present so that `%summarytable` parameter names produce an
+  error naming the argument to use instead.
+
 ## Value
 
 Invisibly, the `file` path.
+
+## Details
+
+JTCVS counterpart to
+[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md):
+it adds a bold `Table N. Caption` paragraph before the table, and
+renders footnotes as lettered (`a.`, `b.`, ...) markers attached to
+specific body cells rather than the fixed symbol set
+[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
+uses on the header row, matching the JTCVS template convention.
 
 ## Common mistakes
 

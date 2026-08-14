@@ -1,18 +1,14 @@
 # Convert a gtsummary table into a flextable matching HVTI CORR's table rules
 
-You give this a
-[`gtsummary::tbl_summary()`](https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html)
-(or any gtsummary table object supporting
-[`gtsummary::as_flex_table()`](https://www.danieldsjoberg.com/gtsummary/reference/as_flex_table.html)),
-and you get back a `flextable` that already complies with HVTI CORR's
-"Table Construction for Manuscripts" rules: a single, non-merged header
-row (no spanning parent cells over grouped columns), no merged row-group
-section-header cells, and Times New Roman at the house font size.
+Stage 2 of the `%summarytable` split: shapes the table. The macro
+controlled this with `STYLE=` and `PAGE=`, which have no equivalent here
+– house style is fixed, and the only choice is flat header versus JTCVS
+spanning header.
 
 ## Usage
 
 ``` r
-hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2)
+hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2, ...)
 ```
 
 ## Arguments
@@ -45,6 +41,11 @@ hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2)
   Reserved so a future version can enforce sig-fig rounding centrally
   without a breaking signature change.
 
+- ...:
+
+  Not used. Present so that `%summarytable` parameter names produce an
+  error naming the argument to use instead.
+
 ## Value
 
 A `flextable` object with a single header row and no merged cells, ready
@@ -52,6 +53,15 @@ for
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md).
 
 ## Details
+
+You give this a
+[`gtsummary::tbl_summary()`](https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html)
+(or any gtsummary table object supporting
+[`gtsummary::as_flex_table()`](https://www.danieldsjoberg.com/gtsummary/reference/as_flex_table.html)),
+and you get back a `flextable` that already complies with HVTI CORR's
+"Table Construction for Manuscripts" rules: a single, non-merged header
+row (no spanning parent cells over grouped columns), no merged row-group
+section-header cells, and Times New Roman at the house font size.
 
 [`gtsummary::as_flex_table()`](https://www.danieldsjoberg.com/gtsummary/reference/as_flex_table.html)
 already emits one header row per group with self-contained labels (e.g.
