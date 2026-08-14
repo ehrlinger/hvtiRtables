@@ -108,3 +108,39 @@ test_that("every map entry is well formed", {
 test_that("map names are already lowercase", {
   expect_identical(names(.sas_param_map), tolower(names(.sas_param_map)))
 })
+
+test_that("each public function routes SAS names through the glossary", {
+  tbl <- gtsummary::tbl_summary(gtsummary::trial, by = "trt",
+                                include = "age")
+  ft <- hv_man_table(tbl)
+
+  expect_error(
+    hv_tbl_summary(gtsummary::trial, groups = list(D = "age"),
+                   continuous = "age", class = "trt"),
+    "Use `by =`", fixed = TRUE
+  )
+  expect_error(hv_man_table(tbl, style = "journal"),
+               "house font and rounding are fixed", fixed = TRUE)
+  expect_error(
+    hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
+                       style = "journal"),
+    "house font and rounding are fixed", fixed = TRUE
+  )
+  expect_error(
+    hv_man_table_save(ft, tempfile(fileext = ".docx"), tbltitle = "T1"),
+    "the CORR saver writes no caption", fixed = TRUE
+  )
+  expect_error(
+    hv_man_table_save_jtcvs(ft, tempfile(fileext = ".docx"),
+                            caption = "T1", addfn = "note"),
+    "`footnotes =`", fixed = TRUE
+  )
+})
+
+test_that("a typo in a real argument name is still caught", {
+  expect_error(
+    hv_tbl_summary(gtsummary::trial, groups = list(D = "age"),
+                   continuous = "age", percentile = c(16, 84)),
+    "unused argument", fixed = TRUE
+  )
+})

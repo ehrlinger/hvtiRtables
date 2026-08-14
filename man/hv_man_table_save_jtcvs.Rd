@@ -9,7 +9,8 @@ hv_man_table_save_jtcvs(
   file,
   caption,
   footnotes = NULL,
-  abbreviations = NULL
+  abbreviations = NULL,
+  ...
 )
 }
 \arguments{
@@ -33,6 +34,9 @@ indices for you when the footnotes mark statistical tests.}
 
 \item{abbreviations}{Optional named character vector, same as
 \code{\link[=hv_man_table_save]{hv_man_table_save()}}, rendered via the shared \verb{Key:} helper.}
+
+\item{...}{Not used. Present so that \verb{\%summarytable} parameter names
+produce an error naming the argument to use instead.}
 }
 \value{
 Invisibly, the \code{file} path.

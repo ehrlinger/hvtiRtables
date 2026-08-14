@@ -12,7 +12,8 @@ hv_tbl_summary(
   binary = character(0),
   categorical = character(0),
   compare = c("pvalue", "smd", "both", "none"),
-  percentiles = c(15, 85)
+  percentiles = c(15, 85),
+  ...
 )
 }
 \arguments{
@@ -63,6 +64,9 @@ defined between two of them; they error otherwise. \code{"pvalue"} and
 pair for continuous summaries, as increasing whole numbers between 0
 and 100. Default \code{c(15, 85)}, the \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} house
 convention (\verb{\%summarytable} \verb{PP=} equivalent).}
+
+\item{...}{Not used. Present so that \verb{\%summarytable} parameter names
+produce an error naming the argument to use instead.}
 }
 \value{
 A \code{gtsummary} object, ready for \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}. See

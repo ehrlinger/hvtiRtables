@@ -38,6 +38,8 @@
 #'   italicized, pairs separated by `"; "` (house rule 14). Every element
 #'   must be named (unnamed or blank-named entries raise an error); an
 #'   empty or `NULL` vector is a no-op.
+#' @param ... Not used. Present so that `%summarytable` parameter names
+#'   produce an error naming the argument to use instead.
 #'
 #' @return Invisibly, the `file` path.
 #'
@@ -53,7 +55,9 @@
 #'
 #' @export
 hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
-                              abbreviations = NULL) {
+                              abbreviations = NULL, ...) {
+  dots <- .sas_dots()
+  .check_sas_args(dots, "hv_man_table_save")
   .check_flextable(ft)
   .check_file(file)
   # Hoisted out of .add_abbreviations_key() so it fires at entry

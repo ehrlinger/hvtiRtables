@@ -4,7 +4,7 @@
 \alias{hv_man_table}
 \title{Convert a gtsummary table into a flextable matching HVTI CORR's table rules}
 \usage{
-hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2)
+hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2, ...)
 }
 \arguments{
 \item{tbl}{A \code{gtsummary} table object (must support \code{as_flex_table()}).}
@@ -21,6 +21,9 @@ tables, per house rule 5. No other values are permitted.}
 unused (rounding is controlled upstream via \code{tbl_summary(digits = ...)}).
 Reserved so a future version can enforce sig-fig rounding centrally
 without a breaking signature change.}
+
+\item{...}{Not used. Present so that \verb{\%summarytable} parameter names
+produce an error naming the argument to use instead.}
 }
 \value{
 A \code{flextable} object with a single header row and no merged

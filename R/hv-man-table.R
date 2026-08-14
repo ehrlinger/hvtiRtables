@@ -37,6 +37,8 @@
 #'   unused (rounding is controlled upstream via `tbl_summary(digits = ...)`).
 #'   Reserved so a future version can enforce sig-fig rounding centrally
 #'   without a breaking signature change.
+#' @param ... Not used. Present so that `%summarytable` parameter names
+#'   produce an error naming the argument to use instead.
 #'
 #' @return A `flextable` object with a single header row and no merged
 #'   cells, ready for [hv_man_table_save()].
@@ -52,7 +54,9 @@
 #'
 #' @export
 hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
-                         digits = 2) {
+                         digits = 2, ...) {
+  dots <- .sas_dots()
+  .check_sas_args(dots, "hv_man_table")
   .check_gtsummary(tbl)
   .check_string(font, "font")
   .check_font_size(font_size)

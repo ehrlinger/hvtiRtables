@@ -10,7 +10,8 @@ hv_man_table_jtcvs(
   trailing = NULL,
   stat_label = "No. (\%) or Mean ± SD",
   font = "Times New Roman",
-  font_size = 12
+  font_size = 12,
+  ...
 )
 }
 \arguments{
@@ -45,6 +46,9 @@ unnoticed, while a deliberate override is legitimate.}
 \item{font_size}{Font size in points. Default \code{12} (house rule 5);
 pass \code{11} for wide tables. No other values are permitted -- the
 same rule \code{\link[=hv_man_table]{hv_man_table()}} enforces.}
+
+\item{...}{Not used. Present so that \verb{\%summarytable} parameter names
+produce an error naming the argument to use instead.}
 }
 \value{
 A \code{flextable} with a 2-row header and merged section rows, ready

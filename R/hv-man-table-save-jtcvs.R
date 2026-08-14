@@ -47,6 +47,8 @@
 #'   indices for you when the footnotes mark statistical tests.
 #' @param abbreviations Optional named character vector, same as
 #'   [hv_man_table_save()], rendered via the shared `Key:` helper.
+#' @param ... Not used. Present so that `%summarytable` parameter names
+#'   produce an error naming the argument to use instead.
 #'
 #' @return Invisibly, the `file` path.
 #'
@@ -79,7 +81,9 @@
 #'
 #' @export
 hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
-                                    abbreviations = NULL) {
+                                    abbreviations = NULL, ...) {
+  dots <- .sas_dots()
+  .check_sas_args(dots, "hv_man_table_save_jtcvs")
   .check_flextable(ft)
   .check_file(file)
   .check_string(caption, "caption")

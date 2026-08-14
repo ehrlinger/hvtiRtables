@@ -97,6 +97,8 @@
 #'   pair for continuous summaries, as increasing whole numbers between 0
 #'   and 100. Default `c(15, 85)`, the [hv_man_footnotes()] house
 #'   convention (`%summarytable` `PP=` equivalent).
+#' @param ... Not used. Present so that `%summarytable` parameter names
+#'   produce an error naming the argument to use instead.
 #'
 #' @return A `gtsummary` object, ready for [hv_man_table_jtcvs()]. See
 #'   Details for the `hv_stat_label`/`hv_trailing` attributes.
@@ -125,7 +127,10 @@ hv_tbl_summary <- function(data, by = NULL, groups,
                            binary = character(0),
                            categorical = character(0),
                            compare = c("pvalue", "smd", "both", "none"),
-                           percentiles = c(15, 85)) {
+                           percentiles = c(15, 85),
+                           ...) {
+  dots <- .sas_dots()
+  .check_sas_args(dots, "hv_tbl_summary")
   compare <- match.arg(compare)
 
   if (!is.data.frame(data))

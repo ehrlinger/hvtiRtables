@@ -8,7 +8,8 @@ hv_man_table_save(
   ft,
   file,
   footnotes = hv_man_footnotes(),
-  abbreviations = NULL
+  abbreviations = NULL,
+  ...
 )
 }
 \arguments{
@@ -36,6 +37,9 @@ footnotes, sorted alphabetically by abbreviation, abbreviation
 italicized, pairs separated by \code{"; "} (house rule 14). Every element
 must be named (unnamed or blank-named entries raise an error); an
 empty or \code{NULL} vector is a no-op.}
+
+\item{...}{Not used. Present so that \verb{\%summarytable} parameter names
+produce an error naming the argument to use instead.}
 }
 \value{
 Invisibly, the \code{file} path.
