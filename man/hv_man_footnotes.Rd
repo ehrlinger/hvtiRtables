@@ -24,7 +24,11 @@ categorical \verb{n (\%)} format; the column header text already covers it
 (house rules 10/12).
 
 \code{\link[=hv_man_table_save]{hv_man_table_save()}}'s \code{footnotes} parameter defaults to calling
-this function, so every table gets both automatically. Override with
+this function, so every table gets both automatically. The dagger text
+hardcodes "15th, 85th percentile" -- \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s own default
+-- so if you called it with \verb{percentiles =} set to anything else (e.g.
+\code{c(16, 84)}), this default footnote will misreport what the table
+actually shows. Override it in that case; see below. Override with
 ordinary list operations, no special sentinel values needed:
 \itemize{
 \item Suppress both: \code{footnotes = NULL}
