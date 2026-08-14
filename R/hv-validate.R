@@ -27,26 +27,6 @@
   sprintf("%s of length 1", class(x)[1])
 }
 
-# `...` alone is not enough to restore R's own unused-argument strictness:
-# R's partial argument matching binds a mistyped name against any real
-# formal it uniquely prefixes (e.g. `percentile =` silently binds to the
-# `percentiles` formal) *before* anything reaches `...`, so such a typo
-# would never appear in `list(...)`. This reconstructs the caller's actual
-# named arguments from the call itself and treats any name that is not an
-# *exact* match to one of the function's own formals as unmatched --
-# whether it landed in `...` or was quietly partial-matched away -- so
-# `.check_sas_args()` sees it either way. Call with no arguments, as the
-# first statement of the public function being guarded.
-.sas_dots <- function() {
-  call <- sys.call(-1)
-  fn <- sys.function(-1)
-  formal_names <- setdiff(names(formals(fn)), "...")
-  arg_names <- names(call)[-1]
-  arg_names <- arg_names[!is.na(arg_names) & nzchar(arg_names)]
-  bad <- setdiff(arg_names, formal_names)
-  stats::setNames(vector("list", length(bad)), bad)
-}
-
 .check_gtsummary <- function(x, arg = "tbl") {
   if (!inherits(x, "gtsummary"))
     stop("`", arg, "` must be a gtsummary table object. Received: ",

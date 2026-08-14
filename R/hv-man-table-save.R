@@ -56,8 +56,7 @@
 #' @export
 hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
                               abbreviations = NULL, ...) {
-  dots <- .sas_dots()
-  .check_sas_args(dots, "hv_man_table_save")
+  .check_sas_args(list(...), "hv_man_table_save")
   .check_flextable(ft)
   .check_file(file)
   # Hoisted out of .add_abbreviations_key() so it fires at entry

@@ -55,8 +55,7 @@
 #' @export
 hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
                          digits = 2, ...) {
-  dots <- .sas_dots()
-  .check_sas_args(dots, "hv_man_table")
+  .check_sas_args(list(...), "hv_man_table")
   .check_gtsummary(tbl)
   .check_string(font, "font")
   .check_font_size(font_size)

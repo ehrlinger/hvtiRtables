@@ -82,8 +82,7 @@
 #' @export
 hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
                                     abbreviations = NULL, ...) {
-  dots <- .sas_dots()
-  .check_sas_args(dots, "hv_man_table_save_jtcvs")
+  .check_sas_args(list(...), "hv_man_table_save_jtcvs")
   .check_flextable(ft)
   .check_file(file)
   .check_string(caption, "caption")

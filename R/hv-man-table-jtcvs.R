@@ -161,8 +161,7 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
                                stat_label = "No. (%) or Mean \u00B1 SD",
                                font = "Times New Roman", font_size = 12,
                                ...) {
-  dots <- .sas_dots()
-  .check_sas_args(dots, "hv_man_table_jtcvs")
+  .check_sas_args(list(...), "hv_man_table_jtcvs")
   .check_gtsummary(tbl)
   .assert_jtcvs_groups(tbl, groups)
   .check_string(stat_label, "stat_label")

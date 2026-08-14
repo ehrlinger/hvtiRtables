@@ -49,7 +49,7 @@ test_that("TBLTITLE= is honest that the CORR saver has no caption", {
   )
 })
 
-test_that("an unsupported macro parameter says so and does not name an argument", {
+test_that("an unsupported macro parameter says so and names no argument", {
   expect_error(
     .check_sas_args(list(weight = "wt"), "hv_tbl_summary"),
     "weighted summaries are not supported",
@@ -137,10 +137,15 @@ test_that("each public function routes SAS names through the glossary", {
   )
 })
 
-test_that("a typo in a real argument name is still caught", {
+test_that("a typo that reaches ... is still caught", {
+  # `percentyles` matches no formal, so it lands in `...`. Note that
+  # `percentile` would NOT reach here -- R partial-matches it to
+  # `percentiles` and the call is correct. Only names that match nothing
+  # are at risk of being silently swallowed by `...`, and those are
+  # exactly what this guards.
   expect_error(
     hv_tbl_summary(gtsummary::trial, groups = list(D = "age"),
-                   continuous = "age", percentile = c(16, 84)),
+                   continuous = "age", percentyles = c(16, 84)),
     "unused argument", fixed = TRUE
   )
 })

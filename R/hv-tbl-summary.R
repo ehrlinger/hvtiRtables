@@ -129,8 +129,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
                            compare = c("pvalue", "smd", "both", "none"),
                            percentiles = c(15, 85),
                            ...) {
-  dots <- .sas_dots()
-  .check_sas_args(dots, "hv_tbl_summary")
+  .check_sas_args(list(...), "hv_tbl_summary")
   compare <- match.arg(compare)
 
   if (!is.data.frame(data))
