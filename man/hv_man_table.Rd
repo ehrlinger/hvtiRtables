@@ -30,14 +30,18 @@ A \code{flextable} object with a single header row and no merged
 cells, ready for \code{\link[=hv_man_table_save]{hv_man_table_save()}}.
 }
 \description{
+Stage 2 of the \verb{\%summarytable} split: shapes the table. The macro did
+this with \verb{STYLE=} and \verb{PAGE=}; here the house style is fixed and the
+only choice is flat header versus JTCVS spanning header.
+}
+\details{
 You give this a \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} (or any gtsummary table object
 supporting \code{\link[gtsummary:as_flex_table]{gtsummary::as_flex_table()}}), and you get back a \code{flextable}
 that already complies with HVTI CORR's "Table Construction for
 Manuscripts" rules: a single, non-merged header row (no spanning parent
 cells over grouped columns), no merged row-group section-header cells,
 and Times New Roman at the house font size.
-}
-\details{
+
 \code{gtsummary::as_flex_table()} already emits one header row per group with
 self-contained labels (e.g. \code{"B\\nN = 45"}), not a merged spanning header.
 The one remaining merge, a full-width \code{gridSpan} on the

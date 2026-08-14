@@ -16,7 +16,8 @@ hv_man_table_save(
 \item{ft}{A \code{flextable} object, typically from \code{\link[=hv_man_table]{hv_man_table()}}.}
 
 \item{file}{Output \code{.docx} path. The output directory (\code{dirname(file)})
-must already exist; this function does not create it.}
+must already exist; this function does not create it. (\verb{\%summarytable}
+\verb{RTFFILE=}/\verb{PDFFILE=} equivalent; output here is always \code{.docx}).}
 
 \item{footnotes}{Optional named list, symbol -> footnote text. Defaults to
 \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} (the house-universal N and median/percentile
@@ -30,7 +31,8 @@ order given. Every element must be named (unnamed or blank-named
 entries raise an error) and every text must be a single non-empty
 string (\code{NULL}, \code{NA}, a number, or a multi-element vector raise an
 error, since each writes a dangling marker); an empty list is a
-no-op, same as \code{NULL}.}
+no-op, same as \code{NULL}. (\verb{\%summarytable} \verb{ADDFN=} equivalent;
+\code{PRINTFN=1}'s house block is \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}).}
 
 \item{abbreviations}{Optional named character vector, \code{c(ABBR = "expansion", ...)}. Rendered as one \verb{Key:} paragraph below any
 footnotes, sorted alphabetically by abbreviation, abbreviation
@@ -45,6 +47,10 @@ produce an error naming the argument to use instead.}
 Invisibly, the \code{file} path.
 }
 \description{
+Stage 3 of the \verb{\%summarytable} split: writes the document. Replaces
+the macro's \verb{RTFFILE=}/\verb{PDFFILE=} output block.
+}
+\details{
 You hand this a \code{flextable} (typically from \code{\link[=hv_man_table]{hv_man_table()}}), and it
 writes a Word document with footnotes and an abbreviation key rendered
 as text below the table rather than embedded within it (house rules

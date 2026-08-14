@@ -55,6 +55,11 @@ A \code{flextable} with a 2-row header and merged section rows, ready
 for \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}.
 }
 \description{
+Stage 2 of the \verb{\%summarytable} split: shapes the table. The macro did
+this with \verb{STYLE=} and \verb{PAGE=}; here the house style is fixed and the
+only choice is flat header versus JTCVS spanning header.
+}
+\details{
 Use this instead of \code{\link[=hv_man_table]{hv_man_table()}} when you're building the shape
 editorial actually needs at JTCVS submission: a 2-row header (group name
 spanning \code{na}/stat sub-columns) and bold, light-blue-shaded, row-spanning

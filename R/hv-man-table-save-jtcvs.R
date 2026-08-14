@@ -1,5 +1,8 @@
 #' Write an hv_man_table_jtcvs() table to a compliant .docx
 #'
+#' Stage 3 of the `%summarytable` split: writes the document. Replaces
+#' the macro's `RTFFILE=`/`PDFFILE=` output block.
+#'
 #' JTCVS counterpart to [hv_man_table_save()]: it adds a bold `Table N.
 #' Caption` paragraph before the table, and renders footnotes as lettered
 #' (`a.`, `b.`, ...) markers attached to specific body cells rather than
@@ -32,10 +35,12 @@
 #'
 #' @param ft A `flextable`, from [hv_man_table_jtcvs()].
 #' @param file Output `.docx` path. The output directory (`dirname(file)`)
-#'   must already exist; this function does not create it.
+#'   must already exist; this function does not create it. (`%summarytable`
+#'   `RTFFILE=`/`PDFFILE=` equivalent; output here is always `.docx`).
 #' @param caption Full caption text, e.g. `"Table 1. Baseline
 #'   Characteristics"`, rendered bold above the table. This function does
 #'   not auto-number tables for you; include the number yourself.
+#'   (`%summarytable` `TBLTITLE=` equivalent).
 #' @param footnotes Optional list of `list(row =, col =, text =)`, one per
 #'   footnote, in the order letters should be assigned (`a`, `b`, ...).
 #'   `col` is a single `col_keys` name. `row` may be a vector, in which
@@ -45,6 +50,8 @@
 #'   section-header rows [hv_man_table_jtcvs()] interleaves into the body,
 #'   so count those too. [hv_test_footnotes_jtcvs()] computes these
 #'   indices for you when the footnotes mark statistical tests.
+#'   (`%summarytable` `ADDFN=` equivalent; `PRINTFN=1`'s house block is
+#'   [hv_man_footnotes()]).
 #' @param abbreviations Optional named character vector, same as
 #'   [hv_man_table_save()], rendered via the shared `Key:` helper.
 #' @param ... Not used. Present so that `%summarytable` parameter names

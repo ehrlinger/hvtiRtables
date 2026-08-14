@@ -11,6 +11,9 @@ A named list with elements \code{`*`} and \code{`†`}, in the format
 \code{\link[=hv_man_table_save]{hv_man_table_save()}}'s \code{footnotes} parameter expects.
 }
 \description{
+The house footnote block the macro emitted under \code{PRINTFN=1}.
+}
+\details{
 Two footnotes are universal to the HVTI CORR "Table Construction for
 Manuscripts" rules, not specific to any one study, so you don't have to
 re-type them at every \code{\link[=hv_man_table_save]{hv_man_table_save()}} call site: a \code{*} for the
@@ -19,8 +22,7 @@ non-missing-value count (house rule 8, exact wording required) and a
 variables throughout these tables. You don't need a footnote for the
 categorical \verb{n (\%)} format; the column header text already covers it
 (house rules 10/12).
-}
-\details{
+
 \code{\link[=hv_man_table_save]{hv_man_table_save()}}'s \code{footnotes} parameter defaults to calling
 this function, so every table gets both automatically. Override with
 ordinary list operations, no special sentinel values needed:

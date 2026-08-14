@@ -1,5 +1,8 @@
 #' Write an hv_man_table() table to a compliant .docx
 #'
+#' Stage 3 of the `%summarytable` split: writes the document. Replaces
+#' the macro's `RTFFILE=`/`PDFFILE=` output block.
+#'
 #' You hand this a `flextable` (typically from [hv_man_table()]), and it
 #' writes a Word document with footnotes and an abbreviation key rendered
 #' as text below the table rather than embedded within it (house rules
@@ -18,7 +21,8 @@
 #'
 #' @param ft A `flextable` object, typically from [hv_man_table()].
 #' @param file Output `.docx` path. The output directory (`dirname(file)`)
-#'   must already exist; this function does not create it.
+#'   must already exist; this function does not create it. (`%summarytable`
+#'   `RTFFILE=`/`PDFFILE=` equivalent; output here is always `.docx`).
 #' @param footnotes Optional named list, symbol -> footnote text. Defaults to
 #'   [hv_man_footnotes()] (the house-universal N and median/percentile
 #'   footnotes). Pass `NULL` to suppress both, or compose with
@@ -31,7 +35,8 @@
 #'   entries raise an error) and every text must be a single non-empty
 #'   string (`NULL`, `NA`, a number, or a multi-element vector raise an
 #'   error, since each writes a dangling marker); an empty list is a
-#'   no-op, same as `NULL`.
+#'   no-op, same as `NULL`. (`%summarytable` `ADDFN=` equivalent;
+#'   `PRINTFN=1`'s house block is [hv_man_footnotes()]).
 #' @param abbreviations Optional named character vector, `c(ABBR =
 #'   "expansion", ...)`. Rendered as one `Key:` paragraph below any
 #'   footnotes, sorted alphabetically by abbreviation, abbreviation

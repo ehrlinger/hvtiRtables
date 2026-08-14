@@ -12,6 +12,11 @@
 
 #' Build lettered test footnotes from a gtsummary table
 #'
+#' Reproduces the macro's lettered test footnotes. The letters differ by
+#' design: `%summarytable` emitted `a=ANOVA` for `CON1=` variables, and
+#' this package tests every continuous variable non-parametrically, so
+#' ANOVA never appears.
+#'
 #' The SAS `%summarytable` macro marks every p-value with a superscript
 #' letter naming the test behind it. This builds those footnotes from the
 #' `test_name` column [gtsummary::add_p()] records, in the format

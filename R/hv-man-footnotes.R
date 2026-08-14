@@ -1,5 +1,7 @@
 #' The house-standard manuscript table footnotes
 #'
+#' The house footnote block the macro emitted under `PRINTFN=1`.
+#'
 #' Two footnotes are universal to the HVTI CORR "Table Construction for
 #' Manuscripts" rules, not specific to any one study, so you don't have to
 #' re-type them at every [hv_man_table_save()] call site: a `*` for the
