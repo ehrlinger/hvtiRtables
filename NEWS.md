@@ -1,3 +1,31 @@
+# hvtiRtables 1.0.0
+
+First supported release. The package is now the HVTI CORR group's table
+interface rather than a working draft: the two manuscript renderers, the
+`%summarytable` migration path, and the checks that keep a written `.docx`
+inside house rules are all in place and covered.
+
+What the 1.0.0 claim means in practice:
+
+- **Both house styles are complete and symmetric where they should be.**
+  `hv_man_table()` and `hv_man_table_jtcvs()` both consume `hv_tbl_summary()`
+  output, and the places the two families genuinely differ - `caption` on the
+  JTCVS saver only, the two footnote shapes - are documented as differences
+  rather than papered over.
+- **The SAS interface is documented from the macro side.** `vignette("sas-migration")`
+  ports a `%summarytable` program end to end, including the defaults that differ
+  and the `QNTLDEF=5` / `quantile(type = 2)` trap.
+- **Macro parameter names teach.** Passing `class=`, `con1=` or `tbltitle=` to any
+  public function errors with the R argument and the function that takes it,
+  resolved against the caller's CORR/JTCVS family.
+- **The `dc` prefix formally belongs here.** `hvtiRtemplates`' allocation map
+  assigns the `dc.*` descriptive-table macro family to this package, so the
+  `%summarytable` port has a governing decision behind it rather than a
+  precedent.
+
+No API changes since 0.9.7. This release is the claim of support, not new
+behavior.
+
 # hvtiRtables 0.9.7
 
 ## New features
