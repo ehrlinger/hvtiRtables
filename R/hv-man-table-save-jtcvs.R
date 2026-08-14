@@ -50,8 +50,10 @@
 #'   section-header rows [hv_man_table_jtcvs()] interleaves into the body,
 #'   so count those too. [hv_test_footnotes_jtcvs()] computes these
 #'   indices for you when the footnotes mark statistical tests.
-#'   (`%summarytable` `ADDFN=` equivalent; `PRINTFN=1`'s house block is
-#'   [hv_man_footnotes()]).
+#'   (`%summarytable` `ADDFN=` equivalent. `PRINTFN=1`'s house block is
+#'   [hv_man_footnotes()], which is CORR-shaped and cannot be passed
+#'   here: build the equivalent entries in this function's
+#'   `list(row =, col =, text =)` shape instead.)
 #' @param abbreviations Optional named character vector, same as
 #'   [hv_man_table_save()], rendered via the shared `Key:` helper.
 #' @param ... Not used. Present so that `%summarytable` parameter names

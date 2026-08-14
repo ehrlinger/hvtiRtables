@@ -33,8 +33,10 @@ sectioned table (built with \code{groupname_col}), that includes the
 section-header rows \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} interleaves into the body,
 so count those too. \code{\link[=hv_test_footnotes_jtcvs]{hv_test_footnotes_jtcvs()}} computes these
 indices for you when the footnotes mark statistical tests.
-(\verb{\%summarytable} \verb{ADDFN=} equivalent; \code{PRINTFN=1}'s house block is
-\code{\link[=hv_man_footnotes]{hv_man_footnotes()}}).}
+(\verb{\%summarytable} \verb{ADDFN=} equivalent. \code{PRINTFN=1}'s house block is
+\code{\link[=hv_man_footnotes]{hv_man_footnotes()}}, which is CORR-shaped and cannot be passed
+here: build the equivalent entries in this function's
+\code{list(row =, col =, text =)} shape instead.)}
 
 \item{abbreviations}{Optional named character vector, same as
 \code{\link[=hv_man_table_save]{hv_man_table_save()}}, rendered via the shared \verb{Key:} helper.}

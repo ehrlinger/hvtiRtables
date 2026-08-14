@@ -62,7 +62,9 @@
 #'
 #' @seealso [hv_man_table_save_jtcvs()], which renders the result.
 #'   [hv_tbl_summary()], which produces a suitable `tbl`.
-#'   [hv_man_footnotes()] for the house-universal footnotes.
+#'   [hv_man_footnotes()] for the house-universal footnotes, which are
+#'   CORR-shaped and belong to [hv_man_table_save()], not to this
+#'   function's JTCVS output.
 #'
 #' @examples
 #' set.seed(5)

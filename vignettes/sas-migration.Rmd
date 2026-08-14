@@ -122,7 +122,7 @@ tbl <- hv_tbl_summary(
 | `NCOL=` | automatic | per-group Ns always shown; `NCOL=3`'s overall N needs `overall = TRUE` |
 | `TBLTITLE=` | `caption` | **JTCVS only** - `hv_man_table_save()` writes no caption |
 | `ADDFN=` | `footnotes` | on the save function |
-| `PRINTFN=` | `footnotes = hv_man_footnotes()` | on the save function; the house block assumes the default `percentiles` (15th, 85th) and must be overridden if `percentiles` is |
+| `PRINTFN=` | `footnotes = hv_man_footnotes()` | **CORR only.** The house block is CORR-shaped and cannot be passed to `hv_man_table_save_jtcvs()`, which needs `list(row =, col =, text =)` entries; build those, or use `hv_test_footnotes_jtcvs()`. It also hard-codes the 15th/85th percentiles, so change it if you change `percentiles` |
 | `RTFFILE=`, `PDFFILE=`, `XMLFILE=` | `file` | output is always `.docx` |
 
 The save stage is a sibling pair, and the two do not take the same

@@ -75,5 +75,7 @@ hv_test_footnotes_jtcvs(tbl)
 \seealso{
 \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}, which renders the result.
 \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}, which produces a suitable \code{tbl}.
-\code{\link[=hv_man_footnotes]{hv_man_footnotes()}} for the house-universal footnotes.
+\code{\link[=hv_man_footnotes]{hv_man_footnotes()}} for the house-universal footnotes, which are
+CORR-shaped and belong to \code{\link[=hv_man_table_save]{hv_man_table_save()}}, not to this
+function's JTCVS output.
 }
