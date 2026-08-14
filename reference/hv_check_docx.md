@@ -61,6 +61,10 @@ output, so call this on the path afterwards when you want it.
 ## Examples
 
 ``` r
+# \donttest{}: the example writes a .docx and reads it back, which is
+# I/O-bound enough to trip CRAN's 5s example budget (12.7s elapsed at
+# 1.0.0). It runs, and is meant to -- it is not \dontrun{}.
+# \donttest{
 library(gtsummary)
 tbl <- trial |>
   tbl_summary(
@@ -75,4 +79,5 @@ hv_man_table_save_jtcvs(ft, out, caption = "Table 1. X")
 hv_check_docx(out)
 #> [1] type     table    location detail  
 #> <0 rows> (or 0-length row.names)
+# }
 ```

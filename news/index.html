@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,20 @@
       <small>Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.0" id="hvtirtables-100">hvtiRtables 1.0.0<a class="anchor" aria-label="anchor" href="#hvtirtables-100"></a></h2>
+<p>First supported release. The package is now the HVTI CORR group’s table interface rather than a working draft: the two manuscript renderers, the <code>%summarytable</code> migration path, and the checks that keep a written <code>.docx</code> inside house rules are all in place and covered.</p>
+<p>What the 1.0.0 claim means in practice:</p>
+<ul><li>
+<strong>Both house styles are complete and symmetric where they should be.</strong> <code><a href="../reference/hv_man_table.html">hv_man_table()</a></code> and <code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> both consume <code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> output, and the places the two families genuinely differ - <code>caption</code> on the JTCVS saver only, the two footnote shapes - are documented as differences rather than papered over.</li>
+<li>
+<strong>The SAS interface is documented from the macro side.</strong> <code><a href="../articles/sas-migration.html">vignette("sas-migration")</a></code> ports a <code>%summarytable</code> program end to end, including the defaults that differ and the <code>QNTLDEF=5</code> / <code>quantile(type = 2)</code> trap.</li>
+<li>
+<strong>Macro parameter names teach.</strong> Passing <code>class=</code>, <code>con1=</code> or <code>tbltitle=</code> to any public function errors with the R argument and the function that takes it, resolved against the caller’s CORR/JTCVS family.</li>
+<li>
+<strong>The <code>dc</code> prefix formally belongs here.</strong> <code>hvtiRtemplates</code>’ allocation map assigns the <code>dc.*</code> descriptive-table macro family to this package, so the <code>%summarytable</code> port has a governing decision behind it rather than a precedent.</li>
+</ul><p>No API changes since 0.9.7. This release is the claim of support, not new behavior.</p>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.7" id="hvtirtables-097">hvtiRtables 0.9.7<a class="anchor" aria-label="anchor" href="#hvtirtables-097"></a></h2>
 <div class="section level3">
