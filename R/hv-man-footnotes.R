@@ -1,5 +1,7 @@
 #' The house-standard manuscript table footnotes
 #'
+#' The house footnote block the macro emitted under `PRINTFN=1`.
+#'
 #' Two footnotes are universal to the HVTI CORR "Table Construction for
 #' Manuscripts" rules, not specific to any one study, so you don't have to
 #' re-type them at every [hv_man_table_save()] call site: a `*` for the
@@ -10,7 +12,11 @@
 #' (house rules 10/12).
 #'
 #' [hv_man_table_save()]'s `footnotes` parameter defaults to calling
-#' this function, so every table gets both automatically. Override with
+#' this function, so every table gets both automatically. The dagger text
+#' hardcodes "15th, 85th percentile" -- [hv_tbl_summary()]'s own default
+#' -- so if you called it with `percentiles =` set to anything else (e.g.
+#' `c(16, 84)`), this default footnote will misreport what the table
+#' actually shows. Override it in that case; see below. Override with
 #' ordinary list operations, no special sentinel values needed:
 #' - Suppress both: `footnotes = NULL`
 #' - Change one: `modifyList(hv_man_footnotes(), list(...))` with

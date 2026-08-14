@@ -12,7 +12,9 @@ hv_tbl_summary(
   binary = character(0),
   categorical = character(0),
   compare = c("pvalue", "smd", "both", "none"),
-  percentiles = c(15, 85)
+  percentiles = c(15, 85),
+  overall = FALSE,
+  ...
 )
 }
 \arguments{
@@ -31,8 +33,12 @@ variable named here must appear in exactly one of \code{continuous},
 appear in \code{groups}.}
 
 \item{continuous}{Character vector of continuous variable names
-(\verb{\%summarytable} \verb{CON1=} equivalent), summarized as
-\verb{median (P<low>, P<high>)}. Each named column must be numeric.}
+(\verb{\%summarytable} \verb{CON3=} equivalent), summarized as
+\verb{median (P<low>, P<high>)}. Variables the macro classified as
+\verb{CON1=} (mean +/- SD, one-way ANOVA) or \verb{CON2=} (median with
+min and max) belong here too, but their statistic and test
+change: every continuous variable is summarized as a median and
+tested non-parametrically. Each named column must be numeric.}
 
 \item{binary}{Character vector of 0/1 variable names (\verb{\%summarytable}
 \verb{CAT1=} equivalent), summarized as \verb{n (\%)} on a single row. Each
@@ -63,6 +69,15 @@ defined between two of them; they error otherwise. \code{"pvalue"} and
 pair for continuous summaries, as increasing whole numbers between 0
 and 100. Default \code{c(15, 85)}, the \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} house
 convention (\verb{\%summarytable} \verb{PP=} equivalent).}
+
+\item{overall}{Single \code{TRUE}/\code{FALSE}. When \code{TRUE}, prepends an Overall
+column across all groups (\verb{\%summarytable} \verb{TOTALCOL=} equivalent).
+Requires \code{by}. Defaults to \code{FALSE}, unlike the macro's \code{TOTALCOL=1}:
+the renderers take a \code{groups} vector naming each \verb{stat_<k>} column,
+so adding a column by default would silently break existing calls.}
+
+\item{...}{Not used. Present so that \verb{\%summarytable} parameter names
+produce an error naming the argument to use instead.}
 }
 \value{
 A \code{gtsummary} object, ready for \code{\link[=hv_man_table]{hv_man_table()}} or
@@ -74,7 +89,7 @@ Thin wrapper over \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} 
 biostats team members already know from the \verb{\%summarytable} SAS macro:
 a grouped, ordered variable list (\code{groups}, the macro's \verb{LIST=}
 equivalent) and variable-type buckets (\code{continuous}/\code{binary}/
-\code{categorical}, the \verb{CON1=}/\verb{CAT1=}/\verb{CAT2=} equivalents), rather than
+\code{categorical}, the \verb{CON3=}/\verb{CAT1=}/\verb{CAT2=} equivalents), rather than
 gtsummary's own tidyselect-based interface. Returns a plain \code{gtsummary}
 object, ready for \code{\link[=hv_man_table]{hv_man_table()}} or \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}.
 }

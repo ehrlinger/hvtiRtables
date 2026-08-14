@@ -17,13 +17,18 @@ test, ready to pass as \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_j
 argument. \code{list()} when there is nothing to mark.
 }
 \description{
+Reproduces the macro's lettered test footnotes. The letters differ by
+design: \verb{\%summarytable} emitted \code{a=ANOVA} for \verb{CON1=} variables, and
+this package tests every continuous variable non-parametrically, so
+ANOVA never appears.
+}
+\details{
 The SAS \verb{\%summarytable} macro marks every p-value with a superscript
 letter naming the test behind it. This builds those footnotes from the
 \code{test_name} column \code{\link[gtsummary:add_p]{gtsummary::add_p()}} records, in the format
 \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}'s \code{footnotes} argument expects, so you do
 not have to map test identifiers or count body rows by hand.
-}
-\details{
+
 Takes the \code{gtsummary} object rather than the \code{flextable}, because
 \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} discards \code{test_name} when it reshapes the body.
 The returned \code{row} indices are rendered body rows, counting the
@@ -70,5 +75,7 @@ hv_test_footnotes_jtcvs(tbl)
 \seealso{
 \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}, which renders the result.
 \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}, which produces a suitable \code{tbl}.
-\code{\link[=hv_man_footnotes]{hv_man_footnotes()}} for the house-universal footnotes.
+\code{\link[=hv_man_footnotes]{hv_man_footnotes()}} for the house-universal footnotes, which are
+CORR-shaped and belong to \code{\link[=hv_man_table_save]{hv_man_table_save()}}, not to this
+function's JTCVS output.
 }

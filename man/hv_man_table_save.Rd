@@ -8,19 +8,25 @@ hv_man_table_save(
   ft,
   file,
   footnotes = hv_man_footnotes(),
-  abbreviations = NULL
+  abbreviations = NULL,
+  ...
 )
 }
 \arguments{
 \item{ft}{A \code{flextable} object, typically from \code{\link[=hv_man_table]{hv_man_table()}}.}
 
 \item{file}{Output \code{.docx} path. The output directory (\code{dirname(file)})
-must already exist; this function does not create it.}
+must already exist; this function does not create it. (\verb{\%summarytable}
+\verb{RTFFILE=}/\verb{PDFFILE=} equivalent; output here is always \code{.docx}).}
 
 \item{footnotes}{Optional named list, symbol -> footnote text. Defaults to
 \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} (the house-universal N and median/percentile
-footnotes). Pass \code{NULL} to suppress both, or compose with
-\code{\link[=hv_man_footnotes]{hv_man_footnotes()}} to override or extend (see its documentation).
+footnotes). That default text hardcodes the 15th/85th percentile pair;
+if the table was built with \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s \verb{percentiles =} set
+to anything else, override it (see below) or the footnote will
+misstate what the table shows. Pass \code{NULL} to suppress both, or
+compose with \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} to override or extend (see its
+documentation).
 Symbols must be drawn from \code{c("*", "†", "‡", "§", "¶", "||")}. Each
 symbol is appended as a superscript reference mark to the table's
 count-column header cell — a column named \code{n}, else the first
@@ -31,18 +37,26 @@ Every element must be named (unnamed or blank-named
 entries raise an error) and every text must be a single non-empty
 string (\code{NULL}, \code{NA}, a number, or a multi-element vector raise an
 error, since each writes a dangling marker); an empty list is a
-no-op, same as \code{NULL}.}
+no-op, same as \code{NULL}. (\verb{\%summarytable} \verb{ADDFN=} equivalent;
+\code{PRINTFN=1}'s house block is \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}).}
 
 \item{abbreviations}{Optional named character vector, \code{c(ABBR = "expansion", ...)}. Rendered as one \verb{Key:} paragraph below any
 footnotes, sorted alphabetically by abbreviation, abbreviation
 italicized, pairs separated by \code{"; "} (house rule 14). Every element
 must be named (unnamed or blank-named entries raise an error); an
 empty or \code{NULL} vector is a no-op.}
+
+\item{...}{Not used. Present so that \verb{\%summarytable} parameter names
+produce an error naming the argument to use instead.}
 }
 \value{
 Invisibly, the \code{file} path.
 }
 \description{
+Stage 3 of the \verb{\%summarytable} split: writes the document. Replaces
+the macro's \verb{RTFFILE=}/\verb{PDFFILE=} output block.
+}
+\details{
 You hand this a \code{flextable} (typically from \code{\link[=hv_man_table]{hv_man_table()}}), and it
 writes a Word document with footnotes and an abbreviation key rendered
 as text below the table rather than embedded within it (house rules

@@ -4,7 +4,7 @@
 #' biostats team members already know from the `%summarytable` SAS macro:
 #' a grouped, ordered variable list (`groups`, the macro's `LIST=`
 #' equivalent) and variable-type buckets (`continuous`/`binary`/
-#' `categorical`, the `CON1=`/`CAT1=`/`CAT2=` equivalents), rather than
+#' `categorical`, the `CON3=`/`CAT1=`/`CAT2=` equivalents), rather than
 #' gtsummary's own tidyselect-based interface. Returns a plain `gtsummary`
 #' object, ready for [hv_man_table()] or [hv_man_table_jtcvs()].
 #'
@@ -69,8 +69,12 @@
 #'   `binary`, or `categorical`, and every classified variable must
 #'   appear in `groups`.
 #' @param continuous Character vector of continuous variable names
-#'   (`%summarytable` `CON1=` equivalent), summarized as
-#'   `median (P<low>, P<high>)`. Each named column must be numeric.
+#'   (`%summarytable` `CON3=` equivalent), summarized as
+#'   `median (P<low>, P<high>)`. Variables the macro classified as
+#'   `CON1=` (mean +/- SD, one-way ANOVA) or `CON2=` (median with
+#'   min and max) belong here too, but their statistic and test
+#'   change: every continuous variable is summarized as a median and
+#'   tested non-parametrically. Each named column must be numeric.
 #' @param binary Character vector of 0/1 variable names (`%summarytable`
 #'   `CAT1=` equivalent), summarized as `n (%)` on a single row. Each
 #'   named column must have at most 2 distinct non-`NA` values, and
@@ -97,6 +101,13 @@
 #'   pair for continuous summaries, as increasing whole numbers between 0
 #'   and 100. Default `c(15, 85)`, the [hv_man_footnotes()] house
 #'   convention (`%summarytable` `PP=` equivalent).
+#' @param overall Single `TRUE`/`FALSE`. When `TRUE`, prepends an Overall
+#'   column across all groups (`%summarytable` `TOTALCOL=` equivalent).
+#'   Requires `by`. Defaults to `FALSE`, unlike the macro's `TOTALCOL=1`:
+#'   the renderers take a `groups` vector naming each `stat_<k>` column,
+#'   so adding a column by default would silently break existing calls.
+#' @param ... Not used. Present so that `%summarytable` parameter names
+#'   produce an error naming the argument to use instead.
 #'
 #' @return A `gtsummary` object, ready for [hv_man_table()] or
 #'   [hv_man_table_jtcvs()]. See Details for the `hv_stat_label`/
@@ -127,7 +138,10 @@ hv_tbl_summary <- function(data, by = NULL, groups,
                            binary = character(0),
                            categorical = character(0),
                            compare = c("pvalue", "smd", "both", "none"),
-                           percentiles = c(15, 85)) {
+                           percentiles = c(15, 85),
+                           overall = FALSE,
+                           ...) {
+  .check_sas_args(list(...), "hv_tbl_summary")
   compare <- match.arg(compare)
 
   if (!is.data.frame(data))
@@ -181,6 +195,15 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   if (percentiles[1] >= percentiles[2])
     stop("`percentiles` must be increasing: the low percentile must be ",
          "less than the high one, e.g. c(15, 85).", call. = FALSE)
+  if (!is.logical(overall) || length(overall) != 1L || is.na(overall))
+    stop("`overall` must be TRUE or FALSE.", call. = FALSE)
+  # The macro's TOTALCOL= only ever produced an Overall column alongside
+  # class levels; with no CLASS= the single column already is the
+  # overall one. Erroring rather than ignoring, because a caller who
+  # passed it believes a column is coming.
+  if (overall && is.null(by))
+    stop("`overall = TRUE` needs a `by` variable; with `by = NULL` the ",
+         "single column is already the overall one.", call. = FALSE)
 
   vars <- unlist(groups, use.names = FALSE)
   if (!is.character(vars) || anyNA(vars) || any(!nzchar(vars)))
@@ -275,6 +298,12 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     }
   )
 
+  # add_overall() must run before add_p()/add_difference() below --
+  # gtsummary requires it ahead of comparison columns so the comparison
+  # column stays rightmost.
+  if (overall)
+    tbl <- gtsummary::add_overall(tbl, last = FALSE)
+
   attr(tbl, "hv_stat_label") <- sprintf(
     "No. (%%) or Median (%sth, %sth percentile)", p_lo, p_hi
   )
@@ -294,7 +323,9 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # distinct values present, because that is what add_difference() sees:
   # an unused factor level still gets its own column.
   if (effective_compare %in% c("smd", "both")) {
-    n_groups <- sum(grepl("^stat_[0-9]+$", names(tbl$table_body)))
+    # `[1-9][0-9]*` excludes `stat_0`, the Overall column add_overall()
+    # may have added above -- it is not one of the groups being compared.
+    n_groups <- sum(grepl("^stat_[1-9][0-9]*$", names(tbl$table_body)))
     if (n_groups != 2L) {
       hint <- ""
       if (is.factor(data[[by]])) {

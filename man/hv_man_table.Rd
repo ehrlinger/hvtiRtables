@@ -4,7 +4,7 @@
 \alias{hv_man_table}
 \title{Convert a gtsummary table into a flextable matching HVTI CORR's table rules}
 \usage{
-hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2)
+hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2, ...)
 }
 \arguments{
 \item{tbl}{A \code{gtsummary} table object (must support \code{as_flex_table()}).
@@ -23,20 +23,28 @@ tables, per house rule 5. No other values are permitted.}
 unused (rounding is controlled upstream via \code{tbl_summary(digits = ...)}).
 Reserved so a future version can enforce sig-fig rounding centrally
 without a breaking signature change.}
+
+\item{...}{Not used. Present so that \verb{\%summarytable} parameter names
+produce an error naming the argument to use instead.}
 }
 \value{
 A \code{flextable} object with a single header row and no merged
 cells, ready for \code{\link[=hv_man_table_save]{hv_man_table_save()}}.
 }
 \description{
+Stage 2 of the \verb{\%summarytable} split: shapes the table. The macro
+controlled this with \verb{STYLE=} and \verb{PAGE=}, which have no equivalent
+here -- house style is fixed, and the only choice is flat header
+versus JTCVS spanning header.
+}
+\details{
 You give this a \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} (or any gtsummary table object
 supporting \code{\link[gtsummary:as_flex_table]{gtsummary::as_flex_table()}}), and you get back a \code{flextable}
 that already complies with HVTI CORR's "Table Construction for
 Manuscripts" rules: a single, non-merged header row (no spanning parent
 cells over grouped columns), no merged row-group section-header cells,
 and Times New Roman at the house font size.
-}
-\details{
+
 \code{gtsummary::as_flex_table()} already emits one header row per group with
 self-contained labels (e.g. \code{"B\\nN = 45"}), not a merged spanning header.
 The one remaining merge, a full-width \code{gridSpan} on the

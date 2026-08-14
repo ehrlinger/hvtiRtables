@@ -79,6 +79,11 @@
 
 #' Build a JTCVS-format manuscript table with merged spanning headers
 #'
+#' Stage 2 of the `%summarytable` split: shapes the table. The macro
+#' controlled this with `STYLE=` and `PAGE=`, which have no equivalent
+#' here -- house style is fixed, and the only choice is flat header
+#' versus JTCVS spanning header.
+#'
 #' Use this instead of [hv_man_table()] when you're building the shape
 #' editorial actually needs at JTCVS submission: a 2-row header (group name
 #' spanning `na`/stat sub-columns) and bold, light-blue-shaded, row-spanning
@@ -130,6 +135,8 @@
 #' @param font_size Font size in points. Default `12` (house rule 5);
 #'   pass `11` for wide tables. No other values are permitted -- the
 #'   same rule [hv_man_table()] enforces.
+#' @param ... Not used. Present so that `%summarytable` parameter names
+#'   produce an error naming the argument to use instead.
 #'
 #' @return A `flextable` with a 2-row header and merged section rows, ready
 #'   for [hv_man_table_save_jtcvs()].
@@ -157,7 +164,9 @@
 #' @export
 hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
                                stat_label = "No. (%) or Mean \u00B1 SD",
-                               font = "Times New Roman", font_size = 12) {
+                               font = "Times New Roman", font_size = 12,
+                               ...) {
+  .check_sas_args(list(...), "hv_man_table_jtcvs")
   .check_gtsummary(tbl)
   .assert_jtcvs_groups(tbl, groups)
   .check_string(stat_label, "stat_label")

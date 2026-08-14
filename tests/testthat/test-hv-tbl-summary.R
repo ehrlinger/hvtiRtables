@@ -786,3 +786,119 @@ test_that("every accepted binary shape counts the right event", {
                      info = nm)
   }
 })
+
+test_that("overall = TRUE adds exactly one column", {
+  base <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = "age"), continuous = "age"
+  )
+  with_total <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = "age"), continuous = "age",
+    overall = TRUE
+  )
+  expect_equal(
+    ncol(with_total$table_body) - ncol(base$table_body), 1L
+  )
+  expect_true("stat_0" %in% names(with_total$table_body))
+})
+
+test_that("overall = FALSE reproduces the previous output exactly", {
+  # A real comparison against a table built directly from gtsummary
+  # primitives with the same statistic/type/digits arguments
+  # hv_tbl_summary() itself uses -- not just the absence of stat_0, which
+  # would also pass for a table with the wrong stat_1/stat_2 values.
+  dta <- mk_tbl_summary_data()
+  actual <- hv_tbl_summary(
+    dta, by = "grp", groups = list(Vitals = "age"), continuous = "age"
+  )
+
+  no_comma <- gtsummary::label_style_number(big.mark = "")
+  reference <- gtsummary::tbl_summary(
+    dta,
+    by = gtsummary::all_of("grp"),
+    include = gtsummary::all_of("age"),
+    statistic = list(age = "{N_obs} ||| {median} ({p15}, {p85})"),
+    type = list(age = "continuous"),
+    missing = "no",
+    digits = list(
+      gtsummary::everything() ~ list(N_obs = no_comma, n = no_comma)
+    )
+  )
+
+  expect_false("stat_0" %in% names(actual$table_body))
+  expect_identical(actual$table_body$variable, reference$table_body$variable)
+  expect_identical(actual$table_body$stat_1, reference$table_body$stat_1)
+  expect_identical(actual$table_body$stat_2, reference$table_body$stat_2)
+})
+
+test_that("overall = TRUE without `by` errors rather than doing nothing", {
+  expect_error(
+    hv_tbl_summary(gtsummary::trial, groups = list(D = "age"),
+                   continuous = "age", overall = TRUE),
+    "`overall = TRUE` needs a `by` variable",
+    fixed = TRUE
+  )
+})
+
+test_that("overall must be a single TRUE or FALSE", {
+  expect_error(
+    hv_tbl_summary(gtsummary::trial, by = "trt",
+                   groups = list(D = "age"), continuous = "age",
+                   overall = "yes"),
+    "`overall` must be TRUE or FALSE", fixed = TRUE
+  )
+})
+
+test_that("overall = TRUE does not break the two-group guard for smd", {
+  # stat_0 (Overall) must not be counted as one of the compared groups --
+  # `trial$trt` genuinely has two levels, so this must not error.
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = "age"), continuous = "age",
+    overall = TRUE, compare = "smd"
+  )
+  stat_cols <- grep("^stat_", names(tbl$table_body), value = TRUE)
+  expect_identical(stat_cols[1], "stat_0")
+  expect_setequal(stat_cols, c("stat_0", "stat_1", "stat_2"))
+  # SMD is computed between the two real groups; the Overall column must
+  # not shift the estimate.
+  ref <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = "age"), continuous = "age",
+    overall = FALSE, compare = "smd"
+  )
+  expect_equal(tbl$table_body$estimate, ref$table_body$estimate)
+})
+
+test_that("overall = TRUE does not break the two-group guard for both", {
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = "age"), continuous = "age",
+    overall = TRUE, compare = "both"
+  )
+  stat_cols <- grep("^stat_", names(tbl$table_body), value = TRUE)
+  expect_identical(stat_cols[1], "stat_0")
+  expect_setequal(stat_cols, c("stat_0", "stat_1", "stat_2"))
+  last_cols <- utils::tail(names(tbl$table_body), 1)
+  expect_identical(last_cols, "hv_compare_col")
+})
+
+test_that("three-level `by` + overall = TRUE + compare = smd still errors", {
+  expect_error(
+    hv_tbl_summary(gtsummary::trial, by = "grade",
+                   groups = list(D = "age"), continuous = "age",
+                   overall = TRUE, compare = "smd"),
+    "requires exactly two groups"
+  )
+})
+
+test_that("SAS QNTLDEF=5 corresponds to quantile type 2, not R's default", {
+  # Guards the equivalence vignettes/sas-migration.Rmd documents. If a
+  # future change routes percentiles through stats::quantile() directly
+  # rather than gtsummary's {pXX}, this is the value that must hold.
+  expect_equal(stats::quantile(c(1, 2, 3, 4), 0.25, type = 2,
+                               names = FALSE), 1.5)
+  expect_equal(stats::quantile(c(1, 2, 3, 4), 0.25, type = 7,
+                               names = FALSE), 1.75)
+})

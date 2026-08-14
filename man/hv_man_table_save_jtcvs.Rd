@@ -9,17 +9,20 @@ hv_man_table_save_jtcvs(
   file,
   caption,
   footnotes = NULL,
-  abbreviations = NULL
+  abbreviations = NULL,
+  ...
 )
 }
 \arguments{
 \item{ft}{A \code{flextable}, from \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}.}
 
 \item{file}{Output \code{.docx} path. The output directory (\code{dirname(file)})
-must already exist; this function does not create it.}
+must already exist; this function does not create it. (\verb{\%summarytable}
+\verb{RTFFILE=}/\verb{PDFFILE=} equivalent; output here is always \code{.docx}).}
 
 \item{caption}{Full caption text, e.g. \code{"Table 1. Baseline Characteristics"}, rendered bold above the table. This function does
-not auto-number tables for you; include the number yourself.}
+not auto-number tables for you; include the number yourself.
+(\verb{\%summarytable} \verb{TBLTITLE=} equivalent).}
 
 \item{footnotes}{Optional list of \code{list(row =, col =, text =)}, one per
 footnote, in the order letters should be assigned (\code{a}, \code{b}, ...).
@@ -29,15 +32,26 @@ share a footnote. \code{row} indexes \code{ft}'s body rows as shown: for a
 sectioned table (built with \code{groupname_col}), that includes the
 section-header rows \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} interleaves into the body,
 so count those too. \code{\link[=hv_test_footnotes_jtcvs]{hv_test_footnotes_jtcvs()}} computes these
-indices for you when the footnotes mark statistical tests.}
+indices for you when the footnotes mark statistical tests.
+(\verb{\%summarytable} \verb{ADDFN=} equivalent. \code{PRINTFN=1}'s house block is
+\code{\link[=hv_man_footnotes]{hv_man_footnotes()}}, which is CORR-shaped and cannot be passed
+here: build the equivalent entries in this function's
+\code{list(row =, col =, text =)} shape instead.)}
 
 \item{abbreviations}{Optional named character vector, same as
 \code{\link[=hv_man_table_save]{hv_man_table_save()}}, rendered via the shared \verb{Key:} helper.}
+
+\item{...}{Not used. Present so that \verb{\%summarytable} parameter names
+produce an error naming the argument to use instead.}
 }
 \value{
 Invisibly, the \code{file} path.
 }
 \description{
+Stage 3 of the \verb{\%summarytable} split: writes the document. Replaces
+the macro's \verb{RTFFILE=}/\verb{PDFFILE=} output block.
+}
+\details{
 JTCVS counterpart to \code{\link[=hv_man_table_save]{hv_man_table_save()}}: it adds a bold \verb{Table N. Caption} paragraph before the table, and renders footnotes as lettered
 (\code{a.}, \code{b.}, ...) markers attached to specific body cells rather than
 the fixed symbol set \code{\link[=hv_man_table_save]{hv_man_table_save()}} uses on the header row,
