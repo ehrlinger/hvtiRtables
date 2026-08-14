@@ -51,10 +51,10 @@ Five places where a faithful-looking port produces different numbers.
 
 | Macro | Default there | Default here | Fix |
 |---|---|---|---|
-| `TOTALCOL=` | `1` — Overall column included | `overall = FALSE` | `overall = TRUE` |
-| `CON1=` | mean ± SD, one-way ANOVA | median (percentiles), Kruskal-Wallis | none — see below |
+| `TOTALCOL=` | `1` - Overall column included | `overall = FALSE` | `overall = TRUE` |
+| `CON1=` | mean +/- SD, one-way ANOVA | median (percentiles), Kruskal-Wallis | none - see below |
 | `PP=` | `16 84` nominal; house templates use both `15 85` and `16 84` | `percentiles = c(15, 85)` | `percentiles = c(16, 84)` |
-| `CUTEXACT=` | Fisher when ≥50% of cells have expected < 5 | Fisher when *any* expected < 5 | none — not tunable |
+| `CUTEXACT=` | Fisher when >=50% of cells have expected < 5 | Fisher when *any* expected < 5 | none - not tunable |
 | `ORD1=` | `n (%)`, Kruskal-Wallis | folds into `categorical`, chi-square | none |
 
 `overall = FALSE` is the one deliberate departure from a macro default.
@@ -109,18 +109,18 @@ tbl <- hv_tbl_summary(
 | `DATA=` | `data` | |
 | `CLASS=` | `by` | |
 | `LIST=` | `groups` | a named list; the section comments become the names |
-| `CON1=` | `continuous` | **statistic changes** — mean ± SD becomes median (percentiles) |
-| `CON2=` | `continuous` | **statistic changes** — median (min, max) becomes median (percentiles) |
+| `CON1=` | `continuous` | **statistic changes** - mean +/- SD becomes median (percentiles) |
+| `CON2=` | `continuous` | **statistic changes** - median (min, max) becomes median (percentiles) |
 | `CON3=` | `continuous` | direct equivalent; this is the behavior `continuous` reproduces |
 | `CAT1=` | `binary` | |
 | `CAT2=` | `categorical` | |
-| `ORD1=` | `categorical` | **test changes** — Kruskal-Wallis becomes chi-square |
+| `ORD1=` | `categorical` | **test changes** - Kruskal-Wallis becomes chi-square |
 | `PP=` | `percentiles` | |
 | `PVALUES=` | `compare = "pvalue"` | |
 | `ASD=` | `compare = "smd"` / `"both"` | |
-| `TOTALCOL=` | `overall` | default differs — see above |
+| `TOTALCOL=` | `overall` | default differs - see above |
 | `NCOL=` | automatic | per-group Ns always shown; `NCOL=3`'s overall N needs `overall = TRUE` |
-| `TBLTITLE=` | `caption` | **JTCVS only** — `hv_man_table_save()` writes no caption |
+| `TBLTITLE=` | `caption` | **JTCVS only** - `hv_man_table_save()` writes no caption |
 | `ADDFN=` | `footnotes` | on the save function |
 | `PRINTFN=` | `footnotes = hv_man_footnotes()` | on the save function |
 | `RTFFILE=`, `PDFFILE=`, `XMLFILE=` | `file` | output is always `.docx` |
@@ -144,7 +144,7 @@ Three causes, in order of how often they explain it.
 2. **An `ORD1=` variable.** The macro ran Kruskal-Wallis; folded into
    `categorical`, it gets chi-square. No trend test is run.
 3. **A sparse categorical variable.** Both switch to Fisher's exact, at
-   different thresholds — `CUTEXACT=50` needs half the cells to have
+   different thresholds - `CUTEXACT=50` needs half the cells to have
    expected counts below 5, `gtsummary` needs one.
 
 ## Percentiles and QNTLDEF
@@ -160,7 +160,7 @@ stats::quantile(c(1, 2, 3, 4), 0.25, type = 7, names = FALSE)  # R default
 Medians agree at every n; Q1, Q3 and `pNN` diverge silently. `gtsummary`'s
 `{pXX}` statistics already use `type = 2`, so `hv_tbl_summary()` matches
 SAS without intervention. **Any `stats::quantile()` call you write by hand
-in ported code does not** — pin `type = 2` explicitly.
+in ported code does not** - pin `type = 2` explicitly.
 
 The percentiles actually used are always printed in the sub-header, so a
 table can never silently misreport which pair produced a column:
