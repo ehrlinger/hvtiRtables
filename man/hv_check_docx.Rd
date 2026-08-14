@@ -45,6 +45,10 @@ look, not proof.
 }
 }
 \examples{
+# \donttest{}: the example writes a .docx and reads it back, which is
+# I/O-bound enough to trip CRAN's 5s example budget (12.7s elapsed at
+# 1.0.0). It runs, and is meant to -- it is not \dontrun{}.
+\donttest{
 library(gtsummary)
 tbl <- trial |>
   tbl_summary(
@@ -57,6 +61,7 @@ ft <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
 out <- tempfile(fileext = ".docx")
 hv_man_table_save_jtcvs(ft, out, caption = "Table 1. X")
 hv_check_docx(out)
+}
 
 }
 \seealso{
