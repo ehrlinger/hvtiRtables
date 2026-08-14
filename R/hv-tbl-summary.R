@@ -317,7 +317,9 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # distinct values present, because that is what add_difference() sees:
   # an unused factor level still gets its own column.
   if (effective_compare %in% c("smd", "both")) {
-    n_groups <- sum(grepl("^stat_[0-9]+$", names(tbl$table_body)))
+    # `[1-9][0-9]*` excludes `stat_0`, the Overall column add_overall()
+    # may have added above -- it is not one of the groups being compared.
+    n_groups <- sum(grepl("^stat_[1-9][0-9]*$", names(tbl$table_body)))
     if (n_groups != 2L) {
       hint <- ""
       if (is.factor(data[[by]])) {

@@ -829,6 +829,49 @@ test_that("overall must be a single TRUE or FALSE", {
   )
 })
 
+test_that("overall = TRUE does not break the two-group guard for smd", {
+  # stat_0 (Overall) must not be counted as one of the compared groups --
+  # `trial$trt` genuinely has two levels, so this must not error.
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = "age"), continuous = "age",
+    overall = TRUE, compare = "smd"
+  )
+  stat_cols <- grep("^stat_", names(tbl$table_body), value = TRUE)
+  expect_identical(stat_cols[1], "stat_0")
+  expect_setequal(stat_cols, c("stat_0", "stat_1", "stat_2"))
+  # SMD is computed between the two real groups; the Overall column must
+  # not shift the estimate.
+  ref <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = "age"), continuous = "age",
+    overall = FALSE, compare = "smd"
+  )
+  expect_equal(tbl$table_body$estimate, ref$table_body$estimate)
+})
+
+test_that("overall = TRUE does not break the two-group guard for both", {
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = "age"), continuous = "age",
+    overall = TRUE, compare = "both"
+  )
+  stat_cols <- grep("^stat_", names(tbl$table_body), value = TRUE)
+  expect_identical(stat_cols[1], "stat_0")
+  expect_setequal(stat_cols, c("stat_0", "stat_1", "stat_2"))
+  last_cols <- utils::tail(names(tbl$table_body), 1)
+  expect_identical(last_cols, "hv_compare_col")
+})
+
+test_that("three-level `by` + overall = TRUE + compare = smd still errors", {
+  expect_error(
+    hv_tbl_summary(gtsummary::trial, by = "grade",
+                   groups = list(D = "age"), continuous = "age",
+                   overall = TRUE, compare = "smd"),
+    "requires exactly two groups"
+  )
+})
+
 test_that("SAS QNTLDEF=5 corresponds to quantile type 2, not R's default", {
   # Guards the equivalence vignettes/sas-migration.Rmd documents. If a
   # future change routes percentiles through stats::quantile() directly
