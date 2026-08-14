@@ -30,40 +30,39 @@ navbar:
       aria-label: LinkedIn
 
 reference:
-- title: "Building Tables from Data"
+- title: "1. Compute the table — `%summarytable`"
   desc: >
-    Build a grouped baseline-characteristics table straight from a data
-    frame, using an interface modeled on the SAS `%summarytable` macro.
-    Returns a `gtsummary` object for the renderers below.
+    Where the macro's `CON*=`, `CAT*=`, `LIST=`, `PP=`, `PVALUES=` and
+    `TOTALCOL=` land. Takes a grouped, ordered variable list and returns a
+    `gtsummary` object for the stages below.
   contents:
   - hv_tbl_summary
 
-- title: "Flat-Header Tables"
+- title: "2. Shape the table — `STYLE=` / `PAGE=`"
   desc: >
-    Standard HVTI CORR manuscript tables: flat (non-merged) headers,
-    no hidden spacer columns, footnotes as text below the table.
+    House style is fixed, so the only choice here is the header shape.
+    Flat single-row headers for CORR reports and manuscripts; merged
+    spanning headers for a JTCVS submission.
   contents:
   - hv_man_table
-  - hv_man_table_save
-
-- title: "JTCVS Merged-Header Tables"
-  desc: >
-    JTCVS submission mode, with merged spanning group headers and
-    lettered cell-targeted footnotes matching that journal's template.
-  contents:
   - hv_man_table_jtcvs
-  - hv_man_table_save_jtcvs
 
-- title: "Footnotes"
+- title: "3. Write the document — `RTFFILE=` / `PDFFILE=`"
+  desc: >
+    The macro's output block: `TBLTITLE=` becomes `caption`, `ADDFN=` and
+    `PRINTFN=` become `footnotes`. Output is always `.docx`.
   contents:
+  - hv_man_table_save
+  - hv_man_table_save_jtcvs
   - hv_man_footnotes
   - hv_test_footnotes_jtcvs
 
-- title: "Checking Written Files"
+- title: "4. Verify the written file"
   desc: >
-    Inspect a written `.docx` for structural layers the manuscript rules
-    prohibit. Reads the file rather than the object that produced it, so
-    it catches anything introduced later, including by a hand edit.
+    No macro analogue. Inspects a written `.docx` for structural layers the
+    manuscript rules prohibit, reading the file rather than the object that
+    produced it — so it catches anything introduced later, including by a
+    hand edit.
   contents:
   - hv_check_docx
 
