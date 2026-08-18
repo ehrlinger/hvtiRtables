@@ -22,6 +22,12 @@ jobs:
   check-manual:
     runs-on: ubuntu-latest
 
+    # Caps a hung job at 45m. A stalled apt mirror inside setup-r once ran
+    # out the full 6h default on two jobs before either reported. 45m is
+    # about 3x the slowest legitimate run here, so it bounds the damage
+    # without reddening a merely slow runner.
+    timeout-minutes: 45
+
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
