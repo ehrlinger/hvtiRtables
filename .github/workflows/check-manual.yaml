@@ -8,7 +8,14 @@
 # is slow -- a direct push to the default branch triggers it too, not just
 # a merge.
 on:
+  # A commit that only touches the generated house-style artifact cannot change
+  # the package: .claude is in .Rbuildignore, so it is excluded from the built
+  # package, and no step in this workflow reads it from the checkout. Running
+  # this on such a commit burns runner minutes and queues ahead of checks that
+  # can actually fail.
   push:
+    paths-ignore:
+      - '.claude/**'
     branches: [main, master]
   release:
     types: [published]
