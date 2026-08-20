@@ -12,3 +12,5 @@
 ^Meta$
 ^\.lintr$
 ^\.claude$
+^AGENTS\.md$
+^CLAUDE\.md$
