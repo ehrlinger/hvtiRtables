@@ -44,6 +44,29 @@ guaranteed structural signature, so treat its findings as prompts to
 look, not proof.
 }
 }
+\section{Common mistakes}{
+
+\strong{"\code{path} must be a single non-empty string."} The argument is a
+file path, not a \code{flextable} or an \code{officer} document. Neither saver
+runs this on its own output, so call it on the written \code{.docx}
+afterwards.
+
+\strong{Reading a \code{hidden_column} finding as a gutter column.} It is not
+one. The detector requires empty \strong{and} narrower than 0.1 inch,
+precisely so the deliberate half-inch gutter columns in the house
+JTCVS templates do not trip it. A finding here is a real spacer.
+
+\strong{Treating \code{embedded_footnote} as proof.} It is the one heuristic
+detector of the three: it matches a marker character opening a cell
+in a table's last row, and a legitimate last row that happens to
+start that way matches it too. Read it as a prompt to look, not a
+verdict.
+
+\strong{Expecting a repair.} This is read-only and never modifies the
+file. Fix what it reports in Word, or rebuild the table through
+\code{\link[=hv_man_table_save]{hv_man_table_save()}} or \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}.
+}
+
 \examples{
 # \donttest{}: the example writes a .docx and reads it back, which is
 # I/O-bound enough to trip CRAN's 5s example budget (12.7s elapsed at

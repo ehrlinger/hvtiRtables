@@ -19,6 +19,34 @@
 #' the *insertion point* in the destination document, not this function's
 #' output; see the package README for the paste-in workflow.
 #'
+#' @section Common mistakes:
+#' **"unused argument (caption)"** The CORR saver writes no caption.
+#' Only [hv_man_table_save_jtcvs()] takes one; here the table title goes
+#' in the manuscript, above the pasted table.
+#'
+#' **"`footnotes` must be a named list (symbol -> footnote text) ..."**
+#' You passed the JTCVS shape. The two savers' `footnotes` arguments are
+#' unrelated types: this one is keyed by symbol,
+#' `` list(`*` = "text") ``, and [hv_man_table_save_jtcvs()]'s is keyed
+#' by position, `list(list(row =, col =, text =))`. So
+#' [hv_test_footnotes_jtcvs()]'s output does not belong here;
+#' [hv_man_footnotes()]'s does.
+#'
+#' **"Invalid footnote symbol(s): ..."** Symbols are drawn from the
+#' house set `* † ‡ § ¶ ||`. A letter or a digit is not
+#' one of them; lettered markers are the JTCVS renderer's convention.
+#'
+#' **"Output directory does not exist: ..."** The `dirname()` of `file`
+#' is not created for you. Run
+#' `dir.create(dirname(file), recursive = TRUE)` first.
+#'
+#' **A footnote that misstates the table.** Nothing errors here.
+#' `footnotes` defaults to [hv_man_footnotes()], whose dagger text
+#' hardcodes the 15th and 85th percentiles; build the table with
+#' [hv_tbl_summary()]'s `percentiles =` set to any other pair and the
+#' table shows one pair while the footnote below it names another.
+#' Override the dagger whenever you move the pair.
+#'
 #' @param ft A `flextable` object, typically from [hv_man_table()].
 #' @param file Output `.docx` path. The output directory (`dirname(file)`)
 #'   must already exist; this function does not create it. (`%summarytable`

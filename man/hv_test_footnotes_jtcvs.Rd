@@ -57,6 +57,31 @@ that passed \code{add_p(test = ...)}, since \code{\link[=hv_tbl_summary]{hv_tbl_
 warned about. A marked cell whose letter has no definition would be
 worse than an unpolished label.
 }
+\section{Common mistakes}{
+
+\strong{"\code{tbl} must be a gtsummary table object."} You passed the
+\code{flextable}. This needs the \code{gtsummary} object, because
+\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} drops the \code{test_name} column when it reshapes
+the body -- by render time the test identities are gone. Pass the
+same object you passed to the renderer.
+
+\strong{An empty list back, and no footnotes in the document.} Expected,
+not a failure: nothing is marked when \code{by = NULL},
+\code{compare = "none"}, or \code{compare = "smd"}, since a standardized
+difference names no test. An empty list concatenates and renders
+harmlessly, so the call site needs no conditional.
+
+\strong{Row indices that land on the wrong rows.} They are computed from
+\code{tbl$table_body} at the moment you call this, and they count the
+section-header rows \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} interleaves, so they are
+valid against that renderer's output and nothing else. Finish the
+table first and call this last.
+
+\strong{Passing the result to \code{\link[=hv_man_table_save]{hv_man_table_save()}}.} This is the JTCVS
+shape. The CORR saver takes a symbol-keyed list and rejects it; its
+equivalent is \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}.
+}
+
 \examples{
 set.seed(5)
 dta <- data.frame(

@@ -173,6 +173,27 @@
 #'   guaranteed structural signature, so treat its findings as prompts to
 #'   look, not proof.
 #'
+#' @section Common mistakes:
+#' **"`path` must be a single non-empty string."** The argument is a
+#' file path, not a `flextable` or an `officer` document. Neither saver
+#' runs this on its own output, so call it on the written `.docx`
+#' afterwards.
+#'
+#' **Reading a `hidden_column` finding as a gutter column.** It is not
+#' one. The detector requires empty **and** narrower than 0.1 inch,
+#' precisely so the deliberate half-inch gutter columns in the house
+#' JTCVS templates do not trip it. A finding here is a real spacer.
+#'
+#' **Treating `embedded_footnote` as proof.** It is the one heuristic
+#' detector of the three: it matches a marker character opening a cell
+#' in a table's last row, and a legitimate last row that happens to
+#' start that way matches it too. Read it as a prompt to look, not a
+#' verdict.
+#'
+#' **Expecting a repair.** This is read-only and never modifies the
+#' file. Fix what it reports in Word, or rebuild the table through
+#' [hv_man_table_save()] or [hv_man_table_save_jtcvs()].
+#'
 #' @param path Path to a `.docx` file.
 #'
 #' @return A `data.frame` with one row per finding and columns `type`,
