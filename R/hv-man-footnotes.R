@@ -24,6 +24,20 @@
 #' - Add a study-specific one alongside: `c(hv_man_footnotes(), list(...))`
 #'   with `` `‡` `` = "extra note"
 #'
+#' @section Common mistakes:
+#' **Passing the result to the JTCVS saver.** These footnotes are
+#' CORR-shaped, keyed by symbol, and belong to [hv_man_table_save()].
+#' [hv_man_table_save_jtcvs()] takes an unrelated type keyed by row and
+#' column, and rejects this one. Its equivalent is
+#' [hv_test_footnotes_jtcvs()].
+#'
+#' **Letting the dagger go stale.** The text hardcodes "15th, 85th
+#' percentile", which is [hv_tbl_summary()]'s default rather than a
+#' promise about your table. Call that function with
+#' `percentiles = c(16, 84)` and the table and its footnote disagree,
+#' silently -- nothing checks that the two still match. Override the
+#' dagger whenever you move the pair.
+#'
 #' @return A named list with elements `` `*` `` and `` `†` ``, in the format
 #'   [hv_man_table_save()]'s `footnotes` parameter expects.
 #'

@@ -38,6 +38,22 @@ ordinary list operations, no special sentinel values needed:
 with \code{`‡`} = "extra note"
 }
 }
+\section{Common mistakes}{
+
+\strong{Passing the result to the JTCVS saver.} These footnotes are
+CORR-shaped, keyed by symbol, and belong to \code{\link[=hv_man_table_save]{hv_man_table_save()}}.
+\code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}} takes an unrelated type keyed by row and
+column, and rejects this one. Its equivalent is
+\code{\link[=hv_test_footnotes_jtcvs]{hv_test_footnotes_jtcvs()}}.
+
+\strong{Letting the dagger go stale.} The text hardcodes "15th, 85th
+percentile", which is \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s default rather than a
+promise about your table. Call that function with
+\code{percentiles = c(16, 84)} and the table and its footnote disagree,
+silently -- nothing checks that the two still match. Override the
+dagger whenever you move the pair.
+}
+
 \examples{
 hv_man_footnotes()
 modifyList(hv_man_footnotes(), list(`†` = "custom text"))
