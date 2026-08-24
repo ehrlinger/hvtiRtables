@@ -111,6 +111,29 @@ warned about. A marked cell whose letter has no definition would be
 worse than an unpolished label.</p>
     </div>
     <div class="section level2">
+    <h2 id="common-mistakes">Common mistakes<a class="anchor" aria-label="anchor" href="#common-mistakes"></a></h2>
+
+
+<p><strong>"<code>tbl</code> must be a gtsummary table object."</strong> You passed the
+<code>flextable</code>. This needs the <code>gtsummary</code> object, because
+<code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> drops the <code>test_name</code> column when it reshapes
+the body – by render time the test identities are gone. Pass the
+same object you passed to the renderer.</p>
+<p><strong>An empty list back, and no footnotes in the document.</strong> Expected,
+not a failure: nothing is marked when <code>by = NULL</code>,
+<code>compare = "none"</code>, or <code>compare = "smd"</code>, since a standardized
+difference names no test. An empty list concatenates and renders
+harmlessly, so the call site needs no conditional.</p>
+<p><strong>Row indices that land on the wrong rows.</strong> They are computed from
+<code>tbl$table_body</code> at the moment you call this, and they count the
+section-header rows <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> interleaves, so they are
+valid against that renderer's output and nothing else. Finish the
+table first and call this last.</p>
+<p><strong>Passing the result to <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code>.</strong> This is the JTCVS
+shape. The CORR saver takes a symbol-keyed list and rejects it; its
+equivalent is <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>.</p>
+    </div>
+    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>, which renders the result.
 <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>, which produces a suitable <code>tbl</code>.

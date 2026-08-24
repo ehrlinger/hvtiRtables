@@ -71,6 +71,34 @@ never sets `test`) is kept, using the raw identifier as its footnote
 text, and warned about. A marked cell whose letter has no definition
 would be worse than an unpolished label.
 
+## Common mistakes
+
+**"`tbl` must be a gtsummary table object."** You passed the
+`flextable`. This needs the `gtsummary` object, because
+[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
+drops the `test_name` column when it reshapes the body – by render time
+the test identities are gone. Pass the same object you passed to the
+renderer.
+
+**An empty list back, and no footnotes in the document.** Expected, not
+a failure: nothing is marked when `by = NULL`, `compare = "none"`, or
+`compare = "smd"`, since a standardized difference names no test. An
+empty list concatenates and renders harmlessly, so the call site needs
+no conditional.
+
+**Row indices that land on the wrong rows.** They are computed from
+`tbl$table_body` at the moment you call this, and they count the
+section-header rows
+[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
+interleaves, so they are valid against that renderer's output and
+nothing else. Finish the table first and call this last.
+
+**Passing the result to
+[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md).**
+This is the JTCVS shape. The CORR saver takes a symbol-keyed list and
+rejects it; its equivalent is
+[`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md).
+
 ## See also
 
 [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md),

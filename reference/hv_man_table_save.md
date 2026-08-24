@@ -95,6 +95,43 @@ the surrounding document to 1.5- or double-spacing. House rule 2
 concerns the *insertion point* in the destination document, not this
 function's output; see the package README for the paste-in workflow.
 
+## Common mistakes
+
+**"unused argument (caption)"** The CORR saver writes no caption. Only
+[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
+takes one; here the table title goes in the manuscript, above the pasted
+table.
+
+**"`footnotes` must be a named list (symbol -\> footnote text) ..."**
+You passed the JTCVS shape. The two savers' `footnotes` arguments are
+unrelated types: this one is keyed by symbol, `` list(`*` = "text") ``,
+and
+[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)'s
+is keyed by position, `list(list(row =, col =, text =))`. So
+[`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md)'s
+output does not belong here;
+[`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)'s
+does.
+
+**"Invalid footnote symbol(s): ..."** Symbols are drawn from the house
+set `* † ‡ § ¶ ||`. A letter or a digit is not one of them; lettered
+markers are the JTCVS renderer's convention.
+
+**"Output directory does not exist: ..."** The
+[`dirname()`](https://rdrr.io/r/base/basename.html) of `file` is not
+created for you. Run `dir.create(dirname(file), recursive = TRUE)`
+first.
+
+**A footnote that misstates the table.** Nothing errors here.
+`footnotes` defaults to
+[`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md),
+whose dagger text hardcodes the 15th and 85th percentiles; build the
+table with
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)'s
+`percentiles =` set to any other pair and the table shows one pair while
+the footnote below it names another. Override the dagger whenever you
+move the pair.
+
 ## See also
 
 [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)

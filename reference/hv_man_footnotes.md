@@ -44,6 +44,24 @@ ordinary list operations, no special sentinel values needed:
 - Add a study-specific one alongside: `c(hv_man_footnotes(), list(...))`
   with `` `‡` `` = "extra note"
 
+## Common mistakes
+
+**Passing the result to the JTCVS saver.** These footnotes are
+CORR-shaped, keyed by symbol, and belong to
+[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md).
+[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
+takes an unrelated type keyed by row and column, and rejects this one.
+Its equivalent is
+[`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md).
+
+**Letting the dagger go stale.** The text hardcodes "15th, 85th
+percentile", which is
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)'s
+default rather than a promise about your table. Call that function with
+`percentiles = c(16, 84)` and the table and its footnote disagree,
+silently – nothing checks that the two still match. Override the dagger
+whenever you move the pair.
+
 ## See also
 
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)

@@ -100,6 +100,27 @@ guaranteed structural signature, so treat its findings as prompts to
 look, not proof.</p></li>
 </ul></div>
     <div class="section level2">
+    <h2 id="common-mistakes">Common mistakes<a class="anchor" aria-label="anchor" href="#common-mistakes"></a></h2>
+
+
+<p><strong>"<code>path</code> must be a single non-empty string."</strong> The argument is a
+file path, not a <code>flextable</code> or an <code>officer</code> document. Neither saver
+runs this on its own output, so call it on the written <code>.docx</code>
+afterwards.</p>
+<p><strong>Reading a <code>hidden_column</code> finding as a gutter column.</strong> It is not
+one. The detector requires empty <strong>and</strong> narrower than 0.1 inch,
+precisely so the deliberate half-inch gutter columns in the house
+JTCVS templates do not trip it. A finding here is a real spacer.</p>
+<p><strong>Treating <code>embedded_footnote</code> as proof.</strong> It is the one heuristic
+detector of the three: it matches a marker character opening a cell
+in a table's last row, and a legitimate last row that happens to
+start that way matches it too. Read it as a prompt to look, not a
+verdict.</p>
+<p><strong>Expecting a repair.</strong> This is read-only and never modifies the
+file. Fix what it reports in Word, or rebuild the table through
+<code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> or <code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>.</p>
+    </div>
+    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> and <code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>, which
 write the files this checks. Neither runs the check on its own

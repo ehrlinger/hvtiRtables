@@ -136,6 +136,33 @@ the <em>insertion point</em> in the destination document, not this function's
 output; see the package README for the paste-in workflow.</p>
     </div>
     <div class="section level2">
+    <h2 id="common-mistakes">Common mistakes<a class="anchor" aria-label="anchor" href="#common-mistakes"></a></h2>
+
+
+<p><strong>"unused argument (caption)"</strong> The CORR saver writes no caption.
+Only <code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> takes one; here the table title goes
+in the manuscript, above the pasted table.</p>
+<p><strong>"<code>footnotes</code> must be a named list (symbol -&gt; footnote text) ..."</strong>
+You passed the JTCVS shape. The two savers' <code>footnotes</code> arguments are
+unrelated types: this one is keyed by symbol,
+<code>list(`*` = "text")</code>, and <code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>'s is keyed
+by position, <code>list(list(row =, col =, text =))</code>. So
+<code><a href="hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code>'s output does not belong here;
+<code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>'s does.</p>
+<p><strong>"Invalid footnote symbol(s): ..."</strong> Symbols are drawn from the
+house set <code>* † ‡ § ¶ ||</code>. A letter or a digit is not
+one of them; lettered markers are the JTCVS renderer's convention.</p>
+<p><strong>"Output directory does not exist: ..."</strong> The <code><a href="https://rdrr.io/r/base/basename.html" class="external-link">dirname()</a></code> of <code>file</code>
+is not created for you. Run
+<code>dir.create(dirname(file), recursive = TRUE)</code> first.</p>
+<p><strong>A footnote that misstates the table.</strong> Nothing errors here.
+<code>footnotes</code> defaults to <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>, whose dagger text
+hardcodes the 15th and 85th percentiles; build the table with
+<code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>'s <code>percentiles =</code> set to any other pair and the
+table shows one pair while the footnote below it names another.
+Override the dagger whenever you move the pair.</p>
+    </div>
+    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="hv_man_table.html">hv_man_table()</a></code> to build a compliant <code>flextable</code> first.
 <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code> for details on the default footnotes.</p></div>

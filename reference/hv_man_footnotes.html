@@ -82,6 +82,22 @@ ordinary list operations, no special sentinel values needed:</p><ul><li><p>Suppr
 with <code>`‡`</code> = "extra note"</p></li>
 </ul></div>
     <div class="section level2">
+    <h2 id="common-mistakes">Common mistakes<a class="anchor" aria-label="anchor" href="#common-mistakes"></a></h2>
+
+
+<p><strong>Passing the result to the JTCVS saver.</strong> These footnotes are
+CORR-shaped, keyed by symbol, and belong to <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code>.
+<code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> takes an unrelated type keyed by row and
+column, and rejects this one. Its equivalent is
+<code><a href="hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code>.</p>
+<p><strong>Letting the dagger go stale.</strong> The text hardcodes "15th, 85th
+percentile", which is <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>'s default rather than a
+promise about your table. Call that function with
+<code>percentiles = c(16, 84)</code> and the table and its footnote disagree,
+silently – nothing checks that the two still match. Override the
+dagger whenever you move the pair.</p>
+    </div>
+    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="hv_man_table_save.html">hv_man_table_save()</a></code></p></div>
     </div>
