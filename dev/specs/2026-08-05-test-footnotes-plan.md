@@ -8,7 +8,7 @@
 
 **Tech Stack:** R, gtsummary (>= 2.5.0, already an Import), flextable, officer, testthat edition 3.
 
-**Spec:** [2026-08-05-test-footnotes-design.md](../specs/2026-08-05-test-footnotes-design.md)
+**Spec:** [2026-08-05-test-footnotes-design.md](2026-08-05-test-footnotes-design.md)
 
 ## Global Constraints
 

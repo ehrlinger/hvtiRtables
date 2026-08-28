@@ -28,7 +28,7 @@ connects the two ends:
 - `gtsummary::add_p()` records which test ran per row in a `test_name`
   column of `tbl$table_body`, and that column survives untouched on the
   object `hv_tbl_summary()` returns.
-- [`hv_man_table_save_jtcvs()`](../../../R/hv-man-table-save-jtcvs.R)
+- [`hv_man_table_save_jtcvs()`](../../R/hv-man-table-save-jtcvs.R)
   already renders lettered footnotes attached to specific body cells, via
   its `footnotes = list(list(row =, col =, text =))` argument.
 
@@ -36,7 +36,7 @@ The gap is entirely in the middle. Today a caller can build these
 footnotes by hand from `test_name`, but they must map gtsummary's internal
 test identifiers to readable labels themselves, and must compute body-row
 indices that account for the section-header rows
-[`hv_man_table_jtcvs()`](../../../R/hv-man-table-jtcvs.R) interleaves. Both
+[`hv_man_table_jtcvs()`](../../R/hv-man-table-jtcvs.R) interleaves. Both
 are error-prone, and the second fails silently: a wrong index marks the
 wrong cell rather than raising an error.
 
@@ -83,7 +83,7 @@ therefore be placed by looking at the displayed comparison column, not at
 **A vector-valued `row` already works.**
 `hv_man_table_save_jtcvs()` passes `fn$row` straight through as
 `flextable::append_chunks()`'s `i` argument
-([R/hv-man-table-save-jtcvs.R:70](../../../R/hv-man-table-save-jtcvs.R)),
+([R/hv-man-table-save-jtcvs.R:70](../../R/hv-man-table-save-jtcvs.R)),
 and `append_chunks(i = c(1, 3), ...)` was confirmed to attach the same
 superscript to both rows. Collapsing many cells onto one letter needs no
 code change in the save function, only a documentation correction: its
@@ -137,7 +137,7 @@ flextable-in, docx-out.
 A standalone helper is also the option that composes. Its return value is
 an ordinary list, so study-specific footnotes concatenate with `c()`, and
 rewording is ordinary list manipulation. This is the same shape as the
-existing [`hv_man_footnotes()`](../../../R/hv-man-footnotes.R), which
+existing [`hv_man_footnotes()`](../../R/hv-man-footnotes.R), which
 returns a plain list rather than taking override arguments.
 
 ### Naming
@@ -148,7 +148,7 @@ uses for renderer-specific functions (`hv_man_table_jtcvs()`,
 cosmetic: the returned `row` indices are only valid against
 `hv_man_table_jtcvs()` output, because `hv_man_table()` removes the
 section-header rows that shift them
-([R/hv-man-table.R:13](../../../R/hv-man-table.R)). A suffix-free
+([R/hv-man-table.R:13](../../R/hv-man-table.R)). A suffix-free
 `hv_test_footnotes()` would sit next to `hv_man_footnotes()`, which serves
 the CORR renderer, and imply the wrong association.
 
@@ -250,7 +250,7 @@ inserted before a section's first row pushes that row itself down as well.
 
 Rather than reimplement the section-start rule in the helper and let two
 copies drift apart, the existing logic inside `.reshape_jtcvs_body()`
-([R/hv-man-table-jtcvs.R:33](../../../R/hv-man-table-jtcvs.R)) is extracted
+([R/hv-man-table-jtcvs.R:33](../../R/hv-man-table-jtcvs.R)) is extracted
 into a shared internal:
 
 ```r
@@ -316,7 +316,7 @@ Originally scoped into this feature. Split out and fixed in PR #13
 instead, since it was a wrong published statistic in its own right and did
 not need to wait for footnotes. `hv_tbl_summary()` now calls
 `add_difference()` before `add_p()`
-([R/hv-tbl-summary.R](../../../R/hv-tbl-summary.R)), so `test_name`
+([R/hv-tbl-summary.R](../../R/hv-tbl-summary.R)), so `test_name`
 survives and this feature can read it with no special case for `"both"`.
 
 Implementing the reorder turned up more than the design anticipated. The

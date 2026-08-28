@@ -116,7 +116,7 @@ package-level architecture:
 | Footnotes | House-universal footnotes live in `hv_man_footnotes()`; study-specific ones are passed by the caller, never hard-coded into a table-building function |
 | Statistics | Reuse `gtsummary`'s own defaults (Wilcoxon/Kruskal-Wallis for continuous, chi-square-with-Fisher's-fallback for categorical) rather than writing custom test-selection logic |
 | Tests | Hyphenated file names matching the source file (`R/hv-my-table.R` → `tests/testthat/test-hv-my-table.R`); `Config/testthat/edition: 3` |
-| Docs | `docs/` is reserved for pkgdown's build output only (gitignored) — design specs and implementation plans live under `design/superpowers/` |
+| Docs | `docs/` is reserved for pkgdown's build output only (gitignored) — design documents and implementation plans live under `dev/specs/` |
 
 ---
 

@@ -60,7 +60,7 @@ uniformly, since it takes an arbitrary-length named vector.
 **One small renderer change is needed, not "no new rendering logic" as
 originally stated here** (caught in Copilot review of this spec):
 `hv_man_table_jtcvs()` currently hard-codes its stat sub-header text as the
-literal string `"No. (%) or Mean ± SD"` ([R/hv-man-table-jtcvs.R:136](../../../R/hv-man-table-jtcvs.R)),
+literal string `"No. (%) or Mean ± SD"` ([R/hv-man-table-jtcvs.R:136](../../R/hv-man-table-jtcvs.R)),
 with no override. Since `hv_tbl_summary()` produces median-based continuous
 statistics (see Statistical behavior below), that hard-coded text would be
 wrong for its output — the table would say "Mean ± SD" while actually

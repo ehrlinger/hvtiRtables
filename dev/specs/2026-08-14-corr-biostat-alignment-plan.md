@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- Spec: `design/superpowers/specs/2026-08-14-corr-biostat-alignment-design.md`. Read it before Task 1.
+- Spec: `dev/specs/2026-08-14-corr-biostat-alignment-design.md`. Read it before Task 1.
 - Branch is `docs/corr-biostat-alignment`. Never commit to `main`; open a PR at the end.
 - Validators live in `R/hv-validate.R` and follow the existing `.check_*` (one argument's own shape) / `.assert_*` (relationships between arguments) split. All error via `stop(call. = FALSE)`.
 - Error message style is set by `R/hv-validate.R:15-28`: state the problem, then the fix. Match it.
@@ -1059,7 +1059,7 @@ git add README.md NEWS.md man/
 git commit -m "docs: trim README migration section to the stage table and a pointer"
 git push -u origin docs/corr-biostat-alignment
 gh pr create --title "docs: align hvtiRtables for CORR biostatisticians" --body "$(cat <<'EOF'
-Implements design/superpowers/specs/2026-08-14-corr-biostat-alignment-design.md.
+Implements dev/specs/2026-08-14-corr-biostat-alignment-design.md.
 
 A sweep of summarytable.sas and the real tp.dc.* template calls against this
 package's docs found six defects and one feature gap.
