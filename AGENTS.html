@@ -85,13 +85,13 @@
 <li>
 <strong>Partial matching on <code>$</code> is a warning during tests, on purpose.</strong> <code>tests/testthat/setup-partial-match.R</code> sets <code>options(warnPartialMatchDollar = TRUE)</code> after a real bug: <code>entry$note</code> on a <code>.sas_param_map</code> entry that had only <code>note_other</code> / <code>note_corr</code> / <code>note_jtcvs</code> silently resolved to one of those instead of <code>NULL</code>, <strong>leaking one family’s footnote text into the other</strong>. Write <code>entry[["note"]]</code>, and treat a partial-match warning in a test run as a defect rather than noise.</li>
 <li>
-<strong><code>.lintr</code> is bare <code>linters_with_defaults()</code></strong>, so lintr’s default <strong>80-character</strong> limit applies with every default linter on. ⚠️ The family disagrees on this: <code>hvtiRdatasets</code> is 100, <code>hvtiPlotR</code> 120, <code>hvtiRtemplates</code>
+<strong><code>.lintr</code> is bare <code>linters_with_defaults()</code></strong>, so lintr’s default <strong>80-character</strong> limit applies with every default linter on. ⚠️ The family disagrees on this: <code>hvtiRdatabuild</code> is 100, <code>hvtiPlotR</code> 120, <code>hvtiRtemplates</code>
 <ol start="135" style="list-style-type: decimal"><li>Read <code>.lintr</code> rather than assuming.</li>
 </ol></li>
 <li>
 <strong>Roxygen markdown is ENABLED</strong> (<code>Roxygen: list(markdown = TRUE)</code>). ⚠️ <code>hvtiRutilities</code> and <code>hvtiRtemplates</code> have no such field and need Rd markup instead.</li>
 <li>
-<strong><code>VignetteBuilder</code> is <code>knitr</code> here</strong>, not <code>quarto</code>. ⚠️ <code>hvtiRutilities</code>, <code>hvtiRdatasets</code>, <code>hvtiPlotR</code>, <code>hvtiRtemplates</code> and <code>hvtiR</code> all use quarto. Vignettes here are <code>.Rmd</code>.</li>
+<strong><code>VignetteBuilder</code> is <code>knitr</code> here</strong>, not <code>quarto</code>. ⚠️ <code>hvtiRutilities</code>, <code>hvtiRdatabuild</code>, <code>hvtiPlotR</code>, <code>hvtiRtemplates</code> and <code>hvtiR</code> all use quarto. Vignettes here are <code>.Rmd</code>.</li>
 <li>
 <strong><code><a href="reference/hv_check_docx.html">hv_check_docx()</a></code> validates rendered Word output.</strong> A table that builds is not a table that renders correctly; the docx check is the closer to the loop, not an optional extra.</li>
 <li>

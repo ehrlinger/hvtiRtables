@@ -71,14 +71,14 @@ SAS-table-porting workflow. It is not restated here.
   run as a defect rather than noise.
 - **`.lintr` is bare `linters_with_defaults()`**, so lintr’s default
   **80-character** limit applies with every default linter on. ⚠️ The
-  family disagrees on this: `hvtiRdatasets` is 100, `hvtiPlotR` 120,
+  family disagrees on this: `hvtiRdatabuild` is 100, `hvtiPlotR` 120,
   `hvtiRtemplates`
   135. Read `.lintr` rather than assuming.
 - **Roxygen markdown is ENABLED** (`Roxygen: list(markdown = TRUE)`). ⚠️
   `hvtiRutilities` and `hvtiRtemplates` have no such field and need Rd
   markup instead.
 - **`VignetteBuilder` is `knitr` here**, not `quarto`. ⚠️
-  `hvtiRutilities`, `hvtiRdatasets`, `hvtiPlotR`, `hvtiRtemplates` and
+  `hvtiRutilities`, `hvtiRdatabuild`, `hvtiPlotR`, `hvtiRtemplates` and
   `hvtiR` all use quarto. Vignettes here are `.Rmd`.
 - **[`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md)
   validates rendered Word output.** A table that builds is not a table
