@@ -16,7 +16,7 @@ test failure rather than a review finding.
 **Tech Stack:** R (>= 4.1.0), `roxygen2` 8.1.0, `testthat` edition 3,
 `gtsummary` (>= 2.5.0), `flextable` (>= 0.9.0), `officer`, `xml2`.
 
-**Spec:** `design/superpowers/specs/2026-08-11-contract-discipline-design.md`
+**Spec:** `dev/specs/2026-08-11-contract-discipline-design.md`
 
 ## Global Constraints
 
@@ -1744,8 +1744,8 @@ Adds `R/hv-validate.R` (argument validators plus precondition
 assertions), contract-parity tests that make sibling divergence a test
 failure, a `?hvtiRtables` topic, and an end-to-end vignette.
 
-Spec: `design/superpowers/specs/2026-08-11-contract-discipline-design.md`
-Plan: `design/superpowers/plans/2026-08-11-contract-discipline.md`
+Spec: `dev/specs/2026-08-11-contract-discipline-design.md`
+Plan: `dev/specs/2026-08-11-contract-discipline-plan.md`
 
 **Version:** patch bump 0.9.4 -> 0.9.5. The minor digit is deliberately
 untouched; consolidating into a minor release is the maintainer's call.
