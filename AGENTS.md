@@ -90,7 +90,12 @@ not restated here.
   because no repository in the family has a `CODEOWNERS` file, so a PR can merge unreviewed.
 - Versions are **straight three digits** (`1.0.0`). Never a `.9000` suffix or a fourth digit.
 - **Patch-digit bumps only**, as fixes land. Minor and major are the maintainer's decision.
-- Bump `DESCRIPTION` and add the matching `NEWS.md` entry in the same commit.
+- **Bump when you name a version, not when you merge.** A pull request lands without touching
+  `Version:`. Its entry goes under a `# hvtiRtables (unreleased)` heading in `NEWS.md`, which
+  you add when it is not already there. A separate commit then renames that heading to the new
+  version and updates `DESCRIPTION`, at most once a day. The heading is gone again after a
+  bump, so the next change re-adds it. `.claude/house-style.md` carries the rule and the
+  reasoning.
 
 ## Change discipline
 
