@@ -69,6 +69,8 @@
 </h1></div>
 <!-- badges: start -->
 
+<p><a href="https://github.com/ehrlinger/hvtiRtables" class="external-link"><img src="https://img.shields.io/github/r-package/v/ehrlinger/hvtiRtables" alt="R package version"></a></p>
+<p><a href="https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml" class="external-link"><img src="https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml/badge.svg" alt="lint"></a> <!-- badges: end --></p>
 <p>Full reference documentation and worked examples: <a href="https://ehrlinger.github.io/hvtiRtables/">ehrlinger.github.io/hvtiRtables</a></p>
 <p>You already know the drill: hand-copy a <code>gtsummary</code> table into a Word template, or run it through the SAS table macro, and by the third revision a footnote wording has drifted, a header has re-merged itself, or the font quietly changed. hvtiRtables closes that gap. Give it a <code>gtsummary</code> table object and you get back a <code>.docx</code> that already matches HVTI CORR’s “Table Construction for Manuscripts” rules (house font and rounding, footnotes and an abbreviation key as text below the table, no hidden spacer columns), the same way every time.</p>
 <p>Two house styles exist because two audiences want different things from the same header row. Most CORR reports and manuscripts use a flat, single header row (<code><a href="reference/hv_man_table.html">hv_man_table()</a></code>); a JTCVS submission wants the traditional two-row spanning header instead (<code><a href="reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>). Use whichever matches where the table is headed.</p>

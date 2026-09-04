@@ -1,5 +1,10 @@
 # hvtiRtables
 
+[![R package
+version](https://img.shields.io/github/r-package/v/ehrlinger/hvtiRtables)](https://github.com/ehrlinger/hvtiRtables)
+
+[![lint](https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml/badge.svg)](https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml)
+
 Full reference documentation and worked examples:
 [ehrlinger.github.io/hvtiRtables](https://ehrlinger.github.io/hvtiRtables/)
 
