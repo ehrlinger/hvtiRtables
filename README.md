@@ -2,11 +2,14 @@
 # hvtiRtables
 
 <!-- badges: start -->
-[![R package version](https://img.shields.io/github/r-package/v/ehrlinger/hvtiRtables)](https://github.com/ehrlinger/hvtiRtables)
 [![R-CMD-check](https://github.com/ehrlinger/hvtiRtables/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ehrlinger/hvtiRtables/actions/workflows/R-CMD-check.yaml)
-[![lint](https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml/badge.svg)](https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml)
-[![pkgdown](https://github.com/ehrlinger/hvtiRtables/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/ehrlinger/hvtiRtables/actions/workflows/pkgdown.yaml)
 [![Codecov test coverage](https://codecov.io/gh/ehrlinger/hvtiRtables/graph/badge.svg)](https://app.codecov.io/gh/ehrlinger/hvtiRtables)
+[![active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/badges/latest/active.svg)
+[![pkgdown](https://github.com/ehrlinger/hvtiRtables/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/ehrlinger/hvtiRtables/actions/workflows/pkgdown.yaml)
+
+[![R package version](https://img.shields.io/github/r-package/v/ehrlinger/hvtiRtables)](https://github.com/ehrlinger/hvtiRtables)
+
+[![lint](https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml/badge.svg)](https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml)
 <!-- badges: end -->
 
 Full reference documentation and worked examples: [ehrlinger.github.io/hvtiRtables](https://ehrlinger.github.io/hvtiRtables/)
