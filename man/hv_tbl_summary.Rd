@@ -13,7 +13,8 @@ hv_tbl_summary(
   categorical = character(0),
   compare = c("pvalue", "smd", "both", "none"),
   percentiles = c(15, 85),
-  overall = FALSE,
+  continuous_stat = c("median", "mean", "both"),
+  overall = TRUE,
   ...
 )
 }
@@ -33,12 +34,12 @@ variable named here must appear in exactly one of \code{continuous},
 appear in \code{groups}.}
 
 \item{continuous}{Character vector of continuous variable names
-(\verb{\%summarytable} \verb{CON3=} equivalent), summarized as
-\verb{median (P<low>, P<high>)}. Variables the macro classified as
-\verb{CON1=} (mean +/- SD, one-way ANOVA) or \verb{CON2=} (median with
-min and max) belong here too, but their statistic and test
-change: every continuous variable is summarized as a median and
-tested non-parametrically. Each named column must be numeric.}
+(\verb{\%summarytable} \verb{CON3=} equivalent), summarized as set by
+\code{continuous_stat}. Variables the macro classified as \verb{CON1=}
+(mean +/- SD, one-way ANOVA) or \verb{CON2=} (median with min and max)
+belong here too. \code{continuous_stat = "mean"} reproduces \verb{CON1=}'s
+statistic but not its test: every continuous variable is tested
+non-parametrically. Each named column must be numeric.}
 
 \item{binary}{Character vector of 0/1 variable names (\verb{\%summarytable}
 \verb{CAT1=} equivalent), summarized as \verb{n (\%)} on a single row. Each
@@ -70,11 +71,24 @@ pair for continuous summaries, as increasing whole numbers between 0
 and 100. Default \code{c(15, 85)}, the \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} house
 convention (\verb{\%summarytable} \verb{PP=} equivalent).}
 
-\item{overall}{Single \code{TRUE}/\code{FALSE}. When \code{TRUE}, prepends an Overall
-column across all groups (\verb{\%summarytable} \verb{TOTALCOL=} equivalent).
-Requires \code{by}. Defaults to \code{FALSE}, unlike the macro's \code{TOTALCOL=1}:
-the renderers take a \code{groups} vector naming each \verb{stat_<k>} column,
-so adding a column by default would silently break existing calls.}
+\item{continuous_stat}{One of \code{"median"} (default), \code{"mean"}, or
+\code{"both"}: how continuous variables are summarized. \code{"median"} gives
+\verb{median (P<low>, P<high>)}; \code{"mean"} gives mean +/- SD, with no
+spaces around the plus-minus sign, per the house table rules;
+\code{"both"} puts
+the two on sub-rows under the variable, mean +/- SD first, with the
+N shown once, on the first. Choosing one for the manuscript is then
+a matter of deleting a row. The test does not change with the
+statistic: it is always the non-parametric one described above.
+With \code{"mean"}, \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}'s dagger footnote describes a
+median the table does not show; override it.}
+
+\item{overall}{Single \code{TRUE}/\code{FALSE}. When \code{TRUE} (default), prepends
+an Overall column across all groups (\verb{\%summarytable} \code{TOTALCOL=1},
+the macro's default). Ignored when \code{by} is \code{NULL}, since the single
+column already is the overall one. \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} lays out
+only the columns its \code{groups} argument names, so name \code{stat_0}
+there to show it.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.}
@@ -94,18 +108,20 @@ gtsummary's own tidyselect-based interface. Returns a plain \code{gtsummary}
 object, ready for \code{\link[=hv_man_table]{hv_man_table()}} or \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}.
 }
 \details{
-Every continuous variable is summarized as
-\verb{median (P<low>, P<high>)} using a blanket non-parametric test
-(Wilcoxon rank-sum for 2 groups, Kruskal-Wallis for 3+) — this
-function does not classify variables as Gaussian/non-Gaussian the way
+Continuous variables are summarized as \verb{median (P<low>, P<high>)} by
+default, or as mean +/- SD, or both (\code{continuous_stat}). Whichever is
+shown, the test is the same blanket non-parametric one (Wilcoxon
+rank-sum for 2 groups, Kruskal-Wallis for 3+) — this function does
+not classify variables as Gaussian/non-Gaussian the way
 \verb{\%summarytable} does; that is \code{gtsummary::add_p()}'s own default
 continuous test already. \code{percentiles} defaults to the house
 convention documented in \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} (15th/85th),
 overridable per study (\verb{\%summarytable} equivalent: \verb{PP=}).
 
 The returned object carries two attributes for \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}:
-\code{hv_stat_label}, the percentile-aware sub-header text
-(\code{"No. (\%) or Median (<low>th, <high>th percentile)"}), and
+\code{hv_stat_label}, the sub-header text naming the statistics shown
+(\code{"No. (\%) or Median (<low>th, <high>th percentile)"} by default; it
+follows \code{continuous_stat}), and
 \code{hv_trailing}, a named character vector ready to pass as
 \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}'s \code{trailing} argument when \code{compare} produced a
 comparison column (\code{NULL} when \code{compare = "none"}).
@@ -136,6 +152,11 @@ variable needs to appear in \code{groups}. The two lists must match.
 mean difference is defined between two groups. Use
 \code{compare = "pvalue"} for three or more. If \code{by} is a factor with an
 unused level, \code{droplevels()} is usually what you want.
+
+\strong{The Overall column is missing from the JTCVS table.}
+\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} lays out only the columns its \code{groups}
+argument names, and \code{overall = TRUE} is the default. Add
+\code{stat_0 = "Overall (n=<N>)"} to \code{groups}.
 
 \strong{"\code{by} must not also be listed in \code{groups}."} \code{by} is the
 grouping variable being compared across, not a row to summarize.

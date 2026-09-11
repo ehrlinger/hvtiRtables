@@ -54,14 +54,20 @@ attr(tbl, "hv_trailing")
 ```{r}
 ft <- hv_man_table_jtcvs(
   tbl,
-  groups = c(stat_1 = "Drug A (n=98)", stat_2 = "Drug B (n=102)"),
+  groups = c(
+    stat_0 = "Overall (n=200)",
+    stat_1 = "Drug A (n=98)",
+    stat_2 = "Drug B (n=102)"
+  ),
   stat_label = attr(tbl, "hv_stat_label"),
   trailing = attr(tbl, "hv_trailing")
 )
 ```
 
-`groups` names are the `stat_<k>` columns `gtsummary` built, one per
-level of `trt`. The labels are yours, including each arm's N.
+`groups` names are the `stat_<k>` columns `gtsummary` built: `stat_0`
+for the Overall column `hv_tbl_summary()` adds by default, then one per
+level of `trt`. The renderer lays out only the columns named here. The
+labels are yours, including each column's N.
 
 ## 3. Build the test footnotes
 

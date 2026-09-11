@@ -32,7 +32,9 @@ submitting to that journal.
   continuous = "age", categorical = "sex"
 )
 ft <- hv_man_table_jtcvs(
-  tbl, groups = c(stat_1 = "A (n=98)", stat_2 = "B (n=102)"),
+  tbl,
+  groups = c(stat_0 = "Overall (n=200)", stat_1 = "A (n=98)",
+             stat_2 = "B (n=102)"),
   stat_label = attr(tbl, "hv_stat_label"),
   trailing = attr(tbl, "hv_trailing")
 )

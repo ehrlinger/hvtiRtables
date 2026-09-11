@@ -47,19 +47,20 @@ hv_tbl_summary(
 
 ## Defaults that differ
 
-Five places where a faithful-looking port produces different numbers.
+Four places where a faithful-looking port produces different numbers.
 
 | Macro | Default there | Default here | Fix |
 |---|---|---|---|
-| `TOTALCOL=` | `1` - Overall column included | `overall = FALSE` | `overall = TRUE` |
-| `CON1=` | mean +/- SD, one-way ANOVA | median (percentiles), Kruskal-Wallis | none - see below |
+| `CON1=` | mean +/- SD, one-way ANOVA | median (percentiles), Kruskal-Wallis | `continuous_stat = "mean"` for the statistic; the test stays non-parametric |
 | `PP=` | `16 84` nominal; house templates use both `15 85` and `16 84` | `percentiles = c(15, 85)` | `percentiles = c(16, 84)` |
 | `CUTEXACT=` | Fisher when >=50% of cells have expected < 5 | Fisher when *any* expected < 5 | none - not tunable |
 | `ORD1=` | `n (%)`, Kruskal-Wallis | folds into `categorical`, chi-square | none |
 
-`overall = FALSE` is the one deliberate departure from a macro default.
-The renderers take a `groups` vector naming each `stat_<k>` column, so a
-column appearing by default would break every existing call.
+`overall = TRUE` matches the macro's `TOTALCOL=1`. `hv_man_table_jtcvs()`
+lays out only the `stat_<k>` columns its `groups` vector names, so name
+`stat_0` there to show the Overall column. `continuous_stat = "both"`
+shows mean +/- SD and median (percentiles) on sub-rows under each
+continuous variable, for choosing one when the manuscript is drafted.
 
 ## A ported call
 
@@ -83,7 +84,7 @@ The `%summarytable` call from `tp.dc.stddiff.summarytable.sas`:
 ```
 
 and its equivalent. Note that `pp=` and `list=` map straight across,
-`totalcol=0` is the default here so it disappears, and `pvalues=1` becomes
+`totalcol=0` becomes `overall = FALSE`, and `pvalues=1` becomes
 `compare = "pvalue"`:
 
 ```{r eval = FALSE}
@@ -98,7 +99,8 @@ tbl <- hv_tbl_summary(
   binary      = c("female", "surgstat"),
   categorical = c("race_gp", "nyha_pr"),
   compare     = "pvalue",
-  percentiles = c(15, 85)
+  percentiles = c(15, 85),
+  overall     = FALSE
 )
 ```
 
