@@ -94,11 +94,11 @@
 #' submissions want different things from the same header row.
 #'
 #' @section Common mistakes:
-#' **"`tbl` was not built with the `{N_obs} ||| {stat}` convention."**
+#' **"`tbl` was not built with the `{N_nonmiss} ||| {stat}` convention."**
 #' The table came from a plain [gtsummary::tbl_summary()] call. Build
 #' it with [hv_tbl_summary()], which applies the convention
 #' automatically, or pass
-#' `statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ({sd})")`.
+#' `statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ({sd})")`.
 #' Before this check existed, such a table rendered every cell blank.
 #'
 #' **"`groups` names must be columns in `tbl$table_body`."** Group
@@ -110,7 +110,7 @@
 #' wide tables.
 #'
 #' @param tbl A `gtsummary` table object whose `statistic` argument
-#'   used `"{N_obs} ||| {<stat>}"` for every group column.
+#'   used `"{N_nonmiss} ||| {<stat>}"` for every group column.
 #'   [hv_tbl_summary()] applies this convention for you. A table
 #'   without it is rejected, since its cells cannot be split into
 #'   their N and statistic parts.
@@ -150,8 +150,8 @@
 #'   tbl_summary(
 #'     by = trt,
 #'     statistic = list(
-#'       all_continuous() ~ "{N_obs} ||| {mean} ± {sd}",
-#'       all_categorical() ~ "{N_obs} ||| {n} ({p}%)"
+#'       all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}",
+#'       all_categorical() ~ "{N_nonmiss} ||| {n} ({p}%)"
 #'     ),
 #'     include = c(age, grade),
 #'     missing = "no"

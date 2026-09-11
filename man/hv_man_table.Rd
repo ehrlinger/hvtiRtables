@@ -65,7 +65,7 @@ house style and JTCVS submission format want different things from the
 same header row.
 
 A table from \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} works here as well as in the JTCVS
-renderer. That function writes each cell as \code{"{N_obs} ||| {stat}"}, and
+renderer. That function writes each cell as \code{"{N_nonmiss} ||| {stat}"}, and
 this one splits the two apart into a flat \code{No.} column immediately
 before the statistic it counts — the same two values JTCVS mode puts
 under a merged spanning header, without the merge. House rule 8 wants
@@ -81,7 +81,7 @@ split; upgrade. \verb{|||} is the internal separator \code{\link[=hv_tbl_summary
 writes between the count and the statistic, never intended to reach a
 rendered table.
 
-\strong{"\code{tbl} was not built with the \verb{\{N_obs\} ||| \{stat\}} convention."}
+\strong{"\code{tbl} was not built with the \verb{\{N_nonmiss\} ||| \{stat\}} convention."}
 Only some cells carry the separator, which means \code{statistic} was set
 for part of the table. Splitting would leave the rest blank, so it is
 rejected. Either apply the convention to every variable or to none;

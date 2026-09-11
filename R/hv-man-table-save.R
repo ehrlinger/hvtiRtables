@@ -173,7 +173,7 @@ hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
 # non-missing values." (house rule 8), so it belongs on the N column
 # when the table has one.
 #
-# hv_man_table() splits the "{N_obs} ||| {stat}" convention into
+# hv_man_table() splits the "{N_nonmiss} ||| {stat}" convention into
 # `n_stat_<k>` columns, and for a sectioned table col_keys[1] is
 # `groupname_col` -- so without this the marker would land on the
 # section-label column. The bare "n" case is kept for a hand-built

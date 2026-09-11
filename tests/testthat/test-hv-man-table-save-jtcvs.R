@@ -11,7 +11,7 @@ mk_jtcvs_ft <- function() {
   dta$age[sample(n, 5)] <- NA
   tbl <- dta |> tbl_summary(
     by = group, # nolint: object_usage_linter.
-    statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
+    statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"),
     missing = "no"
   )
   hv_man_table_jtcvs(
@@ -115,7 +115,7 @@ test_that("hv_man_table_save_jtcvs rejects a fractional footnote row", {
   )
   tbl <- dta |> tbl_summary(
     by = group, # nolint: object_usage_linter.
-    statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
+    statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"),
     missing = "no"
   )
   ft <- hv_man_table_jtcvs(
@@ -157,7 +157,7 @@ test_that("hv_man_table_save_jtcvs marks every row of a vector-valued row", {
   )
   tbl <- dta |> tbl_summary(
     by = group, # nolint: object_usage_linter.
-    statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
+    statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"),
     missing = "no"
   )
   ft <- hv_man_table_jtcvs(

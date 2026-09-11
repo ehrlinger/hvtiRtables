@@ -15,8 +15,8 @@ mk_jtcvs_tbl <- function() {
     tbl_summary(
       by = group, # nolint: object_usage_linter.
       statistic = list(
-        all_continuous() ~ "{N_obs} ||| {mean} ± {sd}",
-        all_categorical() ~ "{N_obs} ||| {n} ({p}%)"
+        all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}",
+        all_categorical() ~ "{N_nonmiss} ||| {n} ({p}%)"
       ),
       missing = "no"
     ) |>
@@ -28,14 +28,15 @@ mk_jtcvs_tbl <- function() {
     )
 }
 
-test_that(".reshape_jtcvs_body splits N_obs and stat into paired columns", {
+test_that(".reshape_jtcvs_body splits N and stat into paired columns", {
   reshaped <- hvtiRtables:::.reshape_jtcvs_body(
     mk_jtcvs_tbl(), groups = c(stat_1 = "Group A", stat_2 = "Group B")
   )
   age_row <- reshaped[reshaped$label == "age", ]
-  expect_identical(age_row$n_stat_1, "27")
+  # Non-missing counts: the fixture's 27/33 group rows less its 5 NA ages.
+  expect_identical(age_row$n_stat_1, "24")
   expect_true(grepl("±", age_row$disp_stat_1))
-  expect_identical(age_row$n_stat_2, "33")
+  expect_identical(age_row$n_stat_2, "31")
 })
 
 test_that(".reshape_jtcvs_body marks section-header rows, blanks stats", {
@@ -66,7 +67,7 @@ test_that(".reshape_jtcvs_body works with no groupname_col (no sections)", {
   dta$age[sample(n, 5)] <- NA
   tbl <- dta |> tbl_summary(
     by = group,
-    statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
+    statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"),
     missing = "no"
   )
   expect_false("groupname_col" %in% names(tbl$table_body))
@@ -271,7 +272,9 @@ test_that("hv_man_table_jtcvs reproduces template's header/section shape", {
   )
   tbl <- dta |> gtsummary::tbl_summary(
     by = group,
-    statistic = list(gtsummary::all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
+    statistic = list(
+      gtsummary::all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"
+    ),
     missing = "no"
   ) |>
     gtsummary::modify_table_body(dplyr::mutate, groupname_col = "Demographics")

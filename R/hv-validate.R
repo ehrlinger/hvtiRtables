@@ -357,11 +357,11 @@
     parts <- strsplit(vals[keep], " \\|\\|\\| ")
     bad <- which(lengths(parts) != 2L)
     if (length(bad) == 0L) next
-    stop("`", arg, "` was not built with the \"{N_obs} ||| {stat}\" ",
+    stop("`", arg, "` was not built with the \"{N_nonmiss} ||| {stat}\" ",
          "convention ", caller, "() requires, so column `", col,
          "` cannot be split into its N and statistic parts. Build it ",
          "with hv_tbl_summary(), or pass statistic = ",
-         "list(all_continuous() ~ \"{N_obs} ||| {mean} \u00B1 {sd}\")",
+         "list(all_continuous() ~ \"{N_nonmiss} ||| {mean} \u00B1 {sd}\")",
          ". First unparseable value: \"", vals[keep][bad[1]], "\".",
          call. = FALSE)
   }

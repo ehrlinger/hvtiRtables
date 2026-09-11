@@ -2,7 +2,7 @@
 # with the per-file mk_tbl() helpers already defined in
 # test-hv-man-table.R and its siblings.
 
-# A gtsummary table built WITH the "{N_obs} ||| {stat}" convention.
+# A gtsummary table built WITH the "{N_nonmiss} ||| {stat}" convention.
 # Both all_continuous() and all_categorical() must carry the
 # convention -- age/grade otherwise mixes convention and
 # non-convention stat cells (a bare missing-count, bare "n (%)"),
@@ -14,8 +14,8 @@ fx_jtcvs_tbl <- function() {
     gtsummary::trial,
     by = "trt",
     statistic = list(
-      gtsummary::all_continuous() ~ "{N_obs} ||| {mean} ({sd})",
-      gtsummary::all_categorical() ~ "{N_obs} ||| {n} ({p}%)"
+      gtsummary::all_continuous() ~ "{N_nonmiss} ||| {mean} ({sd})",
+      gtsummary::all_categorical() ~ "{N_nonmiss} ||| {n} ({p}%)"
     ),
     missing = "no",
     include = c("age", "grade")

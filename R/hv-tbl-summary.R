@@ -236,9 +236,14 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 
   p_lo <- percentiles[1]
   p_hi <- percentiles[2]
-  cont_stat <- sprintf("{N_obs} ||| {median} ({p%s}, {p%s})", p_lo, p_hi)
+  # {N_nonmiss}, not {N_obs}: the N column is footnoted "Number of
+  # non-missing values." (house rule 8), and {N_obs} counts every row,
+  # missing ones included. The SAS tables count non-missing (bsa shows
+  # 7947 of 7948), so {N_obs} silently overstated n for any variable
+  # with missing data.
+  cont_stat <- sprintf("{N_nonmiss} ||| {median} ({p%s}, {p%s})", p_lo, p_hi)
 
-  cat_stat <- "{N_obs} ||| {n} ({p}%)"
+  cat_stat <- "{N_nonmiss} ||| {n} ({p}%)"
 
   statistic <- stats::setNames(
     as.list(c(
@@ -275,7 +280,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # show plain digits ("7948", "4190", "3758") — verified empirically
   # during planning that tbl_summary()'s default digits= would otherwise
   # silently comma-format any N >= 1000, which both real example tables
-  # actually reach. Force plain digits for N_obs and n explicitly.
+  # actually reach. Force plain digits for N_nonmiss and n explicitly.
   # Used inside the `digits =` formula below; lintr's static analysis
   # cannot see through the formula, hence the nolint.
   # nolint start: object_usage_linter.
@@ -287,7 +292,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     include = gtsummary::all_of(vars),
     statistic = statistic, type = type, value = value, missing = "no",
     digits = list(
-      gtsummary::everything() ~ list(N_obs = no_comma, n = no_comma)
+      gtsummary::everything() ~ list(N_nonmiss = no_comma, n = no_comma)
     )
   )
   tbl <- gtsummary::modify_table_body(
