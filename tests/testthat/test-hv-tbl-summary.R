@@ -200,6 +200,12 @@ test_that("hv_tbl_summary's N column counts non-missing values only", {
   n_of <- function(col, var) {
     tb <- tbl$table_body
     cell <- tb[[col]][tb$variable == var & tb$row_type == "label"]
+    # Exactly one label row per variable. Anything else is a fixture or
+    # gtsummary change, and should say so here rather than fail in if()
+    # with "argument is of length zero".
+    if (length(cell) != 1L)
+      stop("expected one label row for `", var, "`, found ",
+           length(cell), call. = FALSE)
     if (is.na(cell))
       cell <- tb[[col]][tb$variable == var & tb$row_type == "level"][1]
     sub(" \\|\\|\\| .*$", "", cell)
