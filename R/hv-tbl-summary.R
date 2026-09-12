@@ -108,23 +108,24 @@
 #'   pair for continuous summaries, as increasing whole numbers between 0
 #'   and 100. Default `c(15, 85)`, the [hv_man_footnotes()] house
 #'   convention (`%summarytable` `PP=` equivalent).
-#' @param continuous_stat One of `"median"` (default), `"mean"`, or
-#'   `"both"`: how continuous variables are summarized. `"median"` gives
-#'   `median (P<low>, P<high>)`; `"mean"` gives mean +/- SD, with no
-#'   spaces around the plus-minus sign, per the house table rules;
-#'   `"both"` puts
-#'   the two on sub-rows under the variable, mean +/- SD first, with the
-#'   N shown once, on the first. Choosing one for the manuscript is then
-#'   a matter of deleting a row. The test does not change with the
-#'   statistic: it is always the non-parametric one described above.
-#'   With `"mean"`, [hv_man_footnotes()]'s dagger footnote describes a
-#'   median the table does not show; override it.
 #' @param overall Single `TRUE`/`FALSE`. When `TRUE` (default), prepends
 #'   an Overall column across all groups (`%summarytable` `TOTALCOL=1`,
 #'   the macro's default). Ignored when `by` is `NULL`, since the single
 #'   column already is the overall one. [hv_man_table_jtcvs()] lays out
 #'   only the columns its `groups` argument names, so name `stat_0`
 #'   there to show it.
+#' @param continuous_stat One of `"median"` (default), `"mean"`, or
+#'   `"both"`: how continuous variables are summarized. `"median"` gives
+#'   `median (P<low>, P<high>)`; `"mean"` gives mean +/- SD, with no
+#'   spaces around the plus-minus sign, per the house table rules;
+#'   `"both"` puts the two on sub-rows under the variable, mean +/- SD
+#'   first, with the N shown once, on the first. Choosing one for the
+#'   manuscript is then a matter of deleting a row. The test does not
+#'   change with the statistic: it is always the non-parametric one
+#'   described above. With `"mean"`, [hv_man_footnotes()]'s dagger
+#'   footnote describes a median the table does not show; override it.
+#'   Placed after `overall` so calls passing `overall` by position keep
+#'   working.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
@@ -158,8 +159,8 @@ hv_tbl_summary <- function(data, by = NULL, groups,
                            categorical = character(0),
                            compare = c("pvalue", "smd", "both", "none"),
                            percentiles = c(15, 85),
-                           continuous_stat = c("median", "mean", "both"),
                            overall = TRUE,
+                           continuous_stat = c("median", "mean", "both"),
                            ...) {
   .check_sas_args(list(...), "hv_tbl_summary")
   compare <- match.arg(compare)

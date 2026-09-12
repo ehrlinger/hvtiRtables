@@ -111,7 +111,7 @@ tbl <- hv_tbl_summary(
 | `DATA=` | `data` | |
 | `CLASS=` | `by` | |
 | `LIST=` | `groups` | a named list; the section comments become the names |
-| `CON1=` | `continuous` | **statistic changes** - mean +/- SD becomes median (percentiles) |
+| `CON1=` | `continuous` | **statistic changes** by default - mean +/- SD becomes median (percentiles); `continuous_stat = "mean"` restores it, and the test stays non-parametric |
 | `CON2=` | `continuous` | **statistic changes** - median (min, max) becomes median (percentiles) |
 | `CON3=` | `continuous` | direct equivalent; this is the behavior `continuous` reproduces |
 | `CAT1=` | `binary` | |
@@ -120,11 +120,11 @@ tbl <- hv_tbl_summary(
 | `PP=` | `percentiles` | |
 | `PVALUES=` | `compare = "pvalue"` | |
 | `ASD=` | `compare = "smd"` / `"both"` | |
-| `TOTALCOL=` | `overall` | default differs - see above |
-| `NCOL=` | automatic | per-group Ns always shown; `NCOL=3`'s overall N needs `overall = TRUE` |
+| `TOTALCOL=` | `overall` | defaults match (`overall = TRUE`); `totalcol=0` becomes `overall = FALSE` |
+| `NCOL=` | automatic | per-group Ns always shown, and the Overall column's N with the default `overall = TRUE` (`NCOL=3`) |
 | `TBLTITLE=` | `caption` | **JTCVS only** - `hv_man_table_save()` writes no caption |
 | `ADDFN=` | `footnotes` | on the save function |
-| `PRINTFN=` | `footnotes = hv_man_footnotes()` | **CORR only.** The house block is CORR-shaped and cannot be passed to `hv_man_table_save_jtcvs()`, which needs `list(row =, col =, text =)` entries; build those, or use `hv_test_footnotes_jtcvs()`. It also hard-codes the 15th/85th percentiles, so change it if you change `percentiles` |
+| `PRINTFN=` | `footnotes = hv_man_footnotes()` | **CORR only.** The house block is CORR-shaped and cannot be passed to `hv_man_table_save_jtcvs()`, which needs `list(row =, col =, text =)` entries; build those, or use `hv_test_footnotes_jtcvs()`. It also hard-codes the 15th/85th percentiles, so change it if you change `percentiles` or set `continuous_stat = "mean"` |
 | `RTFFILE=`, `PDFFILE=`, `XMLFILE=` | `file` | output is always `.docx` |
 
 The save stage is a sibling pair, and the two do not take the same

@@ -871,6 +871,17 @@ test_that("overall = FALSE reproduces the previous output exactly", {
   expect_identical(actual$table_body$stat_2, reference$table_body$stat_2)
 })
 
+test_that("overall keeps its position for positional callers", {
+  # The ninth positional argument has always been `overall`;
+  # continuous_stat goes after it, so FALSE there still means "no
+  # Overall column" rather than failing in match.arg() (Copilot, #49).
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, "trt", list(Demography = "age"), "age",
+    character(0), character(0), "pvalue", c(15, 85), FALSE
+  )
+  expect_false("stat_0" %in% names(tbl$table_body))
+})
+
 test_that("overall defaults to TRUE, the macro's TOTALCOL=1", {
   tbl <- hv_tbl_summary(
     gtsummary::trial, by = "trt",

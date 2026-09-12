@@ -13,8 +13,8 @@ hv_tbl_summary(
   categorical = character(0),
   compare = c("pvalue", "smd", "both", "none"),
   percentiles = c(15, 85),
-  continuous_stat = c("median", "mean", "both"),
   overall = TRUE,
+  continuous_stat = c("median", "mean", "both"),
   ...
 )
 }
@@ -71,24 +71,25 @@ pair for continuous summaries, as increasing whole numbers between 0
 and 100. Default \code{c(15, 85)}, the \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} house
 convention (\verb{\%summarytable} \verb{PP=} equivalent).}
 
-\item{continuous_stat}{One of \code{"median"} (default), \code{"mean"}, or
-\code{"both"}: how continuous variables are summarized. \code{"median"} gives
-\verb{median (P<low>, P<high>)}; \code{"mean"} gives mean +/- SD, with no
-spaces around the plus-minus sign, per the house table rules;
-\code{"both"} puts
-the two on sub-rows under the variable, mean +/- SD first, with the
-N shown once, on the first. Choosing one for the manuscript is then
-a matter of deleting a row. The test does not change with the
-statistic: it is always the non-parametric one described above.
-With \code{"mean"}, \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}'s dagger footnote describes a
-median the table does not show; override it.}
-
 \item{overall}{Single \code{TRUE}/\code{FALSE}. When \code{TRUE} (default), prepends
 an Overall column across all groups (\verb{\%summarytable} \code{TOTALCOL=1},
 the macro's default). Ignored when \code{by} is \code{NULL}, since the single
 column already is the overall one. \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} lays out
 only the columns its \code{groups} argument names, so name \code{stat_0}
 there to show it.}
+
+\item{continuous_stat}{One of \code{"median"} (default), \code{"mean"}, or
+\code{"both"}: how continuous variables are summarized. \code{"median"} gives
+\verb{median (P<low>, P<high>)}; \code{"mean"} gives mean +/- SD, with no
+spaces around the plus-minus sign, per the house table rules;
+\code{"both"} puts the two on sub-rows under the variable, mean +/- SD
+first, with the N shown once, on the first. Choosing one for the
+manuscript is then a matter of deleting a row. The test does not
+change with the statistic: it is always the non-parametric one
+described above. With \code{"mean"}, \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}'s dagger
+footnote describes a median the table does not show; override it.
+Placed after \code{overall} so calls passing \code{overall} by position keep
+working.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.}
