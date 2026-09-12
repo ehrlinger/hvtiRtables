@@ -59,10 +59,10 @@ instead of
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md).
 This is not a drop-in swap: the JTCVS pair requires a `groups` argument
 naming each `stat_<k>` column (no default), requires the table’s
-statistic to follow the `{N_obs} ||| {stat}` convention, and requires a
-`caption` string at save time. The merged spanning header and lettered
-footnotes match the journal’s own submission template, so once those
-three things are supplied you’re not hand-reformatting the table a
+statistic to follow the `{N_nonmiss} ||| {stat}` convention, and
+requires a `caption` string at save time. The merged spanning header and
+lettered footnotes match the journal’s own submission template, so once
+those three things are supplied you’re not hand-reformatting the table a
 second time after the flat-header version is already done:
 
 ``` r
@@ -73,7 +73,7 @@ library(hvtiRtables)
 tbl <- trial |>
   tbl_summary(
     by = trt,
-    statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
+    statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"),
     include = c(age, grade)
   )
 

@@ -24,7 +24,7 @@ hv_man_table_jtcvs(
 - tbl:
 
   A `gtsummary` table object whose `statistic` argument used
-  `"{N_obs} ||| {<stat>}"` for every group column.
+  `"{N_nonmiss} ||| {<stat>}"` for every group column.
   [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
   applies this convention for you. A table without it is rejected, since
   its cells cannot be split into their N and statistic parts.
@@ -92,13 +92,13 @@ JTCVS submissions want different things from the same header row.
 
 ## Common mistakes
 
-**"`tbl` was not built with the `{N_obs} ||| {stat}` convention."** The
-table came from a plain
+**"`tbl` was not built with the `{N_nonmiss} ||| {stat}` convention."**
+The table came from a plain
 [`gtsummary::tbl_summary()`](https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html)
 call. Build it with
 [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md),
 which applies the convention automatically, or pass
-`statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ({sd})")`.
+`statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ({sd})")`.
 Before this check existed, such a table rendered every cell blank.
 
 **"`groups` names must be columns in `tbl$table_body`."** Group names
@@ -124,8 +124,8 @@ tbl <- trial |>
   tbl_summary(
     by = trt,
     statistic = list(
-      all_continuous() ~ "{N_obs} ||| {mean} ± {sd}",
-      all_categorical() ~ "{N_obs} ||| {n} ({p}%)"
+      all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}",
+      all_categorical() ~ "{N_nonmiss} ||| {n} ({p}%)"
     ),
     include = c(age, grade),
     missing = "no"

@@ -127,7 +127,7 @@ two-row merged spanning header that journal's template expects: CORR
 house style and JTCVS submission format want different things from the
 same header row.</p>
 <p>A table from <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> works here as well as in the JTCVS
-renderer. That function writes each cell as <code>"{N_obs} ||| {stat}"</code>, and
+renderer. That function writes each cell as <code>"{N_nonmiss} ||| {stat}"</code>, and
 this one splits the two apart into a flat <code>No.</code> column immediately
 before the statistic it counts — the same two values JTCVS mode puts
 under a merged spanning header, without the merge. House rule 8 wants
@@ -144,7 +144,7 @@ through unchanged.</p>
 split; upgrade. <code>|||</code> is the internal separator <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>
 writes between the count and the statistic, never intended to reach a
 rendered table.</p>
-<p><strong>"<code>tbl</code> was not built with the <code>{N_obs} ||| {stat}</code> convention."</strong>
+<p><strong>"<code>tbl</code> was not built with the <code>{N_nonmiss} ||| {stat}</code> convention."</strong>
 Only some cells carry the separator, which means <code>statistic</code> was set
 for part of the table. Splitting would leave the rest blank, so it is
 rejected. Either apply the convention to every variable or to none;

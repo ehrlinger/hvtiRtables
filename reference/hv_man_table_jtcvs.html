@@ -77,7 +77,7 @@ versus JTCVS spanning header.</p>
 
 <dl><dt id="arg-tbl">tbl<a class="anchor" aria-label="anchor" href="#arg-tbl"></a></dt>
 <dd><p>A <code>gtsummary</code> table object whose <code>statistic</code> argument
-used <code>"{N_obs} ||| {&lt;stat&gt;}"</code> for every group column.
+used <code>"{N_nonmiss} ||| {&lt;stat&gt;}"</code> for every group column.
 <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> applies this convention for you. A table
 without it is rejected, since its cells cannot be split into
 their N and statistic parts.</p></dd>
@@ -144,11 +144,11 @@ submissions want different things from the same header row.</p>
     <h2 id="common-mistakes">Common mistakes<a class="anchor" aria-label="anchor" href="#common-mistakes"></a></h2>
 
 
-<p><strong>"<code>tbl</code> was not built with the <code>{N_obs} ||| {stat}</code> convention."</strong>
+<p><strong>"<code>tbl</code> was not built with the <code>{N_nonmiss} ||| {stat}</code> convention."</strong>
 The table came from a plain <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html" class="external-link">gtsummary::tbl_summary()</a></code> call. Build
 it with <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>, which applies the convention
 automatically, or pass
-<code>statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ({sd})")</code>.
+<code>statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ({sd})")</code>.
 Before this check existed, such a table rendered every cell blank.</p>
 <p><strong>"<code>groups</code> names must be columns in <code>tbl$table_body</code>."</strong> Group
 names are the <code>stat_&lt;k&gt;</code> columns <code>gtsummary</code> creates, one per level
@@ -170,8 +170,8 @@ wide tables.</p>
 <span class="r-in"><span>  <span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html" class="external-link">tbl_summary</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    by <span class="op">=</span> <span class="va">trt</span>,</span></span>
 <span class="r-in"><span>    statistic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>      <span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/select_helpers.html" class="external-link">all_continuous</a></span><span class="op">(</span><span class="op">)</span> <span class="op">~</span> <span class="st">"{N_obs} ||| {mean} ± {sd}"</span>,</span></span>
-<span class="r-in"><span>      <span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/select_helpers.html" class="external-link">all_categorical</a></span><span class="op">(</span><span class="op">)</span> <span class="op">~</span> <span class="st">"{N_obs} ||| {n} ({p}%)"</span></span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/select_helpers.html" class="external-link">all_continuous</a></span><span class="op">(</span><span class="op">)</span> <span class="op">~</span> <span class="st">"{N_nonmiss} ||| {mean} ± {sd}"</span>,</span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/select_helpers.html" class="external-link">all_categorical</a></span><span class="op">(</span><span class="op">)</span> <span class="op">~</span> <span class="st">"{N_nonmiss} ||| {n} ({p}%)"</span></span></span>
 <span class="r-in"><span>    <span class="op">)</span>,</span></span>
 <span class="r-in"><span>    include <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">grade</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    missing <span class="op">=</span> <span class="st">"no"</span></span></span>

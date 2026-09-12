@@ -110,7 +110,7 @@ hv_man_table_jtcvs(
   groups = c(stat_1 = "A", stat_2 = "B")
 )
 #> Error:
-#> ! `tbl` was not built with the "{N_obs} ||| {stat}" convention hv_man_table_jtcvs() requires, so column `stat_1` cannot be split into its N and statistic parts. Build it with hv_tbl_summary(), or pass statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"). First unparseable value: "46 (37, 60)".
+#> ! `tbl` was not built with the "{N_nonmiss} ||| {stat}" convention hv_man_table_jtcvs() requires, so column `stat_1` cannot be split into its N and statistic parts. Build it with hv_tbl_summary(), or pass statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"). First unparseable value: "46 (37, 60)".
 ```
 
 ``` r
