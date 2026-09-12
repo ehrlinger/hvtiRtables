@@ -87,7 +87,7 @@ test_that("hv_man_table validates font", {
 })
 
 test_that("hv_man_table splits the ||| sentinel into flat N and stat columns", {
-  # hv_tbl_summary() applies the "{N_obs} ||| {stat}" convention for the
+  # hv_tbl_summary() applies the "{N_nonmiss} ||| {stat}" convention for the
   # JTCVS renderer. hv_man_table() used to hand it straight to
   # as_flex_table(), so a CORR table rendered the sentinel literally as
   # "98 ||| 46 (32, 63)". House rule 8 wants the non-missing count as its
@@ -101,7 +101,8 @@ test_that("hv_man_table splits the ||| sentinel into flat N and stat columns", {
                   %in% ft$col_keys))
   d <- ft$body$dataset
   expect_false(any(grepl("|||", unlist(d), fixed = TRUE)))
-  expect_identical(d$n_stat_1[1], "98")
+  # 91, not 98: Drug A has 98 rows, 7 of them with missing age.
+  expect_identical(d$n_stat_1[1], "91")
   expect_identical(d$stat_1[1], "46 (32, 63)")
   # The N column sits immediately before the statistic it counts.
   expect_identical(
@@ -128,7 +129,7 @@ test_that("hv_man_table rejects a partially-sentineled table", {
   # prevent.
   tbl <- gtsummary::tbl_summary(
     gtsummary::trial, by = "trt", include = c("age", "grade"),
-    statistic = list(gtsummary::all_continuous() ~ "{N_obs} ||| {mean}")
+    statistic = list(gtsummary::all_continuous() ~ "{N_nonmiss} ||| {mean}")
   )
   expect_error(hv_man_table(tbl), "was not built with the")
 })
@@ -143,7 +144,7 @@ test_that("hv_man_table's convention error names itself, not JTCVS", {
   # negative assertion below is the one that actually catches the defect.
   tbl <- gtsummary::tbl_summary(
     gtsummary::trial, by = "trt", include = c("age", "grade"),
-    statistic = list(gtsummary::all_continuous() ~ "{N_obs} ||| {mean}")
+    statistic = list(gtsummary::all_continuous() ~ "{N_nonmiss} ||| {mean}")
   )
   msg <- tryCatch(hv_man_table(tbl), error = conditionMessage)
   expect_match(msg, "hv_man_table() requires", fixed = TRUE)

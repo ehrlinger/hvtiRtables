@@ -32,7 +32,7 @@
 #' same header row.
 #'
 #' A table from [hv_tbl_summary()] works here as well as in the JTCVS
-#' renderer. That function writes each cell as `"{N_obs} ||| {stat}"`, and
+#' renderer. That function writes each cell as `"{N_nonmiss} ||| {stat}"`, and
 #' this one splits the two apart into a flat `No.` column immediately
 #' before the statistic it counts — the same two values JTCVS mode puts
 #' under a merged spanning header, without the merge. House rule 8 wants
@@ -47,7 +47,7 @@
 #' writes between the count and the statistic, never intended to reach a
 #' rendered table.
 #'
-#' **"`tbl` was not built with the `{N_obs} ||| {stat}` convention."**
+#' **"`tbl` was not built with the `{N_nonmiss} ||| {stat}` convention."**
 #' Only some cells carry the separator, which means `statistic` was set
 #' for part of the table. Splitting would leave the rest blank, so it is
 #' rejected. Either apply the convention to every variable or to none;
@@ -102,7 +102,7 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   ft
 }
 
-# TRUE when any non-NA cell of a stat column carries the "{N_obs} |||
+# TRUE when any non-NA cell of a stat column carries the "{N_nonmiss} |||
 # {stat}" convention hv_tbl_summary() applies for the JTCVS renderer.
 .has_stat_sentinel <- function(tb, stat_cols) {
   for (col in stat_cols) {
@@ -113,7 +113,7 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   FALSE
 }
 
-# Split each "{N_obs} ||| {stat}" column into a flat N column and the
+# Split each "{N_nonmiss} ||| {stat}" column into a flat N column and the
 # statistic it counts, N immediately before its statistic.
 #
 # hv_man_table() previously handed such a table straight to
@@ -143,7 +143,7 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   )
 
   # gtsummary writes a header footnote describing each stat column,
-  # built from the glue string -- so it reads "No. obs. ||| Median (15%
+  # built from the glue string -- so it reads "N Non-missing ||| Median (15%
   # Centile, 85% Centile)" and carries the separator into the rendered
   # .docx even after the cells themselves are split. Dropped rather than
   # rewritten: hv_man_footnotes() already ships both halves as house

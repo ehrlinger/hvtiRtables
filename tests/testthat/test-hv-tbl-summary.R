@@ -181,6 +181,43 @@ test_that("hv_tbl_summary does not comma-format large N", {
   expect_true(grepl("^1500 \\|\\|\\|", tbl$table_body$stat_0))
 })
 
+test_that("hv_tbl_summary's N column counts non-missing values only", {
+  # The N column is footnoted "Number of non-missing values." and the
+  # SAS tables count that way (bsa: 7947 of 7948). gtsummary's {N_obs}
+  # counts every row, so a variable with missing data used to report the
+  # full row count. Every fixture before this one had no NAs, which is
+  # why the two tokens were indistinguishable in tests.
+  dta <- data.frame(
+    age = c(50, 60, NA, NA, 70, 80),
+    flag = c(1, NA, 0, 1, 0, NA),
+    race = factor(c("W", "B", NA, "W", "W", "B")),
+    grp = c(0, 0, 0, 1, 1, 1)
+  )
+  tbl <- hv_tbl_summary(
+    dta, by = "grp", groups = list(X = c("age", "flag", "race")),
+    continuous = "age", binary = "flag", categorical = "race"
+  )
+  n_of <- function(col, var) {
+    tb <- tbl$table_body
+    cell <- tb[[col]][tb$variable == var & tb$row_type == "label"]
+    # Exactly one label row per variable. Anything else is a fixture or
+    # gtsummary change, and should say so here rather than fail in if()
+    # with "argument is of length zero".
+    if (length(cell) != 1L)
+      stop("expected one label row for `", var, "`, found ",
+           length(cell), call. = FALSE)
+    if (is.na(cell))
+      cell <- tb[[col]][tb$variable == var & tb$row_type == "level"][1]
+    sub(" \\|\\|\\| .*$", "", cell)
+  }
+  expect_identical(n_of("stat_1", "age"), "2")
+  expect_identical(n_of("stat_2", "age"), "2")
+  expect_identical(n_of("stat_1", "flag"), "2")
+  expect_identical(n_of("stat_2", "flag"), "2")
+  expect_identical(n_of("stat_1", "race"), "2")
+  expect_identical(n_of("stat_2", "race"), "3")
+})
+
 test_that("hv_tbl_summary's percentiles argument changes the glue statistic", {
   # Pin structural shape ("N ||| median (lo, hi)") and prove the
   # percentiles argument actually flows into the glue string, without
@@ -818,11 +855,11 @@ test_that("overall = FALSE reproduces the previous output exactly", {
     dta,
     by = gtsummary::all_of("grp"),
     include = gtsummary::all_of("age"),
-    statistic = list(age = "{N_obs} ||| {median} ({p15}, {p85})"),
+    statistic = list(age = "{N_nonmiss} ||| {median} ({p15}, {p85})"),
     type = list(age = "continuous"),
     missing = "no",
     digits = list(
-      gtsummary::everything() ~ list(N_obs = no_comma, n = no_comma)
+      gtsummary::everything() ~ list(N_nonmiss = no_comma, n = no_comma)
     )
   )
 

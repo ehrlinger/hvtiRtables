@@ -69,8 +69,8 @@
 #'   tbl_summary(
 #'     by = trt,
 #'     statistic = list(
-#'       all_continuous() ~ "{N_obs} ||| {mean} ± {sd}",
-#'       all_categorical() ~ "{N_obs} ||| {n} ({p}%)"
+#'       all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}",
+#'       all_categorical() ~ "{N_nonmiss} ||| {n} ({p}%)"
 #'     ),
 #'     include = c(age, grade),
 #'     missing = "no"

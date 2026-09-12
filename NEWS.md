@@ -1,3 +1,15 @@
+# hvtiRtables (unreleased)
+
+- **`hv_tbl_summary()`'s N column now counts non-missing values.** It was
+  built from gtsummary's `{N_obs}`, which counts every row, so any variable
+  with missing data reported the full row count under a footnote reading
+  "Number of non-missing values." It now uses `{N_nonmiss}`, matching the
+  house rule and the `%summarytable` tables it replaces. Tables built with
+  earlier versions overstate n wherever a variable has missing values and
+  should be rebuilt. The `{N_obs} ||| {stat}` examples in the renderer
+  documentation, the README, and the convention error message now use
+  `{N_nonmiss}` too.
+
 # hvtiRtables 1.0.0
 
 First supported release. The package is now the HVTI CORR group's table

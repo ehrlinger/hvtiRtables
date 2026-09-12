@@ -214,7 +214,7 @@
 #' tbl <- trial |>
 #'   tbl_summary(
 #'     by = trt,
-#'     statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
+#'     statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"),
 #'     include = age,
 #'     missing = "no"
 #'   )

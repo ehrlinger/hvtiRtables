@@ -55,7 +55,7 @@ When you're submitting to JTCVS, use `hv_man_table_jtcvs()` /
 `hv_man_table_save_jtcvs()` instead of `hv_man_table()` /
 `hv_man_table_save()`. This is not a drop-in swap: the JTCVS pair
 requires a `groups` argument naming each `stat_<k>` column (no default),
-requires the table's statistic to follow the `{N_obs} ||| {stat}`
+requires the table's statistic to follow the `{N_nonmiss} ||| {stat}`
 convention, and requires a `caption` string at save time. The merged
 spanning header and lettered footnotes match the journal's own
 submission template, so once those three things are supplied you're not
@@ -69,7 +69,7 @@ library(hvtiRtables)
 tbl <- trial |>
   tbl_summary(
     by = trt,
-    statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"),
+    statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"),
     include = c(age, grade)
   )
 
