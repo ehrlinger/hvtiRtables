@@ -9,6 +9,19 @@
   should be rebuilt. The `{N_obs} ||| {stat}` examples in the renderer
   documentation, the README, and the convention error message now use
   `{N_nonmiss}` too.
+- **`hv_tbl_summary()` gains `continuous_stat`.** `"median"` (default)
+  keeps `median (P<low>, P<high>)`; `"mean"` gives mean +/- SD, written
+  `64±12` without spaces per the house table rules; `"both"` puts the two
+  on sub-rows under each continuous variable, with n shown once, so the
+  choice for the manuscript is a deleted row. The test is the same
+  non-parametric one whichever is shown. `hv_stat_label` follows the
+  choice. Defaults taken from Rajes's `%summarytable` tables.
+- **`hv_tbl_summary()`'s `overall` now defaults to `TRUE`**, matching the
+  macro's `TOTALCOL=1` and the stratified tables it replaces. With
+  `by = NULL` it is ignored rather than an error. `hv_man_table()` shows
+  the new Overall column automatically; `hv_man_table_jtcvs()` shows it
+  only when `groups` names `stat_0`, so existing JTCVS calls render as
+  before until you add it. Pass `overall = FALSE` for the old layout.
 
 # hvtiRtables 1.0.0
 

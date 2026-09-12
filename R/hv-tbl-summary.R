@@ -8,18 +8,20 @@
 #' gtsummary's own tidyselect-based interface. Returns a plain `gtsummary`
 #' object, ready for [hv_man_table()] or [hv_man_table_jtcvs()].
 #'
-#' Every continuous variable is summarized as
-#' `median (P<low>, P<high>)` using a blanket non-parametric test
-#' (Wilcoxon rank-sum for 2 groups, Kruskal-Wallis for 3+) — this
-#' function does not classify variables as Gaussian/non-Gaussian the way
+#' Continuous variables are summarized as `median (P<low>, P<high>)` by
+#' default, or as mean +/- SD, or both (`continuous_stat`). Whichever is
+#' shown, the test is the same blanket non-parametric one (Wilcoxon
+#' rank-sum for 2 groups, Kruskal-Wallis for 3+) — this function does
+#' not classify variables as Gaussian/non-Gaussian the way
 #' `%summarytable` does; that is `gtsummary::add_p()`'s own default
 #' continuous test already. `percentiles` defaults to the house
 #' convention documented in [hv_man_footnotes()] (15th/85th),
 #' overridable per study (`%summarytable` equivalent: `PP=`).
 #'
 #' The returned object carries two attributes for [hv_man_table_jtcvs()]:
-#' `hv_stat_label`, the percentile-aware sub-header text
-#' (`"No. (%) or Median (<low>th, <high>th percentile)"`), and
+#' `hv_stat_label`, the sub-header text naming the statistics shown
+#' (`"No. (%) or Median (<low>th, <high>th percentile)"` by default; it
+#' follows `continuous_stat`), and
 #' `hv_trailing`, a named character vector ready to pass as
 #' [hv_man_table_jtcvs()]'s `trailing` argument when `compare` produced a
 #' comparison column (`NULL` when `compare = "none"`).
@@ -50,6 +52,11 @@
 #' `compare = "pvalue"` for three or more. If `by` is a factor with an
 #' unused level, `droplevels()` is usually what you want.
 #'
+#' **The Overall column is missing from the JTCVS table.**
+#' [hv_man_table_jtcvs()] lays out only the columns its `groups`
+#' argument names, and `overall = TRUE` is the default. Add
+#' `stat_0 = "Overall (n=<N>)"` to `groups`.
+#'
 #' **"`by` must not also be listed in `groups`."** `by` is the
 #' grouping variable being compared across, not a row to summarize.
 #' Before this check existed, the combination reached `gtsummary` and
@@ -69,12 +76,12 @@
 #'   `binary`, or `categorical`, and every classified variable must
 #'   appear in `groups`.
 #' @param continuous Character vector of continuous variable names
-#'   (`%summarytable` `CON3=` equivalent), summarized as
-#'   `median (P<low>, P<high>)`. Variables the macro classified as
-#'   `CON1=` (mean +/- SD, one-way ANOVA) or `CON2=` (median with
-#'   min and max) belong here too, but their statistic and test
-#'   change: every continuous variable is summarized as a median and
-#'   tested non-parametrically. Each named column must be numeric.
+#'   (`%summarytable` `CON3=` equivalent), summarized as set by
+#'   `continuous_stat`. Variables the macro classified as `CON1=`
+#'   (mean +/- SD, one-way ANOVA) or `CON2=` (median with min and max)
+#'   belong here too. `continuous_stat = "mean"` reproduces `CON1=`'s
+#'   statistic but not its test: every continuous variable is tested
+#'   non-parametrically. Each named column must be numeric.
 #' @param binary Character vector of 0/1 variable names (`%summarytable`
 #'   `CAT1=` equivalent), summarized as `n (%)` on a single row. Each
 #'   named column must have at most 2 distinct non-`NA` values, and
@@ -101,11 +108,24 @@
 #'   pair for continuous summaries, as increasing whole numbers between 0
 #'   and 100. Default `c(15, 85)`, the [hv_man_footnotes()] house
 #'   convention (`%summarytable` `PP=` equivalent).
-#' @param overall Single `TRUE`/`FALSE`. When `TRUE`, prepends an Overall
-#'   column across all groups (`%summarytable` `TOTALCOL=` equivalent).
-#'   Requires `by`. Defaults to `FALSE`, unlike the macro's `TOTALCOL=1`:
-#'   the renderers take a `groups` vector naming each `stat_<k>` column,
-#'   so adding a column by default would silently break existing calls.
+#' @param overall Single `TRUE`/`FALSE`. When `TRUE` (default), prepends
+#'   an Overall column across all groups (`%summarytable` `TOTALCOL=1`,
+#'   the macro's default). Ignored when `by` is `NULL`, since the single
+#'   column already is the overall one. [hv_man_table_jtcvs()] lays out
+#'   only the columns its `groups` argument names, so name `stat_0`
+#'   there to show it.
+#' @param continuous_stat One of `"median"` (default), `"mean"`, or
+#'   `"both"`: how continuous variables are summarized. `"median"` gives
+#'   `median (P<low>, P<high>)`; `"mean"` gives mean +/- SD, with no
+#'   spaces around the plus-minus sign, per the house table rules;
+#'   `"both"` puts the two on sub-rows under the variable, mean +/- SD
+#'   first, with the N shown once, on the first. Choosing one for the
+#'   manuscript is then a matter of deleting a row. The test does not
+#'   change with the statistic: it is always the non-parametric one
+#'   described above. With `"mean"`, [hv_man_footnotes()]'s dagger
+#'   footnote describes a median the table does not show; override it.
+#'   Placed after `overall` so calls passing `overall` by position keep
+#'   working.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
@@ -139,10 +159,12 @@ hv_tbl_summary <- function(data, by = NULL, groups,
                            categorical = character(0),
                            compare = c("pvalue", "smd", "both", "none"),
                            percentiles = c(15, 85),
-                           overall = FALSE,
+                           overall = TRUE,
+                           continuous_stat = c("median", "mean", "both"),
                            ...) {
   .check_sas_args(list(...), "hv_tbl_summary")
   compare <- match.arg(compare)
+  continuous_stat <- match.arg(continuous_stat)
 
   if (!is.data.frame(data))
     stop("`data` must be a data frame.", call. = FALSE)
@@ -197,13 +219,10 @@ hv_tbl_summary <- function(data, by = NULL, groups,
          "less than the high one, e.g. c(15, 85).", call. = FALSE)
   if (!is.logical(overall) || length(overall) != 1L || is.na(overall))
     stop("`overall` must be TRUE or FALSE.", call. = FALSE)
-  # The macro's TOTALCOL= only ever produced an Overall column alongside
-  # class levels; with no CLASS= the single column already is the
-  # overall one. Erroring rather than ignoring, because a caller who
-  # passed it believes a column is coming.
-  if (overall && is.null(by))
-    stop("`overall = TRUE` needs a `by` variable; with `by = NULL` the ",
-         "single column is already the overall one.", call. = FALSE)
+  # With no `by` the single column already is the overall one, so
+  # `overall` is ignored there, the way `compare` is. It errored while
+  # the default was FALSE; with TRUE the default, an error would break
+  # every ungrouped call.
 
   vars <- unlist(groups, use.names = FALSE)
   if (!is.character(vars) || anyNA(vars) || any(!nzchar(vars)))
@@ -241,20 +260,38 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # missing ones included. The SAS tables count non-missing (bsa shows
   # 7947 of 7948), so {N_obs} silently overstated n for any variable
   # with missing data.
-  cont_stat <- sprintf("{N_nonmiss} ||| {median} ({p%s}, {p%s})", p_lo, p_hi)
+  median_label <- sprintf("Median (%sth, %sth percentile)", p_lo, p_hi)
+  mean_label <- "Mean\u00B1SD"
+  median_stat <- sprintf("{median} ({p%s}, {p%s})", p_lo, p_hi)
+  # No spaces around the plus-minus: journals count table entries toward
+  # word limits, and "64 +/- 12" is three words (house table rules).
+  mean_stat <- "{mean}\u00B1{sd}"
+  cont_stat <- switch(
+    continuous_stat,
+    median = paste("{N_nonmiss} |||", median_stat),
+    mean = paste("{N_nonmiss} |||", mean_stat),
+    # Two sub-rows under one label row (gtsummary's "continuous2"). The
+    # N sits on the first only: " ||| " with nothing before it splits
+    # into a blank N cell, so each variable shows its n once.
+    both = c(paste("{N_nonmiss} |||", mean_stat),
+             paste(" |||", median_stat))
+  )
+  cont_type <- if (continuous_stat == "both") "continuous2" else "continuous"
 
   cat_stat <- "{N_nonmiss} ||| {n} ({p}%)"
 
-  statistic <- stats::setNames(
-    as.list(c(
-      rep(cont_stat, length(continuous)),
-      rep(cat_stat, length(binary) + length(categorical))
-    )),
-    c(continuous, binary, categorical)
+  # A list rather than a character vector: under "both" each continuous
+  # variable takes a length-2 statistic.
+  statistic <- c(
+    stats::setNames(rep(list(cont_stat), length(continuous)), continuous),
+    stats::setNames(
+      rep(list(cat_stat), length(binary) + length(categorical)),
+      c(binary, categorical)
+    )
   )
   type <- stats::setNames(
     as.list(c(
-      rep("continuous", length(continuous)),
+      rep(cont_type, length(continuous)),
       rep("dichotomous", length(binary)),
       rep("categorical", length(categorical))
     )),
@@ -306,16 +343,32 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # add_overall() must run before add_p()/add_difference() below --
   # gtsummary requires it ahead of comparison columns so the comparison
   # column stays rightmost.
-  if (overall)
+  # Applied at each return, not here: gtsummary labels continuous2
+  # sub-rows from the glue string, separator and all ("N Non-missing |||
+  # Mean ± SD"), and add_overall() matches rows on those labels, so
+  # renaming them any earlier makes it fail.
+  relabel <- function(tbl) {
+    if (continuous_stat != "both") return(tbl)
+    gtsummary::modify_table_body(tbl, function(tb) {
+      i <- tb$row_type == "level" & tb$variable %in% continuous
+      tb$label[i] <- rep_len(c(mean_label, median_label), sum(i))
+      tb
+    })
+  }
+
+  if (overall && !is.null(by))
     tbl <- gtsummary::add_overall(tbl, last = FALSE)
 
-  attr(tbl, "hv_stat_label") <- sprintf(
-    "No. (%%) or Median (%sth, %sth percentile)", p_lo, p_hi
+  attr(tbl, "hv_stat_label") <- switch(
+    continuous_stat,
+    median = paste("No. (%) or", median_label),
+    mean = paste("No. (%) or", mean_label),
+    both = paste0("No. (%), ", mean_label, ", or ", median_label)
   )
 
   effective_compare <- if (is.null(by)) "none" else compare
   if (effective_compare == "none") {
-    return(tbl)
+    return(relabel(tbl))
   }
 
   # gtsummary::add_difference() needs exactly two groups. Left to itself
@@ -394,5 +447,5 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   )
   attr(tbl, "hv_trailing") <- stats::setNames(compare_label, "hv_compare_col")
 
-  tbl
+  relabel(tbl)
 }

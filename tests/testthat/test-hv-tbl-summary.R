@@ -827,7 +827,8 @@ test_that("every accepted binary shape counts the right event", {
 test_that("overall = TRUE adds exactly one column", {
   base <- hv_tbl_summary(
     gtsummary::trial, by = "trt",
-    groups = list(Demography = "age"), continuous = "age"
+    groups = list(Demography = "age"), continuous = "age",
+    overall = FALSE
   )
   with_total <- hv_tbl_summary(
     gtsummary::trial, by = "trt",
@@ -847,7 +848,8 @@ test_that("overall = FALSE reproduces the previous output exactly", {
   # would also pass for a table with the wrong stat_1/stat_2 values.
   dta <- mk_tbl_summary_data()
   actual <- hv_tbl_summary(
-    dta, by = "grp", groups = list(Vitals = "age"), continuous = "age"
+    dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
+    overall = FALSE
   )
 
   no_comma <- gtsummary::label_style_number(big.mark = "")
@@ -869,13 +871,87 @@ test_that("overall = FALSE reproduces the previous output exactly", {
   expect_identical(actual$table_body$stat_2, reference$table_body$stat_2)
 })
 
-test_that("overall = TRUE without `by` errors rather than doing nothing", {
-  expect_error(
-    hv_tbl_summary(gtsummary::trial, groups = list(D = "age"),
-                   continuous = "age", overall = TRUE),
-    "`overall = TRUE` needs a `by` variable",
-    fixed = TRUE
+test_that("overall keeps its position for positional callers", {
+  # The ninth positional argument has always been `overall`;
+  # continuous_stat goes after it, so FALSE there still means "no
+  # Overall column" rather than failing in match.arg() (Copilot, #49).
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, "trt", list(Demography = "age"), "age",
+    character(0), character(0), "pvalue", c(15, 85), FALSE
   )
+  expect_false("stat_0" %in% names(tbl$table_body))
+})
+
+test_that("overall defaults to TRUE, the macro's TOTALCOL=1", {
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = "age"), continuous = "age"
+  )
+  expect_true("stat_0" %in% names(tbl$table_body))
+})
+
+test_that("overall is ignored when `by` is NULL", {
+  # The single ungrouped column already is the overall one. This used to
+  # error, but with TRUE the default an error would break every
+  # ungrouped call.
+  implicit <- hv_tbl_summary(gtsummary::trial, groups = list(D = "age"),
+                             continuous = "age")
+  explicit <- hv_tbl_summary(gtsummary::trial, groups = list(D = "age"),
+                             continuous = "age", overall = TRUE)
+  expect_identical(
+    grep("^stat_", names(explicit$table_body), value = TRUE), "stat_0"
+  )
+  expect_identical(explicit$table_body$stat_0, implicit$table_body$stat_0)
+})
+
+test_that("continuous_stat = \"mean\" gives mean+/-SD without spaces", {
+  dta <- data.frame(age = c(10, 20, 30, NA))
+  tbl <- hv_tbl_summary(dta, groups = list(D = "age"), continuous = "age",
+                        continuous_stat = "mean")
+  # Shape, not digits: the decimals are gtsummary's default rounding.
+  expect_match(tbl$table_body$stat_0, "^3 \\|\\|\\| 20(\\.0)?±10(\\.0)?$")
+  expect_identical(attr(tbl, "hv_stat_label"), "No. (%) or Mean±SD")
+})
+
+test_that("continuous_stat = \"both\" puts mean and median on sub-rows", {
+  dta <- data.frame(age = c(10, 20, 30, NA, 40, 50), g = c(0, 0, 0, 1, 1, 1))
+  tbl <- hv_tbl_summary(
+    dta, by = "g", groups = list(D = "age"), continuous = "age",
+    continuous_stat = "both"
+  )
+  tb <- tbl$table_body
+  expect_identical(tb$row_type, c("label", "level", "level"))
+  expect_identical(
+    tb$label[2:3], c("Mean±SD", "Median (15th, 85th percentile)")
+  )
+  # N once per variable, on the first sub-row; the second carries a
+  # blank N that the renderers split into an empty cell.
+  expect_identical(sub(" \\|\\|\\| .*$", "", tb$stat_1[2]), "3")
+  expect_true(startsWith(tb$stat_1[3], " ||| "))
+  # The comparison sits on the variable's label row, not a sub-row.
+  expect_false(is.na(tb$hv_compare_col[1]))
+  expect_true(all(is.na(tb$hv_compare_col[2:3])))
+  expect_identical(
+    attr(tbl, "hv_stat_label"),
+    "No. (%), Mean±SD, or Median (15th, 85th percentile)"
+  )
+})
+
+test_that("continuous_stat = \"both\" renders through both renderers", {
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = c("age", "grade")),
+    continuous = "age", categorical = "grade", continuous_stat = "both"
+  )
+  d <- hv_man_table(tbl)$body$dataset
+  expect_false(any(grepl("|||", unlist(d), fixed = TRUE)))
+  expect_identical(d$n_stat_1[d$label == "Median (15th, 85th percentile)"],
+                   "")
+  ft <- hv_man_table_jtcvs(
+    tbl, groups = c(stat_0 = "Overall", stat_1 = "A", stat_2 = "B"),
+    stat_label = attr(tbl, "hv_stat_label"),
+    trailing = attr(tbl, "hv_trailing")
+  )
+  expect_s3_class(ft, "flextable")
 })
 
 test_that("overall must be a single TRUE or FALSE", {

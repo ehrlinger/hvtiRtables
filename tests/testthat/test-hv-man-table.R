@@ -163,7 +163,9 @@ test_that("the house N footnote targets the N column when one exists", {
   )
   ft <- hv_man_table(tbl)
   expect_identical(ft$col_keys[1], "groupname_col")
-  expect_identical(.footnote_col(ft), "n_stat_1")
+  # n_stat_0: hv_tbl_summary() adds the Overall column by default, and
+  # its N column is the first one.
+  expect_identical(.footnote_col(ft), "n_stat_0")
 })
 
 test_that(".footnote_col prefers n, then n_stat_*, then the first key", {
