@@ -154,7 +154,7 @@ which function takes it:</p>
 <div class="section level2">
 <h2 id="defaults-that-differ">Defaults that differ<a class="anchor" aria-label="anchor" href="#defaults-that-differ"></a>
 </h2>
-<p>Five places where a faithful-looking port produces different
+<p>Four places where a faithful-looking port produces different
 numbers.</p>
 <table class="table">
 <colgroup>
@@ -171,19 +171,14 @@ numbers.</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>TOTALCOL=</code></td>
-<td>
-<code>1</code> - Overall column included</td>
-<td><code>overall = FALSE</code></td>
-<td><code>overall = TRUE</code></td>
-</tr>
-<tr class="even">
 <td><code>CON1=</code></td>
 <td>mean +/- SD, one-way ANOVA</td>
 <td>median (percentiles), Kruskal-Wallis</td>
-<td>none - see below</td>
+<td>
+<code>continuous_stat = "mean"</code> for the statistic; the test
+stays non-parametric</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>PP=</code></td>
 <td>
 <code>16 84</code> nominal; house templates use both
@@ -192,13 +187,13 @@ numbers.</p>
 <td><code>percentiles = c(15, 85)</code></td>
 <td><code>percentiles = c(16, 84)</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>CUTEXACT=</code></td>
 <td>Fisher when &gt;=50% of cells have expected &lt; 5</td>
 <td>Fisher when <em>any</em> expected &lt; 5</td>
 <td>none - not tunable</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>ORD1=</code></td>
 <td>
 <code>n (%)</code>, Kruskal-Wallis</td>
@@ -207,10 +202,13 @@ numbers.</p>
 </tr>
 </tbody>
 </table>
-<p><code>overall = FALSE</code> is the one deliberate departure from a
-macro default. The renderers take a <code>groups</code> vector naming
-each <code>stat_&lt;k&gt;</code> column, so a column appearing by
-default would break every existing call.</p>
+<p><code>overall = TRUE</code> matches the macro’s
+<code>TOTALCOL=1</code>. <code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> lays out only
+the <code>stat_&lt;k&gt;</code> columns its <code>groups</code> vector
+names, so name <code>stat_0</code> there to show the Overall column.
+<code>continuous_stat = "both"</code> shows mean +/- SD and median
+(percentiles) on sub-rows under each continuous variable, for choosing
+one when the manuscript is drafted.</p>
 </div>
 <div class="section level2">
 <h2 id="a-ported-call">A ported call<a class="anchor" aria-label="anchor" href="#a-ported-call"></a>
@@ -232,8 +230,8 @@ default would break every existing call.</p>
        surgstat nyha_pr
 );</code></pre>
 <p>and its equivalent. Note that <code>pp=</code> and <code>list=</code>
-map straight across, <code>totalcol=0</code> is the default here so it
-disappears, and <code>pvalues=1</code> becomes
+map straight across, <code>totalcol=0</code> becomes
+<code>overall = FALSE</code>, and <code>pvalues=1</code> becomes
 <code>compare = "pvalue"</code>:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hv_tbl_summary.html">hv_tbl_summary</a></span><span class="op">(</span></span>
@@ -247,7 +245,8 @@ disappears, and <code>pvalues=1</code> becomes
 <span>  binary      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"female"</span>, <span class="st">"surgstat"</span><span class="op">)</span>,</span>
 <span>  categorical <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"race_gp"</span>, <span class="st">"nyha_pr"</span><span class="op">)</span>,</span>
 <span>  compare     <span class="op">=</span> <span class="st">"pvalue"</span>,</span>
-<span>  percentiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">85</span><span class="op">)</span></span>
+<span>  percentiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">85</span><span class="op">)</span>,</span>
+<span>  overall     <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -284,8 +283,9 @@ disappears, and <code>pvalues=1</code> becomes
 <td><code>CON1=</code></td>
 <td><code>continuous</code></td>
 <td>
-<strong>statistic changes</strong> - mean +/- SD becomes median
-(percentiles)</td>
+<strong>statistic changes</strong> by default - mean +/- SD becomes
+median (percentiles); <code>continuous_stat = "mean"</code> restores it,
+and the test stays non-parametric</td>
 </tr>
 <tr class="odd">
 <td><code>CON2=</code></td>
@@ -337,14 +337,15 @@ chi-square</td>
 <tr class="odd">
 <td><code>TOTALCOL=</code></td>
 <td><code>overall</code></td>
-<td>default differs - see above</td>
+<td>defaults match (<code>overall = TRUE</code>);
+<code>totalcol=0</code> becomes <code>overall = FALSE</code>
+</td>
 </tr>
 <tr class="even">
 <td><code>NCOL=</code></td>
 <td>automatic</td>
-<td>per-group Ns always shown; <code>NCOL=3</code>’s overall N needs
-<code>overall = TRUE</code>
-</td>
+<td>per-group Ns always shown, and the Overall column’s N with the
+default <code>overall = TRUE</code> (<code>NCOL=3</code>)</td>
 </tr>
 <tr class="odd">
 <td><code>TBLTITLE=</code></td>
@@ -366,7 +367,8 @@ writes no caption</td>
 cannot be passed to <code><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>, which needs
 <code>list(row =, col =, text =)</code> entries; build those, or use
 <code><a href="../reference/hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code>. It also hard-codes the 15th/85th
-percentiles, so change it if you change <code>percentiles</code>
+percentiles, so change it if you change <code>percentiles</code> or set
+<code>continuous_stat = "mean"</code>
 </td>
 </tr>
 <tr class="even">

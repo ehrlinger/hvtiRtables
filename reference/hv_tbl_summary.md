@@ -24,7 +24,8 @@ hv_tbl_summary(
   categorical = character(0),
   compare = c("pvalue", "smd", "both", "none"),
   percentiles = c(15, 85),
-  overall = FALSE,
+  overall = TRUE,
+  continuous_stat = c("median", "mean", "both"),
   ...
 )
 ```
@@ -53,11 +54,12 @@ hv_tbl_summary(
 - continuous:
 
   Character vector of continuous variable names (`%summarytable` `CON3=`
-  equivalent), summarized as `median (P<low>, P<high>)`. Variables the
+  equivalent), summarized as set by `continuous_stat`. Variables the
   macro classified as `CON1=` (mean +/- SD, one-way ANOVA) or `CON2=`
-  (median with min and max) belong here too, but their statistic and
-  test change: every continuous variable is summarized as a median and
-  tested non-parametrically. Each named column must be numeric.
+  (median with min and max) belong here too. `continuous_stat = "mean"`
+  reproduces `CON1=`'s statistic but not its test: every continuous
+  variable is tested non-parametrically. Each named column must be
+  numeric.
 
 - binary:
 
@@ -100,11 +102,28 @@ hv_tbl_summary(
 
 - overall:
 
-  Single `TRUE`/`FALSE`. When `TRUE`, prepends an Overall column across
-  all groups (`%summarytable` `TOTALCOL=` equivalent). Requires `by`.
-  Defaults to `FALSE`, unlike the macro's `TOTALCOL=1`: the renderers
-  take a `groups` vector naming each `stat_<k>` column, so adding a
-  column by default would silently break existing calls.
+  Single `TRUE`/`FALSE`. When `TRUE` (default), prepends an Overall
+  column across all groups (`%summarytable` `TOTALCOL=1`, the macro's
+  default). Ignored when `by` is `NULL`, since the single column already
+  is the overall one.
+  [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
+  lays out only the columns its `groups` argument names, so name
+  `stat_0` there to show it.
+
+- continuous_stat:
+
+  One of `"median"` (default), `"mean"`, or `"both"`: how continuous
+  variables are summarized. `"median"` gives `median (P<low>, P<high>)`;
+  `"mean"` gives mean +/- SD, with no spaces around the plus-minus sign,
+  per the house table rules; `"both"` puts the two on sub-rows under the
+  variable, mean +/- SD first, with the N shown once, on the first.
+  Choosing one for the manuscript is then a matter of deleting a row.
+  The test does not change with the statistic: it is always the
+  non-parametric one described above. With `"mean"`,
+  [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)'s
+  dagger footnote describes a median the table does not show; override
+  it. Placed after `overall` so calls passing `overall` by position keep
+  working.
 
 - ...:
 
@@ -124,10 +143,12 @@ reads.
 
 ## Details
 
-Every continuous variable is summarized as `median (P<low>, P<high>)`
-using a blanket non-parametric test (Wilcoxon rank-sum for 2 groups,
-Kruskal-Wallis for 3+) — this function does not classify variables as
-Gaussian/non-Gaussian the way `%summarytable` does; that is
+Continuous variables are summarized as `median (P<low>, P<high>)` by
+default, or as mean +/- SD, or both (`continuous_stat`). Whichever is
+shown, the test is the same blanket non-parametric one (Wilcoxon
+rank-sum for 2 groups, Kruskal-Wallis for 3+) — this function does not
+classify variables as Gaussian/non-Gaussian the way `%summarytable`
+does; that is
 [`gtsummary::add_p()`](https://www.danieldsjoberg.com/gtsummary/reference/add_p.html)'s
 own default continuous test already. `percentiles` defaults to the house
 convention documented in
@@ -136,9 +157,10 @@ convention documented in
 
 The returned object carries two attributes for
 [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md):
-`hv_stat_label`, the percentile-aware sub-header text
-(`"No. (%) or Median (<low>th, <high>th percentile)"`), and
-`hv_trailing`, a named character vector ready to pass as
+`hv_stat_label`, the sub-header text naming the statistics shown
+(`"No. (%) or Median (<low>th, <high>th percentile)"` by default; it
+follows `continuous_stat`), and `hv_trailing`, a named character vector
+ready to pass as
 [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)'s
 `trailing` argument when `compare` produced a comparison column (`NULL`
 when `compare = "none"`).
@@ -169,6 +191,12 @@ difference is defined between two groups. Use `compare = "pvalue"` for
 three or more. If `by` is a factor with an unused level,
 [`droplevels()`](https://rdrr.io/r/base/droplevels.html) is usually what
 you want.
+
+**The Overall column is missing from the JTCVS table.**
+[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
+lays out only the columns its `groups` argument names, and
+`overall = TRUE` is the default. Add `stat_0 = "Overall (n=<N>)"` to
+`groups`.
 
 **"`by` must not also be listed in `groups`."** `by` is the grouping
 variable being compared across, not a row to summarize. Before this

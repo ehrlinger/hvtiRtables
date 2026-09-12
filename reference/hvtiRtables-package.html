@@ -78,14 +78,16 @@ submitting to that journal.</p>
 <span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>  <span class="at">continuous =</span> <span class="st">"age"</span>, <span class="at">categorical =</span> <span class="st">"sex"</span></span>
 <span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>)</span>
 <span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>ft <span class="ot">&lt;-</span> <span class="fu">hv_man_table_jtcvs</span>(</span>
-<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>  tbl, <span class="at">groups =</span> <span class="fu">c</span>(<span class="at">stat_1 =</span> <span class="st">"A (n=98)"</span>, <span class="at">stat_2 =</span> <span class="st">"B (n=102)"</span>),</span>
-<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>  <span class="at">stat_label =</span> <span class="fu">attr</span>(tbl, <span class="st">"hv_stat_label"</span>),</span>
-<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>  <span class="at">trailing =</span> <span class="fu">attr</span>(tbl, <span class="st">"hv_trailing"</span>)</span>
-<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>)</span>
-<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="fu">hv_man_table_save_jtcvs</span>(</span>
-<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>  ft, <span class="st">"table1.docx"</span>, <span class="at">caption =</span> <span class="st">"Table 1. Baseline Characteristics"</span>,</span>
-<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a>  <span class="at">footnotes =</span> <span class="fu">hv_test_footnotes_jtcvs</span>(tbl)</span>
-<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>)</span></code></pre><p></p></div>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>  tbl,</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>  <span class="at">groups =</span> <span class="fu">c</span>(<span class="at">stat_0 =</span> <span class="st">"Overall (n=200)"</span>, <span class="at">stat_1 =</span> <span class="st">"A (n=98)"</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>             <span class="at">stat_2 =</span> <span class="st">"B (n=102)"</span>),</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>  <span class="at">stat_label =</span> <span class="fu">attr</span>(tbl, <span class="st">"hv_stat_label"</span>),</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>  <span class="at">trailing =</span> <span class="fu">attr</span>(tbl, <span class="st">"hv_trailing"</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>)</span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="fu">hv_man_table_save_jtcvs</span>(</span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>  ft, <span class="st">"table1.docx"</span>, <span class="at">caption =</span> <span class="st">"Table 1. Baseline Characteristics"</span>,</span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>  <span class="at">footnotes =</span> <span class="fu">hv_test_footnotes_jtcvs</span>(tbl)</span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a>)</span></code></pre><p></p></div>
     </div>
     <div class="section level2">
     <h2 id="checking-a-finished-document">Checking a finished document<a class="anchor" aria-label="anchor" href="#checking-a-finished-document"></a></h2>

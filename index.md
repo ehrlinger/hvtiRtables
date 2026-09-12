@@ -98,12 +98,14 @@ spread across separate calls:
 | Verify | [`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md) | *(no analogue)* |
 
 The one thing worth knowing before you start: `CON1=` variables change
-statistic. The macro reported them as mean +/- SD with one-way ANOVA;
-every continuous variable here is a median with a non-parametric test,
-which is the `CON3=` behavior. It’s the largest of five defaults that
+statistic by default. The macro reported them as mean +/- SD with
+one-way ANOVA; every continuous variable here defaults to a median with
+a non-parametric test, which is the `CON3=` behavior.
+`continuous_stat = "mean"` (or `"both"`) brings the mean back, but the
+test stays non-parametric. It’s the largest of four defaults that
 produce different numbers from a faithful-looking port; the vignette’s
-“Defaults that differ” table lists all five.
+“Defaults that differ” table lists all four.
 
-Full parameter map, the five defaults that differ, and the `QNTLDEF`
+Full parameter map, the four defaults that differ, and the `QNTLDEF`
 quantile trap: **[Porting a `%summarytable` program to
 R](https://ehrlinger.github.io/hvtiRtables/articles/sas-migration.html)**.
