@@ -37,8 +37,10 @@ between 0 and 1. Default \code{0.68}.}
 A data frame, one row per stratum, pair and method, with columns
 \code{by} (when given), \code{variable}, \code{label}, \code{with}, \code{method}, \code{n},
 \code{estimate}, \code{conf.low}, \code{conf.high}, \code{p.value} and \code{display}
-(\code{"r (lcl, ucl)"}, \code{NA} when the interval is undefined at n <= 3). The
-level used is stored as \code{attr(x, "conf_level")}.
+(\code{"r (lcl, ucl)"}). \code{label} describes \code{variable} only, not the pair.
+\code{display} is \code{NA} whenever the interval is undefined: n <= 3, a
+zero-variance column, or an empty stratum. The level used is stored as
+\code{attr(x, "conf_level")}.
 }
 \description{
 The table half of the SAS correlation job

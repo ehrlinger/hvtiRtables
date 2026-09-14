@@ -39,8 +39,10 @@
 #' @return A data frame, one row per stratum, pair and method, with columns
 #'   `by` (when given), `variable`, `label`, `with`, `method`, `n`,
 #'   `estimate`, `conf.low`, `conf.high`, `p.value` and `display`
-#'   (`"r (lcl, ucl)"`, `NA` when the interval is undefined at n <= 3). The
-#'   level used is stored as `attr(x, "conf_level")`.
+#'   (`"r (lcl, ucl)"`). `label` describes `variable` only, not the pair.
+#'   `display` is `NA` whenever the interval is undefined: n <= 3, a
+#'   zero-variance column, or an empty stratum. The level used is stored as
+#'   `attr(x, "conf_level")`.
 #'
 #' @seealso `hvtiPlotR::hv_correlation_matrix()` for the plot.
 #'
@@ -58,14 +60,26 @@ hv_correlation_table <- function(data, vars, with = NULL, by = NULL,
   method <- match.arg(method, several.ok = TRUE)
   if (!is.character(vars) || length(vars) == 0L || anyNA(vars))
     stop("`vars` must be a character vector of column names.", call. = FALSE)
+  if (!is.null(with) && (!is.character(with) || anyNA(with)))
+    stop("`with` must be NULL or a character vector naming at least one ",
+         "column.", call. = FALSE)
   if (is.null(with) && length(vars) < 2L)
     stop("`vars` needs at least two columns when `with` is NULL.",
          call. = FALSE)
+  if (!is.null(with) && length(with) == 0L)
+    stop("`with` must be NULL or name at least one column.", call. = FALSE)
   if (!is.null(by)) .check_string(by, "by")
   if (!is.numeric(conf_level) || length(conf_level) != 1L ||
         is.na(conf_level) || conf_level <= 0 || conf_level >= 1)
     stop("`conf_level` must be a single number strictly between 0 and 1.",
          call. = FALSE)
+  if (!is.numeric(digits) || length(digits) != 1L || is.na(digits) ||
+        digits < 0 || digits != round(digits))
+    stop("`digits` must be a single non-negative whole number.",
+         call. = FALSE)
+
+  vars <- unique(vars)
+  if (!is.null(with)) with <- unique(with)
 
   cols <- unique(c(vars, with))
   absent <- setdiff(c(cols, by), names(data))
@@ -76,14 +90,20 @@ hv_correlation_table <- function(data, vars, with = NULL, by = NULL,
   if (length(not_num))
     stop("Correlation needs numeric columns; not numeric: ",
          paste(not_num, collapse = ", "), call. = FALSE)
+  if (!is.null(by) && by %in% cols)
+    stop("`by` must not also be a column in `vars` or `with`: ", by,
+         call. = FALSE)
 
   pairs <- if (is.null(with)) {
     cmb <- utils::combn(vars, 2L)
     data.frame(variable = cmb[1L, ], with = cmb[2L, ],
                stringsAsFactors = FALSE)
   } else {
-    g <- expand.grid(variable = setdiff(vars, with), with = with,
-                     stringsAsFactors = FALSE)
+    g <- expand.grid(variable = vars, with = with, stringsAsFactors = FALSE)
+    g <- g[g$variable != g$with, , drop = FALSE]
+    if (nrow(g) == 0L)
+      stop("No pairs to correlate: every column in `vars` is also in ",
+           "`with`.", call. = FALSE)
     g[order(match(g$with, with), match(g$variable, vars)), , drop = FALSE]
   }
 
@@ -93,6 +113,7 @@ hv_correlation_table <- function(data, vars, with = NULL, by = NULL,
   rows <- list()
   for (s in names(strata)) {
     d <- strata[[s]]
+    stratum_value <- if (is.null(by)) s else d[[by]][1]
     for (i in seq_len(nrow(pairs))) {
       x <- d[[pairs$variable[i]]]
       y <- d[[pairs$with[i]]]
@@ -104,7 +125,7 @@ hv_correlation_table <- function(data, vars, with = NULL, by = NULL,
         ) else NA_real_
         ci <- .fisher_interval(r, n, conf_level)
         rows[[length(rows) + 1L]] <- data.frame(
-          stratum = s, variable = pairs$variable[i],
+          stratum = stratum_value, variable = pairs$variable[i],
           label = .column_label(data[[pairs$variable[i]]], pairs$variable[i]),
           with = pairs$with[i], method = m, n = n, estimate = r,
           conf.low = ci[["low"]], conf.high = ci[["high"]],

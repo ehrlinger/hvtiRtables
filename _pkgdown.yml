@@ -38,14 +38,6 @@ reference:
   contents:
   - hv_tbl_summary
 
-- title: "Correlations: `proc corr ... fisher`"
-  desc: >
-    Pairwise Spearman and Pearson coefficients with Fisher confidence
-    intervals, overall or within strata. The scatter-plot matrix is
-    `hvtiPlotR::hv_correlation_matrix()`.
-  contents:
-  - hv_correlation_table
-
 - title: "2. Shape the table - house style is fixed"
   desc: >
     House style is fixed, so the only choice here is the header shape.
@@ -73,6 +65,14 @@ reference:
     hand edit.
   contents:
   - hv_check_docx
+
+- title: "Correlations: `proc corr ... fisher`"
+  desc: >
+    Pairwise Spearman and Pearson coefficients with Fisher confidence
+    intervals, overall or within strata. The scatter-plot matrix is
+    `hvtiPlotR::hv_correlation_matrix()`.
+  contents:
+  - hv_correlation_table
 
 - title: "Package overview"
   desc: >
