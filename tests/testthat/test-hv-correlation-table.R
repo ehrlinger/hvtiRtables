@@ -75,3 +75,24 @@ test_that("n <= 3 gives an NA interval, not an error", {
   expect_true(is.na(out$conf.low))
   expect_true(is.na(out$display))
 })
+
+test_that("by stratifies: one block per level, carried first", {
+  d <- mk_corr_data()
+  out <- hv_correlation_table(d, vars = "glu", with = "a1c", by = "grp",
+                              method = "pearson")
+  expect_equal(names(out)[1], "grp")
+  expect_equal(nrow(out), 2L)
+  hi <- d[d$grp == "high", ]
+  expect_equal(out$estimate[out$grp == "high"], stats::cor(hi$glu, hi$a1c))
+  expect_equal(out$n, c(40L, 40L))
+})
+
+test_that("errors name the problem", {
+  d <- mk_corr_data()
+  expect_error(hv_correlation_table(list(), vars = "a"), "data frame")
+  expect_error(hv_correlation_table(d, vars = "nope", with = "a1c"), "not found")
+  expect_error(hv_correlation_table(d, vars = "grp", with = "a1c"), "numeric")
+  expect_error(hv_correlation_table(d, vars = "glu"), "at least two")
+  expect_error(hv_correlation_table(d, vars = "glu", with = "a1c",
+                                    conf_level = 95), "between 0 and 1")
+})
