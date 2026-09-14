@@ -920,9 +920,66 @@ test_that("continuous_stat = \"mean\" gives mean+/-SD without spaces", {
   dta <- data.frame(age = c(10, 20, 30, NA))
   tbl <- hv_tbl_summary(dta, groups = list(D = "age"), continuous = "age",
                         continuous_stat = "mean")
-  # Shape, not digits: the decimals are gtsummary's default rounding.
-  expect_match(tbl$table_body$stat_0, "^3 \\|\\|\\| 20(\\.0)?±10(\\.0)?$")
+  expect_identical(tbl$table_body$stat_0, "3 ||| 20±10.0")
   expect_identical(attr(tbl, "hv_stat_label"), "No. (%) or Mean±SD")
+})
+
+test_that("mean/SD cells follow the paired EHB/Blackstone rule", {
+  dta <- data.frame(
+    grp = factor(rep(c("A", "B"), c(4, 2))),
+    value = c(100, 110, 130, 150, 113.5, 131.5)
+  )
+  tbl <- hv_tbl_summary(
+    dta, by = "grp", groups = list(D = "value"), continuous = "value",
+    continuous_stat = "mean", overall = TRUE
+  )
+
+  # A: mean 122.5, SD 22.17 -> tens for mean, units for SD.
+  expect_identical(tbl$table_body$stat_1, "4 ||| 120±22")
+  # B: SD 12.73 begins with 1 -> units for mean, tenths for SD.
+  # The exact 122.5 tie rounds to the even integer.
+  expect_identical(tbl$table_body$stat_2, "2 ||| 122±12.7")
+  # Overall: mean 122.5, SD 18.09 -> the same leading-1 exception.
+  expect_identical(tbl$table_body$stat_0, "6 ||| 122±18.1")
+})
+
+test_that("EHB/Blackstone rounding treats only exact ties as ties", {
+  dta <- data.frame(value = c(113.5001, 131.5001))
+  tbl <- hv_tbl_summary(
+    dta, groups = list(D = "value"), continuous = "value",
+    continuous_stat = "mean"
+  )
+
+  expect_identical(tbl$table_body$stat_0, "2 ||| 123±12.7")
+})
+
+test_that("paired rounding changes only the mean row under both", {
+  dta <- data.frame(value = c(100, 110, 130, 150))
+  tbl <- hv_tbl_summary(
+    dta, groups = list(D = "value"), continuous = "value",
+    continuous_stat = "both"
+  )
+
+  expect_identical(tbl$table_body$stat_0[2], "4 ||| 120±22")
+  expect_identical(
+    tbl$table_body$stat_0[3], " ||| 120 (100, 150)"
+  )
+})
+
+test_that("zero or unavailable SD keeps gtsummary's rendering", {
+  zero_sd <- hv_tbl_summary(
+    data.frame(value = rep(123.456, 4)),
+    groups = list(D = "value"), continuous = "value",
+    continuous_stat = "mean"
+  )
+  missing_sd <- suppressWarnings(hv_tbl_summary(
+    data.frame(value = 123.456),
+    groups = list(D = "value"), continuous = "value",
+    continuous_stat = "mean"
+  ))
+
+  expect_identical(zero_sd$table_body$stat_0, "4 ||| 123.4560±0.0000")
+  expect_identical(missing_sd$table_body$stat_0, "1 ||| 123.4560±NA")
 })
 
 test_that("continuous_stat = \"both\" puts mean and median on sub-rows", {

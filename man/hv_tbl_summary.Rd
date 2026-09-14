@@ -81,7 +81,7 @@ there to show it.}
 \item{continuous_stat}{One of \code{"median"} (default), \code{"mean"}, or
 \code{"both"}: how continuous variables are summarized. \code{"median"} gives
 \verb{median (P<low>, P<high>)}; \code{"mean"} gives mean +/- SD, with no
-spaces around the plus-minus sign, per the house table rules;
+spaces around the plus-minus sign and EHB/Blackstone paired rounding;
 \code{"both"} puts the two on sub-rows under the variable, mean +/- SD
 first, with the N shown once, on the first. Choosing one for the
 manuscript is then a matter of deleting a row. The test does not
@@ -117,6 +117,15 @@ not classify variables as Gaussian/non-Gaussian the way
 continuous test already. \code{percentiles} defaults to the house
 convention documented in \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} (15th/85th),
 overridable per study (\verb{\%summarytable} equivalent: \verb{PP=}).
+
+Mean/SD output follows Eugene H. Blackstone's (EHB's) paired reporting
+rule: the mean is rounded to the first-significant-digit place of the SD,
+and the SD is rounded one place finer. When the SD begins with 1, both
+retain one additional place. Exact ties round to even; values beyond a tie
+round up. This applies to every group and Overall column when
+\code{continuous_stat = "mean"}, and to the mean row under \code{"both"}. Median and
+percentile precision is unchanged. When an SD is zero or unavailable, no
+paired precision can be inferred, so gtsummary's existing display is kept.
 
 The returned object carries three renderer attributes:
 \code{hv_stat_label}, the sub-header text naming the statistics shown

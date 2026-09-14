@@ -1,5 +1,11 @@
 # hvtiRtables (unreleased)
 
+- **Mean±SD cells now enforce EHB/Blackstone paired rounding.**
+  `hv_tbl_summary()` rounds each mean to the SD's first-significant-digit
+  place and the SD one place finer, retaining an extra place in both when the
+  SD begins with 1. Exact ties round to even. The rule applies to grouped and
+  Overall columns under `continuous_stat = "mean"` and to the mean row under
+  `"both"`; median/percentile rows are unchanged.
 - **The JTCVS renderer's default mean label now follows house spacing.**
   `hv_man_table_jtcvs()` writes `"No. (%) or Mean±SD"`, matching
   `hv_tbl_summary()` and the CORR footnote text.
