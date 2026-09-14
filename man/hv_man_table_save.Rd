@@ -7,7 +7,7 @@
 hv_man_table_save(
   ft,
   file,
-  footnotes = hv_man_footnotes(),
+  footnotes = .default_footnotes(ft),
   abbreviations = NULL,
   ...
 )
@@ -20,13 +20,11 @@ must already exist; this function does not create it. (\verb{\%summarytable}
 \verb{RTFFILE=}/\verb{PDFFILE=} equivalent; output here is always \code{.docx}).}
 
 \item{footnotes}{Optional named list, symbol -> footnote text. Defaults to
-\code{\link[=hv_man_footnotes]{hv_man_footnotes()}} (the house-universal N and median/percentile
-footnotes). That default text hardcodes the 15th/85th percentile pair;
-if the table was built with \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s \verb{percentiles =} set
-to anything else, override it (see below) or the footnote will
-misstate what the table shows. Pass \code{NULL} to suppress both, or
-compose with \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} to override or extend (see its
-documentation).
+the \code{hv_footnotes} attribute carried from \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} through
+\code{\link[=hv_man_table]{hv_man_table()}}, so the dagger follows that table's \code{continuous_stat}
+and \code{percentiles}. Other flextables fall back to \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}'s
+median/15th-85th house defaults. Pass \code{NULL} to suppress both, or
+compose with \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} to override or extend.
 Symbols must be drawn from \code{c("*", "†", "‡", "§", "¶", "||")}. Each
 symbol is appended as a superscript reference mark to the table's
 count-column header cell — a column named \code{n}, else the first
@@ -95,12 +93,10 @@ one of them; lettered markers are the JTCVS renderer's convention.
 is not created for you. Run
 \code{dir.create(dirname(file), recursive = TRUE)} first.
 
-\strong{A footnote that misstates the table.} Nothing errors here.
-\code{footnotes} defaults to \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}, whose dagger text
-hardcodes the 15th and 85th percentiles; build the table with
-\code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s \verb{percentiles =} set to any other pair and the
-table shows one pair while the footnote below it names another.
-Override the dagger whenever you move the pair.
+\strong{A hand-built footnote that misstates the table.} The automatic
+\code{\link[=hv_tbl_summary]{hv_tbl_summary()}} -> \code{\link[=hv_man_table]{hv_man_table()}} path keeps the default dagger in
+sync. When supplying \code{footnotes} yourself, make its wording match the
+statistic and percentile pair used to build the table.
 }
 
 \examples{

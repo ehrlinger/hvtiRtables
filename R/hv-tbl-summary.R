@@ -18,13 +18,16 @@
 #' convention documented in [hv_man_footnotes()] (15th/85th),
 #' overridable per study (`%summarytable` equivalent: `PP=`).
 #'
-#' The returned object carries two attributes for [hv_man_table_jtcvs()]:
+#' The returned object carries three renderer attributes:
 #' `hv_stat_label`, the sub-header text naming the statistics shown
 #' (`"No. (%) or Median (<low>th, <high>th percentile)"` by default; it
-#' follows `continuous_stat`), and
+#' follows `continuous_stat`);
 #' `hv_trailing`, a named character vector ready to pass as
 #' [hv_man_table_jtcvs()]'s `trailing` argument when `compare` produced a
-#' comparison column (`NULL` when `compare = "none"`).
+#' comparison column (`NULL` when `compare = "none"`); and `hv_footnotes`,
+#' the CORR footnote block that [hv_man_table()] carries into
+#' [hv_man_table_save()] so the default dagger follows `continuous_stat` and
+#' `percentiles` automatically.
 #'
 #' @section Common mistakes:
 #' **"`<var>` appears in more than one of `continuous`, `binary`, and
@@ -122,16 +125,15 @@
 #'   first, with the N shown once, on the first. Choosing one for the
 #'   manuscript is then a matter of deleting a row. The test does not
 #'   change with the statistic: it is always the non-parametric one
-#'   described above. With `"mean"`, [hv_man_footnotes()]'s dagger
-#'   footnote describes a median the table does not show; override it.
-#'   Placed after `overall` so calls passing `overall` by position keep
-#'   working.
+#'   described above. The CORR footnote carried through [hv_man_table()] to
+#'   [hv_man_table_save()] follows this choice automatically. Placed after
+#'   `overall` so calls passing `overall` by position keep working.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
 #' @return A `gtsummary` object, ready for [hv_man_table()] or
-#'   [hv_man_table_jtcvs()]. See Details for the `hv_stat_label`/
-#'   `hv_trailing` attributes, which only [hv_man_table_jtcvs()] reads.
+#'   [hv_man_table_jtcvs()]. See Details for the `hv_stat_label`,
+#'   `hv_trailing`, and `hv_footnotes` renderer attributes.
 #'
 #' @seealso [hv_man_table()] or [hv_man_table_jtcvs()] to render the
 #'   result. [hv_man_footnotes()] for the percentile-footnote house
@@ -203,20 +205,11 @@ hv_tbl_summary <- function(data, by = NULL, groups,
          "variables. Every section must name at least one variable, ",
          "e.g. list(", empty_sections[1], " = c(\"age\")). Drop the ",
          "empty section.", call. = FALSE)
-  if (!is.numeric(percentiles) || length(percentiles) != 2L)
-    stop("`percentiles` must be a numeric vector of length 2, ",
-         "e.g. c(15, 85).", call. = FALSE)
   # gtsummary's glue tokens are `{pNN}`, so a non-integer or out-of-range
   # value silently becomes an invalid token (`{p10.5}`) and a header that
   # states percentiles the table does not actually show. Reject here
   # rather than letting it surface as an opaque gtsummary error.
-  if (anyNA(percentiles) || any(percentiles != as.integer(percentiles)) ||
-        any(percentiles < 0 | percentiles > 100))
-    stop("`percentiles` must be whole numbers between 0 and 100, ",
-         "e.g. c(15, 85).", call. = FALSE)
-  if (percentiles[1] >= percentiles[2])
-    stop("`percentiles` must be increasing: the low percentile must be ",
-         "less than the high one, e.g. c(15, 85).", call. = FALSE)
+  .check_percentiles(percentiles)
   if (!is.logical(overall) || length(overall) != 1L || is.na(overall))
     stop("`overall` must be TRUE or FALSE.", call. = FALSE)
   # With no `by` the single column already is the overall one, so
@@ -364,6 +357,10 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     median = paste("No. (%) or", median_label),
     mean = paste("No. (%) or", mean_label),
     both = paste0("No. (%), ", mean_label, ", or ", median_label)
+  )
+  attr(tbl, "hv_footnotes") <- hv_man_footnotes(
+    continuous_stat = continuous_stat,
+    percentiles = percentiles
   )
 
   effective_compare <- if (is.null(by)) "none" else compare

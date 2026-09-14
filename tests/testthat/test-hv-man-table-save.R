@@ -98,6 +98,52 @@ test_that("hv_man_table_save applies hv_man_footnotes() by default", {
   expect_true(grepl("Median (15th, 85th percentile)", xml, fixed = TRUE))
 })
 
+test_that("default footnotes follow a mean table", {
+  dta <- data.frame(age = c(10, 20, 30, NA))
+  tbl <- hv_tbl_summary(
+    dta, groups = list(Demography = "age"), continuous = "age",
+    continuous_stat = "mean"
+  )
+  ft <- hv_man_table(tbl)
+  f <- tempfile(fileext = ".docx")
+  on.exit(unlink(f), add = TRUE)
+  hv_man_table_save(ft, f)
+  xml <- read_docx_text(f)
+  expect_true(grepl("Mean±SD.", xml, fixed = TRUE))
+  expect_false(grepl("Median (15th, 85th percentile)", xml, fixed = TRUE))
+})
+
+test_that("default footnotes follow a table with both statistics", {
+  dta <- data.frame(age = c(10, 20, 30, NA))
+  tbl <- hv_tbl_summary(
+    dta, groups = list(Demography = "age"), continuous = "age",
+    continuous_stat = "both"
+  )
+  ft <- hv_man_table(tbl)
+  f <- tempfile(fileext = ".docx")
+  on.exit(unlink(f), add = TRUE)
+  hv_man_table_save(ft, f)
+  xml <- read_docx_text(f)
+  expect_true(grepl(
+    "Mean±SD; Median (15th, 85th percentile).", xml, fixed = TRUE
+  ))
+})
+
+test_that("default footnotes follow custom percentiles", {
+  dta <- data.frame(age = c(10, 20, 30, NA))
+  tbl <- hv_tbl_summary(
+    dta, groups = list(Demography = "age"), continuous = "age",
+    percentiles = c(16, 84)
+  )
+  ft <- hv_man_table(tbl)
+  f <- tempfile(fileext = ".docx")
+  on.exit(unlink(f), add = TRUE)
+  hv_man_table_save(ft, f)
+  xml <- read_docx_text(f)
+  expect_true(grepl("Median (16th, 84th percentile).", xml, fixed = TRUE))
+  expect_false(grepl("Median (15th, 85th percentile).", xml, fixed = TRUE))
+})
+
 test_that("footnotes = NULL suppresses both standard footnotes", {
   ft <- mk_ft()
   f <- tempfile(fileext = ".docx")

@@ -73,7 +73,9 @@
 #'   produce an error naming the argument to use instead.
 #'
 #' @return A `flextable` object with a single header row and no merged
-#'   cells, ready for [hv_man_table_save()].
+#'   cells, ready for [hv_man_table_save()]. Input from [hv_tbl_summary()]
+#'   retains its `hv_footnotes` attribute so the saver's default dagger
+#'   follows the table's continuous statistic.
 #'
 #' @seealso [hv_man_table_save()] to write the result to a compliant
 #'   `.docx` with footnotes and an abbreviation key. [hv_man_table_jtcvs()]
@@ -92,13 +94,14 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   .check_string(font, "font")
   .check_font_size(font_size)
 
+  footnotes <- attr(tbl, "hv_footnotes", exact = TRUE)
   tbl <- .split_stat_sentinel(tbl)
   ft <- gtsummary::as_flex_table(tbl)
   ft <- flextable::merge_none(ft)
   ft <- flextable::font(ft, fontname = font, part = "all")
   ft <- flextable::fontsize(ft, size = font_size, part = "all")
   ft <- flextable::valign(ft, valign = "center", part = "all")
-
+  attr(ft, "hv_footnotes") <- footnotes
   ft
 }
 
@@ -146,9 +149,9 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   # built from the glue string -- so it reads "N Non-missing ||| Median (15%
   # Centile, 85% Centile)" and carries the separator into the rendered
   # .docx even after the cells themselves are split. Dropped rather than
-  # rewritten: hv_man_footnotes() already ships both halves as house
-  # footnotes ("Number of non-missing values." and "Median (15th, 85th
-  # percentile)."), so a rewrite would duplicate them. Only columns
+  # rewritten: the default house footnotes already ship both halves, and
+  # hv_tbl_summary() makes the statistic half follow its settings, so a
+  # rewrite would duplicate them. Only columns
   # whose footnote actually carries the separator are touched, so a
   # caller's own header footnote survives.
   fh <- tbl$table_styling$footnote_header

@@ -57,6 +57,19 @@
   invisible(x)
 }
 
+.check_percentiles <- function(x) {
+  if (!is.numeric(x) || length(x) != 2L)
+    stop("`percentiles` must be a numeric vector of length 2, ",
+         "e.g. c(15, 85).", call. = FALSE)
+  if (anyNA(x) || any(x != as.integer(x)) || any(x < 0 | x > 100))
+    stop("`percentiles` must be whole numbers between 0 and 100, ",
+         "e.g. c(15, 85).", call. = FALSE)
+  if (x[1] >= x[2])
+    stop("`percentiles` must be increasing: the low percentile must be ",
+         "less than the high one, e.g. c(15, 85).", call. = FALSE)
+  invisible(x)
+}
+
 # Folds the string check and the directory check together because both
 # savers already perform exactly those two steps in sequence; splitting
 # them would leave two things to remember instead of one.
