@@ -12,7 +12,7 @@ hv_man_table_jtcvs(
   tbl,
   groups,
   trailing = NULL,
-  stat_label = "No. (%) or Mean ± SD",
+  stat_label = "No. (%) or Mean±SD",
   font = "Times New Roman",
   font_size = 12,
   ...
@@ -48,7 +48,7 @@ hv_man_table_jtcvs(
 - stat_label:
 
   Sub-header text under each group's statistic column. Default
-  `"No. (%) or Mean ± SD"` (house default for mean/SD tables). Pass e.g.
+  `"No. (%) or Mean±SD"` (house default for mean/SD tables). Pass e.g.
   `"No. (%) or Median (15th, 85th percentile)"` when the table's
   continuous statistic is a median, not a mean.
 
@@ -124,7 +124,7 @@ tbl <- trial |>
   tbl_summary(
     by = trt,
     statistic = list(
-      all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}",
+      all_continuous() ~ "{N_nonmiss} ||| {mean}±{sd}",
       all_categorical() ~ "{N_nonmiss} ||| {n} ({p}%)"
     ),
     include = c(age, grade),

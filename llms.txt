@@ -73,7 +73,7 @@ library(hvtiRtables)
 tbl <- trial |>
   tbl_summary(
     by = trt,
-    statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"),
+    statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean}±{sd}"),
     include = c(age, grade)
   )
 
