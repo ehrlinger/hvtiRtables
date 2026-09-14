@@ -252,7 +252,8 @@ test_that("hv_man_table_jtcvs defaults stat_label to the mean/SD text", {
     groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)")
   )
   xml <- docx_xml_jtcvs(ft)
-  expect_true(grepl("No. (%) or Mean", xml, fixed = TRUE))
+  expect_true(grepl("No. (%) or Mean±SD", xml, fixed = TRUE))
+  expect_false(grepl("Mean ± SD", xml, fixed = TRUE))
 })
 
 test_that("hv_man_table_jtcvs reproduces template's header/section shape", {

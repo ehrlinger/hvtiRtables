@@ -1,5 +1,8 @@
 # hvtiRtables (unreleased)
 
+- **The JTCVS renderer's default mean label now follows house spacing.**
+  `hv_man_table_jtcvs()` writes `"No. (%) or Mean±SD"`, matching
+  `hv_tbl_summary()` and the CORR footnote text.
 - **CORR footnotes now follow the continuous statistic automatically.**
   `hv_man_footnotes()` accepts `continuous_stat` and `percentiles`, and an
   `hv_tbl_summary()` table carries the matching footnote through
