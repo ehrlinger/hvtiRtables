@@ -8,7 +8,7 @@ hv_man_table_jtcvs(
   tbl,
   groups,
   trailing = NULL,
-  stat_label = "No. (\%) or Mean ± SD",
+  stat_label = "No. (\%) or Mean±SD",
   font = "Times New Roman",
   font_size = 12,
   ...
@@ -34,7 +34,7 @@ comparison column (e.g. \code{c(std_diff = "Std. Diff.")} or
 \code{c(p_value = "P")}). Must already exist in \code{tbl$table_body}.}
 
 \item{stat_label}{Sub-header text under each group's statistic column.
-Default \code{"No. (\%) or Mean ± SD"} (house default for mean/SD
+Default \code{"No. (\%) or Mean±SD"} (house default for mean/SD
 tables). Pass e.g. \code{"No. (\%) or Median (15th, 85th percentile)"} when
 the table's continuous statistic is a median, not a mean.}
 
@@ -94,7 +94,7 @@ tbl <- trial |>
   tbl_summary(
     by = trt,
     statistic = list(
-      all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}",
+      all_continuous() ~ "{N_nonmiss} ||| {mean}±{sd}",
       all_categorical() ~ "{N_nonmiss} ||| {n} ({p}\%)"
     ),
     include = c(age, grade),

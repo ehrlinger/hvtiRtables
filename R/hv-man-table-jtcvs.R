@@ -125,7 +125,7 @@
 #'   comparison column (e.g. `c(std_diff = "Std. Diff.")` or
 #'   `c(p_value = "P")`). Must already exist in `tbl$table_body`.
 #' @param stat_label Sub-header text under each group's statistic column.
-#'   Default `"No. (%) or Mean ± SD"` (house default for mean/SD
+#'   Default `"No. (%) or Mean±SD"` (house default for mean/SD
 #'   tables). Pass e.g. `"No. (%) or Median (15th, 85th percentile)"` when
 #'   the table's continuous statistic is a median, not a mean.
 #' @param font Font family. Default `"Times New Roman"` (house rule).
@@ -150,7 +150,7 @@
 #'   tbl_summary(
 #'     by = trt,
 #'     statistic = list(
-#'       all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}",
+#'       all_continuous() ~ "{N_nonmiss} ||| {mean}±{sd}",
 #'       all_categorical() ~ "{N_nonmiss} ||| {n} ({p}%)"
 #'     ),
 #'     include = c(age, grade),
@@ -163,7 +163,7 @@
 #'
 #' @export
 hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
-                               stat_label = "No. (%) or Mean \u00B1 SD",
+                               stat_label = "No. (%) or Mean\u00B1SD",
                                font = "Times New Roman", font_size = 12,
                                ...) {
   .check_sas_args(list(...), "hv_man_table_jtcvs")
