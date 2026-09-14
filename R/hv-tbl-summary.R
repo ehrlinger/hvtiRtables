@@ -18,6 +18,15 @@
 #' convention documented in [hv_man_footnotes()] (15th/85th),
 #' overridable per study (`%summarytable` equivalent: `PP=`).
 #'
+#' Mean/SD output follows Eugene H. Blackstone's (EHB's) paired reporting
+#' rule: the mean is rounded to the first-significant-digit place of the SD,
+#' and the SD is rounded one place finer. When the SD begins with 1, both
+#' retain one additional place. Exact ties round to even; values beyond a tie
+#' round up. This applies to every group and Overall column when
+#' `continuous_stat = "mean"`, and to the mean row under `"both"`. Median and
+#' percentile precision is unchanged. When an SD is zero or unavailable, no
+#' paired precision can be inferred, so gtsummary's existing display is kept.
+#'
 #' The returned object carries three renderer attributes:
 #' `hv_stat_label`, the sub-header text naming the statistics shown
 #' (`"No. (%) or Median (<low>, <high> percentile)"` by default, with
@@ -121,7 +130,7 @@
 #' @param continuous_stat One of `"median"` (default), `"mean"`, or
 #'   `"both"`: how continuous variables are summarized. `"median"` gives
 #'   `median (P<low>, P<high>)`; `"mean"` gives mean +/- SD, with no
-#'   spaces around the plus-minus sign, per the house table rules;
+#'   spaces around the plus-minus sign and EHB/Blackstone paired rounding;
 #'   `"both"` puts the two on sub-rows under the variable, mean +/- SD
 #'   first, with the N shown once, on the first. Choosing one for the
 #'   manuscript is then a matter of deleting a row. The test does not
@@ -366,6 +375,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     continuous_stat = continuous_stat,
     percentiles = percentiles
   )
+  tbl <- .format_blackstone_mean_sd(tbl, continuous, continuous_stat)
 
   effective_compare <- if (is.null(by)) "none" else compare
   if (effective_compare == "none") {
@@ -449,4 +459,76 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   attr(tbl, "hv_trailing") <- stats::setNames(compare_label, "hv_compare_col")
 
   relabel(tbl)
+}
+
+# Round one reported number to a base-10 place using R's round-to-even rule,
+# then retain the trailing zeros that communicate the chosen precision.
+.format_to_place <- function(x, place) {
+  rounded <- round(x, digits = -place)
+  if (rounded == 0) rounded <- 0
+  decimal_mark <- getOption("OutDec")
+  formatC(
+    rounded, format = "f", digits = max(0L, -place),
+    big.mark = if (identical(decimal_mark, ",")) " " else ",",
+    decimal.mark = decimal_mark
+  )
+}
+
+# Apply EHB/Blackstone's paired reporting precision. The mean is rounded to
+# the first-significant-digit place of the SD and the SD one place finer. An
+# SD beginning with 1 shifts both one additional place finer.
+.format_blackstone_pair <- function(mean, sd) {
+  if (!is.finite(mean) || !is.finite(sd) || sd <= 0) return(NULL)
+  mean_place <- floor(log10(abs(sd)))
+  leading <- floor(abs(sd) / 10^mean_place)
+  if (leading == 1L) mean_place <- mean_place - 1L
+  paste0(
+    .format_to_place(mean, mean_place), "\u00B1",
+    .format_to_place(sd, mean_place - 1L)
+  )
+}
+
+# gtsummary retains unrounded statistics in ARD cards. Use those rather than
+# parsing already rounded display strings, then replace only cells containing
+# the mean/SD separator. Median rows under continuous_stat = "both" remain
+# untouched.
+.format_blackstone_mean_sd <- function(tbl, continuous, continuous_stat) {
+  if (!continuous_stat %in% c("mean", "both") || !length(continuous)) {
+    return(tbl)
+  }
+
+  card_names <- intersect(c("tbl_summary", "add_overall"), names(tbl$cards))
+  raw <- lapply(card_names, function(card_name) {
+    card <- tbl$cards[[card_name]]
+    keep <- card$variable %in% continuous &
+      card$stat_name %in% c("mean", "sd")
+    data.frame(
+      variable = card$variable[keep],
+      gts_column = card$gts_column[keep],
+      stat_name = card$stat_name[keep],
+      stat = as.numeric(unlist(card$stat[keep])),
+      stringsAsFactors = FALSE
+    )
+  })
+  raw <- do.call(rbind, raw)
+  keys <- unique(raw[c("variable", "gts_column")])
+
+  for (i in seq_len(nrow(keys))) {
+    variable <- keys$variable[i]
+    column <- keys$gts_column[i]
+    pair <- raw[raw$variable == variable & raw$gts_column == column, ]
+    mean <- pair$stat[pair$stat_name == "mean"]
+    sd <- pair$stat[pair$stat_name == "sd"]
+    if (length(mean) != 1L || length(sd) != 1L) next
+    formatted <- .format_blackstone_pair(mean, sd)
+    if (is.null(formatted) || !column %in% names(tbl$table_body)) next
+
+    cells <- tbl$table_body[[column]]
+    target <- tbl$table_body$variable == variable & !is.na(cells) &
+      grepl("\u00B1", cells, fixed = TRUE)
+    if (sum(target) != 1L) next
+    prefix <- strsplit(cells[target], " ||| ", fixed = TRUE)[[1]][1]
+    tbl$table_body[[column]][target] <- paste(prefix, formatted, sep = " ||| ")
+  }
+  tbl
 }
