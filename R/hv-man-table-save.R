@@ -40,25 +40,21 @@
 #' is not created for you. Run
 #' `dir.create(dirname(file), recursive = TRUE)` first.
 #'
-#' **A footnote that misstates the table.** Nothing errors here.
-#' `footnotes` defaults to [hv_man_footnotes()], whose dagger text
-#' hardcodes the 15th and 85th percentiles; build the table with
-#' [hv_tbl_summary()]'s `percentiles =` set to any other pair and the
-#' table shows one pair while the footnote below it names another.
-#' Override the dagger whenever you move the pair.
+#' **A hand-built footnote that misstates the table.** The automatic
+#' [hv_tbl_summary()] -> [hv_man_table()] path keeps the default dagger in
+#' sync. When supplying `footnotes` yourself, make its wording match the
+#' statistic and percentile pair used to build the table.
 #'
 #' @param ft A `flextable` object, typically from [hv_man_table()].
 #' @param file Output `.docx` path. The output directory (`dirname(file)`)
 #'   must already exist; this function does not create it. (`%summarytable`
 #'   `RTFFILE=`/`PDFFILE=` equivalent; output here is always `.docx`).
-#' @param footnotes Optional named list, symbol -> footnote text. Defaults to
-#'   [hv_man_footnotes()] (the house-universal N and median/percentile
-#'   footnotes). That default text hardcodes the 15th/85th percentile pair;
-#'   if the table was built with [hv_tbl_summary()]'s `percentiles =` set
-#'   to anything else, override it (see below) or the footnote will
-#'   misstate what the table shows. Pass `NULL` to suppress both, or
-#'   compose with [hv_man_footnotes()] to override or extend (see its
-#'   documentation).
+#' @param footnotes Optional named list, symbol -> footnote text. When omitted,
+#'   uses the `hv_footnotes` attribute carried from [hv_tbl_summary()] through
+#'   [hv_man_table()], so the dagger follows that table's `continuous_stat`
+#'   and `percentiles`. Other flextables fall back to [hv_man_footnotes()]'s
+#'   median/15th-85th house defaults. Pass `NULL` to suppress both, or
+#'   compose with [hv_man_footnotes()] to override or extend.
 #'   Symbols must be drawn from `c("*", "†", "‡", "§", "¶", "||")`. Each
 #'   symbol is appended as a superscript reference mark to the table's
 #'   count-column header cell — a column named `n`, else the first
@@ -93,11 +89,13 @@
 #' hv_man_table_save(ft, out, abbreviations = c(N = "sample size"))
 #'
 #' @export
-hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
+hv_man_table_save <- function(ft, file, footnotes = NULL,
                               abbreviations = NULL, ...) {
+  use_default_footnotes <- missing(footnotes)
   .check_sas_args(list(...), "hv_man_table_save")
   .check_flextable(ft)
   .check_file(file)
+  if (use_default_footnotes) footnotes <- .default_footnotes(ft)
   # Hoisted out of .add_abbreviations_key() so it fires at entry
   # rather than mid-render: no partial .docx on a bad argument.
   .check_abbreviations(abbreviations)
@@ -149,6 +147,11 @@ hv_man_table_save <- function(ft, file, footnotes = hv_man_footnotes(),
 
   print(doc, target = file)
   invisible(file)
+}
+
+.default_footnotes <- function(ft) {
+  footnotes <- attr(ft, "hv_footnotes", exact = TRUE)
+  if (is.null(footnotes)) hv_man_footnotes() else footnotes
 }
 
 .add_abbreviations_key <- function(doc, abbreviations) {

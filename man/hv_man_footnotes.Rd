@@ -4,7 +4,20 @@
 \alias{hv_man_footnotes}
 \title{The house-standard manuscript table footnotes}
 \usage{
-hv_man_footnotes()
+hv_man_footnotes(
+  continuous_stat = c("median", "mean", "both"),
+  percentiles = c(15, 85)
+)
+}
+\arguments{
+\item{continuous_stat}{One of \code{"median"} (default), \code{"mean"}, or
+\code{"both"}. Controls whether the dagger reads as median and percentiles,
+mean +/- SD, or both.}
+
+\item{percentiles}{Numeric vector of length 2, the increasing whole-number
+percentile pair named by the dagger. Default \code{c(15, 85)}. Used for
+\code{continuous_stat = "median"} and \code{"both"}; validated but not printed for
+\code{"mean"}, so the arguments share \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s contract.}
 }
 \value{
 A named list with elements \code{`*`} and \code{`†`}, in the format
@@ -18,18 +31,17 @@ Two footnotes are universal to the HVTI CORR "Table Construction for
 Manuscripts" rules, not specific to any one study, so you don't have to
 re-type them at every \code{\link[=hv_man_table_save]{hv_man_table_save()}} call site: a \code{*} for the
 non-missing-value count (house rule 8, exact wording required) and a
-\verb{†} explaining the \code{{median} ({p15}, {p85})} format used for continuous
-variables throughout these tables. You don't need a footnote for the
-categorical \verb{n (\%)} format; the column header text already covers it
+\verb{†} explaining the continuous statistic. You don't need a footnote for
+the categorical \verb{n (\%)} format; the column header text already covers it
 (house rules 10/12).
 
 \code{\link[=hv_man_table_save]{hv_man_table_save()}}'s \code{footnotes} parameter defaults to calling
-this function, so every table gets both automatically. The dagger text
-hardcodes "15th, 85th percentile" -- \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s own default
--- so if you called it with \verb{percentiles =} set to anything else (e.g.
-\code{c(16, 84)}), this default footnote will misreport what the table
-actually shows. Override it in that case; see below. Override with
-ordinary list operations, no special sentinel values needed:
+this function, so every table gets both automatically. A table built by
+\code{\link[=hv_tbl_summary]{hv_tbl_summary()}} and \code{\link[=hv_man_table]{hv_man_table()}} carries its \code{continuous_stat} and
+\code{percentiles} choices through to the saver, so its default dagger follows
+what the table shows. Call this function directly with the same arguments
+when composing footnotes yourself. Override with ordinary list operations,
+no special sentinel values needed:
 \itemize{
 \item Suppress both: \code{footnotes = NULL}
 \item Change one: \code{modifyList(hv_man_footnotes(), list(...))} with
@@ -46,16 +58,17 @@ CORR-shaped, keyed by symbol, and belong to \code{\link[=hv_man_table_save]{hv_m
 column, and rejects this one. Its equivalent is
 \code{\link[=hv_test_footnotes_jtcvs]{hv_test_footnotes_jtcvs()}}.
 
-\strong{Letting the dagger go stale.} The text hardcodes "15th, 85th
-percentile", which is \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s default rather than a
-promise about your table. Call that function with
-\code{percentiles = c(16, 84)} and the table and its footnote disagree,
-silently -- nothing checks that the two still match. Override the
-dagger whenever you move the pair.
+\strong{Calling this helper with settings different from the table.} The
+automatic \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} -> \code{\link[=hv_man_table]{hv_man_table()}} ->
+\code{\link[=hv_man_table_save]{hv_man_table_save()}} path stays synchronized. If you call this helper
+yourself, pass the same \code{continuous_stat} and \code{percentiles} used to build
+the table, or override the dagger explicitly.
 }
 
 \examples{
 hv_man_footnotes()
+hv_man_footnotes(continuous_stat = "mean")
+hv_man_footnotes(continuous_stat = "both", percentiles = c(16, 84))
 modifyList(hv_man_footnotes(), list(`†` = "custom text"))
 
 }

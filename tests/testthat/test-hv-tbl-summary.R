@@ -102,6 +102,18 @@ test_that("hv_tbl_summary sets hv_stat_label on every compare path", {
   }
 })
 
+test_that("hv_tbl_summary formats custom percentile labels as ordinals", {
+  dta <- mk_tbl_summary_data()
+  tbl <- hv_tbl_summary(
+    dta, groups = list(Vitals = "age"), continuous = "age",
+    percentiles = c(1, 2)
+  )
+  expect_identical(
+    attr(tbl, "hv_stat_label"),
+    "No. (%) or Median (1st, 2nd percentile)"
+  )
+})
+
 test_that("hv_tbl_summary rejects a variable listed in two groups sections", {
   dta <- mk_tbl_summary_data()
   expect_error(

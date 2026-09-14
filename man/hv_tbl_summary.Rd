@@ -86,18 +86,17 @@ spaces around the plus-minus sign, per the house table rules;
 first, with the N shown once, on the first. Choosing one for the
 manuscript is then a matter of deleting a row. The test does not
 change with the statistic: it is always the non-parametric one
-described above. With \code{"mean"}, \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}'s dagger
-footnote describes a median the table does not show; override it.
-Placed after \code{overall} so calls passing \code{overall} by position keep
-working.}
+described above. The CORR footnote carried through \code{\link[=hv_man_table]{hv_man_table()}} to
+\code{\link[=hv_man_table_save]{hv_man_table_save()}} follows this choice automatically. Placed after
+\code{overall} so calls passing \code{overall} by position keep working.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.}
 }
 \value{
 A \code{gtsummary} object, ready for \code{\link[=hv_man_table]{hv_man_table()}} or
-\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}. See Details for the \code{hv_stat_label}/
-\code{hv_trailing} attributes, which only \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} reads.
+\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}. See Details for the \code{hv_stat_label},
+\code{hv_trailing}, and \code{hv_footnotes} renderer attributes.
 }
 \description{
 Thin wrapper over \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} modeled on the interface
@@ -119,13 +118,17 @@ continuous test already. \code{percentiles} defaults to the house
 convention documented in \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} (15th/85th),
 overridable per study (\verb{\%summarytable} equivalent: \verb{PP=}).
 
-The returned object carries two attributes for \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}:
+The returned object carries three renderer attributes:
 \code{hv_stat_label}, the sub-header text naming the statistics shown
-(\code{"No. (\%) or Median (<low>th, <high>th percentile)"} by default; it
-follows \code{continuous_stat}), and
+(\code{"No. (\%) or Median (<low>, <high> percentile)"} by default, with
+ordinal suffixes; it
+follows \code{continuous_stat});
 \code{hv_trailing}, a named character vector ready to pass as
 \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}'s \code{trailing} argument when \code{compare} produced a
-comparison column (\code{NULL} when \code{compare = "none"}).
+comparison column (\code{NULL} when \code{compare = "none"}); and \code{hv_footnotes},
+the CORR footnote block that \code{\link[=hv_man_table]{hv_man_table()}} carries into
+\code{\link[=hv_man_table_save]{hv_man_table_save()}} so the default dagger follows \code{continuous_stat} and
+\code{percentiles} automatically.
 }
 \section{Common mistakes}{
 

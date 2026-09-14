@@ -1,5 +1,13 @@
 # hvtiRtables (unreleased)
 
+- **CORR footnotes now follow the continuous statistic automatically.**
+  `hv_man_footnotes()` accepts `continuous_stat` and `percentiles`, and an
+  `hv_tbl_summary()` table carries the matching footnote through
+  `hv_man_table()` into `hv_man_table_save()`'s default. Mean tables no
+  longer receive a median dagger, `"both"` names both statistics, and custom
+  percentile pairs no longer leave the default footnote stale. Custom values
+  use correct ordinal suffixes, including the 11th-13th exceptions. Hand-built
+  flextables retain the median/15th-85th house default.
 - **`hv_tbl_summary()`'s N column now counts non-missing values.** It was
   built from gtsummary's `{N_obs}`, which counts every row, so any variable
   with missing data reported the full row count under a footnote reading

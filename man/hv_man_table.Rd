@@ -29,7 +29,9 @@ produce an error naming the argument to use instead.}
 }
 \value{
 A \code{flextable} object with a single header row and no merged
-cells, ready for \code{\link[=hv_man_table_save]{hv_man_table_save()}}.
+cells, ready for \code{\link[=hv_man_table_save]{hv_man_table_save()}}. Input from \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}
+retains its \code{hv_footnotes} attribute so the saver's default dagger
+follows the table's continuous statistic.
 }
 \description{
 Stage 2 of the \verb{\%summarytable} split: shapes the table. The macro

@@ -102,5 +102,10 @@ non-parametric. It's the largest of four defaults that produce different
 numbers from a faithful-looking port; the vignette's "Defaults that differ"
 table lists all four.
 
+For CORR tables, the standard dagger footnote follows `continuous_stat` and
+`percentiles` automatically through `hv_man_table()` and
+`hv_man_table_save()`. A mean table therefore says `Mean±SD`; a table showing
+both statistics names both.
+
 Full parameter map, the four defaults that differ, and the `QNTLDEF`
 quantile trap: **[Porting a `%summarytable` program to R](https://ehrlinger.github.io/hvtiRtables/articles/sas-migration.html)**.
