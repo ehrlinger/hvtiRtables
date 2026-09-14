@@ -212,3 +212,22 @@ hv_tbl_summary(
   continuous = "age", binary = "age"
 )
 ```
+
+## proc corr
+
+`hv_correlation_table()` ports a `proc corr` job, not a `%summarytable` one:
+
+```sas
+proc corr data=built nosimple spearman pearson fisher(biasadj=no alpha=.32) plots=matrix;
+  var hbga1cpr rdw_pr mcv_pr ...;
+run;
+```
+
+```{r eval = FALSE}
+hv_correlation_table(built, vars = labs, with = "hbga1cpr", by = "a1c_grp")
+```
+
+`alpha=.32` is a 68% interval, and it is this function's default. The
+interval itself is Fisher's z without bias adjustment, matching SAS's
+`biasadj=no`. `plots=matrix`, the scatter-plot matrix, is
+`hvtiPlotR::hv_correlation_matrix()`; this function only produces the table.

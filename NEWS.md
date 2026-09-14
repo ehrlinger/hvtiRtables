@@ -1,5 +1,9 @@
 # hvtiRtables (unreleased)
 
+- **New `hv_correlation_table()`** ports the SAS correlation job
+  (`proc corr spearman pearson fisher(biasadj=no alpha=.32)`): pairwise
+  coefficients with Fisher intervals, a 68% interval by default, pairwise
+  deletion, and a `by` stratum. It backs the `dc-tables` job template.
 - **Mean±SD cells now enforce EHB/Blackstone paired rounding.**
   `hv_tbl_summary()` rounds each mean to the SD's first-significant-digit
   place and the SD one place finer, retaining an extra place in both when the
