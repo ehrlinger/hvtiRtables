@@ -481,6 +481,32 @@ than a wrong table.</p>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `age` appears in more than one of `continuous`, `binary`, and `categorical`. Every variable must be classified exactly once. Overlapping: age (continuous, binary).</span></span></code></pre></div>
 </div>
+<div class="section level2">
+<h2 id="proc-corr">proc corr<a class="anchor" aria-label="anchor" href="#proc-corr"></a>
+</h2>
+<p><code><a href="../reference/hv_correlation_table.html">hv_correlation_table()</a></code> ports a <code>proc corr</code>
+job, not a <code>%summarytable</code> one:</p>
+<pre class="sas"><code>proc sort data=built; by a1c_grp; run;
+proc corr data=built nosimple spearman pearson fisher(biasadj=no alpha=.32);
+  var rdw_pr mcv_pr alb_pr;
+  with hbga1cpr;
+  by a1c_grp;
+run;</code></pre>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hv_correlation_table.html">hv_correlation_table</a></span><span class="op">(</span><span class="va">built</span>, vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rdw_pr"</span>, <span class="st">"mcv_pr"</span>, <span class="st">"alb_pr"</span><span class="op">)</span>,</span>
+<span>                     with <span class="op">=</span> <span class="st">"hbga1cpr"</span>, by <span class="op">=</span> <span class="st">"a1c_grp"</span><span class="op">)</span></span></code></pre></div>
+<p><code>alpha=.32</code> is a 68% interval, and it is this function’s
+default. The interval itself is Fisher’s z without bias adjustment,
+matching SAS’s <code>biasadj=no</code>. The overall table, the same SAS
+job run without <code>BY</code>, is a second call without
+<code>by</code>; the two results have different columns, since only the
+stratified one carries the <code>by</code> column, so add it by hand
+(e.g. <code>overall$a1c_grp &lt;- "Overall"</code>) before
+<code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind()</a></code>-ing the two together. The scatter-plot matrix,
+SAS’s <code>plots=matrix</code>, is
+<code>hvtiPlotR::hv_correlation_matrix()</code>; this function only
+produces the table.</p>
+</div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>

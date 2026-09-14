@@ -224,3 +224,34 @@ hv_tbl_summary(
 #> Error:
 #> ! `age` appears in more than one of `continuous`, `binary`, and `categorical`. Every variable must be classified exactly once. Overlapping: age (continuous, binary).
 ```
+
+## proc corr
+
+[`hv_correlation_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_correlation_table.md)
+ports a `proc corr` job, not a `%summarytable` one:
+
+``` sas
+proc sort data=built; by a1c_grp; run;
+proc corr data=built nosimple spearman pearson fisher(biasadj=no alpha=.32);
+  var rdw_pr mcv_pr alb_pr;
+  with hbga1cpr;
+  by a1c_grp;
+run;
+```
+
+``` r
+
+hv_correlation_table(built, vars = c("rdw_pr", "mcv_pr", "alb_pr"),
+                     with = "hbga1cpr", by = "a1c_grp")
+```
+
+`alpha=.32` is a 68% interval, and it is this function’s default. The
+interval itself is Fisher’s z without bias adjustment, matching SAS’s
+`biasadj=no`. The overall table, the same SAS job run without `BY`, is a
+second call without `by`; the two results have different columns, since
+only the stratified one carries the `by` column, so add it by hand (e.g.
+`overall$a1c_grp <- "Overall"`) before
+[`rbind()`](https://rdrr.io/r/base/cbind.html)-ing the two together. The
+scatter-plot matrix, SAS’s `plots=matrix`, is
+`hvtiPlotR::hv_correlation_matrix()`; this function only produces the
+table.

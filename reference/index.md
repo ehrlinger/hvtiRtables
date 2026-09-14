@@ -54,6 +54,15 @@ hand edit.
 - [`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md)
   : Check a .docx for structural patterns the house rules forbid
 
+## Correlations: `proc corr ... fisher`
+
+Pairwise Spearman and Pearson coefficients with Fisher confidence
+intervals, overall or within strata. The scatter-plot matrix is
+`hvtiPlotR::hv_correlation_matrix()`.
+
+- [`hv_correlation_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_correlation_table.md)
+  : Pairwise correlations with Fisher confidence intervals
+
 ## Package overview
 
 Which rendering mode to use, and both pipelines end to end.
