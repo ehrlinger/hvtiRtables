@@ -297,10 +297,9 @@ behavior.
   object ready for `hv_man_table_jtcvs()`. See the README's "Migrating
   from the `%summarytable` SAS macro" section for a parameter-mapping
   table and worked example.
-- `hv_man_table_jtcvs()` gains a `stat_label` parameter (default
-  `"No. (%) or Mean ± SD"`, unchanged for existing callers) so callers
-  whose statistic is a median, not a mean, can set an accurate
-  sub-header — `hv_tbl_summary()` sets this automatically.
+- `hv_man_table_jtcvs()` gains a `stat_label` parameter so callers whose
+  statistic is a median, not a mean, can set an accurate sub-header —
+  `hv_tbl_summary()` sets this automatically.
 
 # hvtiRtables 0.9.0
 
