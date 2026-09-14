@@ -171,6 +171,39 @@ test_that("digits must be a single non-negative whole number", {
                                     digits = 1.5), "digits")
   expect_error(hv_correlation_table(d, vars = "glu", with = "a1c",
                                     digits = c(1, 2)), "digits")
+  expect_error(hv_correlation_table(d, vars = "glu", with = "a1c",
+                                    digits = Inf), "digits")
+})
+
+test_that("duplicate-only vars cannot masquerade as a pair", {
+  d <- mk_corr_data()
+  expect_error(
+    hv_correlation_table(d, vars = c("glu", "glu"), method = "pearson"),
+    "at least two"
+  )
+})
+
+test_that("all-missing by returns an empty data frame with a typed stratum", {
+  d <- mk_corr_data()
+  d$grp[] <- NA
+  out <- hv_correlation_table(d, vars = "glu", with = "a1c", by = "grp",
+                              method = "pearson")
+  expect_s3_class(out, "data.frame")
+  expect_equal(nrow(out), 0L)
+  expect_s3_class(out$grp, "factor")
+  expect_equal(levels(out$grp), levels(d$grp))
+  expect_identical(names(out), c("grp", "variable", "label", "with", "method",
+                                 "n", "estimate", "conf.low", "conf.high",
+                                 "p.value", "display"))
+})
+
+test_that("by rejects names reserved by the output schema", {
+  d <- mk_corr_data()
+  d$variable <- rep(c("a", "b"), each = nrow(d) / 2)
+  expect_error(
+    hv_correlation_table(d, vars = "glu", with = "a1c", by = "variable"),
+    "reserved output column"
+  )
 })
 
 test_that("by naming a column also in vars or with errors", {

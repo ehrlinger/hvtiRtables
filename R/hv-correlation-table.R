@@ -63,9 +63,6 @@ hv_correlation_table <- function(data, vars, with = NULL, by = NULL,
   if (!is.null(with) && (!is.character(with) || anyNA(with)))
     stop("`with` must be NULL or a character vector naming at least one ",
          "column.", call. = FALSE)
-  if (is.null(with) && length(vars) < 2L)
-    stop("`vars` needs at least two columns when `with` is NULL.",
-         call. = FALSE)
   if (!is.null(with) && length(with) == 0L)
     stop("`with` must be NULL or name at least one column.", call. = FALSE)
   if (!is.null(by)) .check_string(by, "by")
@@ -74,12 +71,16 @@ hv_correlation_table <- function(data, vars, with = NULL, by = NULL,
     stop("`conf_level` must be a single number strictly between 0 and 1.",
          call. = FALSE)
   if (!is.numeric(digits) || length(digits) != 1L || is.na(digits) ||
+        !is.finite(digits) ||
         digits < 0 || digits != round(digits))
     stop("`digits` must be a single non-negative whole number.",
          call. = FALSE)
 
   vars <- unique(vars)
   if (!is.null(with)) with <- unique(with)
+  if (is.null(with) && length(vars) < 2L)
+    stop("`vars` needs at least two columns when `with` is NULL.",
+         call. = FALSE)
 
   cols <- unique(c(vars, with))
   absent <- setdiff(c(cols, by), names(data))
@@ -92,6 +93,11 @@ hv_correlation_table <- function(data, vars, with = NULL, by = NULL,
          paste(not_num, collapse = ", "), call. = FALSE)
   if (!is.null(by) && by %in% cols)
     stop("`by` must not also be a column in `vars` or `with`: ", by,
+         call. = FALSE)
+  reserved <- c("variable", "label", "with", "method", "n", "estimate",
+                "conf.low", "conf.high", "p.value", "display")
+  if (!is.null(by) && by %in% reserved)
+    stop("`by` must not use a reserved output column name: ", by,
          call. = FALSE)
 
   pairs <- if (is.null(with)) {
@@ -134,7 +140,12 @@ hv_correlation_table <- function(data, vars, with = NULL, by = NULL,
       }
     }
   }
-  out <- do.call(rbind, rows)
+  out <- if (length(rows)) do.call(rbind, rows) else data.frame(
+    stratum = data[[by]][FALSE], variable = character(), label = character(),
+    with = character(), method = character(), n = integer(),
+    estimate = numeric(), conf.low = numeric(), conf.high = numeric(),
+    p.value = numeric(), stringsAsFactors = FALSE
+  )
   out$display <- ifelse(
     is.na(out$conf.low), NA_character_,
     sprintf("%.*f (%.*f, %.*f)", digits, out$estimate, digits, out$conf.low,
