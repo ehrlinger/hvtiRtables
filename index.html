@@ -157,6 +157,7 @@
 </tbody>
 </table>
 <p>The one thing worth knowing before you start: <code>CON1=</code> variables change statistic by default. The macro reported them as mean +/- SD with one-way ANOVA; every continuous variable here defaults to a median with a non-parametric test, which is the <code>CON3=</code> behavior. <code>continuous_stat = "mean"</code> (or <code>"both"</code>) brings the mean back, but the test stays non-parametric. It’s the largest of four defaults that produce different numbers from a faithful-looking port; the vignette’s “Defaults that differ” table lists all four.</p>
+<p>For CORR tables, the standard dagger footnote follows <code>continuous_stat</code> and <code>percentiles</code> automatically through <code><a href="reference/hv_man_table.html">hv_man_table()</a></code> and <code><a href="reference/hv_man_table_save.html">hv_man_table_save()</a></code>. A mean table therefore says <code>Mean±SD</code>; a table showing both statistics names both.</p>
 <p>Full parameter map, the four defaults that differ, and the <code>QNTLDEF</code> quantile trap: <strong><a href="https://ehrlinger.github.io/hvtiRtables/articles/sas-migration.html">Porting a <code>%summarytable</code> program to R</a></strong>.</p>
 </div>
 </div>

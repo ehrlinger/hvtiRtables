@@ -174,10 +174,9 @@ spaces around the plus-minus sign, per the house table rules;
 first, with the N shown once, on the first. Choosing one for the
 manuscript is then a matter of deleting a row. The test does not
 change with the statistic: it is always the non-parametric one
-described above. With <code>"mean"</code>, <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>'s dagger
-footnote describes a median the table does not show; override it.
-Placed after <code>overall</code> so calls passing <code>overall</code> by position keep
-working.</p></dd>
+described above. The CORR footnote carried through <code><a href="hv_man_table.html">hv_man_table()</a></code> to
+<code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> follows this choice automatically. Placed after
+<code>overall</code> so calls passing <code>overall</code> by position keep working.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -188,8 +187,8 @@ produce an error naming the argument to use instead.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>gtsummary</code> object, ready for <code><a href="hv_man_table.html">hv_man_table()</a></code> or
-<code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>. See Details for the <code>hv_stat_label</code>/
-<code>hv_trailing</code> attributes, which only <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> reads.</p>
+<code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>. See Details for the <code>hv_stat_label</code>,
+<code>hv_trailing</code>, and <code>hv_footnotes</code> renderer attributes.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -202,13 +201,17 @@ not classify variables as Gaussian/non-Gaussian the way
 continuous test already. <code>percentiles</code> defaults to the house
 convention documented in <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code> (15th/85th),
 overridable per study (<code>%summarytable</code> equivalent: <code>PP=</code>).</p>
-<p>The returned object carries two attributes for <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>:
+<p>The returned object carries three renderer attributes:
 <code>hv_stat_label</code>, the sub-header text naming the statistics shown
-(<code>"No. (%) or Median (&lt;low&gt;th, &lt;high&gt;th percentile)"</code> by default; it
-follows <code>continuous_stat</code>), and
+(<code>"No. (%) or Median (&lt;low&gt;, &lt;high&gt; percentile)"</code> by default, with
+ordinal suffixes; it
+follows <code>continuous_stat</code>);
 <code>hv_trailing</code>, a named character vector ready to pass as
 <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>'s <code>trailing</code> argument when <code>compare</code> produced a
-comparison column (<code>NULL</code> when <code>compare = "none"</code>).</p>
+comparison column (<code>NULL</code> when <code>compare = "none"</code>); and <code>hv_footnotes</code>,
+the CORR footnote block that <code><a href="hv_man_table.html">hv_man_table()</a></code> carries into
+<code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> so the default dagger follows <code>continuous_stat</code> and
+<code>percentiles</code> automatically.</p>
     </div>
     <div class="section level2">
     <h2 id="common-mistakes">Common mistakes<a class="anchor" aria-label="anchor" href="#common-mistakes"></a></h2>

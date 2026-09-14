@@ -119,11 +119,12 @@ hv_tbl_summary(
   variable, mean +/- SD first, with the N shown once, on the first.
   Choosing one for the manuscript is then a matter of deleting a row.
   The test does not change with the statistic: it is always the
-  non-parametric one described above. With `"mean"`,
-  [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)'s
-  dagger footnote describes a median the table does not show; override
-  it. Placed after `overall` so calls passing `overall` by position keep
-  working.
+  non-parametric one described above. The CORR footnote carried through
+  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+  to
+  [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
+  follows this choice automatically. Placed after `overall` so calls
+  passing `overall` by position keep working.
 
 - ...:
 
@@ -136,10 +137,8 @@ A `gtsummary` object, ready for
 [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
 or
 [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md).
-See Details for the `hv_stat_label`/ `hv_trailing` attributes, which
-only
-[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
-reads.
+See Details for the `hv_stat_label`, `hv_trailing`, and `hv_footnotes`
+renderer attributes.
 
 ## Details
 
@@ -155,15 +154,20 @@ convention documented in
 [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
 (15th/85th), overridable per study (`%summarytable` equivalent: `PP=`).
 
-The returned object carries two attributes for
-[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md):
-`hv_stat_label`, the sub-header text naming the statistics shown
-(`"No. (%) or Median (<low>th, <high>th percentile)"` by default; it
-follows `continuous_stat`), and `hv_trailing`, a named character vector
-ready to pass as
+The returned object carries three renderer attributes: `hv_stat_label`,
+the sub-header text naming the statistics shown
+(`"No. (%) or Median (<low>, <high> percentile)"` by default, with
+ordinal suffixes; it follows `continuous_stat`); `hv_trailing`, a named
+character vector ready to pass as
 [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)'s
 `trailing` argument when `compare` produced a comparison column (`NULL`
-when `compare = "none"`).
+when `compare = "none"`); and `hv_footnotes`, the CORR footnote block
+that
+[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+carries into
+[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
+so the default dagger follows `continuous_stat` and `percentiles`
+automatically.
 
 ## Common mistakes
 

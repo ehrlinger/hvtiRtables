@@ -361,15 +361,16 @@ writes no caption</td>
 </tr>
 <tr class="odd">
 <td><code>PRINTFN=</code></td>
-<td><code>footnotes = hv_man_footnotes()</code></td>
+<td>omit <code>footnotes</code> (default)</td>
 <td>
 <strong>CORR only.</strong> The house block is CORR-shaped and
 cannot be passed to <code><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>, which needs
 <code>list(row =, col =, text =)</code> entries; build those, or use
-<code><a href="../reference/hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code>. It also hard-codes the 15th/85th
-percentiles, so change it if you change <code>percentiles</code> or set
-<code>continuous_stat = "mean"</code>
-</td>
+<code><a href="../reference/hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code>. On the standard
+<code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> -&gt; <code><a href="../reference/hv_man_table.html">hv_man_table()</a></code> path,
+the default dagger follows <code>continuous_stat</code> and
+<code>percentiles</code> automatically. Use
+<code>footnotes = NULL</code> for <code>PRINTFN=0</code>.</td>
 </tr>
 <tr class="even">
 <td>

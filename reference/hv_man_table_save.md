@@ -6,13 +6,7 @@ macro's `RTFFILE=`/`PDFFILE=` output block.
 ## Usage
 
 ``` r
-hv_man_table_save(
-  ft,
-  file,
-  footnotes = hv_man_footnotes(),
-  abbreviations = NULL,
-  ...
-)
+hv_man_table_save(ft, file, footnotes = NULL, abbreviations = NULL, ...)
 ```
 
 ## Arguments
@@ -30,18 +24,19 @@ hv_man_table_save(
 
 - footnotes:
 
-  Optional named list, symbol -\> footnote text. Defaults to
+  Optional named list, symbol -\> footnote text. When omitted, uses the
+  `hv_footnotes` attribute carried from
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  through
+  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md),
+  so the dagger follows that table's `continuous_stat` and
+  `percentiles`. Other flextables fall back to
+  [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)'s
+  median/15th-85th house defaults. Pass `NULL` to suppress both, or
+  compose with
   [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
-  (the house-universal N and median/percentile footnotes). That default
-  text hardcodes the 15th/85th percentile pair; if the table was built
-  with
-  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)'s
-  `percentiles =` set to anything else, override it (see below) or the
-  footnote will misstate what the table shows. Pass `NULL` to suppress
-  both, or compose with
-  [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
-  to override or extend (see its documentation). Symbols must be drawn
-  from `c("*", "†", "‡", "§", "¶", "||")`. Each symbol is appended as a
+  to override or extend. Symbols must be drawn from
+  `c("*", "†", "‡", "§", "¶", "||")`. Each symbol is appended as a
   superscript reference mark to the table's count-column header cell — a
   column named `n`, else the first `n_stat_<k>` column
   [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
@@ -122,15 +117,13 @@ markers are the JTCVS renderer's convention.
 created for you. Run `dir.create(dirname(file), recursive = TRUE)`
 first.
 
-**A footnote that misstates the table.** Nothing errors here.
-`footnotes` defaults to
-[`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md),
-whose dagger text hardcodes the 15th and 85th percentiles; build the
-table with
-[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)'s
-`percentiles =` set to any other pair and the table shows one pair while
-the footnote below it names another. Override the dagger whenever you
-move the pair.
+**A hand-built footnote that misstates the table.** The automatic
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+-\>
+[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+path keeps the default dagger in sync. When supplying `footnotes`
+yourself, make its wording match the statistic and percentile pair used
+to build the table.
 
 ## See also
 

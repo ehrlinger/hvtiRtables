@@ -54,13 +54,7 @@ the macro's <code>RTFFILE=</code>/<code>PDFFILE=</code> output block.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hv_man_table_save</span><span class="op">(</span></span>
-<span>  <span class="va">ft</span>,</span>
-<span>  <span class="va">file</span>,</span>
-<span>  footnotes <span class="op">=</span> <span class="fu"><a href="hv_man_footnotes.html">hv_man_footnotes</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  abbreviations <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">...</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hv_man_table_save</span><span class="op">(</span><span class="va">ft</span>, <span class="va">file</span>, footnotes <span class="op">=</span> <span class="cn">NULL</span>, abbreviations <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -78,14 +72,12 @@ must already exist; this function does not create it. (<code>%summarytable</code
 
 
 <dt id="arg-footnotes">footnotes<a class="anchor" aria-label="anchor" href="#arg-footnotes"></a></dt>
-<dd><p>Optional named list, symbol -&gt; footnote text. Defaults to
-<code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code> (the house-universal N and median/percentile
-footnotes). That default text hardcodes the 15th/85th percentile pair;
-if the table was built with <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>'s <code>percentiles =</code> set
-to anything else, override it (see below) or the footnote will
-misstate what the table shows. Pass <code>NULL</code> to suppress both, or
-compose with <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code> to override or extend (see its
-documentation).
+<dd><p>Optional named list, symbol -&gt; footnote text. When omitted,
+uses the <code>hv_footnotes</code> attribute carried from <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> through
+<code><a href="hv_man_table.html">hv_man_table()</a></code>, so the dagger follows that table's <code>continuous_stat</code>
+and <code>percentiles</code>. Other flextables fall back to <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>'s
+median/15th-85th house defaults. Pass <code>NULL</code> to suppress both, or
+compose with <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code> to override or extend.
 Symbols must be drawn from <code>c("*", "†", "‡", "§", "¶", "||")</code>. Each
 symbol is appended as a superscript reference mark to the table's
 count-column header cell — a column named <code>n</code>, else the first
@@ -155,12 +147,10 @@ one of them; lettered markers are the JTCVS renderer's convention.</p>
 <p><strong>"Output directory does not exist: ..."</strong> The <code><a href="https://rdrr.io/r/base/basename.html" class="external-link">dirname()</a></code> of <code>file</code>
 is not created for you. Run
 <code>dir.create(dirname(file), recursive = TRUE)</code> first.</p>
-<p><strong>A footnote that misstates the table.</strong> Nothing errors here.
-<code>footnotes</code> defaults to <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>, whose dagger text
-hardcodes the 15th and 85th percentiles; build the table with
-<code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>'s <code>percentiles =</code> set to any other pair and the
-table shows one pair while the footnote below it names another.
-Override the dagger whenever you move the pair.</p>
+<p><strong>A hand-built footnote that misstates the table.</strong> The automatic
+<code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> -&gt; <code><a href="hv_man_table.html">hv_man_table()</a></code> path keeps the default dagger in
+sync. When supplying <code>footnotes</code> yourself, make its wording match the
+statistic and percentile pair used to build the table.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

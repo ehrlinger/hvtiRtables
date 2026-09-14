@@ -51,9 +51,29 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hv_man_footnotes</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hv_man_footnotes</span><span class="op">(</span></span>
+<span>  continuous_stat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"median"</span>, <span class="st">"mean"</span>, <span class="st">"both"</span><span class="op">)</span>,</span>
+<span>  percentiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">85</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
+
+
+<dl><dt id="arg-continuous-stat">continuous_stat<a class="anchor" aria-label="anchor" href="#arg-continuous-stat"></a></dt>
+<dd><p>One of <code>"median"</code> (default), <code>"mean"</code>, or
+<code>"both"</code>. Controls whether the dagger reads as median and percentiles,
+mean +/- SD, or both.</p></dd>
+
+
+<dt id="arg-percentiles">percentiles<a class="anchor" aria-label="anchor" href="#arg-percentiles"></a></dt>
+<dd><p>Numeric vector of length 2, the increasing whole-number
+percentile pair named by the dagger. Default <code>c(15, 85)</code>. Used for
+<code>continuous_stat = "median"</code> and <code>"both"</code>; validated but not printed for
+<code>"mean"</code>, so the arguments share <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>'s contract.</p></dd>
+
+</dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A named list with elements <code>`*`</code> and <code>`†`</code>, in the format
@@ -65,17 +85,16 @@
 Manuscripts" rules, not specific to any one study, so you don't have to
 re-type them at every <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> call site: a <code>*</code> for the
 non-missing-value count (house rule 8, exact wording required) and a
-<code>†</code> explaining the <code>{median} ({p15}, {p85})</code> format used for continuous
-variables throughout these tables. You don't need a footnote for the
-categorical <code>n (%)</code> format; the column header text already covers it
+<code>†</code> explaining the continuous statistic. You don't need a footnote for
+the categorical <code>n (%)</code> format; the column header text already covers it
 (house rules 10/12).</p>
 <p><code><a href="hv_man_table_save.html">hv_man_table_save()</a></code>'s <code>footnotes</code> parameter defaults to calling
-this function, so every table gets both automatically. The dagger text
-hardcodes "15th, 85th percentile" – <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>'s own default
-– so if you called it with <code>percentiles =</code> set to anything else (e.g.
-<code>c(16, 84)</code>), this default footnote will misreport what the table
-actually shows. Override it in that case; see below. Override with
-ordinary list operations, no special sentinel values needed:</p><ul><li><p>Suppress both: <code>footnotes = NULL</code></p></li>
+this function, so every table gets both automatically. A table built by
+<code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> and <code><a href="hv_man_table.html">hv_man_table()</a></code> carries its <code>continuous_stat</code> and
+<code>percentiles</code> choices through to the saver, so its default dagger follows
+what the table shows. Call this function directly with the same arguments
+when composing footnotes yourself. Override with ordinary list operations,
+no special sentinel values needed:</p><ul><li><p>Suppress both: <code>footnotes = NULL</code></p></li>
 <li><p>Change one: <code>modifyList(hv_man_footnotes(), list(...))</code> with
 <code>`†`</code> = "custom text"</p></li>
 <li><p>Add a study-specific one alongside: <code>c(hv_man_footnotes(), list(...))</code>
@@ -90,12 +109,11 @@ CORR-shaped, keyed by symbol, and belong to <code><a href="hv_man_table_save.htm
 <code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> takes an unrelated type keyed by row and
 column, and rejects this one. Its equivalent is
 <code><a href="hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code>.</p>
-<p><strong>Letting the dagger go stale.</strong> The text hardcodes "15th, 85th
-percentile", which is <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>'s default rather than a
-promise about your table. Call that function with
-<code>percentiles = c(16, 84)</code> and the table and its footnote disagree,
-silently – nothing checks that the two still match. Override the
-dagger whenever you move the pair.</p>
+<p><strong>Calling this helper with settings different from the table.</strong> The
+automatic <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> -&gt; <code><a href="hv_man_table.html">hv_man_table()</a></code> -&gt;
+<code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> path stays synchronized. If you call this helper
+yourself, pass the same <code>continuous_stat</code> and <code>percentiles</code> used to build
+the table, or override the dagger explicitly.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -110,6 +128,20 @@ dagger whenever you move the pair.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`†`</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Median (15th, 85th percentile)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span><span class="fu">hv_man_footnotes</span><span class="op">(</span>continuous_stat <span class="op">=</span> <span class="st">"mean"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`*`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of non-missing values."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`†`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean±SD."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span><span class="fu">hv_man_footnotes</span><span class="op">(</span>continuous_stat <span class="op">=</span> <span class="st">"both"</span>, percentiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">16</span>, <span class="fl">84</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`*`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of non-missing values."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`†`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean±SD; Median (16th, 84th percentile)."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/modifyList.html" class="external-link">modifyList</a></span><span class="op">(</span><span class="fu">hv_man_footnotes</span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>`†` <span class="op">=</span> <span class="st">"custom text"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`*`</span>

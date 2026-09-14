@@ -51,6 +51,10 @@ hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2, ...)
 A `flextable` object with a single header row and no merged cells, ready
 for
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md).
+Input from
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+retains its `hv_footnotes` attribute so the saver's default dagger
+follows the table's continuous statistic.
 
 ## Details
 

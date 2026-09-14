@@ -119,7 +119,7 @@ tbl <- hv_tbl_summary(
 | `NCOL=` | automatic | per-group Ns always shown, and the Overall column’s N with the default `overall = TRUE` (`NCOL=3`) |
 | `TBLTITLE=` | `caption` | **JTCVS only** - [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md) writes no caption |
 | `ADDFN=` | `footnotes` | on the save function |
-| `PRINTFN=` | `footnotes = hv_man_footnotes()` | **CORR only.** The house block is CORR-shaped and cannot be passed to [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md), which needs `list(row =, col =, text =)` entries; build those, or use [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md). It also hard-codes the 15th/85th percentiles, so change it if you change `percentiles` or set `continuous_stat = "mean"` |
+| `PRINTFN=` | omit `footnotes` (default) | **CORR only.** The house block is CORR-shaped and cannot be passed to [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md), which needs `list(row =, col =, text =)` entries; build those, or use [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md). On the standard [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md) -\> [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md) path, the default dagger follows `continuous_stat` and `percentiles` automatically. Use `footnotes = NULL` for `PRINTFN=0`. |
 | `RTFFILE=`, `PDFFILE=`, `XMLFILE=` | `file` | output is always `.docx` |
 
 The save stage is a sibling pair, and the two do not take the same
