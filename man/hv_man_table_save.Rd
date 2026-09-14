@@ -4,13 +4,7 @@
 \alias{hv_man_table_save}
 \title{Write an hv_man_table() table to a compliant .docx}
 \usage{
-hv_man_table_save(
-  ft,
-  file,
-  footnotes = .default_footnotes(ft),
-  abbreviations = NULL,
-  ...
-)
+hv_man_table_save(ft, file, footnotes = NULL, abbreviations = NULL, ...)
 }
 \arguments{
 \item{ft}{A \code{flextable} object, typically from \code{\link[=hv_man_table]{hv_man_table()}}.}
@@ -19,8 +13,8 @@ hv_man_table_save(
 must already exist; this function does not create it. (\verb{\%summarytable}
 \verb{RTFFILE=}/\verb{PDFFILE=} equivalent; output here is always \code{.docx}).}
 
-\item{footnotes}{Optional named list, symbol -> footnote text. Defaults to
-the \code{hv_footnotes} attribute carried from \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} through
+\item{footnotes}{Optional named list, symbol -> footnote text. When omitted,
+uses the \code{hv_footnotes} attribute carried from \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} through
 \code{\link[=hv_man_table]{hv_man_table()}}, so the dagger follows that table's \code{continuous_stat}
 and \code{percentiles}. Other flextables fall back to \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}'s
 median/15th-85th house defaults. Pass \code{NULL} to suppress both, or

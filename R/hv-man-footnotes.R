@@ -63,8 +63,9 @@ hv_man_footnotes <- function(
   continuous_stat <- match.arg(continuous_stat)
   .check_percentiles(percentiles)
   out <- list(`*` = "Number of non-missing values.")
+  ordinal <- .format_ordinal(percentiles)
   median_note <- sprintf(
-    "Median (%sth, %sth percentile).", percentiles[1], percentiles[2]
+    "Median (%s, %s percentile).", ordinal[1], ordinal[2]
   )
   out[["\u2020"]] <- switch(
     continuous_stat,
@@ -73,4 +74,13 @@ hv_man_footnotes <- function(
     both = paste("Mean\u00b1SD;", median_note)
   )
   out
+}
+
+.format_ordinal <- function(x) {
+  suffix <- rep("th", length(x))
+  is_exception <- x %% 100 %in% 11:13
+  suffix[!is_exception & x %% 10 == 1] <- "st"
+  suffix[!is_exception & x %% 10 == 2] <- "nd"
+  suffix[!is_exception & x %% 10 == 3] <- "rd"
+  paste0(x, suffix)
 }

@@ -49,8 +49,8 @@
 #' @param file Output `.docx` path. The output directory (`dirname(file)`)
 #'   must already exist; this function does not create it. (`%summarytable`
 #'   `RTFFILE=`/`PDFFILE=` equivalent; output here is always `.docx`).
-#' @param footnotes Optional named list, symbol -> footnote text. Defaults to
-#'   the `hv_footnotes` attribute carried from [hv_tbl_summary()] through
+#' @param footnotes Optional named list, symbol -> footnote text. When omitted,
+#'   uses the `hv_footnotes` attribute carried from [hv_tbl_summary()] through
 #'   [hv_man_table()], so the dagger follows that table's `continuous_stat`
 #'   and `percentiles`. Other flextables fall back to [hv_man_footnotes()]'s
 #'   median/15th-85th house defaults. Pass `NULL` to suppress both, or
@@ -89,11 +89,13 @@
 #' hv_man_table_save(ft, out, abbreviations = c(N = "sample size"))
 #'
 #' @export
-hv_man_table_save <- function(ft, file, footnotes = .default_footnotes(ft),
+hv_man_table_save <- function(ft, file, footnotes = NULL,
                               abbreviations = NULL, ...) {
+  use_default_footnotes <- missing(footnotes)
   .check_sas_args(list(...), "hv_man_table_save")
   .check_flextable(ft)
   .check_file(file)
+  if (use_default_footnotes) footnotes <- .default_footnotes(ft)
   # Hoisted out of .add_abbreviations_key() so it fires at entry
   # rather than mid-render: no partial .docx on a bad argument.
   .check_abbreviations(abbreviations)

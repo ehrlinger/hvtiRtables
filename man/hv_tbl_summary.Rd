@@ -120,7 +120,8 @@ overridable per study (\verb{\%summarytable} equivalent: \verb{PP=}).
 
 The returned object carries three renderer attributes:
 \code{hv_stat_label}, the sub-header text naming the statistics shown
-(\code{"No. (\%) or Median (<low>th, <high>th percentile)"} by default; it
+(\code{"No. (\%) or Median (<low>, <high> percentile)"} by default, with
+ordinal suffixes; it
 follows \code{continuous_stat});
 \code{hv_trailing}, a named character vector ready to pass as
 \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}'s \code{trailing} argument when \code{compare} produced a

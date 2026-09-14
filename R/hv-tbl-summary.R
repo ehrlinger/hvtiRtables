@@ -20,7 +20,8 @@
 #'
 #' The returned object carries three renderer attributes:
 #' `hv_stat_label`, the sub-header text naming the statistics shown
-#' (`"No. (%) or Median (<low>th, <high>th percentile)"` by default; it
+#' (`"No. (%) or Median (<low>, <high> percentile)"` by default, with
+#' ordinal suffixes; it
 #' follows `continuous_stat`);
 #' `hv_trailing`, a named character vector ready to pass as
 #' [hv_man_table_jtcvs()]'s `trailing` argument when `compare` produced a
@@ -248,12 +249,15 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 
   p_lo <- percentiles[1]
   p_hi <- percentiles[2]
+  ordinal <- .format_ordinal(percentiles)
   # {N_nonmiss}, not {N_obs}: the N column is footnoted "Number of
   # non-missing values." (house rule 8), and {N_obs} counts every row,
   # missing ones included. The SAS tables count non-missing (bsa shows
   # 7947 of 7948), so {N_obs} silently overstated n for any variable
   # with missing data.
-  median_label <- sprintf("Median (%sth, %sth percentile)", p_lo, p_hi)
+  median_label <- sprintf(
+    "Median (%s, %s percentile)", ordinal[1], ordinal[2]
+  )
   mean_label <- "Mean\u00B1SD"
   median_stat <- sprintf("{median} ({p%s}, {p%s})", p_lo, p_hi)
   # No spaces around the plus-minus: journals count table entries toward

@@ -61,7 +61,8 @@
   if (!is.numeric(x) || length(x) != 2L)
     stop("`percentiles` must be a numeric vector of length 2, ",
          "e.g. c(15, 85).", call. = FALSE)
-  if (anyNA(x) || any(x != as.integer(x)) || any(x < 0 | x > 100))
+  if (anyNA(x) || any(!is.finite(x)) || any(x < 0 | x > 100) ||
+        any(x != floor(x)))
     stop("`percentiles` must be whole numbers between 0 and 100, ",
          "e.g. c(15, 85).", call. = FALSE)
   if (x[1] >= x[2])

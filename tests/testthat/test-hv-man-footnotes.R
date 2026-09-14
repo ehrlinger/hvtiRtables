@@ -21,6 +21,24 @@ test_that("hv_man_footnotes follows the continuous statistic", {
   )
 })
 
+test_that("hv_man_footnotes formats custom percentiles as ordinals", {
+  cases <- list(
+    `1st and 2nd` = list(p = c(1, 2), want = "Median (1st, 2nd percentile)."),
+    `11th and 13th` = list(
+      p = c(11, 13), want = "Median (11th, 13th percentile)."
+    ),
+    `12th and 13th` = list(
+      p = c(12, 13), want = "Median (12th, 13th percentile)."
+    ),
+    `21st and 22nd` = list(
+      p = c(21, 22), want = "Median (21st, 22nd percentile)."
+    )
+  )
+  for (case in cases) {
+    expect_identical(hv_man_footnotes(percentiles = case$p)[["†"]], case$want)
+  }
+})
+
 test_that("hv_man_footnotes rejects malformed percentiles", {
   expect_error(
     hv_man_footnotes(percentiles = c(10, 50, 90)),
@@ -36,6 +54,21 @@ test_that("hv_man_footnotes rejects malformed percentiles", {
     hv_man_footnotes(percentiles = c(85, 15)),
     "`percentiles` must be increasing", fixed = TRUE
   )
+})
+
+test_that("non-finite percentiles fail without a coercion warning", {
+  warnings <- character(0)
+  expect_error(
+    withCallingHandlers(
+      hv_man_footnotes(percentiles = c(Inf, 85)),
+      warning = function(cnd) {
+        warnings <<- c(warnings, conditionMessage(cnd))
+        invokeRestart("muffleWarning")
+      }
+    ),
+    "`percentiles` must be whole numbers between 0 and 100", fixed = TRUE
+  )
+  expect_length(warnings, 0L)
 })
 
 test_that("hv_man_footnotes can be overridden with modifyList", {

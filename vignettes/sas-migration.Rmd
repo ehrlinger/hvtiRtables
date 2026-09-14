@@ -124,7 +124,7 @@ tbl <- hv_tbl_summary(
 | `NCOL=` | automatic | per-group Ns always shown, and the Overall column's N with the default `overall = TRUE` (`NCOL=3`) |
 | `TBLTITLE=` | `caption` | **JTCVS only** - `hv_man_table_save()` writes no caption |
 | `ADDFN=` | `footnotes` | on the save function |
-| `PRINTFN=` | `footnotes = hv_man_footnotes()` | **CORR only.** The house block is CORR-shaped and cannot be passed to `hv_man_table_save_jtcvs()`, which needs `list(row =, col =, text =)` entries; build those, or use `hv_test_footnotes_jtcvs()`. On the standard `hv_tbl_summary()` -> `hv_man_table()` path, the default dagger follows `continuous_stat` and `percentiles` automatically. |
+| `PRINTFN=` | omit `footnotes` (default) | **CORR only.** The house block is CORR-shaped and cannot be passed to `hv_man_table_save_jtcvs()`, which needs `list(row =, col =, text =)` entries; build those, or use `hv_test_footnotes_jtcvs()`. On the standard `hv_tbl_summary()` -> `hv_man_table()` path, the default dagger follows `continuous_stat` and `percentiles` automatically. Use `footnotes = NULL` for `PRINTFN=0`. |
 | `RTFFILE=`, `PDFFILE=`, `XMLFILE=` | `file` | output is always `.docx` |
 
 The save stage is a sibling pair, and the two do not take the same
