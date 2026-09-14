@@ -114,11 +114,11 @@ hv_tbl_summary(
 
   One of `"median"` (default), `"mean"`, or `"both"`: how continuous
   variables are summarized. `"median"` gives `median (P<low>, P<high>)`;
-  `"mean"` gives mean +/- SD, with no spaces around the plus-minus sign,
-  per the house table rules; `"both"` puts the two on sub-rows under the
-  variable, mean +/- SD first, with the N shown once, on the first.
-  Choosing one for the manuscript is then a matter of deleting a row.
-  The test does not change with the statistic: it is always the
+  `"mean"` gives mean +/- SD, with no spaces around the plus-minus sign
+  and EHB/Blackstone paired rounding; `"both"` puts the two on sub-rows
+  under the variable, mean +/- SD first, with the N shown once, on the
+  first. Choosing one for the manuscript is then a matter of deleting a
+  row. The test does not change with the statistic: it is always the
   non-parametric one described above. The CORR footnote carried through
   [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
   to
@@ -153,6 +153,16 @@ own default continuous test already. `percentiles` defaults to the house
 convention documented in
 [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
 (15th/85th), overridable per study (`%summarytable` equivalent: `PP=`).
+
+Mean/SD output follows Eugene H. Blackstone's (EHB's) paired reporting
+rule: the mean is rounded to the first-significant-digit place of the
+SD, and the SD is rounded one place finer. When the SD begins with 1,
+both retain one additional place. Exact ties round to even; values
+beyond a tie round up. This applies to every group and Overall column
+when `continuous_stat = "mean"`, and to the mean row under `"both"`.
+Median and percentile precision is unchanged. When an SD is zero or
+unavailable, no paired precision can be inferred, so gtsummary's
+existing display is kept.
 
 The returned object carries three renderer attributes: `hv_stat_label`,
 the sub-header text naming the statistics shown

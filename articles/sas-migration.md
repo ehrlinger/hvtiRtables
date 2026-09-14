@@ -122,6 +122,13 @@ tbl <- hv_tbl_summary(
 | `PRINTFN=` | omit `footnotes` (default) | **CORR only.** The house block is CORR-shaped and cannot be passed to [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md), which needs `list(row =, col =, text =)` entries; build those, or use [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md). On the standard [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md) -\> [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md) path, the default dagger follows `continuous_stat` and `percentiles` automatically. Use `footnotes = NULL` for `PRINTFN=0`. |
 | `RTFFILE=`, `PDFFILE=`, `XMLFILE=` | `file` | output is always `.docx` |
 
+When `continuous_stat = "mean"` or `"both"`, mean±SD cells follow Eugene
+H. Blackstone’s (EHB’s) paired rounding rule: the mean is rounded to the
+SD’s first-significant-digit place and the SD one place finer. An SD
+beginning with 1 gives both one additional place, and exact ties round
+to even. The rule does not define median/percentile precision, so those
+rows are unchanged.
+
 The save stage is a sibling pair, and the two do not take the same
 arguments: only
 [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)

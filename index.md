@@ -114,6 +114,12 @@ and
 A mean table therefore says `Mean±SD`; a table showing both statistics
 names both.
 
+Mean±SD cells follow Eugene H. Blackstone’s (EHB’s) paired rounding
+rule. The mean is rounded to the SD’s first-significant-digit place and
+the SD one place finer; an SD beginning with 1 gives both one additional
+place. Exact ties round to even. Median and percentile precision is left
+unchanged because the rule does not define it.
+
 Full parameter map, the four defaults that differ, and the `QNTLDEF`
 quantile trap: **[Porting a `%summarytable` program to
 R](https://ehrlinger.github.io/hvtiRtables/articles/sas-migration.html)**.
