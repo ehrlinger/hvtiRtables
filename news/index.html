@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,23 @@
       <small>Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.1" id="hvtirtables-101">hvtiRtables 1.0.1<a class="anchor" aria-label="anchor" href="#hvtirtables-101"></a></h2>
+<ul><li>
+<strong>New <code><a href="../reference/hv_correlation_table.html">hv_correlation_table()</a></code></strong> ports the SAS correlation job (<code>proc corr spearman pearson fisher(biasadj=no alpha=.32)</code>): pairwise coefficients with Fisher intervals, a 68% interval by default, pairwise deletion, and a <code>by</code> stratum. It backs the <code>dc-tables</code> job template.</li>
+<li>
+<strong>Mean±SD cells now enforce EHB/Blackstone paired rounding.</strong> <code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> rounds each mean to the SD’s first-significant-digit place and the SD one place finer, retaining an extra place in both when the SD begins with 1. Exact ties round to even. The rule applies to grouped and Overall columns under <code>continuous_stat = "mean"</code> and to the mean row under <code>"both"</code>; median/percentile rows are unchanged.</li>
+<li>
+<strong>The JTCVS renderer’s default mean label now follows house spacing.</strong> <code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> writes <code>"No. (%) or Mean±SD"</code>, matching <code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> and the CORR footnote text.</li>
+<li>
+<strong>CORR footnotes now follow the continuous statistic automatically.</strong> <code><a href="../reference/hv_man_footnotes.html">hv_man_footnotes()</a></code> accepts <code>continuous_stat</code> and <code>percentiles</code>, and an <code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> table carries the matching footnote through <code><a href="../reference/hv_man_table.html">hv_man_table()</a></code> into <code><a href="../reference/hv_man_table_save.html">hv_man_table_save()</a></code>’s default. Mean tables no longer receive a median dagger, <code>"both"</code> names both statistics, and custom percentile pairs no longer leave the default footnote stale. Custom values use correct ordinal suffixes, including the 11th-13th exceptions. Hand-built flextables retain the median/15th-85th house default.</li>
+<li>
+<strong><code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code>’s N column now counts non-missing values.</strong> It was built from gtsummary’s <code>{N_obs}</code>, which counts every row, so any variable with missing data reported the full row count under a footnote reading “Number of non-missing values.” It now uses <code>{N_nonmiss}</code>, matching the house rule and the <code>%summarytable</code> tables it replaces. Tables built with earlier versions overstate n wherever a variable has missing values and should be rebuilt. The <code>{N_obs} ||| {stat}</code> examples in the renderer documentation, the README, and the convention error message now use <code>{N_nonmiss}</code> too.</li>
+<li>
+<strong><code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> gains <code>continuous_stat</code>.</strong> <code>"median"</code> (default) keeps <code>median (P&lt;low&gt;, P&lt;high&gt;)</code>; <code>"mean"</code> gives mean +/- SD, written <code>64±12</code> without spaces per the house table rules; <code>"both"</code> puts the two on sub-rows under each continuous variable, with n shown once, so the choice for the manuscript is a deleted row. The test is the same non-parametric one whichever is shown. <code>hv_stat_label</code> follows the choice. Defaults taken from Rajes’s <code>%summarytable</code> tables.</li>
+<li>
+<strong><code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code>’s <code>overall</code> now defaults to <code>TRUE</code></strong>, matching the macro’s <code>TOTALCOL=1</code> and the stratified tables it replaces. With <code>by = NULL</code> it is ignored rather than an error. <code><a href="../reference/hv_man_table.html">hv_man_table()</a></code> shows the new Overall column automatically; <code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> shows it only when <code>groups</code> names <code>stat_0</code>, so existing JTCVS calls render as before until you add it. Pass <code>overall = FALSE</code> for the old layout.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.0" id="hvtirtables-100">hvtiRtables 1.0.0<a class="anchor" aria-label="anchor" href="#hvtirtables-100"></a></h2>
 <p>First supported release. The package is now the HVTI CORR group’s table interface rather than a working draft: the two manuscript renderers, the <code>%summarytable</code> migration path, and the checks that keep a written <code>.docx</code> inside house rules are all in place and covered.</p>

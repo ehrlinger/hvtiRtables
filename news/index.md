@@ -1,5 +1,68 @@
 # Changelog
 
+## hvtiRtables 1.0.1
+
+- **New
+  [`hv_correlation_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_correlation_table.md)**
+  ports the SAS correlation job
+  (`proc corr spearman pearson fisher(biasadj=no alpha=.32)`): pairwise
+  coefficients with Fisher intervals, a 68% interval by default,
+  pairwise deletion, and a `by` stratum. It backs the `dc-tables` job
+  template.
+- **Mean±SD cells now enforce EHB/Blackstone paired rounding.**
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  rounds each mean to the SD’s first-significant-digit place and the SD
+  one place finer, retaining an extra place in both when the SD begins
+  with 1. Exact ties round to even. The rule applies to grouped and
+  Overall columns under `continuous_stat = "mean"` and to the mean row
+  under `"both"`; median/percentile rows are unchanged.
+- **The JTCVS renderer’s default mean label now follows house spacing.**
+  [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
+  writes `"No. (%) or Mean±SD"`, matching
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  and the CORR footnote text.
+- **CORR footnotes now follow the continuous statistic automatically.**
+  [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
+  accepts `continuous_stat` and `percentiles`, and an
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  table carries the matching footnote through
+  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+  into
+  [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)’s
+  default. Mean tables no longer receive a median dagger, `"both"` names
+  both statistics, and custom percentile pairs no longer leave the
+  default footnote stale. Custom values use correct ordinal suffixes,
+  including the 11th-13th exceptions. Hand-built flextables retain the
+  median/15th-85th house default.
+- **[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)’s
+  N column now counts non-missing values.** It was built from
+  gtsummary’s `{N_obs}`, which counts every row, so any variable with
+  missing data reported the full row count under a footnote reading
+  “Number of non-missing values.” It now uses `{N_nonmiss}`, matching
+  the house rule and the `%summarytable` tables it replaces. Tables
+  built with earlier versions overstate n wherever a variable has
+  missing values and should be rebuilt. The `{N_obs} ||| {stat}`
+  examples in the renderer documentation, the README, and the convention
+  error message now use `{N_nonmiss}` too.
+- **[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  gains `continuous_stat`.** `"median"` (default) keeps
+  `median (P<low>, P<high>)`; `"mean"` gives mean +/- SD, written
+  `64±12` without spaces per the house table rules; `"both"` puts the
+  two on sub-rows under each continuous variable, with n shown once, so
+  the choice for the manuscript is a deleted row. The test is the same
+  non-parametric one whichever is shown. `hv_stat_label` follows the
+  choice. Defaults taken from Rajes’s `%summarytable` tables.
+- **[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)’s
+  `overall` now defaults to `TRUE`**, matching the macro’s `TOTALCOL=1`
+  and the stratified tables it replaces. With `by = NULL` it is ignored
+  rather than an error.
+  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+  shows the new Overall column automatically;
+  [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
+  shows it only when `groups` names `stat_0`, so existing JTCVS calls
+  render as before until you add it. Pass `overall = FALSE` for the old
+  layout.
+
 ## hvtiRtables 1.0.0
 
 First supported release. The package is now the HVTI CORR group’s table
