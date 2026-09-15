@@ -1,3 +1,9 @@
+# hvtiRtables (unreleased)
+
+- **`hv_correlation_table()` now de-duplicates repeated `method` values.**
+  Each stratum/pair/method combination appears once, while the caller's method
+  order is preserved.
+
 # hvtiRtables 1.0.1
 
 - **New `hv_correlation_table()`** ports the SAS correlation job

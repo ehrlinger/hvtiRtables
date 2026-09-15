@@ -35,6 +35,14 @@ test_that("both methods by default, spearman first", {
   expect_equal(out$method, c("spearman", "pearson"))
 })
 
+test_that("duplicate methods produce one row per unique method", {
+  out <- hv_correlation_table(
+    mk_corr_data(), vars = "glu", with = "a1c",
+    method = c("pearson", "spearman", "pearson")
+  )
+  expect_equal(out$method, c("pearson", "spearman"))
+})
+
 test_that("with = NULL gives every unordered pair of vars", {
   out <- hv_correlation_table(mk_corr_data(), vars = c("a1c", "glu", "alb"),
                               method = "pearson")
