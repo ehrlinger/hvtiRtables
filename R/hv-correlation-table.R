@@ -57,7 +57,7 @@ hv_correlation_table <- function(data, vars, with = NULL, by = NULL,
                                  conf_level = 0.68, digits = 2) {
   if (!is.data.frame(data))
     stop("`data` must be a data frame.", call. = FALSE)
-  method <- match.arg(method, several.ok = TRUE)
+  method <- unique(match.arg(method, several.ok = TRUE))
   if (!is.character(vars) || length(vars) == 0L || anyNA(vars))
     stop("`vars` must be a character vector of column names.", call. = FALSE)
   if (!is.null(with) && (!is.character(with) || anyNA(with)))
