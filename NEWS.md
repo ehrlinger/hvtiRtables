@@ -1,4 +1,4 @@
-# hvtiRtables (unreleased)
+# hvtiRtables 1.0.1
 
 - **New `hv_correlation_table()`** ports the SAS correlation job
   (`proc corr spearman pearson fisher(biasadj=no alpha=.32)`): pairwise
