@@ -131,10 +131,10 @@ same header row.</p>
 <p>A table from <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> works here as well as in the JTCVS
 renderer. That function writes each cell as <code>"{N_nonmiss} ||| {stat}"</code>, and
 this one splits the two apart into a flat <code>No.</code> column immediately
-before the statistic it counts — the same two values JTCVS mode puts
-under a merged spanning header, without the merge. House rule 8 wants
-that non-missing count, and <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>'s <code>*</code> footnote
-describes it, so it is kept rather than discarded. A plain
+before the statistic it counts. Those are the same two values JTCVS
+mode puts under a merged spanning header, without the merge. House
+rule 8 wants that non-missing count, and <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>'s <code>*</code>
+footnote describes it, so it is kept rather than discarded. A plain
 <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html" class="external-link">gtsummary::tbl_summary()</a></code> table carries no such convention and passes
 through unchanged.</p>
     </div>

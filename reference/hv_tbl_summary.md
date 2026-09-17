@@ -145,7 +145,7 @@ renderer attributes.
 Continuous variables are summarized as `median (P<low>, P<high>)` by
 default, or as mean +/- SD, or both (`continuous_stat`). Whichever is
 shown, the test is the same blanket non-parametric one (Wilcoxon
-rank-sum for 2 groups, Kruskal-Wallis for 3+) — this function does not
+rank-sum for 2 groups, Kruskal-Wallis for 3+). This function does not
 classify variables as Gaussian/non-Gaussian the way `%summarytable`
 does; that is
 [`gtsummary::add_p()`](https://www.danieldsjoberg.com/gtsummary/reference/add_p.html)'s

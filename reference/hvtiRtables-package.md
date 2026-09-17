@@ -7,17 +7,17 @@ things from the same header row.
 
 ## Which mode do I want?
 
-**CORR house style** — flat, non-merged header, no hidden spacer
-columns, footnotes as text below the table. Use for internal reports and
-any journal without its own template.
+**CORR house style** has a flat, non-merged header, no hidden spacer
+columns, and footnotes as text below the table. Use for internal reports
+and any journal without its own template.
 
     tbl <- gtsummary::tbl_summary(dta, by = "trt")
     ft  <- hv_man_table(tbl)
     hv_man_table_save(ft, "table1.docx")
 
-**JTCVS submission format** — two-row merged spanning header, shaded
-section rows, lettered cell-targeted footnotes. Use when submitting to
-that journal.
+**JTCVS submission format** has a two-row merged spanning header, shaded
+section rows, and lettered cell-targeted footnotes. Use when submitting
+to that journal.
 
     tbl <- hv_tbl_summary(
       dta, by = "trt",

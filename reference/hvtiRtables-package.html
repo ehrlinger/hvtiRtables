@@ -63,14 +63,14 @@ want different things from the same header row.</p>
     <h2 id="which-mode-do-i-want-">Which mode do I want?<a class="anchor" aria-label="anchor" href="#which-mode-do-i-want-"></a></h2>
 
 
-<p><strong>CORR house style</strong> — flat, non-merged header, no hidden spacer
-columns, footnotes as text below the table. Use for internal reports
-and any journal without its own template.</p>
+<p><strong>CORR house style</strong> has a flat, non-merged header, no hidden
+spacer columns, and footnotes as text below the table. Use for
+internal reports and any journal without its own template.</p>
 <p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>tbl <span class="ot">&lt;-</span> gtsummary<span class="sc">::</span><span class="fu">tbl_summary</span>(dta, <span class="at">by =</span> <span class="st">"trt"</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>ft  <span class="ot">&lt;-</span> <span class="fu">hv_man_table</span>(tbl)</span>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">hv_man_table_save</span>(ft, <span class="st">"table1.docx"</span>)</span></code></pre><p></p></div>
-<p><strong>JTCVS submission format</strong> — two-row merged spanning header,
-shaded section rows, lettered cell-targeted footnotes. Use when
+<p><strong>JTCVS submission format</strong> has a two-row merged spanning header,
+shaded section rows, and lettered cell-targeted footnotes. Use when
 submitting to that journal.</p>
 <p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>tbl <span class="ot">&lt;-</span> <span class="fu">hv_tbl_summary</span>(</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>  dta, <span class="at">by =</span> <span class="st">"trt"</span>,</span>
