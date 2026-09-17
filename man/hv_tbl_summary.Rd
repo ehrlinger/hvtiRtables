@@ -111,7 +111,7 @@ object, ready for \code{\link[=hv_man_table]{hv_man_table()}} or \code{\link[=hv
 Continuous variables are summarized as \verb{median (P<low>, P<high>)} by
 default, or as mean +/- SD, or both (\code{continuous_stat}). Whichever is
 shown, the test is the same blanket non-parametric one (Wilcoxon
-rank-sum for 2 groups, Kruskal-Wallis for 3+) — this function does
+rank-sum for 2 groups, Kruskal-Wallis for 3+). This function does
 not classify variables as Gaussian/non-Gaussian the way
 \verb{\%summarytable} does; that is \code{gtsummary::add_p()}'s own default
 continuous test already. \code{percentiles} defaults to the house
