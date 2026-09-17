@@ -57,9 +57,9 @@
 #'   compose with [hv_man_footnotes()] to override or extend.
 #'   Symbols must be drawn from `c("*", "†", "‡", "§", "¶", "||")`. Each
 #'   symbol is appended as a superscript reference mark to the table's
-#'   count-column header cell — a column named `n`, else the first
+#'   count-column header cell (a column named `n`, else the first
 #'   `n_stat_<k>` column [hv_man_table()] creates when it splits an
-#'   [hv_tbl_summary()] table, else the first column — and its text is
+#'   [hv_tbl_summary()] table, else the first column), and its text is
 #'   rendered as its own paragraph below the table, in the order given.
 #'   Every element must be named (unnamed or blank-named
 #'   entries raise an error) and every text must be a single non-empty

@@ -11,7 +11,7 @@
 #' Continuous variables are summarized as `median (P<low>, P<high>)` by
 #' default, or as mean +/- SD, or both (`continuous_stat`). Whichever is
 #' shown, the test is the same blanket non-parametric one (Wilcoxon
-#' rank-sum for 2 groups, Kruskal-Wallis for 3+) — this function does
+#' rank-sum for 2 groups, Kruskal-Wallis for 3+). This function does
 #' not classify variables as Gaussian/non-Gaussian the way
 #' `%summarytable` does; that is `gtsummary::add_p()`'s own default
 #' continuous test already. `percentiles` defaults to the house
@@ -320,7 +320,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # gtsummary's default N/n formatter inserts thousands separators
   # ("4,190"), but both real example tables examined during design
   # (summarytable_overall.docx, summarytable_stratified_grp_res.docx)
-  # show plain digits ("7948", "4190", "3758") — verified empirically
+  # show plain digits ("7948", "4190", "3758"). Verified empirically
   # during planning that tbl_summary()'s default digits= would otherwise
   # silently comma-format any N >= 1000, which both real example tables
   # actually reach. Force plain digits for N_nonmiss and n explicitly.
