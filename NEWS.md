@@ -1,3 +1,11 @@
+# hvtiRtables (unreleased)
+
+- **Documentation prose no longer uses em dashes.** Seven sat in roxygen
+  blocks, and `man/` is generated from those blocks, so they reached
+  readers in the rendered help pages. Replacements vary by sentence:
+  parentheses around an aside, a comma for an appositive, a period
+  between two independent clauses. No behavior changed.
+
 # hvtiRtables 1.0.2
 
 - **`hv_correlation_table()` now de-duplicates repeated `method` values.**
