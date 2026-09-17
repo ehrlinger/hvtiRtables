@@ -1,4 +1,4 @@
-# hvtiRtables (unreleased)
+# hvtiRtables 1.0.2
 
 - **`hv_correlation_table()` now de-duplicates repeated `method` values.**
   Each stratum/pair/method combination appears once, while the caller's method
