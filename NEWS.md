@@ -1,10 +1,12 @@
 # hvtiRtables (unreleased)
 
-- **Documentation prose no longer uses em dashes.** Seven sat in roxygen
+- **The em dashes in `R/` documentation are gone.** Six sat in roxygen
   blocks, and `man/` is generated from those blocks, so they reached
-  readers in the rendered help pages. Replacements vary by sentence:
-  parentheses around an aside, a comma for an appositive, a period
-  between two independent clauses. No behavior changed.
+  readers in the rendered help pages. A seventh sat in an ordinary code
+  comment. Replacements vary by sentence: parentheses around an aside, a
+  period between two independent clauses, and a verb where the dash stood
+  in for one. The released headings below are left as written. No
+  behavior changed.
 
 # hvtiRtables 1.0.2
 
