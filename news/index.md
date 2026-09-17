@@ -1,5 +1,12 @@
 # Changelog
 
+## hvtiRtables 1.0.2
+
+- **[`hv_correlation_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_correlation_table.md)
+  now de-duplicates repeated `method` values.** Each stratum/pair/method
+  combination appears once, while the caller’s method order is
+  preserved.
+
 ## hvtiRtables 1.0.1
 
 - **New
