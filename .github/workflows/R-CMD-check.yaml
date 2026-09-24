@@ -57,6 +57,12 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
 
+      # The macOS gdtools binary links /opt/X11/lib/libXrender, and the
+      # macos-latest image no longer ships XQuartz.
+      - name: Install XQuartz (macOS)
+        if: runner.os == 'macOS'
+        run: brew install --cask xquartz
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
