@@ -1,4 +1,4 @@
-# hvtiRtables (unreleased)
+# hvtiRtables 1.0.3
 
 - **The em dashes in `R/` documentation are gone.** Six sat in roxygen
   blocks, and `man/` is generated from those blocks, so they reached
