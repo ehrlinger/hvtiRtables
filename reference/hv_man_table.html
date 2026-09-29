@@ -13,7 +13,7 @@ versus JTCVS spanning header."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +47,7 @@ versus JTCVS spanning header."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Convert a gtsummary table into a flextable matching HVTI CORR's table rules</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/R/hv-man-table.R" class="external-link"><code>R/hv-man-table.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/v1.0.0/R/hv-man-table.R" class="external-link"><code>R/hv-man-table.R</code></a></small>
       <div class="d-none name"><code>hv_man_table.Rd</code></div>
     </div>
 
@@ -100,9 +100,7 @@ produce an error naming the argument to use instead.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>flextable</code> object with a single header row and no merged
-cells, ready for <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code>. Input from <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>
-retains its <code>hv_footnotes</code> attribute so the saver's default dagger
-follows the table's continuous statistic.</p>
+cells, ready for <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -129,12 +127,12 @@ two-row merged spanning header that journal's template expects: CORR
 house style and JTCVS submission format want different things from the
 same header row.</p>
 <p>A table from <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> works here as well as in the JTCVS
-renderer. That function writes each cell as <code>"{N_nonmiss} ||| {stat}"</code>, and
+renderer. That function writes each cell as <code>"{N_obs} ||| {stat}"</code>, and
 this one splits the two apart into a flat <code>No.</code> column immediately
-before the statistic it counts. Those are the same two values JTCVS
-mode puts under a merged spanning header, without the merge. House
-rule 8 wants that non-missing count, and <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>'s <code>*</code>
-footnote describes it, so it is kept rather than discarded. A plain
+before the statistic it counts — the same two values JTCVS mode puts
+under a merged spanning header, without the merge. House rule 8 wants
+that non-missing count, and <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>'s <code>*</code> footnote
+describes it, so it is kept rather than discarded. A plain
 <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html" class="external-link">gtsummary::tbl_summary()</a></code> table carries no such convention and passes
 through unchanged.</p>
     </div>
@@ -146,7 +144,7 @@ through unchanged.</p>
 split; upgrade. <code>|||</code> is the internal separator <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>
 writes between the count and the statistic, never intended to reach a
 rendered table.</p>
-<p><strong>"<code>tbl</code> was not built with the <code>{N_nonmiss} ||| {stat}</code> convention."</strong>
+<p><strong>"<code>tbl</code> was not built with the <code>{N_obs} ||| {stat}</code> convention."</strong>
 Only some cells carry the separator, which means <code>statistic</code> was set
 for part of the table. Splitting would leave the rest blank, so it is
 rejected. Either apply the convention to every variable or to none;

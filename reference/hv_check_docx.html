@@ -13,7 +13,7 @@ memo names, and never modifies the file.'></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +47,7 @@ memo names, and never modifies the file.'></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Check a .docx for structural patterns the house rules forbid</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/R/hv-check-docx.R" class="external-link"><code>R/hv-check-docx.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/v1.0.0/R/hv-check-docx.R" class="external-link"><code>R/hv-check-docx.R</code></a></small>
       <div class="d-none name"><code>hv_check_docx.Rd</code></div>
     </div>
 
@@ -100,27 +100,6 @@ guaranteed structural signature, so treat its findings as prompts to
 look, not proof.</p></li>
 </ul></div>
     <div class="section level2">
-    <h2 id="common-mistakes">Common mistakes<a class="anchor" aria-label="anchor" href="#common-mistakes"></a></h2>
-
-
-<p><strong>"<code>path</code> must be a single non-empty string."</strong> The argument is a
-file path, not a <code>flextable</code> or an <code>officer</code> document. Neither saver
-runs this on its own output, so call it on the written <code>.docx</code>
-afterwards.</p>
-<p><strong>Reading a <code>hidden_column</code> finding as a gutter column.</strong> It is not
-one. The detector requires empty <strong>and</strong> narrower than 0.1 inch,
-precisely so the deliberate half-inch gutter columns in the house
-JTCVS templates do not trip it. A finding here is a real spacer.</p>
-<p><strong>Treating <code>embedded_footnote</code> as proof.</strong> It is the one heuristic
-detector of the three: it matches a marker character opening a cell
-in a table's last row, and a legitimate last row that happens to
-start that way matches it too. Read it as a prompt to look, not a
-verdict.</p>
-<p><strong>Expecting a repair.</strong> This is read-only and never modifies the
-file. Fix what it reports in Word, or rebuild the table through
-<code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> or <code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>.</p>
-    </div>
-    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> and <code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>, which
 write the files this checks. Neither runs the check on its own
@@ -137,7 +116,7 @@ output, so call this on the path afterwards when you want it.</p></div>
 <span class="r-in"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="va">trial</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html" class="external-link">tbl_summary</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    by <span class="op">=</span> <span class="va">trt</span>,</span></span>
-<span class="r-in"><span>    statistic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/select_helpers.html" class="external-link">all_continuous</a></span><span class="op">(</span><span class="op">)</span> <span class="op">~</span> <span class="st">"{N_nonmiss} ||| {mean} ± {sd}"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    statistic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/select_helpers.html" class="external-link">all_continuous</a></span><span class="op">(</span><span class="op">)</span> <span class="op">~</span> <span class="st">"{N_obs} ||| {mean} ± {sd}"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    include <span class="op">=</span> <span class="va">age</span>,</span></span>
 <span class="r-in"><span>    missing <span class="op">=</span> <span class="st">"no"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>

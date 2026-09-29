@@ -9,7 +9,7 @@ the macro's RTFFILE=/PDFFILE= output block."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,7 +43,7 @@ the macro's RTFFILE=/PDFFILE= output block."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Write an hv_man_table() table to a compliant .docx</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/R/hv-man-table-save.R" class="external-link"><code>R/hv-man-table-save.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/v1.0.0/R/hv-man-table-save.R" class="external-link"><code>R/hv-man-table-save.R</code></a></small>
       <div class="d-none name"><code>hv_man_table_save.Rd</code></div>
     </div>
 
@@ -54,7 +54,13 @@ the macro's <code>RTFFILE=</code>/<code>PDFFILE=</code> output block.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hv_man_table_save</span><span class="op">(</span><span class="va">ft</span>, <span class="va">file</span>, footnotes <span class="op">=</span> <span class="cn">NULL</span>, abbreviations <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hv_man_table_save</span><span class="op">(</span></span>
+<span>  <span class="va">ft</span>,</span>
+<span>  <span class="va">file</span>,</span>
+<span>  footnotes <span class="op">=</span> <span class="fu"><a href="hv_man_footnotes.html">hv_man_footnotes</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  abbreviations <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -72,17 +78,19 @@ must already exist; this function does not create it. (<code>%summarytable</code
 
 
 <dt id="arg-footnotes">footnotes<a class="anchor" aria-label="anchor" href="#arg-footnotes"></a></dt>
-<dd><p>Optional named list, symbol -&gt; footnote text. When omitted,
-uses the <code>hv_footnotes</code> attribute carried from <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> through
-<code><a href="hv_man_table.html">hv_man_table()</a></code>, so the dagger follows that table's <code>continuous_stat</code>
-and <code>percentiles</code>. Other flextables fall back to <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>'s
-median/15th-85th house defaults. Pass <code>NULL</code> to suppress both, or
-compose with <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code> to override or extend.
+<dd><p>Optional named list, symbol -&gt; footnote text. Defaults to
+<code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code> (the house-universal N and median/percentile
+footnotes). That default text hardcodes the 15th/85th percentile pair;
+if the table was built with <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>'s <code>percentiles =</code> set
+to anything else, override it (see below) or the footnote will
+misstate what the table shows. Pass <code>NULL</code> to suppress both, or
+compose with <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code> to override or extend (see its
+documentation).
 Symbols must be drawn from <code>c("*", "†", "‡", "§", "¶", "||")</code>. Each
 symbol is appended as a superscript reference mark to the table's
-count-column header cell (a column named <code>n</code>, else the first
+count-column header cell — a column named <code>n</code>, else the first
 <code>n_stat_&lt;k&gt;</code> column <code><a href="hv_man_table.html">hv_man_table()</a></code> creates when it splits an
-<code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> table, else the first column), and its text is
+<code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> table, else the first column — and its text is
 rendered as its own paragraph below the table, in the order given.
 Every element must be named (unnamed or blank-named
 entries raise an error) and every text must be a single non-empty
@@ -126,31 +134,6 @@ vertical cell alignment controllable if you later reformat the
 surrounding document to 1.5- or double-spacing. House rule 2 concerns
 the <em>insertion point</em> in the destination document, not this function's
 output; see the package README for the paste-in workflow.</p>
-    </div>
-    <div class="section level2">
-    <h2 id="common-mistakes">Common mistakes<a class="anchor" aria-label="anchor" href="#common-mistakes"></a></h2>
-
-
-<p><strong>"unused argument (caption)"</strong> The CORR saver writes no caption.
-Only <code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> takes one; here the table title goes
-in the manuscript, above the pasted table.</p>
-<p><strong>"<code>footnotes</code> must be a named list (symbol -&gt; footnote text) ..."</strong>
-You passed the JTCVS shape. The two savers' <code>footnotes</code> arguments are
-unrelated types: this one is keyed by symbol,
-<code>list(`*` = "text")</code>, and <code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>'s is keyed
-by position, <code>list(list(row =, col =, text =))</code>. So
-<code><a href="hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code>'s output does not belong here;
-<code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>'s does.</p>
-<p><strong>"Invalid footnote symbol(s): ..."</strong> Symbols are drawn from the
-house set <code>* † ‡ § ¶ ||</code>. A letter or a digit is not
-one of them; lettered markers are the JTCVS renderer's convention.</p>
-<p><strong>"Output directory does not exist: ..."</strong> The <code><a href="https://rdrr.io/r/base/basename.html" class="external-link">dirname()</a></code> of <code>file</code>
-is not created for you. Run
-<code>dir.create(dirname(file), recursive = TRUE)</code> first.</p>
-<p><strong>A hand-built footnote that misstates the table.</strong> The automatic
-<code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> -&gt; <code><a href="hv_man_table.html">hv_man_table()</a></code> path keeps the default dagger in
-sync. When supplying <code>footnotes</code> yourself, make its wording match the
-statistic and percentile pair used to build the table.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

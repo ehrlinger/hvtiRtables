@@ -13,7 +13,7 @@ ANOVA never appears."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +47,7 @@ ANOVA never appears."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Build lettered test footnotes from a gtsummary table</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/R/hv-test-footnotes-jtcvs.R" class="external-link"><code>R/hv-test-footnotes-jtcvs.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/v1.0.0/R/hv-test-footnotes-jtcvs.R" class="external-link"><code>R/hv-test-footnotes-jtcvs.R</code></a></small>
       <div class="d-none name"><code>hv_test_footnotes_jtcvs.Rd</code></div>
     </div>
 
@@ -109,29 +109,6 @@ that passed <code>add_p(test = ...)</code>, since <code><a href="hv_tbl_summary.
 <code>test</code>) is kept, using the raw identifier as its footnote text, and
 warned about. A marked cell whose letter has no definition would be
 worse than an unpolished label.</p>
-    </div>
-    <div class="section level2">
-    <h2 id="common-mistakes">Common mistakes<a class="anchor" aria-label="anchor" href="#common-mistakes"></a></h2>
-
-
-<p><strong>"<code>tbl</code> must be a gtsummary table object."</strong> You passed the
-<code>flextable</code>. This needs the <code>gtsummary</code> object, because
-<code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> drops the <code>test_name</code> column when it reshapes
-the body – by render time the test identities are gone. Pass the
-same object you passed to the renderer.</p>
-<p><strong>An empty list back, and no footnotes in the document.</strong> Expected,
-not a failure: nothing is marked when <code>by = NULL</code>,
-<code>compare = "none"</code>, or <code>compare = "smd"</code>, since a standardized
-difference names no test. An empty list concatenates and renders
-harmlessly, so the call site needs no conditional.</p>
-<p><strong>Row indices that land on the wrong rows.</strong> They are computed from
-<code>tbl$table_body</code> at the moment you call this, and they count the
-section-header rows <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> interleaves, so they are
-valid against that renderer's output and nothing else. Finish the
-table first and call this last.</p>
-<p><strong>Passing the result to <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code>.</strong> This is the JTCVS
-shape. The CORR saver takes a symbol-keyed list and rejects it; its
-equivalent is <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

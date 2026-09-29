@@ -51,10 +51,6 @@ hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2, ...)
 A `flextable` object with a single header row and no merged cells, ready
 for
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md).
-Input from
-[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
-retains its `hv_footnotes` attribute so the saver's default dagger
-follows the table's continuous statistic.
 
 ## Details
 
@@ -94,11 +90,10 @@ things from the same header row.
 A table from
 [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
 works here as well as in the JTCVS renderer. That function writes each
-cell as `"{N_nonmiss} ||| {stat}"`, and this one splits the two apart
-into a flat `No.` column immediately before the statistic it counts.
-Those are the same two values JTCVS mode puts under a merged spanning
-header, without the merge. House rule 8 wants that non-missing count,
-and
+cell as `"{N_obs} ||| {stat}"`, and this one splits the two apart into a
+flat `No.` column immediately before the statistic it counts — the same
+two values JTCVS mode puts under a merged spanning header, without the
+merge. House rule 8 wants that non-missing count, and
 [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)'s
 `*` footnote describes it, so it is kept rather than discarded. A plain
 [`gtsummary::tbl_summary()`](https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html)
@@ -112,10 +107,10 @@ split; upgrade. `|||` is the internal separator
 writes between the count and the statistic, never intended to reach a
 rendered table.
 
-**"`tbl` was not built with the `{N_nonmiss} ||| {stat}` convention."**
-Only some cells carry the separator, which means `statistic` was set for
-part of the table. Splitting would leave the rest blank, so it is
-rejected. Either apply the convention to every variable or to none;
+**"`tbl` was not built with the `{N_obs} ||| {stat}` convention."** Only
+some cells carry the separator, which means `statistic` was set for part
+of the table. Splitting would leave the rest blank, so it is rejected.
+Either apply the convention to every variable or to none;
 [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
 does the former for you.
 
