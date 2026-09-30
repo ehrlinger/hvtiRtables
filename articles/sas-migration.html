@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,7 +71,7 @@
       <h1>Porting a %summarytable program to R</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/v1.0.0/vignettes/sas-migration.Rmd" class="external-link"><code>vignettes/sas-migration.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/vignettes/sas-migration.Rmd" class="external-link"><code>vignettes/sas-migration.Rmd</code></a></small>
       <div class="d-none name"><code>sas-migration.Rmd</code></div>
     </div>
 
@@ -154,7 +154,7 @@ which function takes it:</p>
 <div class="section level2">
 <h2 id="defaults-that-differ">Defaults that differ<a class="anchor" aria-label="anchor" href="#defaults-that-differ"></a>
 </h2>
-<p>Five places where a faithful-looking port produces different
+<p>Four places where a faithful-looking port produces different
 numbers.</p>
 <table class="table">
 <colgroup>
@@ -171,19 +171,14 @@ numbers.</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>TOTALCOL=</code></td>
-<td>
-<code>1</code> - Overall column included</td>
-<td><code>overall = FALSE</code></td>
-<td><code>overall = TRUE</code></td>
-</tr>
-<tr class="even">
 <td><code>CON1=</code></td>
 <td>mean +/- SD, one-way ANOVA</td>
 <td>median (percentiles), Kruskal-Wallis</td>
-<td>none - see below</td>
+<td>
+<code>continuous_stat = "mean"</code> for the statistic; the test
+stays non-parametric</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>PP=</code></td>
 <td>
 <code>16 84</code> nominal; house templates use both
@@ -192,13 +187,13 @@ numbers.</p>
 <td><code>percentiles = c(15, 85)</code></td>
 <td><code>percentiles = c(16, 84)</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>CUTEXACT=</code></td>
 <td>Fisher when &gt;=50% of cells have expected &lt; 5</td>
 <td>Fisher when <em>any</em> expected &lt; 5</td>
 <td>none - not tunable</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>ORD1=</code></td>
 <td>
 <code>n (%)</code>, Kruskal-Wallis</td>
@@ -207,10 +202,13 @@ numbers.</p>
 </tr>
 </tbody>
 </table>
-<p><code>overall = FALSE</code> is the one deliberate departure from a
-macro default. The renderers take a <code>groups</code> vector naming
-each <code>stat_&lt;k&gt;</code> column, so a column appearing by
-default would break every existing call.</p>
+<p><code>overall = TRUE</code> matches the macro’s
+<code>TOTALCOL=1</code>. <code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> lays out only
+the <code>stat_&lt;k&gt;</code> columns its <code>groups</code> vector
+names, so name <code>stat_0</code> there to show the Overall column.
+<code>continuous_stat = "both"</code> shows mean +/- SD and median
+(percentiles) on sub-rows under each continuous variable, for choosing
+one when the manuscript is drafted.</p>
 </div>
 <div class="section level2">
 <h2 id="a-ported-call">A ported call<a class="anchor" aria-label="anchor" href="#a-ported-call"></a>
@@ -232,8 +230,8 @@ default would break every existing call.</p>
        surgstat nyha_pr
 );</code></pre>
 <p>and its equivalent. Note that <code>pp=</code> and <code>list=</code>
-map straight across, <code>totalcol=0</code> is the default here so it
-disappears, and <code>pvalues=1</code> becomes
+map straight across, <code>totalcol=0</code> becomes
+<code>overall = FALSE</code>, and <code>pvalues=1</code> becomes
 <code>compare = "pvalue"</code>:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hv_tbl_summary.html">hv_tbl_summary</a></span><span class="op">(</span></span>
@@ -247,7 +245,8 @@ disappears, and <code>pvalues=1</code> becomes
 <span>  binary      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"female"</span>, <span class="st">"surgstat"</span><span class="op">)</span>,</span>
 <span>  categorical <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"race_gp"</span>, <span class="st">"nyha_pr"</span><span class="op">)</span>,</span>
 <span>  compare     <span class="op">=</span> <span class="st">"pvalue"</span>,</span>
-<span>  percentiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">85</span><span class="op">)</span></span>
+<span>  percentiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">85</span><span class="op">)</span>,</span>
+<span>  overall     <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -284,8 +283,9 @@ disappears, and <code>pvalues=1</code> becomes
 <td><code>CON1=</code></td>
 <td><code>continuous</code></td>
 <td>
-<strong>statistic changes</strong> - mean +/- SD becomes median
-(percentiles)</td>
+<strong>statistic changes</strong> by default - mean +/- SD becomes
+median (percentiles); <code>continuous_stat = "mean"</code> restores it,
+and the test stays non-parametric</td>
 </tr>
 <tr class="odd">
 <td><code>CON2=</code></td>
@@ -337,14 +337,15 @@ chi-square</td>
 <tr class="odd">
 <td><code>TOTALCOL=</code></td>
 <td><code>overall</code></td>
-<td>default differs - see above</td>
+<td>defaults match (<code>overall = TRUE</code>);
+<code>totalcol=0</code> becomes <code>overall = FALSE</code>
+</td>
 </tr>
 <tr class="even">
 <td><code>NCOL=</code></td>
 <td>automatic</td>
-<td>per-group Ns always shown; <code>NCOL=3</code>’s overall N needs
-<code>overall = TRUE</code>
-</td>
+<td>per-group Ns always shown, and the Overall column’s N with the
+default <code>overall = TRUE</code> (<code>NCOL=3</code>)</td>
 </tr>
 <tr class="odd">
 <td><code>TBLTITLE=</code></td>
@@ -360,14 +361,16 @@ writes no caption</td>
 </tr>
 <tr class="odd">
 <td><code>PRINTFN=</code></td>
-<td><code>footnotes = hv_man_footnotes()</code></td>
+<td>omit <code>footnotes</code> (default)</td>
 <td>
 <strong>CORR only.</strong> The house block is CORR-shaped and
 cannot be passed to <code><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>, which needs
 <code>list(row =, col =, text =)</code> entries; build those, or use
-<code><a href="../reference/hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code>. It also hard-codes the 15th/85th
-percentiles, so change it if you change <code>percentiles</code>
-</td>
+<code><a href="../reference/hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code>. On the standard
+<code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> -&gt; <code><a href="../reference/hv_man_table.html">hv_man_table()</a></code> path,
+the default dagger follows <code>continuous_stat</code> and
+<code>percentiles</code> automatically. Use
+<code>footnotes = NULL</code> for <code>PRINTFN=0</code>.</td>
 </tr>
 <tr class="even">
 <td>
@@ -380,6 +383,12 @@ percentiles, so change it if you change <code>percentiles</code>
 </tr>
 </tbody>
 </table>
+<p>When <code>continuous_stat = "mean"</code> or <code>"both"</code>,
+mean±SD cells follow Eugene H. Blackstone’s (EHB’s) paired rounding
+rule: the mean is rounded to the SD’s first-significant-digit place and
+the SD one place finer. An SD beginning with 1 gives both one additional
+place, and exact ties round to even. The rule does not define
+median/percentile precision, so those rows are unchanged.</p>
 <p>The save stage is a sibling pair, and the two do not take the same
 arguments: only <code><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> has
 <code>caption</code>. For a flat-header CORR table the title goes in the
@@ -471,6 +480,32 @@ than a wrong table.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `age` appears in more than one of `continuous`, `binary`, and `categorical`. Every variable must be classified exactly once. Overlapping: age (continuous, binary).</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="proc-corr">proc corr<a class="anchor" aria-label="anchor" href="#proc-corr"></a>
+</h2>
+<p><code><a href="../reference/hv_correlation_table.html">hv_correlation_table()</a></code> ports a <code>proc corr</code>
+job, not a <code>%summarytable</code> one:</p>
+<pre class="sas"><code>proc sort data=built; by a1c_grp; run;
+proc corr data=built nosimple spearman pearson fisher(biasadj=no alpha=.32);
+  var rdw_pr mcv_pr alb_pr;
+  with hbga1cpr;
+  by a1c_grp;
+run;</code></pre>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hv_correlation_table.html">hv_correlation_table</a></span><span class="op">(</span><span class="va">built</span>, vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rdw_pr"</span>, <span class="st">"mcv_pr"</span>, <span class="st">"alb_pr"</span><span class="op">)</span>,</span>
+<span>                     with <span class="op">=</span> <span class="st">"hbga1cpr"</span>, by <span class="op">=</span> <span class="st">"a1c_grp"</span><span class="op">)</span></span></code></pre></div>
+<p><code>alpha=.32</code> is a 68% interval, and it is this function’s
+default. The interval itself is Fisher’s z without bias adjustment,
+matching SAS’s <code>biasadj=no</code>. The overall table, the same SAS
+job run without <code>BY</code>, is a second call without
+<code>by</code>; the two results have different columns, since only the
+stratified one carries the <code>by</code> column, so add it by hand
+(e.g. <code>overall$a1c_grp &lt;- "Overall"</code>) before
+<code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind()</a></code>-ing the two together. The scatter-plot matrix,
+SAS’s <code>plots=matrix</code>, is
+<code>hvtiPlotR::hv_correlation_matrix()</code>; this function only
+produces the table.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

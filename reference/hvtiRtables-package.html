@@ -13,7 +13,7 @@ want different things from the same header row."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +47,7 @@ want different things from the same header row."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>hvtiRtables: Manuscript-Compliant Table Construction</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/v1.0.0/R/hvtiRtables-package.R" class="external-link"><code>R/hvtiRtables-package.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/R/hvtiRtables-package.R" class="external-link"><code>R/hvtiRtables-package.R</code></a></small>
       <div class="d-none name"><code>hvtiRtables-package.Rd</code></div>
     </div>
 
@@ -63,14 +63,14 @@ want different things from the same header row.</p>
     <h2 id="which-mode-do-i-want-">Which mode do I want?<a class="anchor" aria-label="anchor" href="#which-mode-do-i-want-"></a></h2>
 
 
-<p><strong>CORR house style</strong> — flat, non-merged header, no hidden spacer
-columns, footnotes as text below the table. Use for internal reports
-and any journal without its own template.</p>
+<p><strong>CORR house style</strong> has a flat, non-merged header, no hidden
+spacer columns, and footnotes as text below the table. Use for
+internal reports and any journal without its own template.</p>
 <p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>tbl <span class="ot">&lt;-</span> gtsummary<span class="sc">::</span><span class="fu">tbl_summary</span>(dta, <span class="at">by =</span> <span class="st">"trt"</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>ft  <span class="ot">&lt;-</span> <span class="fu">hv_man_table</span>(tbl)</span>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">hv_man_table_save</span>(ft, <span class="st">"table1.docx"</span>)</span></code></pre><p></p></div>
-<p><strong>JTCVS submission format</strong> — two-row merged spanning header,
-shaded section rows, lettered cell-targeted footnotes. Use when
+<p><strong>JTCVS submission format</strong> has a two-row merged spanning header,
+shaded section rows, and lettered cell-targeted footnotes. Use when
 submitting to that journal.</p>
 <p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>tbl <span class="ot">&lt;-</span> <span class="fu">hv_tbl_summary</span>(</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>  dta, <span class="at">by =</span> <span class="st">"trt"</span>,</span>
@@ -78,14 +78,16 @@ submitting to that journal.</p>
 <span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>  <span class="at">continuous =</span> <span class="st">"age"</span>, <span class="at">categorical =</span> <span class="st">"sex"</span></span>
 <span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>)</span>
 <span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>ft <span class="ot">&lt;-</span> <span class="fu">hv_man_table_jtcvs</span>(</span>
-<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>  tbl, <span class="at">groups =</span> <span class="fu">c</span>(<span class="at">stat_1 =</span> <span class="st">"A (n=98)"</span>, <span class="at">stat_2 =</span> <span class="st">"B (n=102)"</span>),</span>
-<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>  <span class="at">stat_label =</span> <span class="fu">attr</span>(tbl, <span class="st">"hv_stat_label"</span>),</span>
-<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>  <span class="at">trailing =</span> <span class="fu">attr</span>(tbl, <span class="st">"hv_trailing"</span>)</span>
-<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>)</span>
-<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="fu">hv_man_table_save_jtcvs</span>(</span>
-<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>  ft, <span class="st">"table1.docx"</span>, <span class="at">caption =</span> <span class="st">"Table 1. Baseline Characteristics"</span>,</span>
-<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a>  <span class="at">footnotes =</span> <span class="fu">hv_test_footnotes_jtcvs</span>(tbl)</span>
-<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>)</span></code></pre><p></p></div>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>  tbl,</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>  <span class="at">groups =</span> <span class="fu">c</span>(<span class="at">stat_0 =</span> <span class="st">"Overall (n=200)"</span>, <span class="at">stat_1 =</span> <span class="st">"A (n=98)"</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>             <span class="at">stat_2 =</span> <span class="st">"B (n=102)"</span>),</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>  <span class="at">stat_label =</span> <span class="fu">attr</span>(tbl, <span class="st">"hv_stat_label"</span>),</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>  <span class="at">trailing =</span> <span class="fu">attr</span>(tbl, <span class="st">"hv_trailing"</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>)</span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="fu">hv_man_table_save_jtcvs</span>(</span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>  ft, <span class="st">"table1.docx"</span>, <span class="at">caption =</span> <span class="st">"Table 1. Baseline Characteristics"</span>,</span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>  <span class="at">footnotes =</span> <span class="fu">hv_test_footnotes_jtcvs</span>(tbl)</span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a>)</span></code></pre><p></p></div>
     </div>
     <div class="section level2">
     <h2 id="checking-a-finished-document">Checking a finished document<a class="anchor" aria-label="anchor" href="#checking-a-finished-document"></a></h2>

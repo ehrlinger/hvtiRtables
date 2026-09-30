@@ -50,14 +50,21 @@ attr(tbl, "hv_trailing")
 
 ft <- hv_man_table_jtcvs(
   tbl,
-  groups = c(stat_1 = "Drug A (n=98)", stat_2 = "Drug B (n=102)"),
+  groups = c(
+    stat_0 = "Overall (n=200)",
+    stat_1 = "Drug A (n=98)",
+    stat_2 = "Drug B (n=102)"
+  ),
   stat_label = attr(tbl, "hv_stat_label"),
   trailing = attr(tbl, "hv_trailing")
 )
 ```
 
-`groups` names are the `stat_<k>` columns `gtsummary` built, one per
-level of `trt`. The labels are yours, including each arm’s N.
+`groups` names are the `stat_<k>` columns `gtsummary` built: `stat_0`
+for the Overall column
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+adds by default, then one per level of `trt`. The renderer lays out only
+the columns named here. The labels are yours, including each column’s N.
 
 ## 3. Build the test footnotes
 
@@ -110,7 +117,7 @@ hv_man_table_jtcvs(
   groups = c(stat_1 = "A", stat_2 = "B")
 )
 #> Error:
-#> ! `tbl` was not built with the "{N_obs} ||| {stat}" convention hv_man_table_jtcvs() requires, so column `stat_1` cannot be split into its N and statistic parts. Build it with hv_tbl_summary(), or pass statistic = list(all_continuous() ~ "{N_obs} ||| {mean} ± {sd}"). First unparseable value: "46 (37, 60)".
+#> ! `tbl` was not built with the "{N_nonmiss} ||| {stat}" convention hv_man_table_jtcvs() requires, so column `stat_1` cannot be split into its N and statistic parts. Build it with hv_tbl_summary(), or pass statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"). First unparseable value: "46 (37, 60)".
 ```
 
 ``` r

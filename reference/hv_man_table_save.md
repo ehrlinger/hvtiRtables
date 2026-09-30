@@ -6,13 +6,7 @@ macro's `RTFFILE=`/`PDFFILE=` output block.
 ## Usage
 
 ``` r
-hv_man_table_save(
-  ft,
-  file,
-  footnotes = hv_man_footnotes(),
-  abbreviations = NULL,
-  ...
-)
+hv_man_table_save(ft, file, footnotes = NULL, abbreviations = NULL, ...)
 ```
 
 ## Arguments
@@ -30,24 +24,25 @@ hv_man_table_save(
 
 - footnotes:
 
-  Optional named list, symbol -\> footnote text. Defaults to
+  Optional named list, symbol -\> footnote text. When omitted, uses the
+  `hv_footnotes` attribute carried from
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  through
+  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md),
+  so the dagger follows that table's `continuous_stat` and
+  `percentiles`. Other flextables fall back to
+  [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)'s
+  median/15th-85th house defaults. Pass `NULL` to suppress both, or
+  compose with
   [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
-  (the house-universal N and median/percentile footnotes). That default
-  text hardcodes the 15th/85th percentile pair; if the table was built
-  with
-  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)'s
-  `percentiles =` set to anything else, override it (see below) or the
-  footnote will misstate what the table shows. Pass `NULL` to suppress
-  both, or compose with
-  [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
-  to override or extend (see its documentation). Symbols must be drawn
-  from `c("*", "†", "‡", "§", "¶", "||")`. Each symbol is appended as a
-  superscript reference mark to the table's count-column header cell — a
+  to override or extend. Symbols must be drawn from
+  `c("*", "†", "‡", "§", "¶", "||")`. Each symbol is appended as a
+  superscript reference mark to the table's count-column header cell (a
   column named `n`, else the first `n_stat_<k>` column
   [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
   creates when it splits an
   [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
-  table, else the first column — and its text is rendered as its own
+  table, else the first column), and its text is rendered as its own
   paragraph below the table, in the order given. Every element must be
   named (unnamed or blank-named entries raise an error) and every text
   must be a single non-empty string (`NULL`, `NA`, a number, or a
@@ -94,6 +89,41 @@ which keeps vertical cell alignment controllable if you later reformat
 the surrounding document to 1.5- or double-spacing. House rule 2
 concerns the *insertion point* in the destination document, not this
 function's output; see the package README for the paste-in workflow.
+
+## Common mistakes
+
+**"unused argument (caption)"** The CORR saver writes no caption. Only
+[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
+takes one; here the table title goes in the manuscript, above the pasted
+table.
+
+**"`footnotes` must be a named list (symbol -\> footnote text) ..."**
+You passed the JTCVS shape. The two savers' `footnotes` arguments are
+unrelated types: this one is keyed by symbol, `` list(`*` = "text") ``,
+and
+[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)'s
+is keyed by position, `list(list(row =, col =, text =))`. So
+[`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md)'s
+output does not belong here;
+[`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)'s
+does.
+
+**"Invalid footnote symbol(s): ..."** Symbols are drawn from the house
+set `* † ‡ § ¶ ||`. A letter or a digit is not one of them; lettered
+markers are the JTCVS renderer's convention.
+
+**"Output directory does not exist: ..."** The
+[`dirname()`](https://rdrr.io/r/base/basename.html) of `file` is not
+created for you. Run `dir.create(dirname(file), recursive = TRUE)`
+first.
+
+**A hand-built footnote that misstates the table.** The automatic
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+-\>
+[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+path keeps the default dagger in sync. When supplying `footnotes`
+yourself, make its wording match the statistic and percentile pair used
+to build the table.
 
 ## See also
 
