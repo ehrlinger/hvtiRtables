@@ -4,3 +4,6 @@ docs
 /Meta/
 .remember/
 reports/
+/vignettes/.quarto/
+/vignettes/*.html
+/vignettes/*_files/

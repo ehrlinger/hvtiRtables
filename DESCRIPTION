@@ -22,11 +22,12 @@ Suggests:
     dplyr,
     haven,
     knitr,
+    quarto,
     rmarkdown,
     smd (>= 0.6.6),
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-VignetteBuilder: knitr
+VignetteBuilder: quarto
 Imports:
     flextable (>= 0.9.0),
     gtsummary (>= 2.5.0),

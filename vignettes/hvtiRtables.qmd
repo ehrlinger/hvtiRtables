@@ -1,9 +1,11 @@
 ---
 title: "Building a manuscript table end to end"
-output: rmarkdown::html_vignette
+author: "John Ehrlinger"
+date: today
+format: html
 vignette: >
   %\VignetteIndexEntry{Building a manuscript table end to end}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{quarto::html}
   %\VignetteEncoding{UTF-8}
 ---
 

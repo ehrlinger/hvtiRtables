@@ -1,9 +1,11 @@
 ---
 title: "Porting a %summarytable program to R"
-output: rmarkdown::html_vignette
+author: "John Ehrlinger"
+date: today
+format: html
 vignette: >
   %\VignetteIndexEntry{Porting a %summarytable program to R}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{quarto::html}
   %\VignetteEncoding{UTF-8}
 ---
 
