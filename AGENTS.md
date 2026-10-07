@@ -91,9 +91,11 @@ feedback faster than a public release allows, not to lower the bar.
 - **Roxygen markdown is ENABLED** (`Roxygen: list(markdown = TRUE)`). ⚠️
   `hvtiRutilities` and `hvtiRtemplates` have no such field and need Rd
   markup instead.
-- **`VignetteBuilder` is `knitr` here**, not `quarto`. ⚠️
-  `hvtiRutilities`, `hvtiRdatabuild`, `hvtiPlotR`, `hvtiRtemplates` and
-  `hvtiR` all use quarto. Vignettes here are `.Rmd`.
+- **`VignetteBuilder` is `quarto`**, as in the rest of the family.
+  Vignettes are `.qmd` and take their layout from
+  `vignettes/_quarto.yml`. They were `.Rmd` under `knitr` until the move
+  to Quarto, and the plans under `dev/specs/` still describe them that
+  way.
 - **[`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md)
   validates rendered Word output.** A table that builds is not a table
   that renders correctly; the docx check is the closer to the loop, not
