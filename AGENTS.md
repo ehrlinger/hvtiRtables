@@ -92,10 +92,11 @@ feedback faster than a public release allows, not to lower the bar.
   `hvtiRutilities` and `hvtiRtemplates` have no such field and need Rd
   markup instead.
 - **`VignetteBuilder` is `quarto`**, as in the rest of the family.
-  Vignettes are `.qmd` and take their layout from
-  `vignettes/_quarto.yml`. They were `.Rmd` under `knitr` until the move
-  to Quarto, and the plans under `dev/specs/` still describe them that
-  way.
+  Vignettes are `.qmd` and render in the `quarto::html` engine’s minimal
+  format, which ignores layout options; the pkgdown site’s article
+  layout comes from `pkgdown/extra.css`. They were `.Rmd` under `knitr`
+  until the move to Quarto, and the plans under `dev/specs/` still
+  describe them that way.
 - **[`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md)
   validates rendered Word output.** A table that builds is not a table
   that renders correctly; the docx check is the closer to the loop, not

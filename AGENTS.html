@@ -97,7 +97,7 @@
 <li>
 <strong>Roxygen markdown is ENABLED</strong> (<code>Roxygen: list(markdown = TRUE)</code>). ⚠️ <code>hvtiRutilities</code> and <code>hvtiRtemplates</code> have no such field and need Rd markup instead.</li>
 <li>
-<strong><code>VignetteBuilder</code> is <code>quarto</code></strong>, as in the rest of the family. Vignettes are <code>.qmd</code> and take their layout from <code>vignettes/_quarto.yml</code>. They were <code>.Rmd</code> under <code>knitr</code> until the move to Quarto, and the plans under <code>dev/specs/</code> still describe them that way.</li>
+<strong><code>VignetteBuilder</code> is <code>quarto</code></strong>, as in the rest of the family. Vignettes are <code>.qmd</code> and render in the <code>quarto::html</code> engine’s minimal format, which ignores layout options; the pkgdown site’s article layout comes from <code>pkgdown/extra.css</code>. They were <code>.Rmd</code> under <code>knitr</code> until the move to Quarto, and the plans under <code>dev/specs/</code> still describe them that way.</li>
 <li>
 <strong><code><a href="reference/hv_check_docx.html">hv_check_docx()</a></code> validates rendered Word output.</strong> A table that builds is not a table that renders correctly; the docx check is the closer to the loop, not an optional extra.</li>
 <li>
