@@ -13,6 +13,10 @@
   already required 4.4.0, so on an older R the install failed whatever this
   package declared.
 
+* `DESCRIPTION` now declares the Quarto command line tool in
+  `SystemRequirements`. The vignettes have always needed it to build; the
+  field makes that visible to installers and to `R CMD check`.
+
 # hvtiRtables 1.0.3
 
 - **The em dashes in `R/` documentation are gone.** Six sat in roxygen
