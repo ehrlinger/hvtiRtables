@@ -3,10 +3,8 @@
 * The vignettes are Quarto documents now, not R Markdown, like the rest of
   the HVTI family. `VignetteBuilder` is `quarto`, and building them needs the
   Quarto CLI. The text and code are unchanged.
-* The vignettes and the pkgdown site's articles put the table of contents on
-  the left and use the full width of the window, matching the rest of the
-  HVTI family. The vignettes take the layout from `vignettes/_quarto.yml`,
-  the site from `pkgdown/extra.css`.
+* The pkgdown site's articles put the table of contents on the left and use
+  the full width of the window, through `pkgdown/extra.css`.
 
 - Now requires R 4.4.0 or newer, up from 4.1.0, to match the rest of the
   HVTI family. `hvtiR::install()` installs the members together, and several

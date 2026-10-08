@@ -72,8 +72,10 @@ to lower the bar.
 - **Roxygen markdown is ENABLED** (`Roxygen: list(markdown = TRUE)`).
   ⚠️ `hvtiRutilities` and `hvtiRtemplates` have no such field and need Rd markup instead.
 - **`VignetteBuilder` is `quarto`**, as in the rest of the family. Vignettes are `.qmd`
-  and take their layout from `vignettes/_quarto.yml`. They were `.Rmd` under `knitr`
-  until the move to Quarto, and the plans under `dev/specs/` still describe them that way.
+  and render in the `quarto::html` engine's minimal format, which ignores layout
+  options; the pkgdown site's article layout comes from `pkgdown/extra.css`. They were
+  `.Rmd` under `knitr` until the move to Quarto, and the plans under `dev/specs/` still
+  describe them that way.
 - **`hv_check_docx()` validates rendered Word output.** A table that builds is not a table
   that renders correctly; the docx check is the closer to the loop, not an optional extra.
 - **`testthat` edition 3.** Test files are `test-*.R` with a hyphen. ⚠️ `hvtiPlotR` uses
