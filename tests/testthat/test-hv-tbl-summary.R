@@ -324,6 +324,44 @@ test_that("hv_tbl_summary compare = 'pvalue' adds a formatted p-value column", {
   expect_identical(attr(tbl, "hv_trailing"), c(hv_compare_col = "P"))
 })
 
+test_that("hv_tbl_summary compare 'pvalue'/'both' fail loudly without broom", {
+  # Without broom, gtsummary's add_p() only warns and leaves every p-value
+  # blank. The book shipped a week of blank p-values that way.
+  local_mocked_bindings(.has_broom = function() FALSE)
+  dta <- mk_tbl_summary_data()
+  for (cmp in c("pvalue", "both")) {
+    expect_error(
+      hv_tbl_summary(
+        dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
+        compare = cmp
+      ),
+      "needs the 'broom' package"
+    )
+  }
+  # SMD and none never call add_p(), so they still work without broom.
+  expect_no_error(hv_tbl_summary(
+    dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
+    compare = "smd"
+  ))
+})
+
+test_that("hv_tbl_summary p-values and test_name are filled, not blank", {
+  # The silent failure this guards: a p-value column of NA and no
+  # test_name, so hv_test_footnotes_jtcvs() returns list().
+  skip_if_not_installed("broom")
+  dta <- mk_tbl_summary_mixed_data()
+  tbl <- hv_tbl_summary(
+    dta, by = "grp", groups = list(Demographics = c("age", "flag", "race")),
+    continuous = "age", binary = "flag", categorical = "race",
+    compare = "pvalue"
+  )
+  tb <- tbl$table_body
+  labels <- tb$row_type == "label"
+  expect_false(anyNA(tb$p.value[labels]))
+  expect_false(anyNA(tb$test_name[labels]))
+  expect_gt(length(hv_test_footnotes_jtcvs(tbl)), 0)
+})
+
 test_that("hv_tbl_summary compare = 'smd' adds a formatted std. diff. column", {
   dta <- mk_tbl_summary_data()
   tbl <- hv_tbl_summary(
