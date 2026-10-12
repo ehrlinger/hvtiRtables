@@ -1,4 +1,4 @@
-# hvtiRtables (unreleased)
+# hvtiRtables 1.0.4
 
 * The vignettes are Quarto documents now, not R Markdown, like the rest of
   the HVTI family. `VignetteBuilder` is `quarto`, and building them needs the
@@ -14,6 +14,15 @@
 * `DESCRIPTION` now declares the Quarto command line tool in
   `SystemRequirements`. The vignettes have always needed it to build; the
   field makes that visible to installers and to `R CMD check`.
+
+- **`hv_tbl_summary(compare = "pvalue")` and `compare = "both"` now stop
+  with an error when 'broom' is not installed**, instead of returning a table
+  with every p-value blank. `gtsummary::add_p()` runs its Wilcoxon test
+  through 'cardx', which needs 'broom'; without it gtsummary only warned,
+  and `hv_test_footnotes_jtcvs()` then returned `list()` because no test was
+  recorded. The HVTI Recipes book published blank p-values for a week this
+  way. 'broom' stays in `Suggests`, so `compare = "smd"` and `"none"` still
+  work without it.
 
 # hvtiRtables 1.0.3
 
