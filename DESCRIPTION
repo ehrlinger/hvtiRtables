@@ -25,7 +25,7 @@ Suggests:
     quarto,
     rmarkdown,
     smd (>= 0.6.6),
-    testthat (>= 3.0.0)
+    testthat (>= 3.1.7)
 Config/testthat/edition: 3
 VignetteBuilder: quarto
 SystemRequirements: Quarto command line tool

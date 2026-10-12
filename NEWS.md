@@ -24,6 +24,9 @@
   way. 'broom' stays in `Suggests`, so `compare = "smd"` and `"none"` still
   work without it.
 
+- `testthat` in `Suggests` is now `>= 3.1.7`, the first release with
+  `local_mocked_bindings()`, which the test for the 'broom' guard uses.
+
 # hvtiRtables 1.0.3
 
 - **The em dashes in `R/` documentation are gone.** Six sat in roxygen
