@@ -1,6 +1,6 @@
 Package: hvtiRtables
 Title: Manuscript-Compliant Table Construction for HVTI CORR Group
-Version: 1.0.3
+Version: 1.0.4
 Authors@R:
     person("John", "Ehrlinger", , "ehrlinj@ccf.org", role = c("aut", "cre"))
 Description: Turns 'gtsummary' table objects into MS Word tables complying
@@ -25,7 +25,7 @@ Suggests:
     quarto,
     rmarkdown,
     smd (>= 0.6.6),
-    testthat (>= 3.0.0)
+    testthat (>= 3.1.7)
 Config/testthat/edition: 3
 VignetteBuilder: quarto
 SystemRequirements: Quarto command line tool

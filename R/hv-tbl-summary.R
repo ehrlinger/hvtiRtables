@@ -415,6 +415,17 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     }
   }
 
+  # add_p()'s Wilcoxon test goes through cardx, which needs broom. Without
+  # it gtsummary only warns and leaves every p-value blank, and
+  # hv_test_footnotes_jtcvs() then finds no test_name and returns list().
+  # The book published blank p-values for a week that way (2026-10-05 to
+  # 2026-10-12), so fail here instead.
+  if (effective_compare %in% c("pvalue", "both") && !.has_broom()) {
+    stop("`compare = \"", effective_compare, "\"` needs the 'broom' ",
+         "package for its p-values, and it is not installed. ",
+         "Install it with install.packages(\"broom\").", call. = FALSE)
+  }
+
   # Order matters for compare = "both": add_difference() must run first.
   # Called second, it overwrites `estimate` with a raw mean difference
   # instead of the standardized one, and clobbers add_p()'s `test_name`
@@ -532,3 +543,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   }
   tbl
 }
+
+# A function rather than an inline requireNamespace() call so the tests
+# can mock broom's absence without uninstalling it.
+.has_broom <- function() requireNamespace("broom", quietly = TRUE)
