@@ -1,5 +1,38 @@
 # Changelog
 
+## hvtiRtables 1.0.4
+
+- The vignettes are Quarto documents now, not R Markdown, like the rest
+  of the HVTI family. `VignetteBuilder` is `quarto`, and building them
+  needs the Quarto CLI. The text and code are unchanged.
+
+- The pkgdown site’s articles put the table of contents on the left and
+  use the full width of the window, through `pkgdown/extra.css`.
+
+- Now requires R 4.4.0 or newer, up from 4.1.0, to match the rest of the
+  HVTI family. `hvtiR::install()` installs the members together, and
+  several already required 4.4.0, so on an older R the install failed
+  whatever this package declared.
+
+- `DESCRIPTION` now declares the Quarto command line tool in
+  `SystemRequirements`. The vignettes have always needed it to build;
+  the field makes that visible to installers and to `R CMD check`.
+
+- **`hv_tbl_summary(compare = "pvalue")` and `compare = "both"` now stop
+  with an error when ‘broom’ is not installed**, instead of returning a
+  table with every p-value blank.
+  [`gtsummary::add_p()`](https://www.danieldsjoberg.com/gtsummary/reference/add_p.html)
+  runs its Wilcoxon test through ‘cardx’, which needs ‘broom’; without
+  it gtsummary only warned, and
+  [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md)
+  then returned [`list()`](https://rdrr.io/r/base/list.html) because no
+  test was recorded. The HVTI Recipes book published blank p-values for
+  a week this way. ‘broom’ stays in `Suggests`, so `compare = "smd"` and
+  `"none"` still work without it.
+
+- `testthat` in `Suggests` is now `>= 3.1.7`, the first release with
+  `local_mocked_bindings()`, which the test for the ‘broom’ guard uses.
+
 ## hvtiRtables 1.0.3
 
 - **The em dashes in `R/` documentation are gone.** Six sat in roxygen

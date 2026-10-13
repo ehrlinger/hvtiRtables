@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,15 @@
       <small>Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.4" id="hvtirtables-104">hvtiRtables 1.0.4<a class="anchor" aria-label="anchor" href="#hvtirtables-104"></a></h2>
+<ul><li><p>The vignettes are Quarto documents now, not R Markdown, like the rest of the HVTI family. <code>VignetteBuilder</code> is <code>quarto</code>, and building them needs the Quarto CLI. The text and code are unchanged.</p></li>
+<li><p>The pkgdown site’s articles put the table of contents on the left and use the full width of the window, through <code>pkgdown/extra.css</code>.</p></li>
+<li><p>Now requires R 4.4.0 or newer, up from 4.1.0, to match the rest of the HVTI family. <code>hvtiR::install()</code> installs the members together, and several already required 4.4.0, so on an older R the install failed whatever this package declared.</p></li>
+<li><p><code>DESCRIPTION</code> now declares the Quarto command line tool in <code>SystemRequirements</code>. The vignettes have always needed it to build; the field makes that visible to installers and to <code>R CMD check</code>.</p></li>
+<li><p><strong><code>hv_tbl_summary(compare = "pvalue")</code> and <code>compare = "both"</code> now stop with an error when ‘broom’ is not installed</strong>, instead of returning a table with every p-value blank. <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/add_p.html" class="external-link">gtsummary::add_p()</a></code> runs its Wilcoxon test through ‘cardx’, which needs ‘broom’; without it gtsummary only warned, and <code><a href="../reference/hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code> then returned <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> because no test was recorded. The HVTI Recipes book published blank p-values for a week this way. ‘broom’ stays in <code>Suggests</code>, so <code>compare = "smd"</code> and <code>"none"</code> still work without it.</p></li>
+<li><p><code>testthat</code> in <code>Suggests</code> is now <code>&gt;= 3.1.7</code>, the first release with <code>local_mocked_bindings()</code>, which the test for the ‘broom’ guard uses.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.3" id="hvtirtables-103">hvtiRtables 1.0.3<a class="anchor" aria-label="anchor" href="#hvtirtables-103"></a></h2>
 <ul><li>
