@@ -55,12 +55,15 @@
 #'   and `percentiles`. Other flextables fall back to [hv_man_footnotes()]'s
 #'   median/15th-85th house defaults. Pass `NULL` to suppress both, or
 #'   compose with [hv_man_footnotes()] to override or extend.
-#'   Symbols must be drawn from `c("*", "†", "‡", "§", "¶", "||")`. Each
-#'   symbol is appended as a superscript reference mark to the table's
-#'   count-column header cell (a column named `n`, else the first
-#'   `n_stat_<k>` column [hv_man_table()] creates when it splits an
-#'   [hv_tbl_summary()] table, else the first column), and its text is
-#'   rendered as its own paragraph below the table, in the order given.
+#'   Symbols must be drawn from `c("*", "†", "‡", "§", "¶", "||")`. `†`
+#'   describes the statistic, so it is appended as a superscript reference
+#'   mark to every statistic-column header (`stat_<k>`), and to the
+#'   count column only when the table has no such column. Every other
+#'   symbol goes on the table's count-column header cell (a column named
+#'   `n`, else the first `n_stat_<k>` column [hv_man_table()] creates when
+#'   it splits an [hv_tbl_summary()] table, else the first column). Each
+#'   text is rendered as its own paragraph below the table, in the order
+#'   given.
 #'   Every element must be named (unnamed or blank-named
 #'   entries raise an error) and every text must be a single non-empty
 #'   string (`NULL`, `NA`, a number, or a multi-element vector raise an
@@ -75,6 +78,10 @@
 #'   empty or `NULL` vector is a no-op.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
+#'
+#' A table with three or more statistic columns, such as an Overall
+#' column and two groups, is written on a landscape page: with a `No.`
+#' column beside each, it does not fit a portrait one.
 #'
 #' @return Invisibly, the `file` path.
 #'
@@ -122,8 +129,8 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
                "dangling reference with nothing after it. Give the ",
                "entry text, e.g. \"Values are median (P15, P85).\"")
       )
-    j <- which(ft$col_keys == .footnote_col(ft))
     for (sym in fn_names) {
+      j <- which(ft$col_keys %in% .footnote_cols(ft, sym))
       ft <- flextable::append_chunks(ft, i = 1, j = j, part = "header",
                                      flextable::as_sup(sym))
     }
@@ -132,21 +139,45 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   doc <- officer::read_docx()
   doc <- flextable::body_add_flextable(doc, ft)
 
+  font <- .table_font(ft)
   if (!is.null(footnotes)) {
     for (sym in names(footnotes)) {
-      sup_prop <- officer::fp_text(vertical.align = "superscript")
       note_par <- officer::fpar(
-        officer::ftext(sym, prop = sup_prop),
-        officer::ftext(paste0(" ", footnotes[[sym]]))
+        officer::ftext(sym, prop = .note_prop(font, "superscript")),
+        officer::ftext(paste0(" ", footnotes[[sym]]), prop = .note_prop(font))
       )
       doc <- officer::body_add_fpar(doc, note_par, style = "Normal")
     }
   }
 
-  doc <- .add_abbreviations_key(doc, abbreviations)
+  doc <- .add_abbreviations_key(doc, abbreviations, font)
+  if (.is_wide(ft)) doc <- .landscape(doc)
 
   print(doc, target = file)
   invisible(file)
+}
+
+# Three statistic columns (an Overall column and two groups, say) each
+# with its No. column overflow a portrait page; Word clips the right
+# edge rather than wrapping.
+.is_wide <- function(ft) {
+  sum(grepl("^stat_[0-9]+$", ft$col_keys)) >= 3L
+}
+
+# The template's own page (A4, 1417-twip margins) turned on its side,
+# so only the orientation changes.
+.landscape <- function(doc) {
+  twip <- 1 / 1440
+  officer::body_set_default_section(doc, officer::prop_section(
+    page_size = officer::page_size(
+      width = 11900 * twip, height = 16840 * twip, orient = "landscape"
+    ),
+    page_margins = officer::page_mar(
+      bottom = 1417 * twip, top = 1417 * twip, right = 1417 * twip,
+      left = 1417 * twip, header = 708 * twip, footer = 708 * twip,
+      gutter = 0
+    )
+  ))
 }
 
 .default_footnotes <- function(ft) {
@@ -154,11 +185,35 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   if (is.null(footnotes)) hv_man_footnotes() else footnotes
 }
 
-.add_abbreviations_key <- function(doc, abbreviations) {
+# The table's own font, read back from its first body cell, so the text
+# under it matches. Without it the paragraphs fell back to the
+# template's Normal style, a sans-serif under a Times New Roman table.
+.table_font <- function(ft) {
+  fam <- ft$body$styles$text$font.family$data
+  if (length(fam) == 0L) fam <- ft$header$styles$text$font.family$data
+  if (length(fam) == 0L || is.na(fam[1])) return(NULL)
+  fam[1]
+}
+
+# fp_text_lite() rather than fp_text(): it sets only what is named, so
+# size and colour still come from the paragraph style. fp_text() would
+# also impose its own 10-point Arial defaults.
+#
+# Every font slot, as flextable sets them in the table: Word picks the
+# slot per character, so a "±" in a footnote could otherwise fall back
+# to the style's font.
+.note_prop <- function(font, align = "baseline", ...) {
+  font <- font %||% NA_character_
+  officer::fp_text_lite(font.family = font, hansi.family = font,
+                        cs.family = font, eastasia.family = font,
+                        vertical.align = align, ...)
+}
+
+.add_abbreviations_key <- function(doc, abbreviations, font = NULL) {
   if (is.null(abbreviations) || length(abbreviations) == 0) return(doc)
   ordered <- abbreviations[order(names(abbreviations))]
-  runs <- list(officer::ftext("Key: "))
-  italic_prop <- officer::fp_text(italic = TRUE)
+  runs <- list(officer::ftext("Key: ", prop = .note_prop(font)))
+  italic_prop <- .note_prop(font, italic = TRUE)
   for (i in seq_along(ordered)) {
     runs <- c(runs, list(officer::ftext(names(ordered)[i], prop = italic_prop)))
     suffix <- if (i < length(ordered)) {
@@ -166,7 +221,7 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
     } else {
       paste0(", ", ordered[i])
     }
-    runs <- c(runs, list(officer::ftext(suffix)))
+    runs <- c(runs, list(officer::ftext(suffix, prop = .note_prop(font))))
   }
   key_par <- do.call(officer::fpar, runs)
   officer::body_add_fpar(doc, key_par, style = "Normal")
@@ -177,13 +232,23 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 # when the table has one.
 #
 # hv_man_table() splits the "{N_nonmiss} ||| {stat}" convention into
-# `n_stat_<k>` columns, and for a sectioned table col_keys[1] is
-# `groupname_col` -- so without this the marker would land on the
-# section-label column. The bare "n" case is kept for a hand-built
+# `n_stat_<k>` columns; without this the marker would land on the
+# label column. The bare "n" case is kept for a hand-built
 # flextable that names its count column that way.
 .footnote_col <- function(ft) {
   if ("n" %in% ft$col_keys) return("n")
   n_stat <- grep("^n_stat_[0-9]+$", ft$col_keys, value = TRUE)
   if (length(n_stat) > 0L) return(n_stat[1])
   ft$col_keys[1]
+}
+
+# Header cells one footnote symbol attaches to. The dagger describes the
+# statistic, so it marks every column that holds one: on the count
+# column it claimed the "No." header was a median.
+.footnote_cols <- function(ft, sym) {
+  if (identical(sym, "\u2020")) {
+    stat <- grep("^stat_[0-9]+$", ft$col_keys, value = TRUE)
+    if (length(stat) > 0L) return(stat)
+  }
+  .footnote_col(ft)
 }

@@ -11,8 +11,8 @@ hv_man_footnotes(
 }
 \arguments{
 \item{continuous_stat}{One of \code{"median"} (default), \code{"mean"}, or
-\code{"both"}. Controls whether the dagger reads as median and percentiles,
-mean +/- SD, or both.}
+\code{"both"}. Controls whether the dagger's continuous half reads as
+median and percentiles, mean +/- SD, or both.}
 
 \item{percentiles}{Numeric vector of length 2, the increasing whole-number
 percentile pair named by the dagger. Default \code{c(15, 85)}. Used for
@@ -31,9 +31,10 @@ Two footnotes are universal to the HVTI CORR "Table Construction for
 Manuscripts" rules, not specific to any one study, so you don't have to
 re-type them at every \code{\link[=hv_man_table_save]{hv_man_table_save()}} call site: a \code{*} for the
 non-missing-value count (house rule 8, exact wording required) and a
-\verb{†} explaining the continuous statistic. You don't need a footnote for
-the categorical \verb{n (\%)} format; the column header text already covers it
-(house rules 10/12).
+\verb{†} explaining the statistic in each group column, e.g.
+"No. (\%) or Median (15th, 85th percentile)." The categorical half is
+part of it because the cells print \code{12 (39)} with no \verb{\%} sign (house
+rules 10/12), and the flat CORR header names only the group.
 
 \code{\link[=hv_man_table_save]{hv_man_table_save()}}'s \code{footnotes} parameter defaults to calling
 this function, so every table gets both automatically. A table built by

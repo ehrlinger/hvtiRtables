@@ -15,6 +15,7 @@ hv_tbl_summary(
   percentiles = c(15, 85),
   overall = TRUE,
   continuous_stat = c("median", "mean", "both"),
+  normal = character(0),
   ...
 )
 }
@@ -37,9 +38,9 @@ appear in \code{groups}.}
 (\verb{\%summarytable} \verb{CON3=} equivalent), summarized as set by
 \code{continuous_stat}. Variables the macro classified as \verb{CON1=}
 (mean +/- SD, one-way ANOVA) or \verb{CON2=} (median with min and max)
-belong here too. \code{continuous_stat = "mean"} reproduces \verb{CON1=}'s
-statistic but not its test: every continuous variable is tested
-non-parametrically. Each named column must be numeric.}
+belong here too; list \verb{CON1=} variables in \code{normal} as well to keep
+the macro's mean +/- SD and ANOVA. Each named column must be
+numeric.}
 
 \item{binary}{Character vector of 0/1 variable names (\verb{\%summarytable}
 \verb{CAT1=} equivalent), summarized as \verb{n (\%)} on a single row. Each
@@ -79,16 +80,26 @@ only the columns its \code{groups} argument names, so name \code{stat_0}
 there to show it.}
 
 \item{continuous_stat}{One of \code{"median"} (default), \code{"mean"}, or
-\code{"both"}: how continuous variables are summarized. \code{"median"} gives
+\code{"both"}: how continuous variables not listed in \code{normal} are
+summarized. \code{"median"} gives
 \verb{median (P<low>, P<high>)}; \code{"mean"} gives mean +/- SD, with no
 spaces around the plus-minus sign and EHB/Blackstone paired rounding;
 \code{"both"} puts the two on sub-rows under the variable, mean +/- SD
 first, with the N shown once, on the first. Choosing one for the
 manuscript is then a matter of deleting a row. The test does not
-change with the statistic: it is always the non-parametric one
-described above. The CORR footnote carried through \code{\link[=hv_man_table]{hv_man_table()}} to
-\code{\link[=hv_man_table_save]{hv_man_table_save()}} follows this choice automatically. Placed after
+change with the statistic: only \code{normal} selects ANOVA. The CORR
+footnote carried through \code{\link[=hv_man_table]{hv_man_table()}} to \code{\link[=hv_man_table_save]{hv_man_table_save()}}
+follows this choice automatically. Placed after
 \code{overall} so calls passing \code{overall} by position keep working.}
+
+\item{normal}{Character vector, a subset of \code{continuous}: the
+variables to treat as normally distributed (\verb{\%summarytable} \verb{CON1=}
+equivalent). Each is summarized as mean +/- SD whatever
+\code{continuous_stat} says, and, under \code{compare = "pvalue"} or
+\code{"both"}, tested with classical (pooled-variance) one-way ANOVA,
+the test the macro ran. Default none. Each name must also appear in
+\code{continuous}. Last in the signature so positional calls keep
+working.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.}
@@ -109,14 +120,16 @@ object, ready for \code{\link[=hv_man_table]{hv_man_table()}} or \code{\link[=hv
 }
 \details{
 Continuous variables are summarized as \verb{median (P<low>, P<high>)} by
-default, or as mean +/- SD, or both (\code{continuous_stat}). Whichever is
-shown, the test is the same blanket non-parametric one (Wilcoxon
-rank-sum for 2 groups, Kruskal-Wallis for 3+). This function does
-not classify variables as Gaussian/non-Gaussian the way
-\verb{\%summarytable} does; that is \code{gtsummary::add_p()}'s own default
-continuous test already. \code{percentiles} defaults to the house
-convention documented in \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} (15th/85th),
-overridable per study (\verb{\%summarytable} equivalent: \verb{PP=}).
+default, or as mean +/- SD, or both (\code{continuous_stat}), and tested
+non-parametrically (Wilcoxon rank-sum for 2 groups, Kruskal-Wallis for
+3+), the macro's \verb{CON3=}. A variable you also list in \code{normal} is the
+macro's \verb{CON1=} instead: mean +/- SD, tested with one-way ANOVA. When
+that leaves rows of one table showing different statistics, each
+continuous row names its own, \code{"Age, Mean±SD"}, as the macro's
+\code{DESCLABEL=1} did, and the header and dagger read "No. (\%) or as
+labeled". \code{percentiles} defaults to the house convention documented in
+\code{\link[=hv_man_footnotes]{hv_man_footnotes()}} (15th/85th), overridable per study
+(\verb{\%summarytable} equivalent: \verb{PP=}).
 
 Mean/SD output follows Eugene H. Blackstone's (EHB's) paired reporting
 rule: the mean is rounded to the first-significant-digit place of the SD,

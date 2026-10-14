@@ -9,14 +9,16 @@
 #' object, ready for [hv_man_table()] or [hv_man_table_jtcvs()].
 #'
 #' Continuous variables are summarized as `median (P<low>, P<high>)` by
-#' default, or as mean +/- SD, or both (`continuous_stat`). Whichever is
-#' shown, the test is the same blanket non-parametric one (Wilcoxon
-#' rank-sum for 2 groups, Kruskal-Wallis for 3+). This function does
-#' not classify variables as Gaussian/non-Gaussian the way
-#' `%summarytable` does; that is `gtsummary::add_p()`'s own default
-#' continuous test already. `percentiles` defaults to the house
-#' convention documented in [hv_man_footnotes()] (15th/85th),
-#' overridable per study (`%summarytable` equivalent: `PP=`).
+#' default, or as mean +/- SD, or both (`continuous_stat`), and tested
+#' non-parametrically (Wilcoxon rank-sum for 2 groups, Kruskal-Wallis for
+#' 3+), the macro's `CON3=`. A variable you also list in `normal` is the
+#' macro's `CON1=` instead: mean +/- SD, tested with one-way ANOVA. When
+#' that leaves rows of one table showing different statistics, each
+#' continuous row names its own, `"Age, Mean±SD"`, as the macro's
+#' `DESCLABEL=1` did, and the header and dagger read "No. (%) or as
+#' labeled". `percentiles` defaults to the house convention documented in
+#' [hv_man_footnotes()] (15th/85th), overridable per study
+#' (`%summarytable` equivalent: `PP=`).
 #'
 #' Mean/SD output follows Eugene H. Blackstone's (EHB's) paired reporting
 #' rule: the mean is rounded to the first-significant-digit place of the SD,
@@ -92,9 +94,9 @@
 #'   (`%summarytable` `CON3=` equivalent), summarized as set by
 #'   `continuous_stat`. Variables the macro classified as `CON1=`
 #'   (mean +/- SD, one-way ANOVA) or `CON2=` (median with min and max)
-#'   belong here too. `continuous_stat = "mean"` reproduces `CON1=`'s
-#'   statistic but not its test: every continuous variable is tested
-#'   non-parametrically. Each named column must be numeric.
+#'   belong here too; list `CON1=` variables in `normal` as well to keep
+#'   the macro's mean +/- SD and ANOVA. Each named column must be
+#'   numeric.
 #' @param binary Character vector of 0/1 variable names (`%summarytable`
 #'   `CAT1=` equivalent), summarized as `n (%)` on a single row. Each
 #'   named column must have at most 2 distinct non-`NA` values, and
@@ -128,16 +130,25 @@
 #'   only the columns its `groups` argument names, so name `stat_0`
 #'   there to show it.
 #' @param continuous_stat One of `"median"` (default), `"mean"`, or
-#'   `"both"`: how continuous variables are summarized. `"median"` gives
+#'   `"both"`: how continuous variables not listed in `normal` are
+#'   summarized. `"median"` gives
 #'   `median (P<low>, P<high>)`; `"mean"` gives mean +/- SD, with no
 #'   spaces around the plus-minus sign and EHB/Blackstone paired rounding;
 #'   `"both"` puts the two on sub-rows under the variable, mean +/- SD
 #'   first, with the N shown once, on the first. Choosing one for the
 #'   manuscript is then a matter of deleting a row. The test does not
-#'   change with the statistic: it is always the non-parametric one
-#'   described above. The CORR footnote carried through [hv_man_table()] to
-#'   [hv_man_table_save()] follows this choice automatically. Placed after
+#'   change with the statistic: only `normal` selects ANOVA. The CORR
+#'   footnote carried through [hv_man_table()] to [hv_man_table_save()]
+#'   follows this choice automatically. Placed after
 #'   `overall` so calls passing `overall` by position keep working.
+#' @param normal Character vector, a subset of `continuous`: the
+#'   variables to treat as normally distributed (`%summarytable` `CON1=`
+#'   equivalent). Each is summarized as mean +/- SD whatever
+#'   `continuous_stat` says, and, under `compare = "pvalue"` or
+#'   `"both"`, tested with classical (pooled-variance) one-way ANOVA,
+#'   the test the macro ran. Default none. Each name must also appear in
+#'   `continuous`. Last in the signature so positional calls keep
+#'   working.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
@@ -173,6 +184,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
                            percentiles = c(15, 85),
                            overall = TRUE,
                            continuous_stat = c("median", "mean", "both"),
+                           normal = character(0),
                            ...) {
   .check_sas_args(list(...), "hv_tbl_summary")
   compare <- match.arg(compare)
@@ -181,6 +193,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   if (!is.data.frame(data))
     stop("`data` must be a data frame.", call. = FALSE)
   .assert_type_buckets(continuous, binary, categorical)
+  .assert_normal(normal, continuous)
   # `by` fails the same way `groups` variables do, in this function's
   # own words. gtsummary's own error here is unusually good, but having
   # `by` fail differently from `groups` inside one function is exactly
@@ -284,12 +297,28 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   )
   cont_type <- if (continuous_stat == "both") "continuous2" else "continuous"
 
-  cat_stat <- "{N_nonmiss} ||| {n} ({p}%)"
+  # No "%" in the cell: the header or dagger says "No. (%)" once, as the
+  # SAS macro does ("12 (39)"), and a repeated sign costs width and
+  # counts toward journal word limits.
+  cat_stat <- "{N_nonmiss} ||| {n} ({p})"
+
+  # SAS CON1=: a `normal` variable is mean +/- SD whatever
+  # continuous_stat says, on one row, tested with one-way ANOVA below.
+  nonnormal <- setdiff(continuous, normal)
+  normal_stat <- paste("{N_nonmiss} |||", mean_stat)
+  # Mixed: rows of one table show different continuous statistics, so
+  # no one header or footnote can name them all. Each continuous row
+  # then names its own (the macro's DESCLABEL=1).
+  mixed <- length(normal) > 0L && length(nonnormal) > 0L &&
+    continuous_stat != "mean"
+  label_stat <- if (length(continuous) > 0L && length(nonnormal) == 0L)
+    "mean" else if (mixed) "mixed" else continuous_stat
 
   # A list rather than a character vector: under "both" each continuous
   # variable takes a length-2 statistic.
   statistic <- c(
-    stats::setNames(rep(list(cont_stat), length(continuous)), continuous),
+    stats::setNames(rep(list(cont_stat), length(nonnormal)), nonnormal),
+    stats::setNames(rep(list(normal_stat), length(normal)), normal),
     stats::setNames(
       rep(list(cat_stat), length(binary) + length(categorical)),
       c(binary, categorical)
@@ -297,11 +326,12 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   )
   type <- stats::setNames(
     as.list(c(
-      rep(cont_type, length(continuous)),
+      rep(cont_type, length(nonnormal)),
+      rep("continuous", length(normal)),
       rep("dichotomous", length(binary)),
       rep("categorical", length(categorical))
     )),
-    c(continuous, binary, categorical)
+    c(nonnormal, normal, binary, categorical)
   )
 
   # Tell gtsummary which level is the event rather than letting it
@@ -354,10 +384,23 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # Mean ± SD"), and add_overall() matches rows on those labels, so
   # renaming them any earlier makes it fail.
   relabel <- function(tbl) {
-    if (continuous_stat != "both") return(tbl)
+    if (continuous_stat == "both")
+      tbl <- gtsummary::modify_table_body(tbl, function(tb) {
+        i <- tb$row_type == "level" & tb$variable %in% nonnormal
+        tb$label[i] <- rep_len(c(mean_label, median_label), sum(i))
+        tb
+      })
+    if (!mixed) return(tbl)
+    # "Age, Mean±SD", as the macro wrote it. A "both" variable already
+    # names its statistics on its sub-rows, so it gets no suffix.
+    suffix <- c(
+      stats::setNames(rep(mean_label, length(normal)), normal),
+      if (continuous_stat == "median")
+        stats::setNames(rep(median_label, length(nonnormal)), nonnormal)
+    )
     gtsummary::modify_table_body(tbl, function(tb) {
-      i <- tb$row_type == "level" & tb$variable %in% continuous
-      tb$label[i] <- rep_len(c(mean_label, median_label), sum(i))
+      i <- tb$row_type == "label" & tb$variable %in% names(suffix)
+      tb$label[i] <- paste0(tb$label[i], ", ", suffix[tb$variable[i]])
       tb
     })
   }
@@ -365,17 +408,15 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   if (overall && !is.null(by))
     tbl <- gtsummary::add_overall(tbl, last = FALSE)
 
-  attr(tbl, "hv_stat_label") <- switch(
-    continuous_stat,
-    median = paste("No. (%) or", median_label),
-    mean = paste("No. (%) or", mean_label),
-    both = paste0("No. (%), ", mean_label, ", or ", median_label)
+  attr(tbl, "hv_stat_label") <- .stat_label(label_stat, percentiles)
+  attr(tbl, "hv_footnotes") <- stats::setNames(
+    list("Number of non-missing values.",
+         paste0(attr(tbl, "hv_stat_label"), ".")),
+    c("*", "\u2020")
   )
-  attr(tbl, "hv_footnotes") <- hv_man_footnotes(
-    continuous_stat = continuous_stat,
-    percentiles = percentiles
-  )
-  tbl <- .format_blackstone_mean_sd(tbl, continuous, continuous_stat)
+  mean_vars <- if (continuous_stat %in% c("mean", "both"))
+    continuous else normal
+  tbl <- .format_blackstone_mean_sd(tbl, mean_vars)
 
   effective_compare <- if (is.null(by)) "none" else compare
   if (effective_compare == "none") {
@@ -435,7 +476,16 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     tbl <- gtsummary::add_difference(tbl, gtsummary::everything() ~ "smd")
   }
   if (effective_compare %in% c("pvalue", "both")) {
-    tbl <- gtsummary::add_p(tbl)
+    # CON1='s test: classical one-way ANOVA (pooled variance), which is
+    # what SAS's npar1way anova runs. oneway.test() defaults to Welch.
+    tbl <- if (length(normal) == 0L) gtsummary::add_p(tbl) else
+      gtsummary::add_p(
+        tbl,
+        test = list(gtsummary::all_of(normal) ~ "oneway.test"),
+        test.args = list(
+          gtsummary::all_of(normal) ~ list(var.equal = TRUE)
+        )
+      )
   }
 
   tb <- tbl$table_body
@@ -503,10 +553,8 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 # parsing already rounded display strings, then replace only cells containing
 # the mean/SD separator. Median rows under continuous_stat = "both" remain
 # untouched.
-.format_blackstone_mean_sd <- function(tbl, continuous, continuous_stat) {
-  if (!continuous_stat %in% c("mean", "both") || !length(continuous)) {
-    return(tbl)
-  }
+.format_blackstone_mean_sd <- function(tbl, continuous) {
+  if (!length(continuous)) return(tbl)
 
   card_names <- intersect(c("tbl_summary", "add_overall"), names(tbl$cards))
   raw <- lapply(card_names, function(card_name) {

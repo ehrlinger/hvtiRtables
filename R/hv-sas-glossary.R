@@ -62,11 +62,12 @@
   totalcol = list(arg = "overall",     stage = "compute"),
 
   con1 = list(
-    arg = "continuous", stage = "compute",
+    arg = "normal", stage = "compute",
     note = paste0(
-      "`CON1=` reported mean +/- SD with one-way ANOVA; every continuous ",
-      "variable here is summarized as median (percentiles) and tested ",
-      "non-parametrically, which is the `CON3=` behavior"
+      "list each variable in `continuous` as well; `normal` variables are ",
+      "reported as mean +/- SD and tested with one-way ANOVA, as `CON1=` ",
+      "was. In `continuous` alone a variable gets the `CON3=` behavior, ",
+      "median (percentiles) and a non-parametric test"
     )
   ),
   con2 = list(

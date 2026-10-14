@@ -86,9 +86,10 @@
 #'
 #' Use this instead of [hv_man_table()] when you're building the shape
 #' editorial actually needs at JTCVS submission: a 2-row header (group name
-#' spanning `na`/stat sub-columns) and bold, light-blue-shaded, row-spanning
-#' section headers in the body, matching the canonical "Table Construction
-#' for Manuscripts" house example (section-header fill `#CAEDFB`). This is
+#' spanning `n`/stat sub-columns, `Characteristic` spanning both rows) and
+#' bold, row-spanning section headers in the body, with no fill colour.
+#' Each `n` carries a superscript `a`, which [hv_man_table_save_jtcvs()]
+#' footnotes as "Patients with data available." This is
 #' a separate mode, not a replacement for [hv_man_table()]'s flat-header
 #' CORR house style; the two exist because CORR reports and JTCVS
 #' submissions want different things from the same header row.
@@ -125,9 +126,11 @@
 #'   comparison column (e.g. `c(std_diff = "Std. Diff.")` or
 #'   `c(p_value = "P")`). Must already exist in `tbl$table_body`.
 #' @param stat_label Sub-header text under each group's statistic column.
-#'   Default `"No. (%) or Mean±SD"` (house default for mean/SD
-#'   tables). Pass e.g. `"No. (%) or Median (15th, 85th percentile)"` when
-#'   the table's continuous statistic is a median, not a mean.
+#'   Default `NULL` takes it from the table: [hv_tbl_summary()] records the
+#'   statistic it used (e.g. `"No. (%) or Median (15th, 85th
+#'   percentile)"`), so the header cannot disagree with the cells. A
+#'   table without that record falls back to `"No. (%) or Mean±SD"`;
+#'   pass the right text yourself for any other statistic.
 #' @param font Font family. Default `"Times New Roman"` (house rule).
 #'   Any single non-empty string is accepted: `flextable` silently
 #'   substitutes an unknown font name, so a typo would otherwise pass
@@ -139,7 +142,8 @@
 #'   produce an error naming the argument to use instead.
 #'
 #' @return A `flextable` with a 2-row header and merged section rows, ready
-#'   for [hv_man_table_save_jtcvs()].
+#'   for [hv_man_table_save_jtcvs()]. It carries an `hv_header_footnotes`
+#'   attribute, the text of the `n` superscript, which that saver writes.
 #'
 #' @seealso [hv_man_table()] for the flat-header CORR house-style mode.
 #'   [hv_man_table_save_jtcvs()] to write the result to a compliant `.docx`.
@@ -163,12 +167,17 @@
 #'
 #' @export
 hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
-                               stat_label = "No. (%) or Mean\u00B1SD",
+                               stat_label = NULL,
                                font = "Times New Roman", font_size = 12,
                                ...) {
   .check_sas_args(list(...), "hv_man_table_jtcvs")
   .check_gtsummary(tbl)
   .assert_jtcvs_groups(tbl, groups)
+  # The label follows the table it describes. A fixed "Mean±SD" default
+  # mislabeled every median table built without an explicit stat_label.
+  if (is.null(stat_label))
+    stat_label <- attr(tbl, "hv_stat_label", exact = TRUE) %||%
+      "No. (%) or Mean\u00B1SD"
   .check_string(stat_label, "stat_label")
   .check_string(font, "font")
   .check_font_size(font_size)
@@ -196,7 +205,7 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
 
   header_labels <- list(label = "Characteristic")
   for (g in names(groups)) {
-    header_labels[[paste0("n_", g)]] <- "na"
+    header_labels[[paste0("n_", g)]] <- "n"
     header_labels[[paste0("disp_", g)]] <- stat_label
   }
   if (!is.null(trailing)) header_labels[[names(trailing)]] <- unname(trailing)
@@ -211,11 +220,19 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   ft <- flextable::add_header_row(
     ft, top = TRUE, values = top_values, colwidths = top_widths
   )
+  # One "Characteristic", spanning both header rows, not one per row.
+  ft <- flextable::merge_v(ft, j = "label", part = "header")
+  # A real superscript: as plain header text the "a" printed as "na".
+  # The saver writes the matching footnote and letters the body
+  # footnotes from "b".
+  ft <- flextable::append_chunks(
+    ft, i = 2, j = n_cols, part = "header", flextable::as_sup("a")
+  )
 
   sec_i <- which(reshaped$is_section)
   ft <- flextable::merge_h(ft, i = sec_i, part = "body")
   ft <- flextable::bold(ft, i = sec_i, part = "body", bold = TRUE)
-  ft <- flextable::bg(ft, i = sec_i, part = "body", bg = "#CAEDFB")
+  ft <- flextable::align(ft, j = "label", align = "left", part = "all")
 
   level_i <- which(reshaped$row_type == "level")
   if (length(level_i) > 0)
@@ -224,6 +241,10 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   ft <- flextable::font(ft, fontname = font, part = "all")
   ft <- flextable::fontsize(ft, size = font_size, part = "all")
   ft <- flextable::valign(ft, valign = "center", part = "all")
+
+  attr(ft, "hv_header_footnotes") <- list(
+    a = "Patients with data available."
+  )
 
   ft <- flextable::width(ft, j = "label", width = 2.5)
   ft <- flextable::width(ft, j = n_cols, width = 0.6)

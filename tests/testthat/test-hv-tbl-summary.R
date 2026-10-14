@@ -264,7 +264,7 @@ test_that("hv_tbl_summary summarizes a binary variable as a single n (%) row", {
   expect_identical(tbl$table_body$variable, "flag")
   expect_identical(tbl$table_body$row_type, "label")
   expect_true(
-    grepl("^[0-9]+ \\|\\|\\| [0-9]+ \\([0-9.]+%\\)$", tbl$table_body$stat_0)
+    grepl("^[0-9]+ \\|\\|\\| [0-9]+ \\([0-9.]+\\)$", tbl$table_body$stat_0)
   )
 })
 
@@ -869,7 +869,7 @@ test_that("every accepted binary shape counts the right event", {
                     flag = shapes[[nm]])
     tbl <- hv_tbl_summary(d, by = "grp", groups = list(G = "flag"),
                           binary = "flag", compare = "none")
-    expect_identical(tbl$table_body$stat_1[1], "20 ||| 15 (75%)",
+    expect_identical(tbl$table_body$stat_1[1], "20 ||| 15 (75)",
                      info = nm)
   }
 })
@@ -1121,4 +1121,91 @@ test_that("SAS QNTLDEF=5 corresponds to quantile type 2, not R's default", {
                                names = FALSE), 1.5)
   expect_equal(stats::quantile(c(1, 2, 3, 4), 0.25, type = 7,
                                names = FALSE), 1.75)
+})
+
+# -- normal = (the macro's CON1=) ----------------------------------------
+
+nm_tbl <- function(normal = "age", continuous_stat = "median",
+                   compare = "none") {
+  hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(D = c("age", "marker", "grade")),
+    continuous = c("age", "marker"), categorical = "grade",
+    compare = compare, continuous_stat = continuous_stat, normal = normal
+  )
+}
+
+nm_label <- function(tbl, v) {
+  tb <- tbl$table_body
+  tb$label[tb$variable == v & tb$row_type == "label"]
+}
+
+test_that("normal rejects names outside `continuous`, repeats, non-strings", {
+  expect_error(
+    nm_tbl(normal = "grade"),
+    "`normal` variable(s) must also be listed in `continuous`: grade.",
+    fixed = TRUE
+  )
+  expect_error(nm_tbl(normal = c("age", "age")),
+               "`normal` lists a variable more than once: age.", fixed = TRUE)
+  expect_error(nm_tbl(normal = 1), "`normal` must be a character vector",
+               fixed = TRUE)
+})
+
+test_that("a normal variable shows mean±SD while the rest show medians", {
+  tbl <- nm_tbl()
+  tb <- tbl$table_body
+  age <- tb$stat_1[tb$variable == "age"]
+  marker <- tb$stat_1[tb$variable == "marker" & tb$row_type == "label"]
+  expect_match(age, "^[0-9]+ \\|\\|\\| [0-9.]+±[0-9.]+$")
+  expect_match(marker, "^[0-9]+ \\|\\|\\| [0-9.]+ \\([0-9.]+, [0-9.]+\\)$")
+})
+
+test_that("a mixed table names each continuous row's statistic", {
+  tbl <- nm_tbl()
+  expect_identical(nm_label(tbl, "age"), "Age, Mean±SD")
+  expect_identical(nm_label(tbl, "marker"),
+                   "Marker Level (ng/mL), Median (15th, 85th percentile)")
+  expect_identical(nm_label(tbl, "grade"), "Grade")
+  expect_identical(attr(tbl, "hv_stat_label"),
+                   "No. (%) or as labeled")
+  expect_identical(attr(tbl, "hv_footnotes")[["†"]],
+                   "No. (%) or as labeled.")
+})
+
+test_that("an unmixed table keeps plain labels and one stated statistic", {
+  all_normal <- nm_tbl(normal = c("age", "marker"))
+  expect_identical(nm_label(all_normal, "age"), "Age")
+  expect_identical(attr(all_normal, "hv_stat_label"), "No. (%) or Mean±SD")
+  # Every row shows mean±SD; only the test differs, which the
+  # comparison footnotes carry.
+  mean_tbl <- nm_tbl(continuous_stat = "mean")
+  expect_identical(nm_label(mean_tbl, "age"), "Age")
+  expect_identical(attr(mean_tbl, "hv_stat_label"), "No. (%) or Mean±SD")
+})
+
+test_that("under 'both' a normal variable is one suffixed row", {
+  tbl <- nm_tbl(continuous_stat = "both")
+  tb <- tbl$table_body
+  expect_identical(nm_label(tbl, "age"), "Age, Mean±SD")
+  expect_identical(sum(tb$variable == "age"), 1L)
+  expect_identical(
+    tb$label[tb$variable == "marker" & tb$row_type == "level"],
+    c("Mean±SD", "Median (15th, 85th percentile)")
+  )
+})
+
+test_that("a normal variable is tested with pooled-variance one-way ANOVA", {
+  skip_if_not_installed("broom")
+  tbl <- nm_tbl(compare = "pvalue")
+  tb <- tbl$table_body
+  expect_identical(tb$test_name[tb$variable == "age"], "oneway.test")
+  expect_identical(tb$test_name[tb$variable == "marker"][1], "wilcox.test")
+  # The macro's npar1way anova; for two groups, a pooled t-test.
+  want <- stats::t.test(age ~ trt, gtsummary::trial,
+                        var.equal = TRUE)$p.value
+  expect_equal(unname(tb$p.value[tb$variable == "age"]), want)
+  notes <- hv_test_footnotes_jtcvs(tbl)
+  expect_true("One-way analysis of variance." %in%
+                vapply(notes, `[[`, "", "text"))
 })

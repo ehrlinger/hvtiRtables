@@ -126,6 +126,24 @@
 
 # ---- Layer 2: precondition assertions ----------------------------
 
+# `normal` marks which `continuous` variables are summarized and tested as
+# Gaussian (the macro's CON1=). Listing a variable here alone would leave
+# it unclassified, so it must be in `continuous` as well.
+.assert_normal <- function(normal, continuous) {
+  if (!is.character(normal) || anyNA(normal))
+    stop("`normal` must be a character vector of variable names. ",
+         "Received: ", .describe(normal), ".", call. = FALSE)
+  if (anyDuplicated(normal))
+    stop("`normal` lists a variable more than once: ",
+         paste(unique(normal[duplicated(normal)]), collapse = ", "),
+         ".", call. = FALSE)
+  stray <- setdiff(normal, continuous)
+  if (length(stray) > 0L)
+    stop("`normal` variable(s) must also be listed in `continuous`: ",
+         paste(stray, collapse = ", "), ".", call. = FALSE)
+  invisible(NULL)
+}
+
 .assert_type_buckets <- function(continuous, binary, categorical) {
   buckets <- list(continuous = continuous, binary = binary,
                   categorical = categorical)

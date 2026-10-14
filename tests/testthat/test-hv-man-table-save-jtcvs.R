@@ -52,7 +52,7 @@ test_that("hv_man_table_save_jtcvs attaches lettered footnotes to cells", {
   hv_man_table_save_jtcvs(
     ft, f, caption = "Table 1. Baseline Characteristics",
     footnotes = list(
-      list(row = 1, col = "n_stat_1", text = "Patients with data available."),
+      list(row = 1, col = "n_stat_1", text = "First footnote."),
       list(row = 1, col = "n_stat_2", text = "Second footnote.")
     )
   )
@@ -62,15 +62,22 @@ test_that("hv_man_table_save_jtcvs attaches lettered footnotes to cells", {
   # "a. Patients..." string — tags intervene between the two <w:t> elements.
   # Verified against actual rendered XML: use the same windowed-context
   # pattern as the caption/bold check above instead of a literal substring.
+  # "a" is the renderer's own `n` header footnote, so these take b and c.
   a_pos <- regexpr("Patients with data available.", xml, fixed = TRUE)
-  a_preceding <- substr(xml, max(1, a_pos - 250), a_pos)
-  expect_true(grepl('vertAlign w:val="superscript"', a_preceding, fixed = TRUE))
+  a_preceding <- substr(xml, max(1, a_pos - 500), a_pos)
   expect_true(grepl(">a<", a_preceding, fixed = TRUE))
 
-  b_pos <- regexpr("Second footnote.", xml, fixed = TRUE)
-  b_preceding <- substr(xml, max(1, b_pos - 250), b_pos)
+  b_pos <- regexpr("First footnote.", xml, fixed = TRUE)
+  # 500, not 250: each run now carries its font, which lengthens the XML
+  # between the superscript and its text.
+  b_preceding <- substr(xml, max(1, b_pos - 500), b_pos)
   expect_true(grepl('vertAlign w:val="superscript"', b_preceding, fixed = TRUE))
   expect_true(grepl(">b<", b_preceding, fixed = TRUE))
+
+  c_pos <- regexpr("Second footnote.", xml, fixed = TRUE)
+  c_preceding <- substr(xml, max(1, c_pos - 500), c_pos)
+  expect_true(grepl('vertAlign w:val="superscript"', c_preceding, fixed = TRUE))
+  expect_true(grepl(">c<", c_preceding, fixed = TRUE))
 })
 
 test_that("hv_man_table_save_jtcvs reuses the shared Key: helper", {

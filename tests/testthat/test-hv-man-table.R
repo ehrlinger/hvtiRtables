@@ -101,9 +101,10 @@ test_that("hv_man_table splits the ||| sentinel into flat N and stat columns", {
                   %in% ft$col_keys))
   d <- ft$body$dataset
   expect_false(any(grepl("|||", unlist(d), fixed = TRUE)))
+  # Row 1 is the section header "D"; age is row 2.
   # 91, not 98: Drug A has 98 rows, 7 of them with missing age.
-  expect_identical(d$n_stat_1[1], "91")
-  expect_identical(d$stat_1[1], "46 (32, 63)")
+  expect_identical(d$n_stat_1[2], "91")
+  expect_identical(d$stat_1[2], "46 (32, 63)")
   # The N column sits immediately before the statistic it counts.
   expect_identical(
     which(ft$col_keys == "n_stat_1") + 1L,
@@ -155,14 +156,13 @@ test_that("the house N footnote targets the N column when one exists", {
   # hv_man_footnotes()'s `*` is "Number of non-missing values." (house
   # rule 8). Splitting introduces the column it describes, so the marker
   # must move there. Without this the marker would land on col_keys[1],
-  # which for a sectioned table is `groupname_col` -- a regression the
-  # split itself would have introduced.
+  # the label column.
   tbl <- hv_tbl_summary(
     gtsummary::trial, by = "trt", groups = list(D = "age"),
     continuous = "age", compare = "none"
   )
   ft <- hv_man_table(tbl)
-  expect_identical(ft$col_keys[1], "groupname_col")
+  expect_identical(ft$col_keys[1], "label")
   # n_stat_0: hv_tbl_summary() adds the Overall column by default, and
   # its N column is the first one.
   expect_identical(.footnote_col(ft), "n_stat_0")

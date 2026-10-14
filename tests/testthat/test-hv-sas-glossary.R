@@ -57,17 +57,18 @@ test_that("an unsupported macro parameter says so and names no argument", {
   )
 })
 
-test_that("CON1 explains the statistic change rather than mapping silently", {
-  # Tightened to a substring unique to the *corrected* mapping (this
-  # regressed once already, when CON1's note pointed at itself instead
-  # of naming CON3= as the behavior `continuous` actually reproduces).
-  # A bare "mean" substring would also match a reintroduced-bug message
-  # like "CON1= now maps to mean +/- SD directly".
-  expect_error(
+test_that("CON1 maps to `normal` and says it needs `continuous` too", {
+  # `normal` alone leaves the variable unclassified, so the note must
+  # send it to both arguments, and still name the CON3= behavior a
+  # variable in `continuous` alone gets.
+  msg <- tryCatch(
     .check_sas_args(list(con1 = "age"), "hv_tbl_summary"),
-    "the `CON3=` behavior",
-    fixed = TRUE
+    error = conditionMessage
   )
+  expect_match(msg, "Use `normal =`.", fixed = TRUE)
+  expect_match(msg, "list each variable in `continuous` as well",
+               fixed = TRUE)
+  expect_match(msg, "the `CON3=` behavior", fixed = TRUE)
 })
 
 test_that("macro names are matched case-insensitively", {
