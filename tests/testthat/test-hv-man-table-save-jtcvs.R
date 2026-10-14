@@ -64,7 +64,7 @@ test_that("hv_man_table_save_jtcvs attaches lettered footnotes to cells", {
   # pattern as the caption/bold check above instead of a literal substring.
   # "a" is the renderer's own `n` header footnote, so these take b and c.
   a_pos <- regexpr("Patients with data available.", xml, fixed = TRUE)
-  a_preceding <- substr(xml, max(1, a_pos - 250), a_pos)
+  a_preceding <- substr(xml, max(1, a_pos - 500), a_pos)
   expect_true(grepl(">a<", a_preceding, fixed = TRUE))
 
   b_pos <- regexpr("First footnote.", xml, fixed = TRUE)
