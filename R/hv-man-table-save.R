@@ -199,12 +199,14 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 # size and colour still come from the paragraph style. fp_text() would
 # also impose its own 10-point Arial defaults.
 #
-# hansi/cs as well as ascii: Word picks the font per character, so a
-# "±" in a footnote would otherwise fall back to the style's font.
+# Every font slot, as flextable sets them in the table: Word picks the
+# slot per character, so a "±" in a footnote could otherwise fall back
+# to the style's font.
 .note_prop <- function(font, align = "baseline", ...) {
   font <- font %||% NA_character_
   officer::fp_text_lite(font.family = font, hansi.family = font,
-                        cs.family = font, vertical.align = align, ...)
+                        cs.family = font, eastasia.family = font,
+                        vertical.align = align, ...)
 }
 
 .add_abbreviations_key <- function(doc, abbreviations, font = NULL) {

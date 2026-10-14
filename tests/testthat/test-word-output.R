@@ -263,12 +263,12 @@ test_that("CORR: two statistic columns stay on a portrait page", {
 # -- Text below the table ------------------------------------------------
 
 # The font of every run with text in the paragraphs after the table (and,
-# for JTCVS, the caption before it): ascii, hAnsi and cs must agree, since
+# for JTCVS, the caption before it): all four slots must agree, since
 # Word picks among them per character.
 wx_note_fonts <- function(doc, xpath) {
   runs <- xml2::xml_find_all(doc, paste0(xpath, "/w:r"), wx_ns)
   rf <- xml2::xml_find_first(runs, "./w:rPr/w:rFonts", wx_ns)
-  fonts <- vapply(c("ascii", "hAnsi", "cs"),
+  fonts <- vapply(c("ascii", "hAnsi", "cs", "eastAsia"),
                   function(a) xml2::xml_attr(rf, a), character(length(runs)))
   fonts <- matrix(fonts, nrow = length(runs))
   agree <- apply(fonts, 1, function(r) length(unique(r)) == 1L)
