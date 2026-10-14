@@ -10,16 +10,19 @@
 #' that already complies with HVTI CORR's "Table Construction for
 #' Manuscripts" rules: a single, non-merged header row (no spanning parent
 #' cells over grouped columns), no merged row-group section-header cells,
-#' and Times New Roman at the house font size.
+#' a left-justified label column, and Times New Roman at the house font
+#' size.
 #'
 #' `gtsummary::as_flex_table()` already emits one header row per group with
 #' self-contained labels (e.g. `"B\nN = 45"`), not a merged spanning header.
-#' The one remaining merge, a full-width `gridSpan` on the
-#' `modify_table_body(groupname_col = ...)` section-header row, gets removed
-#' with [flextable::merge_none()], which un-merges every merged region back
-#' into individual cells (content stays in the top-left cell of the former
-#' merge; the rest become empty). That satisfies the "format the table as
-#' flat as possible ... simple non-merged column titles" rule.
+#' Any merged region is undone with [flextable::merge_none()]. That
+#' satisfies the "format the table as flat as possible ... simple
+#' non-merged column titles" rule.
+#'
+#' The sections of an [hv_tbl_summary()] table (its `groups` names, such
+#' as "Demography") become bold header rows in the label column, each
+#' immediately above its first variable, rather than a column of their
+#' own.
 #'
 #' Rounding, `%`-free percentage cells, and `±`-without-spaces formatting are
 #' yours to control, via the `statistic`/`digits` arguments to
@@ -96,13 +99,46 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
 
   footnotes <- attr(tbl, "hv_footnotes", exact = TRUE)
   tbl <- .split_stat_sentinel(tbl)
+  tbl <- .flatten_sections(tbl)
+  sec_i <- which(tbl$table_body$row_type == "section")
   ft <- gtsummary::as_flex_table(tbl)
   ft <- flextable::merge_none(ft)
+  # gtsummary centres its label column in the .docx; house rule and the
+  # SAS macro both left-justify it.
+  ft <- flextable::align(ft, j = 1, align = "left", part = "all")
+  if (length(sec_i) > 0L)
+    ft <- flextable::bold(ft, i = sec_i, part = "body", bold = TRUE)
   ft <- flextable::font(ft, fontname = font, part = "all")
   ft <- flextable::fontsize(ft, size = font_size, part = "all")
   ft <- flextable::valign(ft, valign = "center", part = "all")
   attr(ft, "hv_footnotes") <- footnotes
   ft
+}
+
+# Turn hv_tbl_summary()'s `groupname_col` sections into header rows in
+# the label column, the way the JTCVS renderer does, then drop the
+# column.
+#
+# as_flex_table() does not treat a `groupname_col` added through
+# modify_table_body() as a row group: it rendered it as a column of its
+# own, headed "groupname_col", with each section name beside its first
+# variable. The section row carries the name in the label column and
+# nothing else, unmerged, so house rule 3 (no merged cells) still holds.
+.flatten_sections <- function(tbl) {
+  tb <- tbl$table_body
+  if (!"groupname_col" %in% names(tb)) return(tbl)
+  starts <- .jtcvs_section_starts(tb)
+  gtsummary::modify_table_body(tbl, function(tb) {
+    sec <- tb[rep(NA_integer_, length(starts)), , drop = FALSE]
+    sec$label <- tb$groupname_col[starts]
+    sec$row_type <- "section"
+    sec$variable <- paste0(".hv_section_", seq_along(starts))
+    # Each section row goes immediately before its first variable.
+    pos <- c(seq_len(nrow(tb)), starts - 0.5)
+    out <- rbind(tb, sec)[order(pos), , drop = FALSE]
+    out$groupname_col <- NULL
+    out
+  })
 }
 
 # TRUE when any non-NA cell of a stat column carries the "{N_nonmiss} |||

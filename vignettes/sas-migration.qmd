@@ -173,11 +173,11 @@ SAS without intervention. **Any `stats::quantile()` call you write by hand
 in ported code does not** - pin `type = 2` explicitly.
 
 The percentiles actually used are recorded on the table object as
-`attr(tbl, "hv_stat_label")`, but nothing consumes that attribute
-automatically. `hv_man_table_jtcvs()`'s `stat_label` argument defaults to
-a literal mean-and-SD string, so a `percentiles = c(16, 84)` table
-rendered without an explicit `stat_label =` claims mean/SD over median
-columns. You MUST pass it yourself:
+`attr(tbl, "hv_stat_label")`, and `hv_man_table_jtcvs()` reads it when
+`stat_label` is left at its default, so the sub-header names the
+statistic the cells hold. Before 1.0.5 the default was a literal
+mean-and-SD string, and a median table rendered without an explicit
+`stat_label =` claimed mean/SD over median columns.
 
 ```{r}
 tbl <- hv_tbl_summary(
@@ -187,14 +187,6 @@ tbl <- hv_tbl_summary(
   percentiles = c(16, 84)
 )
 attr(tbl, "hv_stat_label")
-```
-
-```{r eval = FALSE}
-ft <- hv_man_table_jtcvs(
-  tbl,
-  groups = c(stat_1 = "Drug A", stat_2 = "Drug B"),
-  stat_label = attr(tbl, "hv_stat_label")
-)
 ```
 
 ## Reading the SAS data in

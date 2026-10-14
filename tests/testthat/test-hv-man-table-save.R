@@ -125,7 +125,7 @@ test_that("default footnotes follow a table with both statistics", {
   hv_man_table_save(ft, f)
   xml <- read_docx_text(f)
   expect_true(grepl(
-    "Mean±SD; Median (15th, 85th percentile).", xml, fixed = TRUE
+    "No. (%), Mean±SD, or Median (15th, 85th percentile).", xml, fixed = TRUE
   ))
 })
 

@@ -284,7 +284,10 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   )
   cont_type <- if (continuous_stat == "both") "continuous2" else "continuous"
 
-  cat_stat <- "{N_nonmiss} ||| {n} ({p}%)"
+  # No "%" in the cell: the header or dagger says "No. (%)" once, as the
+  # SAS macro does ("12 (39)"), and a repeated sign costs width and
+  # counts toward journal word limits.
+  cat_stat <- "{N_nonmiss} ||| {n} ({p})"
 
   # A list rather than a character vector: under "both" each continuous
   # variable takes a length-2 statistic.
@@ -365,12 +368,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   if (overall && !is.null(by))
     tbl <- gtsummary::add_overall(tbl, last = FALSE)
 
-  attr(tbl, "hv_stat_label") <- switch(
-    continuous_stat,
-    median = paste("No. (%) or", median_label),
-    mean = paste("No. (%) or", mean_label),
-    both = paste0("No. (%), ", mean_label, ", or ", median_label)
-  )
+  attr(tbl, "hv_stat_label") <- .stat_label(continuous_stat, percentiles)
   attr(tbl, "hv_footnotes") <- hv_man_footnotes(
     continuous_stat = continuous_stat,
     percentiles = percentiles

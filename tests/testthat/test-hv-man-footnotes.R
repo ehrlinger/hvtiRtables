@@ -2,40 +2,37 @@ test_that("hv_man_footnotes returns the two house-standard footnotes", {
   sf <- hv_man_footnotes()
   expect_identical(sf, list(
     `*` = "Number of non-missing values.",
-    `†` = "Median (15th, 85th percentile)."
+    `†` = "No. (%) or Median (15th, 85th percentile)."
   ))
 })
 
 test_that("hv_man_footnotes follows the continuous statistic", {
   expect_identical(
     hv_man_footnotes(continuous_stat = "mean")[["†"]],
-    "Mean±SD."
+    "No. (%) or Mean±SD."
   )
   expect_identical(
     hv_man_footnotes(continuous_stat = "both")[["†"]],
-    "Mean±SD; Median (15th, 85th percentile)."
+    "No. (%), Mean±SD, or Median (15th, 85th percentile)."
   )
   expect_identical(
     hv_man_footnotes(percentiles = c(16, 84))[["†"]],
-    "Median (16th, 84th percentile)."
+    "No. (%) or Median (16th, 84th percentile)."
   )
 })
 
 test_that("hv_man_footnotes formats custom percentiles as ordinals", {
   cases <- list(
-    `1st and 2nd` = list(p = c(1, 2), want = "Median (1st, 2nd percentile)."),
-    `11th and 13th` = list(
-      p = c(11, 13), want = "Median (11th, 13th percentile)."
-    ),
-    `12th and 13th` = list(
-      p = c(12, 13), want = "Median (12th, 13th percentile)."
-    ),
-    `21st and 22nd` = list(
-      p = c(21, 22), want = "Median (21st, 22nd percentile)."
-    )
+    `1st and 2nd` = list(p = c(1, 2), want = "(1st, 2nd percentile)."),
+    `11th and 13th` = list(p = c(11, 13), want = "(11th, 13th percentile)."),
+    `12th and 13th` = list(p = c(12, 13), want = "(12th, 13th percentile)."),
+    `21st and 22nd` = list(p = c(21, 22), want = "(21st, 22nd percentile).")
   )
   for (case in cases) {
-    expect_identical(hv_man_footnotes(percentiles = case$p)[["†"]], case$want)
+    expect_identical(
+      hv_man_footnotes(percentiles = case$p)[["†"]],
+      paste("No. (%) or Median", case$want)
+    )
   }
 })
 

@@ -45,16 +45,19 @@ supporting \code{\link[gtsummary:as_flex_table]{gtsummary::as_flex_table()}}), a
 that already complies with HVTI CORR's "Table Construction for
 Manuscripts" rules: a single, non-merged header row (no spanning parent
 cells over grouped columns), no merged row-group section-header cells,
-and Times New Roman at the house font size.
+a left-justified label column, and Times New Roman at the house font
+size.
 
 \code{gtsummary::as_flex_table()} already emits one header row per group with
 self-contained labels (e.g. \code{"B\\nN = 45"}), not a merged spanning header.
-The one remaining merge, a full-width \code{gridSpan} on the
-\code{modify_table_body(groupname_col = ...)} section-header row, gets removed
-with \code{\link[flextable:merge_none]{flextable::merge_none()}}, which un-merges every merged region back
-into individual cells (content stays in the top-left cell of the former
-merge; the rest become empty). That satisfies the "format the table as
-flat as possible ... simple non-merged column titles" rule.
+Any merged region is undone with \code{\link[flextable:merge_none]{flextable::merge_none()}}. That
+satisfies the "format the table as flat as possible ... simple
+non-merged column titles" rule.
+
+The sections of an \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} table (its \code{groups} names, such
+as "Demography") become bold header rows in the label column, each
+immediately above its first variable, rather than a column of their
+own.
 
 Rounding, \verb{\%}-free percentage cells, and \verb{±}-without-spaces formatting are
 yours to control, via the \code{statistic}/\code{digits} arguments to

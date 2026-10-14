@@ -25,7 +25,10 @@ not auto-number tables for you; include the number yourself.
 (\verb{\%summarytable} \verb{TBLTITLE=} equivalent).}
 
 \item{footnotes}{Optional list of \code{list(row =, col =, text =)}, one per
-footnote, in the order letters should be assigned (\code{a}, \code{b}, ...).
+footnote, in the order letters should be assigned. A table from
+\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} already uses \code{a} for its \code{n} header ("Patients
+with data available."), written first, so these start at \code{b};
+other flextables start at \code{a}.
 \code{col} is a single \code{col_keys} name. \code{row} may be a vector, in which
 case the one letter marks every row named, which is how several rows
 share a footnote. \code{row} indexes \code{ft}'s body rows as shown: for a
@@ -55,7 +58,9 @@ the macro's \verb{RTFFILE=}/\verb{PDFFILE=} output block.
 JTCVS counterpart to \code{\link[=hv_man_table_save]{hv_man_table_save()}}: it adds a bold \verb{Table N. Caption} paragraph before the table, and renders footnotes as lettered
 (\code{a.}, \code{b.}, ...) markers attached to specific body cells rather than
 the fixed symbol set \code{\link[=hv_man_table_save]{hv_man_table_save()}} uses on the header row,
-matching the JTCVS template convention.
+matching the JTCVS template convention. The header footnote
+\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} marks on each \code{n} ("Patients with data
+available.") is written first, as \code{a}.
 }
 \section{Common mistakes}{
 
@@ -103,7 +108,7 @@ hv_man_table_save_jtcvs(
   ft, out,
   caption = "Table 1. Baseline Characteristics",
   footnotes = list(list(
-    row = 1, col = "n_stat_1", text = "Patients with data available."
+    row = 1, col = "disp_stat_1", text = "Excludes one withdrawn patient."
   ))
 )
 

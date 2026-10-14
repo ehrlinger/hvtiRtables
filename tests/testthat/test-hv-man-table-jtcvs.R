@@ -135,16 +135,16 @@ test_that("hv_man_table_jtcvs builds a 2-row header with merged group spans", {
   xml <- docx_xml_jtcvs(ft)
   expect_true(grepl("Group A (n=27)", xml, fixed = TRUE))
   expect_true(grepl("Group B (n=33)", xml, fixed = TRUE))
-  expect_true(grepl(">na<", xml, fixed = TRUE))
+  expect_true(grepl(">n<", xml, fixed = TRUE))
   expect_true(grepl("No. (%) or Mean", xml, fixed = TRUE))
-  # sub-header row ("na") comes after the spanning group-label row in
+  # sub-header row ("n") comes after the spanning group-label row in
   # document order
   expect_true(
-    regexpr("Group A", xml, fixed = TRUE) < regexpr(">na<", xml, fixed = TRUE)
+    regexpr("Group A", xml, fixed = TRUE) < regexpr(">n<", xml, fixed = TRUE)
   )
 })
 
-test_that("hv_man_table_jtcvs bolds, shades, and merges section-header rows", {
+test_that("hv_man_table_jtcvs bolds and merges section rows, without fill", {
   ft <- hv_man_table_jtcvs(
     mk_jtcvs_tbl(),
     groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)")
@@ -159,9 +159,10 @@ test_that("hv_man_table_jtcvs bolds, shades, and merges section-header rows", {
   # worked-example table happened to use)
   italic_map <- ft$body$styles$text$italic$data
   expect_false(any(italic_map[sec_i, 1]))
-  # #CAEDFB matches the canonical house document's section-header shading
+  # No fill: the #CAEDFB shading was removed at review (2026-10-14); the
+  # SAS macro shades nothing either.
   bg_map <- ft$body$styles$cells$background.color$data
-  expect_true(all(bg_map[sec_i, 1] == "#CAEDFB"))
+  expect_false(any(bg_map[sec_i, 1] == "#CAEDFB"))
 })
 
 test_that("hv_man_table_jtcvs sets column widths to avoid wrapping", {
@@ -288,7 +289,7 @@ test_that("hv_man_table_jtcvs reproduces template's header/section shape", {
     )
   )
   xml <- docx_xml_jtcvs(ft)
-  expect_true(grepl(">na<", xml, fixed = TRUE))
+  expect_true(grepl(">n<", xml, fixed = TRUE))
   expect_true(grepl("No. (%) or Mean", xml, fixed = TRUE))
 
   body <- ft$body$dataset

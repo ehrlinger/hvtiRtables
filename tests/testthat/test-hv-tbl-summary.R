@@ -264,7 +264,7 @@ test_that("hv_tbl_summary summarizes a binary variable as a single n (%) row", {
   expect_identical(tbl$table_body$variable, "flag")
   expect_identical(tbl$table_body$row_type, "label")
   expect_true(
-    grepl("^[0-9]+ \\|\\|\\| [0-9]+ \\([0-9.]+%\\)$", tbl$table_body$stat_0)
+    grepl("^[0-9]+ \\|\\|\\| [0-9]+ \\([0-9.]+\\)$", tbl$table_body$stat_0)
   )
 })
 
@@ -869,7 +869,7 @@ test_that("every accepted binary shape counts the right event", {
                     flag = shapes[[nm]])
     tbl <- hv_tbl_summary(d, by = "grp", groups = list(G = "flag"),
                           binary = "flag", compare = "none")
-    expect_identical(tbl$table_body$stat_1[1], "20 ||| 15 (75%)",
+    expect_identical(tbl$table_body$stat_1[1], "20 ||| 15 (75)",
                      info = nm)
   }
 })

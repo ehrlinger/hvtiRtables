@@ -8,7 +8,7 @@ hv_man_table_jtcvs(
   tbl,
   groups,
   trailing = NULL,
-  stat_label = "No. (\%) or Mean±SD",
+  stat_label = NULL,
   font = "Times New Roman",
   font_size = 12,
   ...
@@ -34,9 +34,10 @@ comparison column (e.g. \code{c(std_diff = "Std. Diff.")} or
 \code{c(p_value = "P")}). Must already exist in \code{tbl$table_body}.}
 
 \item{stat_label}{Sub-header text under each group's statistic column.
-Default \code{"No. (\%) or Mean±SD"} (house default for mean/SD
-tables). Pass e.g. \code{"No. (\%) or Median (15th, 85th percentile)"} when
-the table's continuous statistic is a median, not a mean.}
+Default \code{NULL} takes it from the table: \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} records the
+statistic it used (e.g. \code{"No. (\%) or Median (15th, 85th percentile)"}), so the header cannot disagree with the cells. A
+table without that record falls back to \code{"No. (\%) or Mean±SD"};
+pass the right text yourself for any other statistic.}
 
 \item{font}{Font family. Default \code{"Times New Roman"} (house rule).
 Any single non-empty string is accepted: \code{flextable} silently
@@ -52,7 +53,8 @@ produce an error naming the argument to use instead.}
 }
 \value{
 A \code{flextable} with a 2-row header and merged section rows, ready
-for \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}.
+for \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}. It carries an \code{hv_header_footnotes}
+attribute, the text of the \code{n} superscript, which that saver writes.
 }
 \description{
 Stage 2 of the \verb{\%summarytable} split: shapes the table. The macro
@@ -63,9 +65,10 @@ versus JTCVS spanning header.
 \details{
 Use this instead of \code{\link[=hv_man_table]{hv_man_table()}} when you're building the shape
 editorial actually needs at JTCVS submission: a 2-row header (group name
-spanning \code{na}/stat sub-columns) and bold, light-blue-shaded, row-spanning
-section headers in the body, matching the canonical "Table Construction
-for Manuscripts" house example (section-header fill \verb{#CAEDFB}). This is
+spanning \code{n}/stat sub-columns, \code{Characteristic} spanning both rows) and
+bold, row-spanning section headers in the body, with no fill colour.
+Each \code{n} carries a superscript \code{a}, which \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}
+footnotes as "Patients with data available." This is
 a separate mode, not a replacement for \code{\link[=hv_man_table]{hv_man_table()}}'s flat-header
 CORR house style; the two exist because CORR reports and JTCVS
 submissions want different things from the same header row.

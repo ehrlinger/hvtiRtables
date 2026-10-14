@@ -6,9 +6,10 @@
 #' Manuscripts" rules, not specific to any one study, so you don't have to
 #' re-type them at every [hv_man_table_save()] call site: a `*` for the
 #' non-missing-value count (house rule 8, exact wording required) and a
-#' `†` explaining the continuous statistic. You don't need a footnote for
-#' the categorical `n (%)` format; the column header text already covers it
-#' (house rules 10/12).
+#' `†` explaining the statistic in each group column, e.g.
+#' "No. (%) or Median (15th, 85th percentile)." The categorical half is
+#' part of it because the cells print `12 (39)` with no `%` sign (house
+#' rules 10/12), and the flat CORR header names only the group.
 #'
 #' [hv_man_table_save()]'s `footnotes` parameter defaults to calling
 #' this function, so every table gets both automatically. A table built by
@@ -37,8 +38,8 @@
 #' the table, or override the dagger explicitly.
 #'
 #' @param continuous_stat One of `"median"` (default), `"mean"`, or
-#'   `"both"`. Controls whether the dagger reads as median and percentiles,
-#'   mean +/- SD, or both.
+#'   `"both"`. Controls whether the dagger's continuous half reads as
+#'   median and percentiles, mean +/- SD, or both.
 #' @param percentiles Numeric vector of length 2, the increasing whole-number
 #'   percentile pair named by the dagger. Default `c(15, 85)`. Used for
 #'   `continuous_stat = "median"` and `"both"`; validated but not printed for
@@ -63,17 +64,28 @@ hv_man_footnotes <- function(
   continuous_stat <- match.arg(continuous_stat)
   .check_percentiles(percentiles)
   out <- list(`*` = "Number of non-missing values.")
-  ordinal <- .format_ordinal(percentiles)
-  median_note <- sprintf(
-    "Median (%s, %s percentile).", ordinal[1], ordinal[2]
-  )
-  out[["\u2020"]] <- switch(
-    continuous_stat,
-    median = median_note,
-    mean = "Mean\u00b1SD.",
-    both = paste("Mean\u00b1SD;", median_note)
-  )
+  out[["\u2020"]] <- paste0(.stat_label(continuous_stat, percentiles), ".")
   out
+}
+
+# The statistic description shared by the JTCVS sub-header
+# (hv_tbl_summary()'s `hv_stat_label` attribute) and the CORR dagger
+# footnote, so the two renderers describe a table in the same words.
+# It names "No. (%)" because the cells carry no "%" sign (house rules
+# 10/12; the SAS macro prints "12 (39)" too), so the description is the
+# only place the reader learns the parenthesized number is a percent.
+.stat_label <- function(continuous_stat, percentiles) {
+  ordinal <- .format_ordinal(percentiles)
+  median_label <- sprintf(
+    "Median (%s, %s percentile)", ordinal[1], ordinal[2]
+  )
+  mean_label <- "Mean\u00B1SD"
+  switch(
+    continuous_stat,
+    median = paste("No. (%) or", median_label),
+    mean = paste("No. (%) or", mean_label),
+    both = paste0("No. (%), ", mean_label, ", or ", median_label)
+  )
 }
 
 .format_ordinal <- function(x) {

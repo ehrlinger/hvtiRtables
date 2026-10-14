@@ -55,12 +55,15 @@
 #'   and `percentiles`. Other flextables fall back to [hv_man_footnotes()]'s
 #'   median/15th-85th house defaults. Pass `NULL` to suppress both, or
 #'   compose with [hv_man_footnotes()] to override or extend.
-#'   Symbols must be drawn from `c("*", "†", "‡", "§", "¶", "||")`. Each
-#'   symbol is appended as a superscript reference mark to the table's
-#'   count-column header cell (a column named `n`, else the first
-#'   `n_stat_<k>` column [hv_man_table()] creates when it splits an
-#'   [hv_tbl_summary()] table, else the first column), and its text is
-#'   rendered as its own paragraph below the table, in the order given.
+#'   Symbols must be drawn from `c("*", "†", "‡", "§", "¶", "||")`. `†`
+#'   describes the statistic, so it is appended as a superscript reference
+#'   mark to every statistic-column header (`stat_<k>`), and to the
+#'   count column only when the table has no such column. Every other
+#'   symbol goes on the table's count-column header cell (a column named
+#'   `n`, else the first `n_stat_<k>` column [hv_man_table()] creates when
+#'   it splits an [hv_tbl_summary()] table, else the first column). Each
+#'   text is rendered as its own paragraph below the table, in the order
+#'   given.
 #'   Every element must be named (unnamed or blank-named
 #'   entries raise an error) and every text must be a single non-empty
 #'   string (`NULL`, `NA`, a number, or a multi-element vector raise an
@@ -122,8 +125,8 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
                "dangling reference with nothing after it. Give the ",
                "entry text, e.g. \"Values are median (P15, P85).\"")
       )
-    j <- which(ft$col_keys == .footnote_col(ft))
     for (sym in fn_names) {
+      j <- which(ft$col_keys %in% .footnote_cols(ft, sym))
       ft <- flextable::append_chunks(ft, i = 1, j = j, part = "header",
                                      flextable::as_sup(sym))
     }
@@ -177,13 +180,23 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 # when the table has one.
 #
 # hv_man_table() splits the "{N_nonmiss} ||| {stat}" convention into
-# `n_stat_<k>` columns, and for a sectioned table col_keys[1] is
-# `groupname_col` -- so without this the marker would land on the
-# section-label column. The bare "n" case is kept for a hand-built
+# `n_stat_<k>` columns; without this the marker would land on the
+# label column. The bare "n" case is kept for a hand-built
 # flextable that names its count column that way.
 .footnote_col <- function(ft) {
   if ("n" %in% ft$col_keys) return("n")
   n_stat <- grep("^n_stat_[0-9]+$", ft$col_keys, value = TRUE)
   if (length(n_stat) > 0L) return(n_stat[1])
   ft$col_keys[1]
+}
+
+# Header cells one footnote symbol attaches to. The dagger describes the
+# statistic, so it marks every column that holds one: on the count
+# column it claimed the "No." header was a median.
+.footnote_cols <- function(ft, sym) {
+  if (identical(sym, "\u2020")) {
+    stat <- grep("^stat_[0-9]+$", ft$col_keys, value = TRUE)
+    if (length(stat) > 0L) return(stat)
+  }
+  .footnote_col(ft)
 }

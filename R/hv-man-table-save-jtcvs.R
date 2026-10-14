@@ -7,7 +7,9 @@
 #' Caption` paragraph before the table, and renders footnotes as lettered
 #' (`a.`, `b.`, ...) markers attached to specific body cells rather than
 #' the fixed symbol set [hv_man_table_save()] uses on the header row,
-#' matching the JTCVS template convention.
+#' matching the JTCVS template convention. The header footnote
+#' [hv_man_table_jtcvs()] marks on each `n` ("Patients with data
+#' available.") is written first, as `a`.
 #'
 #' @section Common mistakes:
 #' **"`footnotes\[\[k\]\]$text` must be a single non-empty string."**
@@ -42,7 +44,10 @@
 #'   not auto-number tables for you; include the number yourself.
 #'   (`%summarytable` `TBLTITLE=` equivalent).
 #' @param footnotes Optional list of `list(row =, col =, text =)`, one per
-#'   footnote, in the order letters should be assigned (`a`, `b`, ...).
+#'   footnote, in the order letters should be assigned. A table from
+#'   [hv_man_table_jtcvs()] already uses `a` for its `n` header ("Patients
+#'   with data available."), written first, so these start at `b`;
+#'   other flextables start at `a`.
 #'   `col` is a single `col_keys` name. `row` may be a vector, in which
 #'   case the one letter marks every row named, which is how several rows
 #'   share a footnote. `row` indexes `ft`'s body rows as shown: for a
@@ -84,7 +89,7 @@
 #'   ft, out,
 #'   caption = "Table 1. Baseline Characteristics",
 #'   footnotes = list(list(
-#'     row = 1, col = "n_stat_1", text = "Patients with data available."
+#'     row = 1, col = "disp_stat_1", text = "Excludes one withdrawn patient."
 #'   ))
 #' )
 #'
@@ -97,7 +102,10 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
   .check_string(caption, "caption")
   .check_abbreviations(abbreviations)
 
-  letters_seq <- letters
+  # Footnotes the renderer already marked in the header (the "a" on
+  # each `n`) keep their letters; footnotes given here take the rest.
+  header_notes <- attr(ft, "hv_header_footnotes", exact = TRUE)
+  letters_seq <- setdiff(letters, names(header_notes))
   if (!is.null(footnotes) && length(footnotes) > length(letters_seq))
     stop("Too many footnotes (max ", length(letters_seq),
          " letters).", call. = FALSE)
@@ -121,9 +129,17 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
   doc <- officer::body_add_fpar(doc, cap_par, style = "Normal")
   doc <- flextable::body_add_flextable(doc, ft)
 
+  sup_prop <- officer::fp_text(vertical.align = "superscript")
+  for (k in seq_along(header_notes)) {
+    note_par <- officer::fpar(
+      officer::ftext(names(header_notes)[k], prop = sup_prop),
+      officer::ftext(paste0(". ", header_notes[[k]]))
+    )
+    doc <- officer::body_add_fpar(doc, note_par, style = "Normal")
+  }
+
   if (!is.null(footnotes)) {
     for (k in seq_along(footnotes)) {
-      sup_prop <- officer::fp_text(vertical.align = "superscript")
       note_par <- officer::fpar(
         officer::ftext(letters_seq[k], prop = sup_prop),
         officer::ftext(paste0(". ", footnotes[[k]]$text))
