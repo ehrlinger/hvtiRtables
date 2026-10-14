@@ -53,7 +53,7 @@ Four places where a faithful-looking port produces different numbers.
 
 | Macro | Default there | Default here | Fix |
 |---|---|---|---|
-| `CON1=` | mean +/- SD, one-way ANOVA | median (percentiles), Kruskal-Wallis | `continuous_stat = "mean"` for the statistic; the test stays non-parametric |
+| `CON1=` | mean +/- SD, one-way ANOVA | median (percentiles), Kruskal-Wallis | list the variable in `normal` as well as `continuous` |
 | `PP=` | `16 84` nominal; house templates use both `15 85` and `16 84` | `percentiles = c(15, 85)` | `percentiles = c(16, 84)` |
 | `CUTEXACT=` | Fisher when >=50% of cells have expected < 5 | Fisher when *any* expected < 5 | none - not tunable |
 | `ORD1=` | `n (%)`, Kruskal-Wallis | folds into `categorical`, chi-square | none |
@@ -113,7 +113,7 @@ tbl <- hv_tbl_summary(
 | `DATA=` | `data` | |
 | `CLASS=` | `by` | |
 | `LIST=` | `groups` | a named list; the section comments become the names |
-| `CON1=` | `continuous` | **statistic changes** by default - mean +/- SD becomes median (percentiles); `continuous_stat = "mean"` restores it, and the test stays non-parametric |
+| `CON1=` | `continuous` and `normal` | both: `normal` alone leaves the variable unclassified. Mean +/- SD with one-way ANOVA, as the macro did |
 | `CON2=` | `continuous` | **statistic changes** - median (min, max) becomes median (percentiles) |
 | `CON3=` | `continuous` | direct equivalent; this is the behavior `continuous` reproduces |
 | `CAT1=` | `binary` | |
@@ -148,9 +148,9 @@ percentages), `MISSCOL=`, `ADHOC=`, `ODDSRATIOS=`, `CUTEXACT=`, `STYLE=`,
 
 Three causes, in order of how often they explain it.
 
-1. **A `CON1=` variable.** The macro ran one-way ANOVA on it. Every
-   continuous variable here is tested non-parametrically. This is also why
-   no footnote letter reads `a=ANOVA`.
+1. **A `CON1=` variable not listed in `normal`.** The macro ran one-way
+   ANOVA on it. A variable in `continuous` alone is tested
+   non-parametrically.
 2. **An `ORD1=` variable.** The macro ran Kruskal-Wallis; folded into
    `categorical`, it gets chi-square. No trend test is run.
 3. **A sparse categorical variable.** Both switch to Fisher's exact, at

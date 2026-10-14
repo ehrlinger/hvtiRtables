@@ -207,3 +207,55 @@ test_that("JTCVS: no % sign in any body cell, label column left", {
   jc <- vapply(rows, function(r) r[[1]]$jc, "")
   expect_true(all(jc %in% c("left", "start")))
 })
+
+# -- Mixed statistics and page orientation ------------------------------
+
+wx_mixed <- function(overall = TRUE) {
+  hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = c("age", "marker")),
+    continuous = c("age", "marker"), normal = "age",
+    compare = "none", overall = overall
+  )
+}
+
+test_that("both renderers print each mixed row's statistic in Word", {
+  f <- wx_save_corr(wx_mixed())
+  on.exit(unlink(f), add = TRUE)
+  doc <- wx_doc(f)
+  labels <- vapply(wx_rows(doc), function(r) r[[1]]$text, "")
+  expect_true("Age, Mean±SD" %in% labels)
+  expect_true(
+    "Marker Level (ng/mL), Median (15th, 85th percentile)" %in% labels
+  )
+  expect_true("† No. (%) unless the row names another statistic." %in%
+                wx_paragraphs_after_table(doc))
+
+  f2 <- wx_save_jtcvs(wx_mixed())
+  on.exit(unlink(f2), add = TRUE)
+  rows <- wx_rows(wx_doc(f2))
+  expect_true("No. (%) unless the row names another statistic" %in%
+                cell_text(rows[[2]]))
+  expect_true("Age, Mean±SD" %in%
+                vapply(rows, function(r) r[[1]]$text, ""))
+})
+
+# One orient value per section; a single section is expected.
+wx_orient <- function(f) {
+  sz <- xml2::xml_find_all(wx_doc(f), "//w:sectPr/w:pgSz", wx_ns)
+  xml2::xml_attr(sz, "orient")
+}
+
+test_that("CORR: Overall plus two groups goes on a landscape page", {
+  f <- wx_save_corr(wx_mixed(overall = TRUE))
+  on.exit(unlink(f), add = TRUE)
+  expect_identical(wx_orient(f), "landscape")
+})
+
+test_that("CORR: two statistic columns stay on a portrait page", {
+  f <- wx_save_corr(wx_mixed(overall = FALSE))
+  on.exit(unlink(f), add = TRUE)
+  orient <- wx_orient(f)
+  expect_length(orient, 1L)
+  expect_true(orient %in% c(NA, "portrait"))
+})

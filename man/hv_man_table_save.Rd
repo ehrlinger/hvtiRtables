@@ -42,7 +42,11 @@ must be named (unnamed or blank-named entries raise an error); an
 empty or \code{NULL} vector is a no-op.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
-produce an error naming the argument to use instead.}
+produce an error naming the argument to use instead.
+
+A table with three or more statistic columns, such as an Overall
+column and two groups, is written on a landscape page: with a \code{No.}
+column beside each, it does not fit a portrait one.}
 }
 \value{
 Invisibly, the \code{file} path.

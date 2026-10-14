@@ -79,6 +79,10 @@
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
+#' A table with three or more statistic columns, such as an Overall
+#' column and two groups, is written on a landscape page: with a `No.`
+#' column beside each, it does not fit a portrait one.
+#'
 #' @return Invisibly, the `file` path.
 #'
 #' @seealso [hv_man_table()] to build a compliant `flextable` first.
@@ -147,9 +151,33 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   }
 
   doc <- .add_abbreviations_key(doc, abbreviations)
+  if (.is_wide(ft)) doc <- .landscape(doc)
 
   print(doc, target = file)
   invisible(file)
+}
+
+# Three statistic columns (an Overall column and two groups, say) each
+# with its No. column overflow a portrait page; Word clips the right
+# edge rather than wrapping.
+.is_wide <- function(ft) {
+  sum(grepl("^stat_[0-9]+$", ft$col_keys)) >= 3L
+}
+
+# The template's own page (A4, 1417-twip margins) turned on its side,
+# so only the orientation changes.
+.landscape <- function(doc) {
+  twip <- 1 / 1440
+  officer::body_set_default_section(doc, officer::prop_section(
+    page_size = officer::page_size(
+      width = 11900 * twip, height = 16840 * twip, orient = "landscape"
+    ),
+    page_margins = officer::page_mar(
+      bottom = 1417 * twip, top = 1417 * twip, right = 1417 * twip,
+      left = 1417 * twip, header = 708 * twip, footer = 708 * twip,
+      gutter = 0
+    )
+  ))
 }
 
 .default_footnotes <- function(ft) {

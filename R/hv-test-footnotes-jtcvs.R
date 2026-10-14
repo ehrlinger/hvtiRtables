@@ -4,6 +4,7 @@
 # a non-test: add_difference() writes it into test_name, and a
 # standardized difference has no test to name.
 .hv_test_labels <- c(
+  oneway.test           = "One-way analysis of variance.",
   wilcox.test           = "Wilcoxon rank-sum test.",
   kruskal.test          = "Kruskal-Wallis test.",
   chisq.test.no.correct = "Pearson chi-square test.",
@@ -13,9 +14,10 @@
 #' Build lettered test footnotes from a gtsummary table
 #'
 #' Reproduces the macro's lettered test footnotes. The letters differ by
-#' design: `%summarytable` emitted `a=ANOVA` for `CON1=` variables, and
-#' this package tests every continuous variable non-parametrically, so
-#' ANOVA never appears.
+#' design: the macro lettered by test (`a=ANOVA`, `b=Kruskal-Wallis`,
+#' ...), while here letters follow the order the tests appear. One-way
+#' ANOVA appears only for variables listed in [hv_tbl_summary()]'s
+#' `normal`.
 #'
 #' The SAS `%summarytable` macro marks every p-value with a superscript
 #' letter naming the test behind it. This builds those footnotes from the

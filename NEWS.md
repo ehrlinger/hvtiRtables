@@ -22,6 +22,18 @@
     sub-header carries a superscript `a`, which `hv_man_table_save_jtcvs()`
     explains first with "a. Patients with data available." The `a` used to
     print as plain text, `na`. Footnotes you pass now start at `b`.
+* `hv_tbl_summary()` has a `normal` argument, the macro's `CON1=`: list
+  continuous variables in it as well as in `continuous`, and each is shown as
+  mean±SD and tested with one-way ANOVA. Every other continuous variable keeps
+  the `continuous_stat` summary and its non-parametric test. When one table
+  shows both mean and median rows, each continuous row names its own statistic
+  ("Age, Mean±SD"), as the macro's `DESCLABEL=1` did. The header and the
+  dagger then read "No. (%) unless the row names another statistic".
+  `hv_test_footnotes_jtcvs()` footnotes the ANOVA as "One-way analysis of
+  variance."
+* `hv_man_table_save()` writes a table with three or more statistic columns,
+  such as an Overall column and two groups, on a landscape page. In portrait,
+  Word clipped its right edge.
 
 # hvtiRtables 1.0.4
 

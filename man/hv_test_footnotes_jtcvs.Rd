@@ -18,9 +18,10 @@ argument. \code{list()} when there is nothing to mark.
 }
 \description{
 Reproduces the macro's lettered test footnotes. The letters differ by
-design: \verb{\%summarytable} emitted \code{a=ANOVA} for \verb{CON1=} variables, and
-this package tests every continuous variable non-parametrically, so
-ANOVA never appears.
+design: the macro lettered by test (\code{a=ANOVA}, \code{b=Kruskal-Wallis},
+...), while here letters follow the order the tests appear. One-way
+ANOVA appears only for variables listed in \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s
+\code{normal}.
 }
 \details{
 The SAS \verb{\%summarytable} macro marks every p-value with a superscript

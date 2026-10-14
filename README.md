@@ -96,9 +96,9 @@ spread across separate calls:
 The one thing worth knowing before you start: `CON1=` variables change
 statistic by default. The macro reported them as mean +/- SD with one-way
 ANOVA; every continuous variable here defaults to a median with a
-non-parametric test, which is the `CON3=` behavior. `continuous_stat =
-"mean"` (or `"both"`) brings the mean back, but the test stays
-non-parametric. It's the largest of four defaults that produce different
+non-parametric test, which is the `CON3=` behavior. List a `CON1=` variable
+in `normal` as well as `continuous` to get the macro's mean +/- SD and
+ANOVA back. It's the largest of four defaults that produce different
 numbers from a faithful-looking port; the vignette's "Defaults that differ"
 table lists all four.
 
