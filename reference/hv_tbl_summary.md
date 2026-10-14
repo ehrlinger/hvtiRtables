@@ -26,6 +26,7 @@ hv_tbl_summary(
   percentiles = c(15, 85),
   overall = TRUE,
   continuous_stat = c("median", "mean", "both"),
+  normal = character(0),
   ...
 )
 ```
@@ -56,10 +57,9 @@ hv_tbl_summary(
   Character vector of continuous variable names (`%summarytable` `CON3=`
   equivalent), summarized as set by `continuous_stat`. Variables the
   macro classified as `CON1=` (mean +/- SD, one-way ANOVA) or `CON2=`
-  (median with min and max) belong here too. `continuous_stat = "mean"`
-  reproduces `CON1=`'s statistic but not its test: every continuous
-  variable is tested non-parametrically. Each named column must be
-  numeric.
+  (median with min and max) belong here too; list `CON1=` variables in
+  `normal` as well to keep the macro's mean +/- SD and ANOVA. Each named
+  column must be numeric.
 
 - binary:
 
@@ -113,18 +113,29 @@ hv_tbl_summary(
 - continuous_stat:
 
   One of `"median"` (default), `"mean"`, or `"both"`: how continuous
-  variables are summarized. `"median"` gives `median (P<low>, P<high>)`;
-  `"mean"` gives mean +/- SD, with no spaces around the plus-minus sign
-  and EHB/Blackstone paired rounding; `"both"` puts the two on sub-rows
-  under the variable, mean +/- SD first, with the N shown once, on the
-  first. Choosing one for the manuscript is then a matter of deleting a
-  row. The test does not change with the statistic: it is always the
-  non-parametric one described above. The CORR footnote carried through
+  variables not listed in `normal` are summarized. `"median"` gives
+  `median (P<low>, P<high>)`; `"mean"` gives mean +/- SD, with no spaces
+  around the plus-minus sign and EHB/Blackstone paired rounding;
+  `"both"` puts the two on sub-rows under the variable, mean +/- SD
+  first, with the N shown once, on the first. Choosing one for the
+  manuscript is then a matter of deleting a row. The test does not
+  change with the statistic: only `normal` selects ANOVA. The CORR
+  footnote carried through
   [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
   to
   [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
   follows this choice automatically. Placed after `overall` so calls
   passing `overall` by position keep working.
+
+- normal:
+
+  Character vector, a subset of `continuous`: the variables to treat as
+  normally distributed (`%summarytable` `CON1=` equivalent). Each is
+  summarized as mean +/- SD whatever `continuous_stat` says, and, under
+  `compare = "pvalue"` or `"both"`, tested with classical
+  (pooled-variance) one-way ANOVA, the test the macro ran. Default none.
+  Each name must also appear in `continuous`. Last in the signature so
+  positional calls keep working.
 
 - ...:
 
@@ -143,14 +154,14 @@ renderer attributes.
 ## Details
 
 Continuous variables are summarized as `median (P<low>, P<high>)` by
-default, or as mean +/- SD, or both (`continuous_stat`). Whichever is
-shown, the test is the same blanket non-parametric one (Wilcoxon
-rank-sum for 2 groups, Kruskal-Wallis for 3+). This function does not
-classify variables as Gaussian/non-Gaussian the way `%summarytable`
-does; that is
-[`gtsummary::add_p()`](https://www.danieldsjoberg.com/gtsummary/reference/add_p.html)'s
-own default continuous test already. `percentiles` defaults to the house
-convention documented in
+default, or as mean +/- SD, or both (`continuous_stat`), and tested
+non-parametrically (Wilcoxon rank-sum for 2 groups, Kruskal-Wallis for
+3+), the macro's `CON3=`. A variable you also list in `normal` is the
+macro's `CON1=` instead: mean +/- SD, tested with one-way ANOVA. When
+that leaves rows of one table showing different statistics, each
+continuous row names its own, `"Age, Mean±SD"`, as the macro's
+`DESCLABEL=1` did, and the header and dagger read "No. (%) or as
+labeled". `percentiles` defaults to the house convention documented in
 [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
 (15th/85th), overridable per study (`%summarytable` equivalent: `PP=`).
 

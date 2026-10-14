@@ -44,7 +44,7 @@ Four places where a faithful-looking port produces different numbers.
 
 | Macro | Default there | Default here | Fix |
 |----|----|----|----|
-| `CON1=` | mean +/- SD, one-way ANOVA | median (percentiles), Kruskal-Wallis | `continuous_stat = "mean"` for the statistic; the test stays non-parametric |
+| `CON1=` | mean +/- SD, one-way ANOVA | median (percentiles), Kruskal-Wallis | list the variable in `normal` as well as `continuous` |
 | `PP=` | `16 84` nominal; house templates use both `15 85` and `16 84` | `percentiles = c(15, 85)` | `percentiles = c(16, 84)` |
 | `CUTEXACT=` | Fisher when \>=50% of cells have expected \< 5 | Fisher when *any* expected \< 5 | none - not tunable |
 | `ORD1=` | `n (%)`, Kruskal-Wallis | folds into `categorical`, chi-square | none |
@@ -106,7 +106,7 @@ tbl <- hv_tbl_summary(
 | `DATA=` | `data` |  |
 | `CLASS=` | `by` |  |
 | `LIST=` | `groups` | a named list; the section comments become the names |
-| `CON1=` | `continuous` | **statistic changes** by default - mean +/- SD becomes median (percentiles); `continuous_stat = "mean"` restores it, and the test stays non-parametric |
+| `CON1=` | `continuous` and `normal` | both: `normal` alone leaves the variable unclassified. Mean +/- SD with one-way ANOVA, as the macro did |
 | `CON2=` | `continuous` | **statistic changes** - median (min, max) becomes median (percentiles) |
 | `CON3=` | `continuous` | direct equivalent; this is the behavior `continuous` reproduces |
 | `CAT1=` | `binary` |  |
@@ -144,9 +144,9 @@ the data frame first), `SORTBY=` (order comes from `groups`), `COLPCT=0`
 
 Three causes, in order of how often they explain it.
 
-1.  **A `CON1=` variable.** The macro ran one-way ANOVA on it. Every
-    continuous variable here is tested non-parametrically. This is also
-    why no footnote letter reads `a=ANOVA`.
+1.  **A `CON1=` variable not listed in `normal`.** The macro ran one-way
+    ANOVA on it. A variable in `continuous` alone is tested
+    non-parametrically.
 2.  **An `ORD1=` variable.** The macro ran Kruskal-Wallis; folded into
     `categorical`, it gets chi-square. No trend test is run.
 3.  **A sparse categorical variable.** Both switch to Fisher’s exact, at
@@ -174,13 +174,12 @@ matches SAS without intervention. **Any
 write by hand in ported code does not** - pin `type = 2` explicitly.
 
 The percentiles actually used are recorded on the table object as
-`attr(tbl, "hv_stat_label")`, but nothing consumes that attribute
-automatically.
-[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)’s
-`stat_label` argument defaults to a literal mean-and-SD string, so a
-`percentiles = c(16, 84)` table rendered without an explicit
-`stat_label =` claims mean/SD over median columns. You MUST pass it
-yourself:
+`attr(tbl, "hv_stat_label")`, and
+[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
+reads it when `stat_label` is left at its default, so the sub-header
+names the statistic the cells hold. Before 1.0.5 the default was a
+literal mean-and-SD string, and a median table rendered without an
+explicit `stat_label =` claimed mean/SD over median columns.
 
 ``` r
 
@@ -192,15 +191,6 @@ tbl <- hv_tbl_summary(
 )
 attr(tbl, "hv_stat_label")
 #> [1] "No. (%) or Median (16th, 84th percentile)"
-```
-
-``` r
-
-ft <- hv_man_table_jtcvs(
-  tbl,
-  groups = c(stat_1 = "Drug A", stat_2 = "Drug B"),
-  stat_label = attr(tbl, "hv_stat_label")
-)
 ```
 
 ## Reading the SAS data in

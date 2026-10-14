@@ -13,7 +13,7 @@ versus JTCVS spanning header."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,7 +64,7 @@ versus JTCVS spanning header.</p>
 <span>  <span class="va">tbl</span>,</span>
 <span>  <span class="va">groups</span>,</span>
 <span>  trailing <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  stat_label <span class="op">=</span> <span class="st">"No. (%) or Mean±SD"</span>,</span>
+<span>  stat_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  font <span class="op">=</span> <span class="st">"Times New Roman"</span>,</span>
 <span>  font_size <span class="op">=</span> <span class="fl">12</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -101,9 +101,10 @@ comparison column (e.g. <code>c(std_diff = "Std. Diff.")</code> or
 
 <dt id="arg-stat-label">stat_label<a class="anchor" aria-label="anchor" href="#arg-stat-label"></a></dt>
 <dd><p>Sub-header text under each group's statistic column.
-Default <code>"No. (%) or Mean±SD"</code> (house default for mean/SD
-tables). Pass e.g. <code>"No. (%) or Median (15th, 85th percentile)"</code> when
-the table's continuous statistic is a median, not a mean.</p></dd>
+Default <code>NULL</code> takes it from the table: <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> records the
+statistic it used (e.g. <code>"No. (%) or Median (15th, 85th percentile)"</code>), so the header cannot disagree with the cells. A
+table without that record falls back to <code>"No. (%) or Mean±SD"</code>;
+pass the right text yourself for any other statistic.</p></dd>
 
 
 <dt id="arg-font">font<a class="anchor" aria-label="anchor" href="#arg-font"></a></dt>
@@ -127,15 +128,17 @@ produce an error naming the argument to use instead.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>flextable</code> with a 2-row header and merged section rows, ready
-for <code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>.</p>
+for <code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>. It carries an <code>hv_header_footnotes</code>
+attribute, the text of the <code>n</code> superscript, which that saver writes.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Use this instead of <code><a href="hv_man_table.html">hv_man_table()</a></code> when you're building the shape
 editorial actually needs at JTCVS submission: a 2-row header (group name
-spanning <code>na</code>/stat sub-columns) and bold, light-blue-shaded, row-spanning
-section headers in the body, matching the canonical "Table Construction
-for Manuscripts" house example (section-header fill <code>#CAEDFB</code>). This is
+spanning <code>n</code>/stat sub-columns, <code>Characteristic</code> spanning both rows) and
+bold, row-spanning section headers in the body, with no fill colour.
+Each <code>n</code> carries a superscript <code>a</code>, which <code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>
+footnotes as "Patients with data available." This is
 a separate mode, not a replacement for <code><a href="hv_man_table.html">hv_man_table()</a></code>'s flat-header
 CORR house style; the two exist because CORR reports and JTCVS
 submissions want different things from the same header row.</p>

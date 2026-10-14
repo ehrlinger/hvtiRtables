@@ -65,18 +65,22 @@ You give this a
 and you get back a `flextable` that already complies with HVTI CORR's
 "Table Construction for Manuscripts" rules: a single, non-merged header
 row (no spanning parent cells over grouped columns), no merged row-group
-section-header cells, and Times New Roman at the house font size.
+section-header cells, a left-justified label column, and Times New Roman
+at the house font size.
 
 [`gtsummary::as_flex_table()`](https://www.danieldsjoberg.com/gtsummary/reference/as_flex_table.html)
 already emits one header row per group with self-contained labels (e.g.
-`"B\nN = 45"`), not a merged spanning header. The one remaining merge, a
-full-width `gridSpan` on the `modify_table_body(groupname_col = ...)`
-section-header row, gets removed with
-[`flextable::merge_none()`](https://davidgohel.github.io/flextable/reference/merge_none.html),
-which un-merges every merged region back into individual cells (content
-stays in the top-left cell of the former merge; the rest become empty).
+`"B\nN = 45"`), not a merged spanning header. Any merged region is
+undone with
+[`flextable::merge_none()`](https://davidgohel.github.io/flextable/reference/merge_none.html).
 That satisfies the "format the table as flat as possible ... simple
 non-merged column titles" rule.
+
+The sections of an
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+table (its `groups` names, such as "Demography") become bold header rows
+in the label column, each immediately above its first variable, rather
+than a column of their own.
 
 Rounding, `%`-free percentage cells, and `±`-without-spaces formatting
 are yours to control, via the `statistic`/`digits` arguments to

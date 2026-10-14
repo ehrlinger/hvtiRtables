@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,8 +63,8 @@
 
 <dl><dt id="arg-continuous-stat">continuous_stat<a class="anchor" aria-label="anchor" href="#arg-continuous-stat"></a></dt>
 <dd><p>One of <code>"median"</code> (default), <code>"mean"</code>, or
-<code>"both"</code>. Controls whether the dagger reads as median and percentiles,
-mean +/- SD, or both.</p></dd>
+<code>"both"</code>. Controls whether the dagger's continuous half reads as
+median and percentiles, mean +/- SD, or both.</p></dd>
 
 
 <dt id="arg-percentiles">percentiles<a class="anchor" aria-label="anchor" href="#arg-percentiles"></a></dt>
@@ -85,9 +85,10 @@ percentile pair named by the dagger. Default <code>c(15, 85)</code>. Used for
 Manuscripts" rules, not specific to any one study, so you don't have to
 re-type them at every <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> call site: a <code>*</code> for the
 non-missing-value count (house rule 8, exact wording required) and a
-<code>†</code> explaining the continuous statistic. You don't need a footnote for
-the categorical <code>n (%)</code> format; the column header text already covers it
-(house rules 10/12).</p>
+<code>†</code> explaining the statistic in each group column, e.g.
+"No. (%) or Median (15th, 85th percentile)." The categorical half is
+part of it because the cells print <code>12 (39)</code> with no <code>%</code> sign (house
+rules 10/12), and the flat CORR header names only the group.</p>
 <p><code><a href="hv_man_table_save.html">hv_man_table_save()</a></code>'s <code>footnotes</code> parameter defaults to calling
 this function, so every table gets both automatically. A table built by
 <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> and <code><a href="hv_man_table.html">hv_man_table()</a></code> carries its <code>continuous_stat</code> and
@@ -127,21 +128,21 @@ the table, or override the dagger explicitly.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of non-missing values."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`†`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Median (15th, 85th percentile)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "No. (%) or Median (15th, 85th percentile)."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="fu">hv_man_footnotes</span><span class="op">(</span>continuous_stat <span class="op">=</span> <span class="st">"mean"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`*`</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of non-missing values."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`†`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean±SD."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "No. (%) or Mean±SD."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="fu">hv_man_footnotes</span><span class="op">(</span>continuous_stat <span class="op">=</span> <span class="st">"both"</span>, percentiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">16</span>, <span class="fl">84</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`*`</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of non-missing values."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`†`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Mean±SD; Median (16th, 84th percentile)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "No. (%), Mean±SD, or Median (16th, 84th percentile)."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/modifyList.html" class="external-link">modifyList</a></span><span class="op">(</span><span class="fu">hv_man_footnotes</span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>`†` <span class="op">=</span> <span class="st">"custom text"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`*`</span>

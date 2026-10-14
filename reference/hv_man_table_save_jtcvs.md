@@ -39,12 +39,15 @@ hv_man_table_save_jtcvs(
 - footnotes:
 
   Optional list of `list(row =, col =, text =)`, one per footnote, in
-  the order letters should be assigned (`a`, `b`, ...). `col` is a
-  single `col_keys` name. `row` may be a vector, in which case the one
-  letter marks every row named, which is how several rows share a
-  footnote. `row` indexes `ft`'s body rows as shown: for a sectioned
-  table (built with `groupname_col`), that includes the section-header
-  rows
+  the order letters should be assigned. A table from
+  [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
+  already uses `a` for its `n` header ("Patients with data available."),
+  written first, so these start at `b`; other flextables start at `a`.
+  `col` is a single `col_keys` name. `row` may be a vector, in which
+  case the one letter marks every row named, which is how several rows
+  share a footnote. `row` indexes `ft`'s body rows as shown: for a
+  sectioned table (built with `groupname_col`), that includes the
+  section-header rows
   [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
   interleaves into the body, so count those too.
   [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md)
@@ -79,7 +82,11 @@ it adds a bold `Table N. Caption` paragraph before the table, and
 renders footnotes as lettered (`a.`, `b.`, ...) markers attached to
 specific body cells rather than the fixed symbol set
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
-uses on the header row, matching the JTCVS template convention.
+uses on the header row, matching the JTCVS template convention. The
+header footnote
+[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
+marks on each `n` ("Patients with data available.") is written first, as
+`a`.
 
 ## Common mistakes
 
@@ -138,7 +145,7 @@ hv_man_table_save_jtcvs(
   ft, out,
   caption = "Table 1. Baseline Characteristics",
   footnotes = list(list(
-    row = 1, col = "n_stat_1", text = "Patients with data available."
+    row = 1, col = "disp_stat_1", text = "Excludes one withdrawn patient."
   ))
 )
 ```

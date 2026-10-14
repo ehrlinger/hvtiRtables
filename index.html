@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -157,8 +157,8 @@
 </tr>
 </tbody>
 </table>
-<p>The one thing worth knowing before you start: <code>CON1=</code> variables change statistic by default. The macro reported them as mean +/- SD with one-way ANOVA; every continuous variable here defaults to a median with a non-parametric test, which is the <code>CON3=</code> behavior. <code>continuous_stat = "mean"</code> (or <code>"both"</code>) brings the mean back, but the test stays non-parametric. It’s the largest of four defaults that produce different numbers from a faithful-looking port; the vignette’s “Defaults that differ” table lists all four.</p>
-<p>For CORR tables, the standard dagger footnote follows <code>continuous_stat</code> and <code>percentiles</code> automatically through <code><a href="reference/hv_man_table.html">hv_man_table()</a></code> and <code><a href="reference/hv_man_table_save.html">hv_man_table_save()</a></code>. A mean table therefore says <code>Mean±SD</code>; a table showing both statistics names both.</p>
+<p>The one thing worth knowing before you start: <code>CON1=</code> variables change statistic by default. The macro reported them as mean +/- SD with one-way ANOVA; every continuous variable here defaults to a median with a non-parametric test, which is the <code>CON3=</code> behavior. List a <code>CON1=</code> variable in <code>normal</code> as well as <code>continuous</code> to get the macro’s mean +/- SD and ANOVA back. It’s the largest of four defaults that produce different numbers from a faithful-looking port; the vignette’s “Defaults that differ” table lists all four.</p>
+<p>For CORR tables, the standard dagger footnote follows <code>continuous_stat</code> and <code>percentiles</code> automatically through <code><a href="reference/hv_man_table.html">hv_man_table()</a></code> and <code><a href="reference/hv_man_table_save.html">hv_man_table_save()</a></code>. A mean table therefore says <code>No. (%) or Mean±SD</code>; a table showing both statistics names both. The <code>(%)</code> lives there and in the JTCVS sub-header, not in the cells, which print <code>12 (39)</code> as the SAS macro does.</p>
 <p>Mean±SD cells follow Eugene H. Blackstone’s (EHB’s) paired rounding rule. The mean is rounded to the SD’s first-significant-digit place and the SD one place finer; an SD beginning with 1 gives both one additional place. Exact ties round to even. Median and percentile precision is left unchanged because the rule does not define it.</p>
 <p>Full parameter map, the four defaults that differ, and the <code>QNTLDEF</code> quantile trap: <strong><a href="https://ehrlinger.github.io/hvtiRtables/articles/sas-migration.html">Porting a <code>%summarytable</code> program to R</a></strong>.</p>
 </div>

@@ -36,13 +36,15 @@ hv_man_table_save(ft, file, footnotes = NULL, abbreviations = NULL, ...)
   compose with
   [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
   to override or extend. Symbols must be drawn from
-  `c("*", "†", "‡", "§", "¶", "||")`. Each symbol is appended as a
-  superscript reference mark to the table's count-column header cell (a
-  column named `n`, else the first `n_stat_<k>` column
+  `c("*", "†", "‡", "§", "¶", "||")`. `†` describes the statistic, so it
+  is appended as a superscript reference mark to every statistic-column
+  header (`stat_<k>`), and to the count column only when the table has
+  no such column. Every other symbol goes on the table's count-column
+  header cell (a column named `n`, else the first `n_stat_<k>` column
   [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
   creates when it splits an
   [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
-  table, else the first column), and its text is rendered as its own
+  table, else the first column). Each text is rendered as its own
   paragraph below the table, in the order given. Every element must be
   named (unnamed or blank-named entries raise an error) and every text
   must be a single non-empty string (`NULL`, `NA`, a number, or a
@@ -64,6 +66,10 @@ hv_man_table_save(ft, file, footnotes = NULL, abbreviations = NULL, ...)
 
   Not used. Present so that `%summarytable` parameter names produce an
   error naming the argument to use instead.
+
+  A table with three or more statistic columns, such as an Overall
+  column and two groups, is written on a landscape page: with a `No.`
+  column beside each, it does not fit a portrait one.
 
 ## Value
 

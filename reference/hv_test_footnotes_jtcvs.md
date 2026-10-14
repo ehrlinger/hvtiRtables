@@ -1,9 +1,11 @@
 # Build lettered test footnotes from a gtsummary table
 
 Reproduces the macro's lettered test footnotes. The letters differ by
-design: `%summarytable` emitted `a=ANOVA` for `CON1=` variables, and
-this package tests every continuous variable non-parametrically, so
-ANOVA never appears.
+design: the macro lettered by test (`a=ANOVA`, `b=Kruskal-Wallis`, ...),
+while here letters follow the order the tests appear. One-way ANOVA
+appears only for variables listed in
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)'s
+`normal`.
 
 ## Usage
 

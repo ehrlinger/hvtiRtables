@@ -16,7 +16,8 @@ hv_man_footnotes(
 - continuous_stat:
 
   One of `"median"` (default), `"mean"`, or `"both"`. Controls whether
-  the dagger reads as median and percentiles, mean +/- SD, or both.
+  the dagger's continuous half reads as median and percentiles, mean +/-
+  SD, or both.
 
 - percentiles:
 
@@ -40,9 +41,11 @@ Manuscripts" rules, not specific to any one study, so you don't have to
 re-type them at every
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
 call site: a `*` for the non-missing-value count (house rule 8, exact
-wording required) and a `†` explaining the continuous statistic. You
-don't need a footnote for the categorical `n (%)` format; the column
-header text already covers it (house rules 10/12).
+wording required) and a `†` explaining the statistic in each group
+column, e.g. "No. (%) or Median (15th, 85th percentile)." The
+categorical half is part of it because the cells print `12 (39)` with no
+`%` sign (house rules 10/12), and the flat CORR header names only the
+group.
 
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)'s
 `footnotes` parameter defaults to calling this function, so every table
@@ -97,21 +100,21 @@ hv_man_footnotes()
 #> [1] "Number of non-missing values."
 #> 
 #> $`†`
-#> [1] "Median (15th, 85th percentile)."
+#> [1] "No. (%) or Median (15th, 85th percentile)."
 #> 
 hv_man_footnotes(continuous_stat = "mean")
 #> $`*`
 #> [1] "Number of non-missing values."
 #> 
 #> $`†`
-#> [1] "Mean±SD."
+#> [1] "No. (%) or Mean±SD."
 #> 
 hv_man_footnotes(continuous_stat = "both", percentiles = c(16, 84))
 #> $`*`
 #> [1] "Number of non-missing values."
 #> 
 #> $`†`
-#> [1] "Mean±SD; Median (16th, 84th percentile)."
+#> [1] "No. (%), Mean±SD, or Median (16th, 84th percentile)."
 #> 
 modifyList(hv_man_footnotes(), list(`†` = "custom text"))
 #> $`*`

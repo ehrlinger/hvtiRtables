@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -163,8 +163,8 @@
 <td><code>CON1=</code></td>
 <td>mean +/- SD, one-way ANOVA</td>
 <td>median (percentiles), Kruskal-Wallis</td>
-<td>
-<code>continuous_stat = "mean"</code> for the statistic; the test stays non-parametric</td>
+<td>list the variable in <code>normal</code> as well as <code>continuous</code>
+</td>
 </tr>
 <tr class="even">
 <td><code>PP=</code></td>
@@ -256,9 +256,10 @@
 </tr>
 <tr class="even">
 <td><code>CON1=</code></td>
-<td><code>continuous</code></td>
 <td>
-<strong>statistic changes</strong> by default - mean +/- SD becomes median (percentiles); <code>continuous_stat = "mean"</code> restores it, and the test stays non-parametric</td>
+<code>continuous</code> and <code>normal</code>
+</td>
+<td>both: <code>normal</code> alone leaves the variable unclassified. Mean +/- SD with one-way ANOVA, as the macro did</td>
 </tr>
 <tr class="odd">
 <td><code>CON2=</code></td>
@@ -350,7 +351,7 @@
 <p>Three causes, in order of how often they explain it.</p>
 <ol type="1">
 <li>
-<strong>A <code>CON1=</code> variable.</strong> The macro ran one-way ANOVA on it. Every continuous variable here is tested non-parametrically. This is also why no footnote letter reads <code>a=ANOVA</code>.</li>
+<strong>A <code>CON1=</code> variable not listed in <code>normal</code>.</strong> The macro ran one-way ANOVA on it. A variable in <code>continuous</code> alone is tested non-parametrically.</li>
 <li>
 <strong>An <code>ORD1=</code> variable.</strong> The macro ran Kruskal-Wallis; folded into <code>categorical</code>, it gets chi-square. No trend test is run.</li>
 <li>
@@ -366,7 +367,7 @@
 <span><span class="co">#&gt; [1] 1.75</span></span></code></pre></div>
 </div>
 <p>Medians agree at every n; Q1, Q3 and <code>pNN</code> diverge silently. <code>gtsummary</code>’s <code>{pXX}</code> statistics already use <code>type = 2</code>, so <code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> matches SAS without intervention. <strong>Any <code><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">stats::quantile()</a></code> call you write by hand in ported code does not</strong> - pin <code>type = 2</code> explicitly.</p>
-<p>The percentiles actually used are recorded on the table object as <code>attr(tbl, "hv_stat_label")</code>, but nothing consumes that attribute automatically. <code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>’s <code>stat_label</code> argument defaults to a literal mean-and-SD string, so a <code>percentiles = c(16, 84)</code> table rendered without an explicit <code>stat_label =</code> claims mean/SD over median columns. You MUST pass it yourself:</p>
+<p>The percentiles actually used are recorded on the table object as <code>attr(tbl, "hv_stat_label")</code>, and <code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> reads it when <code>stat_label</code> is left at its default, so the sub-header names the statistic the cells hold. Before 1.0.5 the default was a literal mean-and-SD string, and a median table rendered without an explicit <code>stat_label =</code> claimed mean/SD over median columns.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hv_tbl_summary.html">hv_tbl_summary</a></span><span class="op">(</span></span>
@@ -378,20 +379,12 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="st">"hv_stat_label"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "No. (%) or Median (16th, 84th percentile)"</span></span></code></pre></div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ft</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs</a></span><span class="op">(</span></span>
-<span>  <span class="va">tbl</span>,</span>
-<span>  groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>stat_1 <span class="op">=</span> <span class="st">"Drug A"</span>, stat_2 <span class="op">=</span> <span class="st">"Drug B"</span><span class="op">)</span>,</span>
-<span>  stat_label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="st">"hv_stat_label"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
 </section><section class="level2"><h2 id="reading-the-sas-data-in">Reading the SAS data in<a class="anchor" aria-label="anchor" href="#reading-the-sas-data-in"></a>
 </h2>
 <p><code><a href="https://haven.tidyverse.org/reference/read_sas.html" class="external-link">haven::read_sas()</a></code> returns <code>haven_labelled</code> columns over doubles, because every SAS numeric is an 8-byte float. A 0/1 flag therefore arrives looking like a continuous variable, and type guessers classify it as one.</p>
 <p>This is why <code>binary</code> and <code>categorical</code> are stated rather than inferred: name every variable in exactly one of <code>continuous</code>, <code>binary</code> or <code>categorical</code>, and a misclassification is an error rather than a wrong table.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/hv_tbl_summary.html">hv_tbl_summary</a></span><span class="op">(</span></span>
 <span>  <span class="fu">gtsummary</span><span class="fu">::</span><span class="va"><a href="https://www.danieldsjoberg.com/gtsummary/reference/trial.html" class="external-link">trial</a></span>, groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>D <span class="op">=</span> <span class="st">"age"</span><span class="op">)</span>,</span>
 <span>  continuous <span class="op">=</span> <span class="st">"age"</span>, binary <span class="op">=</span> <span class="st">"age"</span></span>
@@ -409,7 +402,7 @@ proc corr data=built nosimple spearman pearson fisher(biasadj=no alpha=.32);
   by a1c_grp;
 run;</code></pre>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/hv_correlation_table.html">hv_correlation_table</a></span><span class="op">(</span><span class="va">built</span>, vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rdw_pr"</span>, <span class="st">"mcv_pr"</span>, <span class="st">"alb_pr"</span><span class="op">)</span>,</span>
 <span>                     with <span class="op">=</span> <span class="st">"hbga1cpr"</span>, by <span class="op">=</span> <span class="st">"a1c_grp"</span><span class="op">)</span></span></code></pre></div>
 </div>

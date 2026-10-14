@@ -9,7 +9,7 @@ the macro's RTFFILE=/PDFFILE= output block."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,7 +86,10 @@ not auto-number tables for you; include the number yourself.
 
 <dt id="arg-footnotes">footnotes<a class="anchor" aria-label="anchor" href="#arg-footnotes"></a></dt>
 <dd><p>Optional list of <code>list(row =, col =, text =)</code>, one per
-footnote, in the order letters should be assigned (<code>a</code>, <code>b</code>, ...).
+footnote, in the order letters should be assigned. A table from
+<code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> already uses <code>a</code> for its <code>n</code> header ("Patients
+with data available."), written first, so these start at <code>b</code>;
+other flextables start at <code>a</code>.
 <code>col</code> is a single <code>col_keys</code> name. <code>row</code> may be a vector, in which
 case the one letter marks every row named, which is how several rows
 share a footnote. <code>row</code> indexes <code>ft</code>'s body rows as shown: for a
@@ -119,7 +122,9 @@ produce an error naming the argument to use instead.</p></dd>
     <p>JTCVS counterpart to <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code>: it adds a bold <code>Table N. Caption</code> paragraph before the table, and renders footnotes as lettered
 (<code>a.</code>, <code>b.</code>, ...) markers attached to specific body cells rather than
 the fixed symbol set <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> uses on the header row,
-matching the JTCVS template convention.</p>
+matching the JTCVS template convention. The header footnote
+<code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> marks on each <code>n</code> ("Patients with data
+available.") is written first, as <code>a</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="common-mistakes">Common mistakes<a class="anchor" aria-label="anchor" href="#common-mistakes"></a></h2>
@@ -170,7 +175,7 @@ with <code>dir.create(dirname(file), recursive = TRUE)</code>.</p>
 <span class="r-in"><span>  <span class="va">ft</span>, <span class="va">out</span>,</span></span>
 <span class="r-in"><span>  caption <span class="op">=</span> <span class="st">"Table 1. Baseline Characteristics"</span>,</span></span>
 <span class="r-in"><span>  footnotes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    row <span class="op">=</span> <span class="fl">1</span>, col <span class="op">=</span> <span class="st">"n_stat_1"</span>, text <span class="op">=</span> <span class="st">"Patients with data available."</span></span></span>
+<span class="r-in"><span>    row <span class="op">=</span> <span class="fl">1</span>, col <span class="op">=</span> <span class="st">"disp_stat_1"</span>, text <span class="op">=</span> <span class="st">"Excludes one withdrawn patient."</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

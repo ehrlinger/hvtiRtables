@@ -12,7 +12,7 @@ hv_man_table_jtcvs(
   tbl,
   groups,
   trailing = NULL,
-  stat_label = "No. (%) or Mean±SD",
+  stat_label = NULL,
   font = "Times New Roman",
   font_size = 12,
   ...
@@ -47,10 +47,14 @@ hv_man_table_jtcvs(
 
 - stat_label:
 
-  Sub-header text under each group's statistic column. Default
-  `"No. (%) or Mean±SD"` (house default for mean/SD tables). Pass e.g.
-  `"No. (%) or Median (15th, 85th percentile)"` when the table's
-  continuous statistic is a median, not a mean.
+  Sub-header text under each group's statistic column. Default `NULL`
+  takes it from the table:
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  records the statistic it used (e.g.
+  `"No. (%) or Median (15th, 85th percentile)"`), so the header cannot
+  disagree with the cells. A table without that record falls back to
+  `"No. (%) or Mean±SD"`; pass the right text yourself for any other
+  statistic.
 
 - font:
 
@@ -75,17 +79,21 @@ hv_man_table_jtcvs(
 
 A `flextable` with a 2-row header and merged section rows, ready for
 [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md).
+It carries an `hv_header_footnotes` attribute, the text of the `n`
+superscript, which that saver writes.
 
 ## Details
 
 Use this instead of
 [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
 when you're building the shape editorial actually needs at JTCVS
-submission: a 2-row header (group name spanning `na`/stat sub-columns)
-and bold, light-blue-shaded, row-spanning section headers in the body,
-matching the canonical "Table Construction for Manuscripts" house
-example (section-header fill `#CAEDFB`). This is a separate mode, not a
-replacement for
+submission: a 2-row header (group name spanning `n`/stat sub-columns,
+`Characteristic` spanning both rows) and bold, row-spanning section
+headers in the body, with no fill colour. Each `n` carries a superscript
+`a`, which
+[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
+footnotes as "Patients with data available." This is a separate mode,
+not a replacement for
 [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)'s
 flat-header CORR house style; the two exist because CORR reports and
 JTCVS submissions want different things from the same header row.

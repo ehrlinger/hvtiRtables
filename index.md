@@ -100,19 +100,21 @@ spread across separate calls:
 The one thing worth knowing before you start: `CON1=` variables change
 statistic by default. The macro reported them as mean +/- SD with
 one-way ANOVA; every continuous variable here defaults to a median with
-a non-parametric test, which is the `CON3=` behavior.
-`continuous_stat = "mean"` (or `"both"`) brings the mean back, but the
-test stays non-parametric. It’s the largest of four defaults that
-produce different numbers from a faithful-looking port; the vignette’s
-“Defaults that differ” table lists all four.
+a non-parametric test, which is the `CON3=` behavior. List a `CON1=`
+variable in `normal` as well as `continuous` to get the macro’s mean +/-
+SD and ANOVA back. It’s the largest of four defaults that produce
+different numbers from a faithful-looking port; the vignette’s “Defaults
+that differ” table lists all four.
 
 For CORR tables, the standard dagger footnote follows `continuous_stat`
 and `percentiles` automatically through
 [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
 and
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md).
-A mean table therefore says `Mean±SD`; a table showing both statistics
-names both.
+A mean table therefore says `No. (%) or Mean±SD`; a table showing both
+statistics names both. The `(%)` lives there and in the JTCVS
+sub-header, not in the cells, which print `12 (39)` as the SAS macro
+does.
 
 Mean±SD cells follow Eugene H. Blackstone’s (EHB’s) paired rounding
 rule. The mean is rounded to the SD’s first-significant-digit place and
