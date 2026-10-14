@@ -34,6 +34,9 @@
 * `hv_man_table_save()` writes a table with three or more statistic columns,
   such as an Overall column and two groups, on a landscape page. In portrait,
   Word clipped its right edge.
+* The footnotes and `Key:` line under a table, and the JTCVS caption above it,
+  are now set in the table's own font (Times New Roman by default). They used
+  the Word template's default font.
 
 # hvtiRtables 1.0.4
 

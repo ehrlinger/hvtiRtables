@@ -124,16 +124,17 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
 
   doc <- officer::read_docx()
   cap_par <- officer::fpar(
-    officer::ftext(caption, prop = officer::fp_text(bold = TRUE))
+    officer::ftext(caption, prop = .note_prop(.table_font(ft), bold = TRUE))
   )
   doc <- officer::body_add_fpar(doc, cap_par, style = "Normal")
   doc <- flextable::body_add_flextable(doc, ft)
 
-  sup_prop <- officer::fp_text(vertical.align = "superscript")
+  font <- .table_font(ft)
+  sup_prop <- .note_prop(font, "superscript")
   for (k in seq_along(header_notes)) {
     note_par <- officer::fpar(
       officer::ftext(names(header_notes)[k], prop = sup_prop),
-      officer::ftext(paste0(". ", header_notes[[k]]))
+      officer::ftext(paste0(". ", header_notes[[k]]), prop = .note_prop(font))
     )
     doc <- officer::body_add_fpar(doc, note_par, style = "Normal")
   }
@@ -142,13 +143,14 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
     for (k in seq_along(footnotes)) {
       note_par <- officer::fpar(
         officer::ftext(letters_seq[k], prop = sup_prop),
-        officer::ftext(paste0(". ", footnotes[[k]]$text))
+        officer::ftext(paste0(". ", footnotes[[k]]$text),
+                       prop = .note_prop(font))
       )
       doc <- officer::body_add_fpar(doc, note_par, style = "Normal")
     }
   }
 
-  doc <- .add_abbreviations_key(doc, abbreviations)
+  doc <- .add_abbreviations_key(doc, abbreviations, font)
 
   print(doc, target = file)
   invisible(file)

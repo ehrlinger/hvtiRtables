@@ -139,18 +139,18 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   doc <- officer::read_docx()
   doc <- flextable::body_add_flextable(doc, ft)
 
+  font <- .table_font(ft)
   if (!is.null(footnotes)) {
     for (sym in names(footnotes)) {
-      sup_prop <- officer::fp_text(vertical.align = "superscript")
       note_par <- officer::fpar(
-        officer::ftext(sym, prop = sup_prop),
-        officer::ftext(paste0(" ", footnotes[[sym]]))
+        officer::ftext(sym, prop = .note_prop(font, "superscript")),
+        officer::ftext(paste0(" ", footnotes[[sym]]), prop = .note_prop(font))
       )
       doc <- officer::body_add_fpar(doc, note_par, style = "Normal")
     }
   }
 
-  doc <- .add_abbreviations_key(doc, abbreviations)
+  doc <- .add_abbreviations_key(doc, abbreviations, font)
   if (.is_wide(ft)) doc <- .landscape(doc)
 
   print(doc, target = file)
@@ -185,11 +185,33 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   if (is.null(footnotes)) hv_man_footnotes() else footnotes
 }
 
-.add_abbreviations_key <- function(doc, abbreviations) {
+# The table's own font, read back from its first body cell, so the text
+# under it matches. Without it the paragraphs fell back to the
+# template's Normal style, a sans-serif under a Times New Roman table.
+.table_font <- function(ft) {
+  fam <- ft$body$styles$text$font.family$data
+  if (length(fam) == 0L) fam <- ft$header$styles$text$font.family$data
+  if (length(fam) == 0L || is.na(fam[1])) return(NULL)
+  fam[1]
+}
+
+# fp_text_lite() rather than fp_text(): it sets only what is named, so
+# size and colour still come from the paragraph style. fp_text() would
+# also impose its own 10-point Arial defaults.
+#
+# hansi/cs as well as ascii: Word picks the font per character, so a
+# "±" in a footnote would otherwise fall back to the style's font.
+.note_prop <- function(font, align = "baseline", ...) {
+  font <- font %||% NA_character_
+  officer::fp_text_lite(font.family = font, hansi.family = font,
+                        cs.family = font, vertical.align = align, ...)
+}
+
+.add_abbreviations_key <- function(doc, abbreviations, font = NULL) {
   if (is.null(abbreviations) || length(abbreviations) == 0) return(doc)
   ordered <- abbreviations[order(names(abbreviations))]
-  runs <- list(officer::ftext("Key: "))
-  italic_prop <- officer::fp_text(italic = TRUE)
+  runs <- list(officer::ftext("Key: ", prop = .note_prop(font)))
+  italic_prop <- .note_prop(font, italic = TRUE)
   for (i in seq_along(ordered)) {
     runs <- c(runs, list(officer::ftext(names(ordered)[i], prop = italic_prop)))
     suffix <- if (i < length(ordered)) {
@@ -197,7 +219,7 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
     } else {
       paste0(", ", ordered[i])
     }
-    runs <- c(runs, list(officer::ftext(suffix)))
+    runs <- c(runs, list(officer::ftext(suffix, prop = .note_prop(font))))
   }
   key_par <- do.call(officer::fpar, runs)
   officer::body_add_fpar(doc, key_par, style = "Normal")

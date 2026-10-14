@@ -68,12 +68,14 @@ test_that("hv_man_table_save_jtcvs attaches lettered footnotes to cells", {
   expect_true(grepl(">a<", a_preceding, fixed = TRUE))
 
   b_pos <- regexpr("First footnote.", xml, fixed = TRUE)
-  b_preceding <- substr(xml, max(1, b_pos - 250), b_pos)
+  # 500, not 250: each run now carries its font, which lengthens the XML
+  # between the superscript and its text.
+  b_preceding <- substr(xml, max(1, b_pos - 500), b_pos)
   expect_true(grepl('vertAlign w:val="superscript"', b_preceding, fixed = TRUE))
   expect_true(grepl(">b<", b_preceding, fixed = TRUE))
 
   c_pos <- regexpr("Second footnote.", xml, fixed = TRUE)
-  c_preceding <- substr(xml, max(1, c_pos - 250), c_pos)
+  c_preceding <- substr(xml, max(1, c_pos - 500), c_pos)
   expect_true(grepl('vertAlign w:val="superscript"', c_preceding, fixed = TRUE))
   expect_true(grepl(">c<", c_preceding, fixed = TRUE))
 })

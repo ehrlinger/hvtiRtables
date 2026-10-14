@@ -259,3 +259,47 @@ test_that("CORR: two statistic columns stay on a portrait page", {
   expect_length(orient, 1L)
   expect_true(orient %in% c(NA, "portrait"))
 })
+
+# -- Text below the table ------------------------------------------------
+
+# The font of every run with text in the paragraphs after the table (and,
+# for JTCVS, the caption before it): ascii, hAnsi and cs must agree, since
+# Word picks among them per character.
+wx_note_fonts <- function(doc, xpath) {
+  runs <- xml2::xml_find_all(doc, paste0(xpath, "/w:r"), wx_ns)
+  rf <- xml2::xml_find_first(runs, "./w:rPr/w:rFonts", wx_ns)
+  fonts <- vapply(c("ascii", "hAnsi", "cs"),
+                  function(a) xml2::xml_attr(rf, a), character(length(runs)))
+  fonts <- matrix(fonts, nrow = length(runs))
+  agree <- apply(fonts, 1, function(r) length(unique(r)) == 1L)
+  ifelse(agree, fonts[, 1], "mismatch")[nzchar(vapply(runs, wx_text, ""))]
+}
+
+test_that("CORR: footnotes and Key use the table's font", {
+  for (font in c("Times New Roman", "Arial")) {
+    f <- tempfile(fileext = ".docx")
+    hv_man_table_save(hv_man_table(wx_tbl(), font = font), f,
+                      abbreviations = c(SMD = "standardized difference"))
+    fonts <- wx_note_fonts(wx_doc(f), "//w:tbl/following-sibling::w:p")
+    unlink(f)
+    expect_gt(length(fonts), 3L)
+    expect_true(all(fonts == font), info = font)
+  }
+})
+
+test_that("JTCVS: caption, footnotes and Key use the table's font", {
+  ft <- hv_man_table_jtcvs(wx_tbl(),
+                           groups = c(stat_1 = "Drug A", stat_2 = "Drug B"))
+  f <- tempfile(fileext = ".docx")
+  on.exit(unlink(f), add = TRUE)
+  hv_man_table_save_jtcvs(
+    ft, f, caption = "Table 1. Test",
+    footnotes = list(list(row = 2, col = "disp_stat_1", text = "Own note.")),
+    abbreviations = c(SMD = "standardized difference")
+  )
+  doc <- wx_doc(f)
+  after <- wx_note_fonts(doc, "//w:tbl/following-sibling::w:p")
+  caption <- wx_note_fonts(doc, "//w:body/w:p[1]")
+  expect_gt(length(after), 3L)
+  expect_true(all(c(after, caption) == "Times New Roman"))
+})
