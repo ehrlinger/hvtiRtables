@@ -85,7 +85,7 @@ hv_man_footnotes <- function(
     median = paste("No. (%) or", median_label),
     mean = paste("No. (%) or", mean_label),
     both = paste0("No. (%), ", mean_label, ", or ", median_label),
-    mixed = "No. (%) unless the row names another statistic"
+    mixed = "No. (%) or as labeled"
   )
 }
 

@@ -28,7 +28,7 @@
   the `continuous_stat` summary and its non-parametric test. When one table
   shows both mean and median rows, each continuous row names its own statistic
   ("Age, Mean±SD"), as the macro's `DESCLABEL=1` did. The header and the
-  dagger then read "No. (%) unless the row names another statistic".
+  dagger then read "No. (%) or as labeled".
   `hv_test_footnotes_jtcvs()` footnotes the ANOVA as "One-way analysis of
   variance."
 * `hv_man_table_save()` writes a table with three or more statistic columns,

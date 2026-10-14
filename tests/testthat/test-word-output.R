@@ -228,13 +228,13 @@ test_that("both renderers print each mixed row's statistic in Word", {
   expect_true(
     "Marker Level (ng/mL), Median (15th, 85th percentile)" %in% labels
   )
-  expect_true("† No. (%) unless the row names another statistic." %in%
+  expect_true("† No. (%) or as labeled." %in%
                 wx_paragraphs_after_table(doc))
 
   f2 <- wx_save_jtcvs(wx_mixed())
   on.exit(unlink(f2), add = TRUE)
   rows <- wx_rows(wx_doc(f2))
-  expect_true("No. (%) unless the row names another statistic" %in%
+  expect_true("No. (%) or as labeled" %in%
                 cell_text(rows[[2]]))
   expect_true("Age, Mean±SD" %in%
                 vapply(rows, function(r) r[[1]]$text, ""))

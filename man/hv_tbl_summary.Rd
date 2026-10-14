@@ -126,10 +126,10 @@ non-parametrically (Wilcoxon rank-sum for 2 groups, Kruskal-Wallis for
 macro's \verb{CON1=} instead: mean +/- SD, tested with one-way ANOVA. When
 that leaves rows of one table showing different statistics, each
 continuous row names its own, \code{"Age, Mean±SD"}, as the macro's
-\code{DESCLABEL=1} did, and the header and dagger read "No. (\%) unless the
-row names another statistic". \code{percentiles} defaults to the house
-convention documented in \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} (15th/85th),
-overridable per study (\verb{\%summarytable} equivalent: \verb{PP=}).
+\code{DESCLABEL=1} did, and the header and dagger read "No. (\%) or as
+labeled". \code{percentiles} defaults to the house convention documented in
+\code{\link[=hv_man_footnotes]{hv_man_footnotes()}} (15th/85th), overridable per study
+(\verb{\%summarytable} equivalent: \verb{PP=}).
 
 Mean/SD output follows Eugene H. Blackstone's (EHB's) paired reporting
 rule: the mean is rounded to the first-significant-digit place of the SD,

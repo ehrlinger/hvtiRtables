@@ -1168,9 +1168,9 @@ test_that("a mixed table names each continuous row's statistic", {
                    "Marker Level (ng/mL), Median (15th, 85th percentile)")
   expect_identical(nm_label(tbl, "grade"), "Grade")
   expect_identical(attr(tbl, "hv_stat_label"),
-                   "No. (%) unless the row names another statistic")
+                   "No. (%) or as labeled")
   expect_identical(attr(tbl, "hv_footnotes")[["†"]],
-                   "No. (%) unless the row names another statistic.")
+                   "No. (%) or as labeled.")
 })
 
 test_that("an unmixed table keeps plain labels and one stated statistic", {

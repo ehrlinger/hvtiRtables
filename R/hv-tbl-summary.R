@@ -15,10 +15,10 @@
 #' macro's `CON1=` instead: mean +/- SD, tested with one-way ANOVA. When
 #' that leaves rows of one table showing different statistics, each
 #' continuous row names its own, `"Age, Mean±SD"`, as the macro's
-#' `DESCLABEL=1` did, and the header and dagger read "No. (%) unless the
-#' row names another statistic". `percentiles` defaults to the house
-#' convention documented in [hv_man_footnotes()] (15th/85th),
-#' overridable per study (`%summarytable` equivalent: `PP=`).
+#' `DESCLABEL=1` did, and the header and dagger read "No. (%) or as
+#' labeled". `percentiles` defaults to the house convention documented in
+#' [hv_man_footnotes()] (15th/85th), overridable per study
+#' (`%summarytable` equivalent: `PP=`).
 #'
 #' Mean/SD output follows Eugene H. Blackstone's (EHB's) paired reporting
 #' rule: the mean is rounded to the first-significant-digit place of the SD,
