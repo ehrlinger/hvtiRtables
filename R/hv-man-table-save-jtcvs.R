@@ -128,19 +128,11 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
     }
   }
 
-  # The fixed column widths add up past a portrait page once a table
-  # has a median column per group, a Variable column or several trailing
-  # columns. Turn the page when it does not fit; narrow the columns, not
-  # the house font, when even landscape is too small.
-  wide <- sum(ft$body$colwidths)
-  if (wide > .text_width(landscape = TRUE))
-    ft <- flextable::width(
-      ft, j = ft$col_keys,
-      width = ft$body$colwidths * .text_width(landscape = TRUE) / wide
-    )
+  fit <- .fit_page(ft)
+  ft <- fit$ft
 
   doc <- officer::read_docx()
-  if (wide > .text_width(landscape = FALSE)) doc <- .landscape(doc)
+  if (fit$landscape) doc <- .landscape(doc)
   cap_par <- officer::fpar(
     officer::ftext(caption, prop = .note_prop(.table_font(ft), bold = TRUE))
   )

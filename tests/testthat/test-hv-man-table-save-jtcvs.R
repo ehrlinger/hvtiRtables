@@ -278,33 +278,6 @@ test_that("hv_man_table_save_jtcvs rejects a flat footnotes list", {
 
 # -- the saved table fits the page ----------------------------------------
 
-# Table width (sum of w:gridCol) against the section's text block (page
-# width less both margins), in twips, plus the orientation.
-fit_geometry <- function(path) {
-  body <- officer::docx_body_xml(officer::read_docx(path))
-  num <- function(xp, at) {
-    as.numeric(xml2::xml_attr(xml2::xml_find_all(body, xp), at))
-  }
-  pg <- xml2::xml_find_first(body, "//w:sectPr/w:pgSz")
-  list(
-    table = sum(num("//w:tbl[1]/w:tblGrid/w:gridCol", "w")),
-    text = as.numeric(xml2::xml_attr(pg, "w")) -
-      num("//w:sectPr/w:pgMar", "left")[1] -
-      num("//w:sectPr/w:pgMar", "right")[1],
-    landscape = identical(xml2::xml_attr(pg, "orient"), "landscape")
-  )
-}
-
-save_fit <- function(tbl, groups) {
-  path <- tempfile(fileext = ".docx")
-  hv_man_table_save_jtcvs(
-    hv_man_table_jtcvs(tbl, groups = groups,
-                       trailing = attr(tbl, "hv_trailing")),
-    path, caption = "T1."
-  )
-  fit_geometry(path)
-}
-
 test_that("a two-group 'both' JTCVS table turns landscape and fits", {
   tbl <- hv_tbl_summary(
     gtsummary::trial, by = "trt", groups = list(D = c("age", "grade")),

@@ -335,3 +335,41 @@ test_that("hv_man_table_save still renders the Key: block after refactor", {
   expect_true(grepl("Key:", xml, fixed = TRUE))
   expect_true(grepl("NYHA", xml, fixed = TRUE))
 })
+
+# -- the saved table fits the page ----------------------------------------
+
+test_that("a two-group 'both' CORR table with Overall is fitted to landscape", {
+  skip_if_not_installed("broom")
+  # Measured 13.09 in before fitting: each median column autofits to its
+  # header, and landscape alone (9.7 in of text) clipped the labels and
+  # the p-value column.
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = c("age", "grade")),
+    continuous = "age", categorical = "grade", continuous_stat = "both",
+    compare = "pvalue"
+  )
+  ft <- hv_man_table(tbl)
+  expect_gt(sum(ft$body$colwidths), 9.73)
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save(ft, path)
+  g <- fit_geometry(path)
+  expect_true(g$landscape)
+  expect_lte(g$table, g$text)
+  expect_identical(nrow(hv_check_docx(path)), 0L)
+})
+
+test_that("a CORR table wider than portrait but under 3 groups turns", {
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = "age"),
+    continuous = "age", continuous_stat = "both", overall = FALSE,
+    compare = "none"
+  )
+  ft <- hv_man_table(tbl)
+  ft <- flextable::width(ft, j = "label", width = 4)
+  expect_gt(sum(ft$body$colwidths), 6.3)
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save(ft, path)
+  g <- fit_geometry(path)
+  expect_true(g$landscape)
+  expect_lte(g$table, g$text)
+})

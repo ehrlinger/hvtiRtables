@@ -1435,7 +1435,11 @@ test_that("hv_tbl_summary picks each categorical test by cutexact", {
   # macro's 50% rule gives chi-square.
   expect_identical(ce_test(tbl, "tri"), "chisq.test.no.correct")
   d <- ce_data()
-  want <- stats::chisq.test(table(d$grp, d$tri), correct = FALSE)$p.value
+  # The fixture is sparse on purpose, so the reference test warns that
+  # its approximation may be poor; the p-value is what is compared.
+  want <- suppressWarnings(
+    stats::chisq.test(table(d$grp, d$tri), correct = FALSE)$p.value
+  )
   tb <- tbl$table_body
   expect_equal(unname(tb$p.value[tb$variable == "tri"][1]), want)
   expect_identical(ce_test(ce_tbl(cutexact = 0), "common"), "fisher.test")

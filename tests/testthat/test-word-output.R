@@ -257,8 +257,15 @@ test_that("CORR: Overall plus two groups goes on a landscape page", {
   expect_identical(wx_orient(f), "landscape")
 })
 
-test_that("CORR: two statistic columns stay on a portrait page", {
-  f <- wx_save_corr(wx_mixed(overall = FALSE))
+test_that("CORR: a two-group table that fits stays on a portrait page", {
+  # Not wx_mixed(overall = FALSE): its suffixed row labels make it 8.6 in
+  # wide, past a portrait page's 6.3, so it now turns, as it should.
+  narrow <- hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(Demography = "age"),
+    continuous = "age", compare = "none", overall = FALSE,
+    show_variable = FALSE
+  )
+  f <- wx_save_corr(narrow)
   on.exit(unlink(f), add = TRUE)
   orient <- wx_orient(f)
   expect_length(orient, 1L)

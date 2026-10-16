@@ -29,6 +29,14 @@
   existing "both" tables**: the statistic columns and their dagger now read
   "No. (%) or Mean±SD", the median column names itself in its header, and
   a two-group "both" table now saves in landscape.
-* `hv_man_table_save_jtcvs()` saves a table wider than a portrait page on
-  a landscape page, and narrows its columns in proportion when it is wider
-  than landscape too, so the rightmost columns are never clipped.
+* `hv_man_table_save()` and `hv_man_table_save_jtcvs()` save a table wider
+  than a portrait page on a landscape page, and narrow its columns in
+  proportion when it is wider than landscape too, so the label and
+  rightmost columns are never clipped. A two-group "both" CORR table with
+  an Overall column measured 13 inches and lost both on a landscape page.
+* `hv_check_docx()` gains a fourth detector, `"wide_table"`: a table wider
+  than its page's text block, which Word clips.
+* `hv_test_footnotes_jtcvs()` letters only the p-value column
+  `hv_tbl_summary()` writes. It no longer falls back to another trailing
+  column, which footnoted a joined standardized difference "Fisher exact
+  test."

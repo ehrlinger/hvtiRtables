@@ -266,3 +266,27 @@ test_that("hv_check_docx reports every violation kind in one file", {
   expect_identical(report$table[report$type == "hidden_column"], 1L)
   expect_identical(report$table[report$type == "embedded_footnote"], 2L)
 })
+
+# -- wide_table ------------------------------------------------------------
+
+test_that("hv_check_docx flags a table wider than its page's text block", {
+  ft <- flextable::flextable(data.frame(a = "x", b = "y", c = "z"))
+  ft <- flextable::width(ft, width = 3)
+  path <- tempfile(fileext = ".docx")
+  print(flextable::body_add_flextable(officer::read_docx(), ft),
+        target = path)
+  res <- hv_check_docx(path)
+  expect_identical(res$type, "wide_table")
+  expect_identical(res$table, 1L)
+  expect_match(res$detail, "9.00 in wide", fixed = TRUE)
+  expect_match(res$detail, "6.30 in", fixed = TRUE)
+})
+
+test_that("hv_check_docx leaves a table that fits alone", {
+  ft <- flextable::flextable(data.frame(a = "x", b = "y", c = "z"))
+  ft <- flextable::width(ft, width = 2)
+  path <- tempfile(fileext = ".docx")
+  print(flextable::body_add_flextable(officer::read_docx(), ft),
+        target = path)
+  expect_identical(nrow(hv_check_docx(path)), 0L)
+})
