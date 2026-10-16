@@ -1307,9 +1307,9 @@ test_that("show_variable must be a single TRUE or FALSE", {
   }
 })
 
-test_that("show_variable is last in the signature", {
+test_that("show_variable follows mean_sd for positional callers", {
   f <- names(formals(hv_tbl_summary))
-  expect_identical(f[length(f) - 1L], "show_variable")
+  expect_identical(f[match("mean_sd", f) + 1L], "show_variable")
 })
 
 test_that("the variable column renders beside the label in both renderers", {
@@ -1342,4 +1342,138 @@ test_that("the variable column survives into a saved, valid .docx", {
     jpath, caption = "T1."
   )
   expect_true(file.exists(jpath))
+})
+
+# -- cutexact = (%summarytable's CUTEXACT=: Fisher's exact when sparse) ---
+
+# 2 groups x 2 levels. `rare` makes cells with expected count < 5:
+# with 40 per group and 4 events in all, both "1" cells expect 2.
+ce_data <- function() {
+  data.frame(
+    grp = rep(c("A", "B"), each = 40),
+    # 2 of 4 cells expect < 5: 50% exactly.
+    rare = c(rep(1, 3), rep(0, 37), rep(1, 1), rep(0, 39)),
+    # No cell expects < 5.
+    common = rep(c(0, 1), 40),
+    # 3 levels x 2 groups, 2 of 6 cells (33%) expect < 5.
+    tri = c(rep("x", 20), rep("y", 18), "z", "z",
+            rep("x", 20), rep("y", 18), "z", "z")
+  )
+}
+
+ce_tbl <- function(cutexact = 50, compare = "pvalue") {
+  hv_tbl_summary(
+    ce_data(), by = "grp",
+    groups = list(D = c("rare", "common", "tri")),
+    binary = c("rare", "common"), categorical = "tri",
+    compare = compare, cutexact = cutexact, show_variable = FALSE
+  )
+}
+
+ce_test <- function(tbl, v) {
+  tb <- tbl$table_body
+  tb$test_name[tb$variable == v & tb$row_type == "label"]
+}
+
+test_that(".cutexact_tests ports the macro's percentage-of-cells rule", {
+  d <- ce_data()
+  vars <- c("rare", "common", "tri")
+  f <- "fisher.test"
+  ch <- "chisq.test.no.correct"
+  expect_identical(.cutexact_tests(d, "grp", vars, 50),
+                   c(rare = f, common = ch, tri = ch))
+  # The comparison is >=, as the macro's "ge": 33.3% meets 33.
+  expect_identical(.cutexact_tests(d, "grp", vars, 33),
+                   c(rare = f, common = ch, tri = f))
+  expect_identical(.cutexact_tests(d, "grp", vars, 51)[["rare"]], ch)
+  # 0 is the macro's "exact tests only"; above 100, never.
+  expect_identical(unname(.cutexact_tests(d, "grp", vars, 0)), rep(f, 3))
+  expect_identical(unname(.cutexact_tests(d, "grp", vars, 101)),
+                   rep(ch, 3))
+})
+
+test_that(".cutexact_tests counts cells over observed levels only", {
+  d <- ce_data()
+  # An unused factor level is not a cell; SAS never knew it existed.
+  d$tri <- factor(d$tri, levels = c("x", "y", "z", "never"))
+  expect_identical(.cutexact_tests(d, "grp", "tri", 34)[["tri"]],
+                   "chisq.test.no.correct")
+})
+
+test_that("hv_tbl_summary picks each categorical test by cutexact", {
+  skip_if_not_installed("broom")
+  tbl <- ce_tbl()
+  expect_identical(ce_test(tbl, "rare"), "fisher.test")
+  expect_identical(ce_test(tbl, "common"), "chisq.test.no.correct")
+  # gtsummary's own default would give tri Fisher (any cell < 5); the
+  # macro's 50% rule gives chi-square.
+  expect_identical(ce_test(tbl, "tri"), "chisq.test.no.correct")
+  d <- ce_data()
+  want <- stats::chisq.test(table(d$grp, d$tri), correct = FALSE)$p.value
+  tb <- tbl$table_body
+  expect_equal(unname(tb$p.value[tb$variable == "tri"][1]), want)
+  expect_identical(ce_test(ce_tbl(cutexact = 0), "common"), "fisher.test")
+  expect_identical(ce_test(ce_tbl(cutexact = 101), "rare"),
+                   "chisq.test.no.correct")
+})
+
+test_that("cutexact must be a single number from 0 up", {
+  for (bad in list(-1, NA_real_, c(10, 20), "50")) {
+    expect_error(ce_tbl(cutexact = bad),
+                 "`cutexact` must be a single number from 0 up",
+                 fixed = TRUE)
+  }
+})
+
+test_that("cutexact is last in the signature", {
+  f <- names(formals(hv_tbl_summary))
+  expect_identical(f[length(f) - 1L], "cutexact")
+})
+
+test_that("a Fisher p-value is marked ‡ in the CORR table and footnoted", {
+  skip_if_not_installed("broom")
+  tbl <- ce_tbl()
+  expect_identical(attr(tbl, "hv_footnotes")[["‡"]], "Fisher exact test.")
+  ft <- hv_man_table(tbl)
+  chunks <- flextable::information_data_chunk(ft)
+  p <- chunks[chunks$.part == "body" & chunks$.col_id == "p.value", ]
+  marked <- unique(p$.row_id[p$txt == "‡"])
+  d <- ft$body$dataset
+  expect_identical(d$label[marked], "rare")
+  # The mark is on the cell, not the header: a header ‡ would claim
+  # every p-value for Fisher.
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save(ft, path)
+  saved <- officer::docx_summary(officer::read_docx(path))
+  expect_true(any(grepl("Fisher exact test.", saved$text, fixed = TRUE)))
+  hdr <- saved$text[saved$content_type == "table cell" & saved$is_header]
+  expect_false(any(grepl("\u2021", hdr)))
+  expect_true(any(grepl("\u2021", saved$text[
+    saved$content_type == "table cell" & !saved$is_header])))
+  expect_identical(nrow(hv_check_docx(path)), 0L)
+})
+
+test_that("no Fisher row, no ‡ footnote and no mark", {
+  skip_if_not_installed("broom")
+  tbl <- ce_tbl(cutexact = 101)
+  expect_null(attr(tbl, "hv_footnotes")[["‡"]])
+  chunks <- flextable::information_data_chunk(hv_man_table(tbl))
+  expect_false(any(chunks$txt == "‡"))
+})
+
+test_that("the JTCVS test footnotes letter the Fisher row", {
+  skip_if_not_installed("broom")
+  notes <- hv_test_footnotes_jtcvs(ce_tbl())
+  expect_true("Fisher exact test." %in% vapply(notes, `[[`, "", "text"))
+})
+
+test_that("saving a ‡-marked table with footnotes lacking ‡ fails loud", {
+  skip_if_not_installed("broom")
+  ft <- hv_man_table(ce_tbl())
+  expect_error(
+    hv_man_table_save(ft, tempfile(fileext = ".docx"),
+                      footnotes = hv_man_footnotes()),
+    "The table marks p-values with \u2021, but `footnotes` has no \u2021 entry",
+    fixed = TRUE
+  )
 })

@@ -172,6 +172,16 @@
 #'   column name in `data`, on its first row, as `%summarytable`'s
 #'   report did. Both renderers show it. Set `FALSE` for a manuscript,
 #'   so the report and the manuscript come from one table.
+#' @param cutexact Single number, a percentage: a binary or categorical
+#'   variable is tested with Fisher's exact test when at least this
+#'   percentage of its group-by-level cells have an expected count below
+#'   5, and with Pearson's chi-square (no continuity correction)
+#'   otherwise. Default 50, `%summarytable`'s `CUTEXACT=` default. `0`
+#'   makes every categorical test exact; a value above 100 makes none
+#'   exact. In the CORR table each Fisher p-value is marked with a
+#'   superscript double dagger, footnoted "Fisher exact test."; the JTCVS
+#'   route letters it through [hv_test_footnotes_jtcvs()]. Used only when
+#'   `compare` produces p-values.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
@@ -210,6 +220,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
                            normal = character(0),
                            mean_sd = character(0),
                            show_variable = TRUE,
+                           cutexact = 50,
                            ...) {
   .check_sas_args(list(...), "hv_tbl_summary")
   compare <- match.arg(compare)
@@ -264,6 +275,11 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   if (!is.logical(show_variable) || length(show_variable) != 1L ||
         is.na(show_variable))
     stop("`show_variable` must be TRUE or FALSE.", call. = FALSE)
+  if (!is.numeric(cutexact) || length(cutexact) != 1L || is.na(cutexact) ||
+        cutexact < 0)
+    stop("`cutexact` must be a single number from 0 up, a percentage of ",
+         "cells (default 50). Received: ", .describe(cutexact), ".",
+         call. = FALSE)
   # With no `by` the single column already is the overall one, so
   # `overall` is ignored there, the way `compare` is. It errored while
   # the default was FALSE; with TRUE the default, an error would break
@@ -520,14 +536,29 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   if (effective_compare %in% c("pvalue", "both")) {
     # CON1='s test: classical one-way ANOVA (pooled variance), which is
     # what SAS's npar1way anova runs. oneway.test() defaults to Welch.
-    tbl <- if (length(normal) == 0L) gtsummary::add_p(tbl) else
-      gtsummary::add_p(
-        tbl,
-        test = list(gtsummary::all_of(normal) ~ "oneway.test"),
-        test.args = list(
-          gtsummary::all_of(normal) ~ list(var.equal = TRUE)
-        )
+    # Categorical tests follow the macro's CUTEXACT= rule rather than
+    # gtsummary's, which switches to Fisher when any one cell expects
+    # fewer than 5.
+    cat_tests <- .cutexact_tests(data, by, c(binary, categorical), cutexact)
+    fisher <- names(cat_tests)[cat_tests == "fisher.test"]
+    chisq <- names(cat_tests)[cat_tests != "fisher.test"]
+    test <- c(
+      if (length(normal)) list(gtsummary::all_of(normal) ~ "oneway.test"),
+      if (length(fisher)) list(gtsummary::all_of(fisher) ~ "fisher.test"),
+      if (length(chisq))
+        list(gtsummary::all_of(chisq) ~ "chisq.test.no.correct")
+    )
+    tbl <- gtsummary::add_p(
+      tbl, test = test,
+      test.args = if (length(normal)) list(
+        gtsummary::all_of(normal) ~ list(var.equal = TRUE)
       )
+    )
+    # The macro marked these p-values (ExactTest = "F"). hv_man_table()
+    # puts the mark on each Fisher p-value; the JTCVS route letters them
+    # through hv_test_footnotes_jtcvs().
+    if (length(fisher))
+      attr(tbl, "hv_footnotes")[["\u2021"]] <- "Fisher exact test."
   }
 
   tb <- tbl$table_body
@@ -562,6 +593,30 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   attr(tbl, "hv_trailing") <- stats::setNames(compare_label, "hv_compare_col")
 
   finish(tbl)
+}
+
+# %summarytable's CUTEXACT= rule (summarytable.sas, lines 1265-1320):
+# for each categorical variable, the percentage of cells in the group x
+# level table whose expected count is below 5; at or above `cutexact`,
+# Fisher's exact test, otherwise Pearson chi-square without continuity
+# correction. Cells are every combination of the observed groups and
+# levels among rows with both present, zero counts included (proc freq's
+# SPARSE). An unused factor level is not a cell: SAS never knew it.
+# cutexact = 0 makes every test exact; above 100, none.
+.cutexact_tests <- function(data, by, vars, cutexact) {
+  plain <- function(z) if (is.factor(z)) as.character(z) else
+    as.vector(unclass(z))
+  g <- plain(data[[by]])
+  out <- vapply(vars, function(v) {
+    x <- plain(data[[v]])
+    ok <- !is.na(x) & !is.na(g)
+    tab <- table(g[ok], x[ok])
+    if (sum(tab) == 0) return("chisq.test.no.correct")
+    expected <- outer(rowSums(tab), colSums(tab)) / sum(tab)
+    if (100 * mean(expected < 5) >= cutexact) "fisher.test" else
+      "chisq.test.no.correct"
+  }, character(1))
+  stats::setNames(out, vars)
 }
 
 # The raw column name beside its label, on the variable's first row, the

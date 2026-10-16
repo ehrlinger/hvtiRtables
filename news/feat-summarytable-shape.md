@@ -15,3 +15,12 @@
 * `hv_man_table_jtcvs()`'s `trailing` now takes several columns, laid out
   in order. Its error for a malformed `trailing` no longer says "of
   length 1".
+* `hv_tbl_summary()` gains `cutexact`, `%summarytable`'s `CUTEXACT=`
+  rule: a binary or categorical variable gets Fisher's exact test when at
+  least `cutexact` percent (default 50) of its cells expect fewer than 5,
+  and Pearson chi-square otherwise. **This changes some existing
+  p-values**: gtsummary's own rule, used until now, chose Fisher whenever
+  any single cell expected fewer than 5. In the CORR table each Fisher
+  p-value carries a superscript double dagger, footnoted "Fisher exact
+  test."; `hv_man_table_save()` stops if given `footnotes` that leave
+  that mark unexplained.
