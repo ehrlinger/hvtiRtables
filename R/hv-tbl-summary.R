@@ -118,7 +118,15 @@
 #'   have exactly two groups, because a standardized mean difference is
 #'   defined between two of them; they error otherwise. `"pvalue"` and
 #'   `"none"` work at any number of groups. `%summarytable`
-#'   `PVALUES=`/`ASD=` equivalent.
+#'   `PVALUES=` equivalent, and `ASD=` only in part: the `"smd"`
+#'   number is gtsummary's generic standardized mean difference
+#'   ([gtsummary::add_difference()]), a proportion computed alike for
+#'   every continuous variable. `%summarytable`'s column came from the
+#'   `%stddiff` macro, which treats non-Gaussian and ordinal variables
+#'   differently and prints a percentage, so the two disagree for those
+#'   variables (by 30% on one skewed test variable). To show `%stddiff`'s
+#'   number, compute it with `hvtiRpropensity::ps_stddiff()` and add it
+#'   with [hv_tbl_compare()], beside `compare = "pvalue"` if wanted.
 #' @param percentiles Numeric vector of length 2, the low/high percentile
 #'   pair for continuous summaries, as increasing whole numbers between 0
 #'   and 100. Default `c(15, 85)`, the [hv_man_footnotes()] house

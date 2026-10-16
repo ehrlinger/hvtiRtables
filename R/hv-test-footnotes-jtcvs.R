@@ -111,7 +111,10 @@ hv_test_footnotes_jtcvs <- function(tbl) {
 
   tb <- tbl$table_body
   trailing <- attr(tbl, "hv_trailing")
-  col <- if (is.null(trailing)) "hv_compare_col" else names(trailing)
+  # The tests belong to hv_tbl_summary()'s own comparison column;
+  # hv_tbl_compare() may have added others beside it.
+  col <- if (is.null(trailing) || "hv_compare_col" %in% names(trailing))
+    "hv_compare_col" else names(trailing)[1]
 
   if (!col %in% names(tb) || !"test_name" %in% names(tb)) return(list())
 

@@ -67,7 +67,15 @@ there is nothing to compare. \code{"smd"} and \code{"both"} require \code{by} to
 have exactly two groups, because a standardized mean difference is
 defined between two of them; they error otherwise. \code{"pvalue"} and
 \code{"none"} work at any number of groups. \verb{\%summarytable}
-\verb{PVALUES=}/\verb{ASD=} equivalent.}
+\verb{PVALUES=} equivalent, and \verb{ASD=} only in part: the \code{"smd"}
+number is gtsummary's generic standardized mean difference
+(\code{\link[gtsummary:add_difference]{gtsummary::add_difference()}}), a proportion computed alike for
+every continuous variable. \verb{\%summarytable}'s column came from the
+\verb{\%stddiff} macro, which treats non-Gaussian and ordinal variables
+differently and prints a percentage, so the two disagree for those
+variables (by 30\% on one skewed test variable). To show \verb{\%stddiff}'s
+number, compute it with \code{hvtiRpropensity::ps_stddiff()} and add it
+with \code{\link[=hv_tbl_compare]{hv_tbl_compare()}}, beside \code{compare = "pvalue"} if wanted.}
 
 \item{percentiles}{Numeric vector of length 2, the low/high percentile
 pair for continuous summaries, as increasing whole numbers between 0

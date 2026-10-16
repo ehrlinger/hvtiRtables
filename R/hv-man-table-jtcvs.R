@@ -40,9 +40,7 @@
     )
   }
 
-  if (!is.null(trailing)) {
-    out[[names(trailing)]] <- tb[[names(trailing)]]
-  }
+  for (col in names(trailing)) out[[col]] <- tb[[col]]
 
   if (!has_sections) {
     rownames(out) <- NULL
@@ -122,10 +120,13 @@
 #'   Every name must be a column of `tbl$table_body`, and each may
 #'   appear at most once; unknown names are rejected with the available
 #'   ones listed, and a repeated name is rejected too.
-#' @param trailing Optional named character vector of length 1, an existing
-#'   `tbl$table_body` column name -> header label, for a trailing
-#'   comparison column (e.g. `c(std_diff = "Std. Diff.")` or
-#'   `c(p_value = "P")`). Must already exist in `tbl$table_body`.
+#' @param trailing Optional named character vector, existing
+#'   `tbl$table_body` column name -> header label, one entry per trailing
+#'   comparison column, laid out in the order given (e.g.
+#'   `c(std_diff = "Std. Diff.")` or `c(p_value = "P")`). Each must
+#'   already exist in `tbl$table_body`. A table from [hv_tbl_summary()],
+#'   with any columns [hv_tbl_compare()] added, records the right value
+#'   as its `hv_trailing` attribute.
 #' @param stat_label Sub-header text under each group's statistic column.
 #'   Default `NULL` takes it from the table: [hv_tbl_summary()] records the
 #'   statistic it used (e.g. `"No. (%) or Median (15th, 85th
@@ -183,12 +184,14 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   .check_string(font, "font")
   .check_font_size(font_size)
   if (!is.null(trailing)) {
-    if (!is.character(trailing) || length(trailing) != 1L ||
-          is.null(names(trailing)) || !nzchar(names(trailing)))
-      stop("`trailing` must be a named character vector of length 1 ",
-           "(e.g. c(std_diff = \"Std. Diff.\")).", call. = FALSE)
-    if (!names(trailing) %in% names(tbl$table_body))
-      stop("`trailing` name `", names(trailing), "` is not a column ",
+    if (!is.character(trailing) || length(trailing) == 0L ||
+          is.null(names(trailing)) || anyNA(names(trailing)) ||
+          any(!nzchar(names(trailing))))
+      stop("`trailing` must be a named character vector, one entry per ",
+           "column (e.g. c(std_diff = \"Std. Diff.\")).", call. = FALSE)
+    absent <- setdiff(names(trailing), names(tbl$table_body))
+    if (length(absent) > 0L)
+      stop("`trailing` name `", absent[1], "` is not a column ",
            "in `tbl$table_body`.", call. = FALSE)
   }
   # Runs before .reshape_jtcvs_body(), so a table lacking the
@@ -213,16 +216,14 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
     header_labels[[paste0("n_", g)]] <- "n"
     header_labels[[paste0("disp_", g)]] <- stat_label
   }
-  if (!is.null(trailing)) header_labels[[names(trailing)]] <- unname(trailing)
+  for (col in names(trailing)) header_labels[[col]] <- trailing[[col]]
   ft <- do.call(flextable::set_header_labels, c(list(x = ft), header_labels))
 
   top_values <- c("Characteristic", if (!is.null(var_col)) "Variable",
                   unname(groups))
   top_widths <- c(1L, if (!is.null(var_col)) 1L, rep(2L, length(groups)))
-  if (!is.null(trailing)) {
-    top_values <- c(top_values, "")
-    top_widths <- c(top_widths, 1L)
-  }
+  top_values <- c(top_values, rep("", length(trailing)))
+  top_widths <- c(top_widths, rep(1L, length(trailing)))
   ft <- flextable::add_header_row(
     ft, top = TRUE, values = top_values, colwidths = top_widths
   )
