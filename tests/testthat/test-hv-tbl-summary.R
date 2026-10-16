@@ -1349,8 +1349,8 @@ test_that("the variable column renders beside the label in both renderers", {
                 d$hv_variable[d$label == "D"] == "")
   jt <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
   expect_identical(jt$col_keys[2], "hv_variable")
-  expect_identical(jt$body$dataset$hv_variable[
-    jt$body$dataset$label == "Age"], "age")
+  jd <- jt$body$dataset
+  expect_identical(jd$hv_variable[jd$label == "Age"], "age")
   chunks <- flextable::information_data_chunk(jt)
   hdr <- chunks[chunks$.part == "header" & chunks$.col_id == "hv_variable", ]
   expect_true(all(hdr$txt == "Variable"))
@@ -1474,8 +1474,8 @@ test_that("a Fisher p-value is marked ‡ in the CORR table and footnoted", {
   expect_true(any(grepl("Fisher exact test.", saved$text, fixed = TRUE)))
   hdr <- saved$text[saved$content_type == "table cell" & saved$is_header]
   expect_false(any(grepl("\u2021", hdr)))
-  expect_true(any(grepl("\u2021", saved$text[
-    saved$content_type == "table cell" & !saved$is_header])))
+  body <- saved$text[saved$content_type == "table cell" & !saved$is_header]
+  expect_true(any(grepl("\u2021", body)))
   expect_identical(nrow(hv_check_docx(path)), 0L)
 })
 

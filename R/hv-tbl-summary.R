@@ -366,9 +366,15 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # columns name themselves, so nothing is mixed.
   mixed <- length(shown_mean) > 0L && length(nonnormal) > 0L &&
     continuous_stat == "median"
-  label_stat <- if (length(continuous) > 0L && length(nonnormal) == 0L)
-    "mean" else if (mixed) "mixed" else if (continuous_stat == "both")
-      "mean" else continuous_stat
+  label_stat <- if (length(continuous) > 0L && length(nonnormal) == 0L) {
+    "mean"
+  } else if (mixed) {
+    "mixed"
+  } else if (continuous_stat == "both") {
+    "mean"
+  } else {
+    continuous_stat
+  }
 
   # A list rather than a character vector: under "both" each continuous
   # variable takes a length-2 statistic.
@@ -614,8 +620,9 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     tbl <- gtsummary::modify_table_body(tbl, function(tb) {
       parts <- strsplit(tb[[col]], sep, fixed = TRUE)
       tb[[col]] <- vapply(parts, `[`, character(1), 1L)
-      tb[[med]] <- vapply(parts, function(p)
-        if (length(p) == 2L) p[2] else NA_character_, character(1))
+      tb[[med]] <- vapply(parts, function(p) {
+        if (length(p) == 2L) p[2] else NA_character_
+      }, character(1))
       keep <- setdiff(names(tb), med)
       tb[, append(keep, med, after = match(col, keep)), drop = FALSE]
     })
@@ -638,8 +645,9 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 # SPARSE). An unused factor level is not a cell: SAS never knew it.
 # cutexact = 0 makes every test exact; above 100, none.
 .cutexact_tests <- function(data, by, vars, cutexact) {
-  plain <- function(z) if (is.factor(z)) as.character(z) else
-    as.vector(unclass(z))
+  plain <- function(z) {
+    if (is.factor(z)) as.character(z) else as.vector(unclass(z))
+  }
   g <- plain(data[[by]])
   out <- vapply(vars, function(v) {
     x <- plain(data[[v]])

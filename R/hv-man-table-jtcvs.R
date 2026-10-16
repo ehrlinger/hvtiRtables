@@ -207,8 +207,9 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   n_cols <- unlist(lapply(names(groups), function(g) paste0("n_", g)))
   disp_cols <- unlist(lapply(names(groups), function(g) paste0("disp_", g)))
   med_cols <- intersect(paste0("med_", names(groups)), names(reshaped))
-  interleaved <- unlist(lapply(names(groups), function(g)
-    intersect(paste0(c("n_", "disp_", "med_"), g), names(reshaped))))
+  interleaved <- unlist(lapply(names(groups), function(g) {
+    intersect(paste0(c("n_", "disp_", "med_"), g), names(reshaped))
+  }))
   # hv_tbl_summary(show_variable = TRUE) carries the raw column name.
   var_col <- if ("hv_variable" %in% names(reshaped)) "hv_variable"
   col_keys <- c("label", var_col, interleaved,
