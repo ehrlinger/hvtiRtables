@@ -1270,3 +1270,76 @@ test_that("normal and mean_sd may name the same variable; normal's test wins", {
   tb <- ms_tbl(normal = "age", compare = "pvalue")$table_body
   expect_identical(tb$test_name[tb$variable == "age"], "oneway.test")
 })
+
+# -- show_variable = (the raw column name beside the label) --------------
+
+sv_tbl <- function(...) {
+  hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(D = c("age", "grade")),
+    continuous = "age", categorical = "grade", ...
+  )
+}
+
+test_that("show_variable puts the column name on each variable's first row", {
+  tb <- sv_tbl()$table_body
+  expect_identical(names(tb)[match("label", names(tb)) + 1L], "hv_variable")
+  expect_identical(tb$hv_variable[tb$row_type == "label"], c("age", "grade"))
+  expect_true(all(is.na(tb$hv_variable[tb$row_type != "label"])))
+})
+
+test_that("show_variable's column is visible and headed Variable", {
+  st <- sv_tbl()$table_styling$header
+  row <- st[st$column == "hv_variable", ]
+  expect_false(row$hide)
+  expect_identical(row$label, "**Variable**")
+})
+
+test_that("show_variable = FALSE leaves the table as it was", {
+  tbl <- sv_tbl(show_variable = FALSE)
+  expect_false("hv_variable" %in% names(tbl$table_body))
+})
+
+test_that("show_variable must be a single TRUE or FALSE", {
+  for (bad in list(NA, "yes", c(TRUE, FALSE), 1)) {
+    expect_error(sv_tbl(show_variable = bad),
+                 "`show_variable` must be TRUE or FALSE.", fixed = TRUE)
+  }
+})
+
+test_that("show_variable is last in the signature", {
+  f <- names(formals(hv_tbl_summary))
+  expect_identical(f[length(f) - 1L], "show_variable")
+})
+
+test_that("the variable column renders beside the label in both renderers", {
+  tbl <- sv_tbl()
+  ft <- hv_man_table(tbl)
+  expect_identical(ft$col_keys[2], "hv_variable")
+  d <- ft$body$dataset
+  expect_identical(d$hv_variable[d$label == "Age"], "age")
+  # The section row, which hv_man_table() inserts, carries no name.
+  expect_true(is.na(d$hv_variable[d$label == "D"]) ||
+                d$hv_variable[d$label == "D"] == "")
+  jt <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
+  expect_identical(jt$col_keys[2], "hv_variable")
+  expect_identical(jt$body$dataset$hv_variable[
+    jt$body$dataset$label == "Age"], "age")
+  chunks <- flextable::information_data_chunk(jt)
+  hdr <- chunks[chunks$.part == "header" & chunks$.col_id == "hv_variable", ]
+  expect_true(all(hdr$txt == "Variable"))
+})
+
+test_that("the variable column survives into a saved, valid .docx", {
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(sv_tbl()), path)
+  expect_identical(nrow(hv_check_docx(path)), 0L)
+  jpath <- tempfile(fileext = ".docx")
+  tbl <- sv_tbl(compare = "pvalue")
+  hv_man_table_save_jtcvs(
+    hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
+                       trailing = attr(tbl, "hv_trailing")),
+    jpath, caption = "T1."
+  )
+  expect_true(file.exists(jpath))
+})

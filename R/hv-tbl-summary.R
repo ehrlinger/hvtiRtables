@@ -159,6 +159,11 @@
 #'   variable may appear in both, and is then tested with ANOVA.
 #'   Default none. Last in the signature so positional calls keep
 #'   working.
+#' @param show_variable Single `TRUE`/`FALSE`. When `TRUE` (default),
+#'   adds a "Variable" column beside the label holding each variable's
+#'   column name in `data`, on its first row, as `%summarytable`'s
+#'   report did. Both renderers show it. Set `FALSE` for a manuscript,
+#'   so the report and the manuscript come from one table.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
@@ -196,6 +201,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
                            continuous_stat = c("median", "mean", "both"),
                            normal = character(0),
                            mean_sd = character(0),
+                           show_variable = TRUE,
                            ...) {
   .check_sas_args(list(...), "hv_tbl_summary")
   compare <- match.arg(compare)
@@ -247,6 +253,9 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   .check_percentiles(percentiles)
   if (!is.logical(overall) || length(overall) != 1L || is.na(overall))
     stop("`overall` must be TRUE or FALSE.", call. = FALSE)
+  if (!is.logical(show_variable) || length(show_variable) != 1L ||
+        is.na(show_variable))
+    stop("`show_variable` must be TRUE or FALSE.", call. = FALSE)
   # With no `by` the single column already is the overall one, so
   # `overall` is ignored there, the way `compare` is. It errored while
   # the default was FALSE; with TRUE the default, an error would break
@@ -400,6 +409,14 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # sub-rows from the glue string, separator and all ("N Non-missing |||
   # Mean ± SD"), and add_overall() matches rows on those labels, so
   # renaming them any earlier makes it fail.
+  # Every return goes through finish(): the relabel, then the variable
+  # column, added last so add_overall() and the comparison calls never
+  # see a column they do not know.
+  finish <- function(tbl) {
+    tbl <- relabel(tbl)
+    if (show_variable) tbl <- .add_variable_column(tbl)
+    tbl
+  }
   relabel <- function(tbl) {
     if (continuous_stat == "both")
       tbl <- gtsummary::modify_table_body(tbl, function(tb) {
@@ -437,7 +454,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 
   effective_compare <- if (is.null(by)) "none" else compare
   if (effective_compare == "none") {
-    return(relabel(tbl))
+    return(finish(tbl))
   }
 
   # gtsummary::add_difference() needs exactly two groups. Left to itself
@@ -536,7 +553,22 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   )
   attr(tbl, "hv_trailing") <- stats::setNames(compare_label, "hv_compare_col")
 
-  relabel(tbl)
+  finish(tbl)
+}
+
+# The raw column name beside its label, on the variable's first row, the
+# column %summarytable printed as "Variable". A report shows it so the
+# reader can find the column in the data; a manuscript drops it with
+# `show_variable = FALSE`, so both come from one regenerated table.
+.add_variable_column <- function(tbl) {
+  tbl <- gtsummary::modify_table_body(tbl, function(tb) {
+    tb$hv_variable <- ifelse(tb$row_type == "label", tb$variable,
+                             NA_character_)
+    keep <- setdiff(names(tb), "hv_variable")
+    tb[, append(keep, "hv_variable", after = match("label", keep)),
+       drop = FALSE]
+  })
+  gtsummary::modify_header(tbl, hv_variable = "**Variable**")
 }
 
 # Round one reported number to a base-10 place using R's round-to-even rule,

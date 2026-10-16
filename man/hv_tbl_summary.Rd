@@ -17,6 +17,7 @@ hv_tbl_summary(
   continuous_stat = c("median", "mean", "both"),
   normal = character(0),
   mean_sd = character(0),
+  show_variable = TRUE,
   ...
 )
 }
@@ -112,6 +113,12 @@ when the table mixes statistics; only \code{normal} changes the test. A
 variable may appear in both, and is then tested with ANOVA.
 Default none. Last in the signature so positional calls keep
 working.}
+
+\item{show_variable}{Single \code{TRUE}/\code{FALSE}. When \code{TRUE} (default),
+adds a "Variable" column beside the label holding each variable's
+column name in \code{data}, on its first row, as \verb{\%summarytable}'s
+report did. Both renderers show it. Set \code{FALSE} for a manuscript,
+so the report and the manuscript come from one table.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.}
