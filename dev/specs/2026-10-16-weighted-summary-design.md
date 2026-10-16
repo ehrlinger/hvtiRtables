@@ -41,8 +41,11 @@ Read from `~/Documents/macro.library/summarytable.sas` (4,097 lines, last modifi
   W = Σw and cumulative weights cᵢ over the sorted values:
   x₍ᵢ₊₁₎ when cᵢ < pW < cᵢ₊₁, and (x₍ᵢ₎ + x₍ᵢ₊₁₎)/2 when cᵢ = pW exactly.
 - **Weighted counts are printed with `__WCountf.`** (lines 757–763), a rounding picture
-  format: `0` as `0`; below 0.001 as `<0.001`; 0.001–0.1 to 3 places; 0.1–1 to 2 places;
-  1 and above to 1 place.
+  format: `0` as `0`; above 0 up to **and including** 0.001 as `<0.001` (the range is
+  `0 <- 0.001`, open at 0 and closed at 0.001); above 0.001 up to 0.1 to 3 places; above
+  0.1 and below 1 to 2 places; 1 and above to 1 place. Where two ranges share an endpoint
+  (0.001, 0.1), PROC FORMAT gives it to the first, which here is also what the range
+  syntax says.
 - **The default percentiles are 16 and 84** (`PP=16 84`). `hv_tbl_summary()` defaults to
   15 and 85, the house convention. A parity run must pass `percentiles = c(16, 84)`.
 
@@ -67,7 +70,7 @@ server would confirm it outright; see open question 3.
 | weighted n per level | `proc freq` + `weight` | `{n}` | 0 | identical |
 | weighted % | n / Σw | `{p}` | ≤ 2.2 × 10⁻¹⁶ | identical |
 | mean | Σwx / Σw | `svymean()` | ≤ 7 × 10⁻¹⁴ | identical |
-| **SD** | Σw(x − x̄)² / **(Σw − 1)** | √`svyvar()` = Σw(x − x̄)²/Σw · **n/(n − 1)** | ratio 0.99916–0.99956 (matching); 0.9959–0.9963 (halved); 1 (unit) | **differs** |
+| **SD** | √[Σw(x − x̄)² / **(Σw − 1)**] | √`svyvar()` = √[Σw(x − x̄)²/Σw · **n/(n − 1)**] | ratio 0.99916–0.99956 (matching); 0.9959–0.9963 (halved); 1 (unit) | **differs** |
 | **percentiles** | weighted EDF, average on an exact hit | `svyquantile(qrule = "math")`: the lower value on an exact hit | 0 in all 54 synthetic cells; differs on every exact hit | **differs at exact hits** |
 
 `tbl_svysummary()` and a direct `survey` call agree to the last digit (maximum difference
@@ -144,9 +147,15 @@ keep working, as `continuous_stat` and `normal` did before it.
 Validation, in this function's own words like every other check:
 
 - the column exists, is numeric, and has no missing or negative values;
-- **Σw > 1 in every group** (and overall when `overall = TRUE`), because the `VARDEF=WDF`
-  divisor is Σw − 1. Weights normalized to sum to 1 fail here with a sentence saying so,
-  where SAS would print a missing SD;
+- **Σw > 1 for each continuous variable in each group** (and overall when
+  `overall = TRUE`), summed over the observations that variable actually uses, after its
+  missing values are dropped, because the `VARDEF=WDF` divisor is Σw − 1 over those
+  observations. A group's total weight is not enough: for x = (0, 10, NA) with
+  w = (0.5, 0.5, 2) the group sums to 3, but the two usable values sum to 1, and the SD
+  divides by zero (Inf). Where a variable-and-group cell fails, its SD is printed as
+  unavailable, as SAS printed a missing SD, the mean is still shown, and a warning names
+  the variable and the group. Only when the weights fail everywhere (weights normalized to
+  sum to 1, say) does the call stop, with a sentence saying so;
 - `weight` is not listed in `groups` and is not `by`.
 
 `hv-sas-glossary.R` maps `weight` to "weighted summaries are not supported" today. That entry
@@ -171,7 +180,7 @@ pattern `.has_broom()` already uses. Only the weighted path needs it.
 **Recommendation: adopt SAS's definitions for the SD and the percentiles.** Means, counts,
 percentages and the N come from `tbl_svysummary()` unchanged, since they are identical.
 
-- **SD**: Σw(x − x̄)²/(Σw − 1), `VARDEF=WDF`.
+- **SD**: √[Σw(x − x̄)²/(Σw − 1)], `VARDEF=WDF`.
 - **Percentiles and median**: `survey::svyquantile(qrule = "school")`.
 
 `hv_tbl_summary()` exists to port `%summarytable`, and a biostatistician migrating a job will
@@ -196,8 +205,8 @@ Under `weight`, the `n` and `N_nonmiss` statistics are printed through a port of
 | value | printed |
 |---|---|
 | 0 | `0` |
-| 0 < x < 0.001 | `<0.001` |
-| 0.001 ≤ x ≤ 0.1 | 3 places |
+| 0 < x ≤ 0.001 | `<0.001` (0.001 itself included) |
+| 0.001 < x ≤ 0.1 | 3 places |
 | 0.1 < x < 1 | 2 places |
 | x ≥ 1 | 1 place, no thousands separator (house rule, as for unweighted counts) |
 
@@ -223,22 +232,36 @@ the number SAS printed, which is worse than none.
 **Recommendation: the template joins the columns, through a new export in hvtiRtables.**
 
 ```r
-hv_tbl_compare(tbl, values, label, test_name = NULL)
+hv_tbl_compare(tbl, values, label)
 ```
 
-- `values`: a named character vector, variable name to the text shown on that variable's
-  label row. Formatting stays with the caller, which knows whether it holds a percentage or
-  a p-value.
-- `label`: the column header, as `hv_trailing` carries it today (`"P"`, `"Std. Diff. (%)"`).
-- `test_name`: optional, written to `table_body$test_name` so `hv_test_footnotes_jtcvs()`
-  letters the column. `.hv_test_labels` gains an entry for the matching-weight bootstrap.
+This function now exists: hvtiRtables#77 added it for the unweighted table, and the
+weighted panel would use it unchanged. What it does, as built there:
 
-It writes `hv_compare_col` and sets `hv_trailing`, the contract `hv_tbl_summary()`'s own
-`compare` path already uses, so both renderers and `hv_test_footnotes_jtcvs()` pick it up
-with no change. It errors when a name in `values` is not a variable in the table, the
-`groups` contract applied to a new input. It goes in `_pkgdown.yml`. It works on unweighted
-tables too, which is how the related finding in section 5.1 gets fixed without touching
-`compare = "smd"`.
+- `values`: a named character vector, variable name to the text shown on that variable's
+  first (label) row. Formatting stays with the caller, which knows whether it holds a
+  percentage or a p-value. A name that is not a variable in the table is an error; a
+  variable left out is blank.
+- `label`: the column header, e.g. `"Std. Diff. (%)"`.
+- It writes a **new** column, `hv_join_<k>`, not `hv_compare_col`, so it can sit beside
+  `compare = "pvalue"`'s column, and each further call adds another.
+- **It sets the column's gtsummary header with `modify_header()`, which also makes it
+  visible.** Without that, the column is hidden: a column added through
+  `modify_table_body()` is hidden by default, and `hv_man_table()` (through
+  `as_flex_table()`) leaves it out of the table altogether. Writing the column and
+  `hv_trailing` alone, as this note first said, was reproduced in review to render nothing
+  in the CORR table.
+- It appends the column to the table's `hv_trailing` attribute, which
+  `hv_man_table_jtcvs()` lays out when passed as `trailing`. #77 relaxed `trailing` from one
+  column to several, in order.
+- It has no `test_name` argument. `hv_test_footnotes_jtcvs()` keeps lettering
+  `hv_compare_col`, the column `compare = "pvalue"` writes, so a bootstrap p-value joined
+  this way is not lettered. The weighted panel needs that added, or a footnote written by
+  the template.
+
+It works on unweighted tables too, which is how the related finding in section 5.1 gets
+fixed without touching `compare = "smd"`. #77 confirmed "Std. Diff. (%)" in a `dc-tables`
+render through `hv_man_table()`.
 
 The template, at tier 4, then does:
 
@@ -256,9 +279,8 @@ tbl <- hv_tbl_compare(tbl, stats::setNames(sprintf("%.1f", 100 * sd$stddiff),
                       label = "Std. Diff. (%)")
 ```
 
-and the same with `ps_mw_var(..., seed = )` for a p-value column. Two comparison columns on
-one table means `hv_trailing` must hold two entries; it is already a named vector, but only
-one column has been exercised. That is checked before implementation, not assumed.
+and the same with `ps_mw_var(..., seed = )` for a p-value column. Two joined columns on one
+table carry two `hv_trailing` entries, which #77 tests through both renderers.
 
 **Why not call hvtiRpropensity from `hv_tbl_summary()`.** hvtiRtables is tier 1 in the hvtiR
 release order and depends on no hvtiR package. hvtiRpropensity is tier 2 and sits in a
@@ -319,9 +341,11 @@ hit there. The R Overall column will be correct, and will not match SAS where SA
 
 In `test-hv-tbl-summary.R`:
 
-- SD against a hand computation of Σw(x − x̄)²/(Σw − 1) on a five-row fixture;
+- SD against a hand computation of √[Σw(x − x̄)²/(Σw − 1)] on a five-row fixture;
 - the three exact-hit percentile cases in section 3.1, which `"math"` would fail;
-- the `__WCountf.` boundaries: 0, 0.0004, 0.001, 0.1, 0.35, 1, 12.25 (expect `12.3`);
+- the `__WCountf.` boundaries: 0 (`0`), 0.0004 and **0.001 (both `<0.001`)**, 0.0011
+  (`0.001`), 0.1 (`0.100`), 0.1004 (`0.10`), 1 (`1.0`), and 12.25 (`12.3`, half up). The
+  parity script checks all but the last;
 - every new validation sentence, and `compare != "none"` with `weight`;
 - the weighted group columns get EHB/Blackstone rounding, not only Overall;
 - `hv_tbl_compare()` on a weighted and an unweighted table, through both renderers and
@@ -350,5 +374,6 @@ In `test-hv-tbl-summary.R`:
 9. **`ps_mw_var()` on a multi-level categorical.** A binary outcome was measured and works.
    `%summarytable` ran `%mw_var` on categorical variables too (`mtwtp_cat`), and how a
    multi-level variable gets one p-value has not been checked.
-10. **Two trailing columns.** A p-value and a standardized difference on one weighted table
-    need `hv_trailing` to carry two entries through both renderers. Untested.
+10. **Two trailing columns.** Settled by hvtiRtables#77: `hv_trailing` carries several
+    entries through both renderers, tested. Still open: lettering a joined bootstrap
+    p-value (section 4.5).

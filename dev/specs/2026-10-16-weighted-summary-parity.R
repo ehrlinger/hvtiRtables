@@ -235,20 +235,35 @@ cat("Categorical: max |gtsummary - proc freq WEIGHT| for n:",
 
 # ---- __WCountf. as an R formatter ----------------------------------------
 
-# picture __WCountf (round)
-#   0 = "0"; (0, 0.001) = "<0.001"; [0.001, 0.1] = 3 dp; (0.1, 1) = 2 dp;
-#   [1, high] = 1 dp; missing = " "
+# picture __WCountf (round), summarytable.sas lines 757-763:
+#   0               = "0"
+#   0     <- 0.001  = "<0.001"   open at 0, CLOSED at 0.001
+#   0.001 -  0.1    = 3 dp       0.001 is shared with the range above;
+#   0.1   -< 1      = 2 dp       PROC FORMAT gives a shared endpoint to
+#   1     -  high   = 1 dp       the first range, so 0.001 is "<0.001"
+#   .               = " "        and 0.1 takes 3 dp.
 wcount <- function(x) {
   out <- ifelse(is.na(x), "",
          ifelse(x == 0, "0",
-         ifelse(x < 0.001, "<0.001",
+         ifelse(x <= 0.001, "<0.001",
          ifelse(x <= 0.1, formatC(x, format = "f", digits = 3),
          ifelse(x < 1,    formatC(x, format = "f", digits = 2),
                           formatC(x, format = "f", digits = 1, big.mark = ""))))))
   out
 }
-cat("wcount():", paste(wcount(c(0, 0.0004, 0.05, 0.35, 1, 12.25, 12.35, 1234.56, NA)),
-                       collapse = " | "), "\n\n")
+# Boundaries, each against what the picture format prints. 12.25 is left
+# out on purpose: formatC() rounds it to "12.2" where SAS's (round) gives
+# "12.3", the half-up difference the design note records separately.
+wc_in   <- c(0, 0.0004, 0.001, 0.0011, 0.1, 0.1004, 0.35, 0.999, 1, 12.35,
+             1234.56, NA)
+wc_want <- c("0", "<0.001", "<0.001", "0.001", "0.100", "0.10", "0.35",
+             "1.00", "1.0", "12.3", "1234.6", "")
+wc_got  <- wcount(wc_in)
+cat("wcount() boundaries:", sum(wc_got == wc_want), "of", length(wc_in),
+    "as SAS prints them\n")
+if (any(wc_got != wc_want))
+  print(data.frame(x = wc_in, got = wc_got, want = wc_want)[wc_got != wc_want, ])
+cat("wcount(12.25):", wcount(12.25), "(SAS: 12.3)\n\n")
 
 # ---- unweighted and weighted SMD: gtsummary vs ps_stddiff ------------------
 
