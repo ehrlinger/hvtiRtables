@@ -1608,3 +1608,38 @@ test_that("under the \"any\" default a Fisher row is still marked ‡", {
   chunks <- flextable::information_data_chunk(hv_man_table(tbl))
   expect_true(any(chunks$.part == "body" & chunks$txt == "‡"))
 })
+
+test_that("a categorical missing in every grouped row is tested, not fatal", {
+  skip_if_not_installed("broom")
+  # Its only values sit in rows whose group is missing, so within the
+  # groups there is nothing to tabulate. The CUTEXACT rule sees an empty
+  # table; the variable is shown with zero counts and no p-value.
+  d <- data.frame(
+    grp = c(rep("A", 20), rep("B", 20), rep(NA, 4)),
+    x = seq_len(44),
+    cat = factor(c(rep(NA, 40), "u", "v", "u", "v"))
+  )
+  expect_identical(.cutexact_tests(d, "grp", "cat", 50),
+                   c(cat = "chisq.test.no.correct"))
+  tbl <- suppressMessages(hv_tbl_summary(
+    d, by = "grp", groups = list(D = c("x", "cat")), continuous = "x",
+    categorical = "cat", compare = "pvalue", cutexact = 50,
+    show_variable = FALSE
+  ))
+  tb <- tbl$table_body
+  levels_1 <- tb$stat_1[tb$variable == "cat" & tb$row_type == "level"]
+  expect_identical(levels_1, c("0 ||| 0 (NA)", "0 ||| 0 (NA)"))
+  expect_true(is.na(tb$p.value[tb$variable == "cat"][1]))
+})
+
+test_that("a ‡ footnote with no Fisher p-value marks no cell", {
+  skip_if_not_installed("broom")
+  # hv_tbl_summary() adds the footnote only when a Fisher test ran, so
+  # this is a caller's hand-set footnote on a chi-square-only table.
+  tbl <- ce_tbl(cutexact = 101)
+  attr(tbl, "hv_footnotes")[["‡"]] <- "Fisher exact test."
+  ft <- hv_man_table(tbl)
+  chunks <- flextable::information_data_chunk(ft)
+  expect_false(any(chunks$.part == "body" & chunks$txt == "‡"))
+  expect_null(attr(ft, "hv_body_marks"))
+})

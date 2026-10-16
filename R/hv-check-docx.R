@@ -151,8 +151,8 @@
 
 # A table wider than the text block of the section it sits in runs into
 # the margin or off the page, and Word clips what does not fit. Each table
-# belongs to the first section break after it (a paragraph's w:sectPr), or
-# to the body's own w:sectPr when none follows.
+# belongs to the first section break after it: a paragraph's w:sectPr, or
+# the body's own, which closes the last section.
 .detect_wide_table <- function(doc) {
   out <- list()
   tbls <- xml2::xml_find_all(doc, "//w:tbl")
@@ -160,9 +160,10 @@
     grid <- xml2::xml_find_all(tbls[[i]], "./w:tblGrid/w:gridCol")
     widths <- suppressWarnings(as.numeric(xml2::xml_attr(grid, "w")))
     if (length(widths) == 0L || anyNA(widths)) next
+    # The body's own w:sectPr follows every table in the body, so this
+    # also finds the last section. With no w:sectPr at all the widths
+    # below are NA and the table is skipped.
     sect <- xml2::xml_find_first(tbls[[i]], "following::w:sectPr[1]")
-    if (inherits(sect, "xml_missing"))
-      sect <- xml2::xml_find_first(doc, "//w:body/w:sectPr")
     attr_num <- function(xp, at) {
       suppressWarnings(as.numeric(
         xml2::xml_attr(xml2::xml_find_first(sect, xp), at)

@@ -290,3 +290,52 @@ test_that("hv_check_docx leaves a table that fits alone", {
         target = path)
   expect_identical(nrow(hv_check_docx(path)), 0L)
 })
+
+# Minimal WordprocessingML, enough for .detect_wide_table().
+wt_doc <- function(body) {
+  xml2::read_xml(paste0(
+    "<w:document xmlns:w=\"http://schemas.openxmlformats.org/",
+    "wordprocessingml/2006/main\"><w:body>", body, "</w:body></w:document>"
+  ))
+}
+wt_tbl <- function(grid) {
+  paste0("<w:tbl><w:tblGrid>", grid, "</w:tblGrid></w:tbl>")
+}
+wt_sect <- function(w) {
+  paste0("<w:sectPr><w:pgSz w:w=\"", w, "\"/>",
+         "<w:pgMar w:left=\"1417\" w:right=\"1417\"/></w:sectPr>")
+}
+
+test_that("wide_table skips a table whose grid widths are missing", {
+  # Word fills in widths on open; with none written there is nothing to
+  # measure, so the table is left alone rather than failing the check.
+  for (grid in c("<w:gridCol/><w:gridCol w:w=\"9000\"/>",
+                 "<w:gridCol w:w=\"auto\"/>", "")) {
+    res <- .detect_wide_table(wt_doc(paste0(wt_tbl(grid), wt_sect(11900))))
+    expect_identical(nrow(res), 0L)
+  }
+  # The same grid with every width written is measured, and flagged.
+  res <- .detect_wide_table(wt_doc(paste0(
+    wt_tbl("<w:gridCol w:w=\"9000\"/><w:gridCol w:w=\"9000\"/>"),
+    wt_sect(11900)
+  )))
+  expect_identical(res$type, "wide_table")
+})
+
+test_that("wide_table measures each table against its own section", {
+  # 8 in of table: past a portrait section's 6.3 in, inside a landscape
+  # one's 9.7 in. The first table closes a portrait section with a
+  # paragraph-level break; the second sits in the landscape body section.
+  wide <- wt_tbl("<w:gridCol w:w=\"11520\"/>")
+  doc <- wt_doc(paste0(
+    wide, "<w:p><w:pPr>", wt_sect(11900), "</w:pPr></w:p>",
+    wide, wt_sect(16840)
+  ))
+  res <- .detect_wide_table(doc)
+  expect_identical(res$table, 1L)
+})
+
+test_that("wide_table leaves a document with no section properties alone", {
+  doc <- wt_doc(wt_tbl("<w:gridCol w:w=\"20000\"/>"))
+  expect_identical(nrow(.detect_wide_table(doc)), 0L)
+})
