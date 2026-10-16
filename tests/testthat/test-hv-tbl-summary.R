@@ -1209,3 +1209,64 @@ test_that("a normal variable is tested with pooled-variance one-way ANOVA", {
   expect_true("One-way analysis of variance." %in%
                 vapply(notes, `[[`, "", "text"))
 })
+
+# -- mean_sd = (display mean±SD, keep the nonparametric test) ------------
+
+ms_tbl <- function(mean_sd = "age", normal = character(0),
+                   continuous_stat = "median", compare = "none") {
+  hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(D = c("age", "marker", "grade")),
+    continuous = c("age", "marker"), categorical = "grade",
+    compare = compare, continuous_stat = continuous_stat, normal = normal,
+    mean_sd = mean_sd
+  )
+}
+
+test_that("mean_sd rejects names outside `continuous`, repeats, non-strings", {
+  expect_error(
+    ms_tbl(mean_sd = "grade"),
+    "`mean_sd` variable(s) must also be listed in `continuous`: grade.",
+    fixed = TRUE
+  )
+  expect_error(ms_tbl(mean_sd = c("age", "age")),
+               "`mean_sd` lists a variable more than once: age.",
+               fixed = TRUE)
+  expect_error(ms_tbl(mean_sd = 1), "`mean_sd` must be a character vector",
+               fixed = TRUE)
+})
+
+test_that("a mean_sd variable shows mean±SD and names it, like normal", {
+  tbl <- ms_tbl()
+  tb <- tbl$table_body
+  expect_match(tb$stat_1[tb$variable == "age"],
+               "^[0-9]+ \\|\\|\\| [0-9.]+±[0-9.]+$")
+  expect_match(tb$stat_1[tb$variable == "marker" & tb$row_type == "label"],
+               "^[0-9]+ \\|\\|\\| [0-9.]+ \\([0-9.]+, [0-9.]+\\)$")
+  expect_identical(nm_label(tbl, "age"), "Age, Mean±SD")
+  expect_identical(attr(tbl, "hv_stat_label"), "No. (%) or as labeled")
+  # The display matches normal = "age" exactly; only the test differs.
+  expect_identical(tb$stat_1, nm_tbl()$table_body$stat_1)
+})
+
+test_that("a mean_sd variable keeps the Wilcoxon test, not ANOVA", {
+  skip_if_not_installed("broom")
+  tb <- ms_tbl(compare = "pvalue")$table_body
+  expect_identical(tb$test_name[tb$variable == "age"], "wilcox.test")
+  want <- suppressWarnings(
+    stats::wilcox.test(age ~ trt, gtsummary::trial)$p.value
+  )
+  expect_equal(unname(tb$p.value[tb$variable == "age"]), want,
+               tolerance = 1e-6)
+})
+
+test_that("mean_sd keeps its position after normal for positional callers", {
+  f <- names(formals(hv_tbl_summary))
+  expect_identical(f[match("normal", f) + 1L], "mean_sd")
+})
+
+test_that("normal and mean_sd may name the same variable; normal's test wins", {
+  skip_if_not_installed("broom")
+  tb <- ms_tbl(normal = "age", compare = "pvalue")$table_body
+  expect_identical(tb$test_name[tb$variable == "age"], "oneway.test")
+})

@@ -16,6 +16,7 @@ hv_tbl_summary(
   overall = TRUE,
   continuous_stat = c("median", "mean", "both"),
   normal = character(0),
+  mean_sd = character(0),
   ...
 )
 }
@@ -98,7 +99,18 @@ equivalent). Each is summarized as mean +/- SD whatever
 \code{continuous_stat} says, and, under \code{compare = "pvalue"} or
 \code{"both"}, tested with classical (pooled-variance) one-way ANOVA,
 the test the macro ran. Default none. Each name must also appear in
-\code{continuous}. Last in the signature so positional calls keep
+\code{continuous}. Placed after \code{continuous_stat} so positional calls
+keep working. To show mean +/- SD without the ANOVA, use \code{mean_sd}.}
+
+\item{mean_sd}{Character vector, a subset of \code{continuous}: the
+variables to \emph{display} as mean +/- SD while keeping the
+nonparametric test (Wilcoxon rank-sum, or Kruskal-Wallis for 3+
+groups). Use it for variables that are roughly symmetric in a
+table whose every continuous test should stay nonparametric. The
+display is the same as for \code{normal}, row label suffix included
+when the table mixes statistics; only \code{normal} changes the test. A
+variable may appear in both, and is then tested with ANOVA.
+Default none. Last in the signature so positional calls keep
 working.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names

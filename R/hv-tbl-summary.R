@@ -147,7 +147,17 @@
 #'   `continuous_stat` says, and, under `compare = "pvalue"` or
 #'   `"both"`, tested with classical (pooled-variance) one-way ANOVA,
 #'   the test the macro ran. Default none. Each name must also appear in
-#'   `continuous`. Last in the signature so positional calls keep
+#'   `continuous`. Placed after `continuous_stat` so positional calls
+#'   keep working. To show mean +/- SD without the ANOVA, use `mean_sd`.
+#' @param mean_sd Character vector, a subset of `continuous`: the
+#'   variables to *display* as mean +/- SD while keeping the
+#'   nonparametric test (Wilcoxon rank-sum, or Kruskal-Wallis for 3+
+#'   groups). Use it for variables that are roughly symmetric in a
+#'   table whose every continuous test should stay nonparametric. The
+#'   display is the same as for `normal`, row label suffix included
+#'   when the table mixes statistics; only `normal` changes the test. A
+#'   variable may appear in both, and is then tested with ANOVA.
+#'   Default none. Last in the signature so positional calls keep
 #'   working.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
@@ -185,6 +195,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
                            overall = TRUE,
                            continuous_stat = c("median", "mean", "both"),
                            normal = character(0),
+                           mean_sd = character(0),
                            ...) {
   .check_sas_args(list(...), "hv_tbl_summary")
   compare <- match.arg(compare)
@@ -194,6 +205,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     stop("`data` must be a data frame.", call. = FALSE)
   .assert_type_buckets(continuous, binary, categorical)
   .assert_normal(normal, continuous)
+  .assert_normal(mean_sd, continuous, "mean_sd")
   # `by` fails the same way `groups` variables do, in this function's
   # own words. gtsummary's own error here is unusually good, but having
   # `by` fail differently from `groups` inside one function is exactly
@@ -304,12 +316,17 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 
   # SAS CON1=: a `normal` variable is mean +/- SD whatever
   # continuous_stat says, on one row, tested with one-way ANOVA below.
-  nonnormal <- setdiff(continuous, normal)
+  # A `mean_sd` variable is displayed the same way but keeps the
+  # nonparametric test: the display and the test are separate choices.
+  # `nonnormal` and `shown_mean` describe the display only; the test
+  # reads `normal` alone.
+  shown_mean <- union(normal, mean_sd)
+  nonnormal <- setdiff(continuous, shown_mean)
   normal_stat <- paste("{N_nonmiss} |||", mean_stat)
   # Mixed: rows of one table show different continuous statistics, so
   # no one header or footnote can name them all. Each continuous row
   # then names its own (the macro's DESCLABEL=1).
-  mixed <- length(normal) > 0L && length(nonnormal) > 0L &&
+  mixed <- length(shown_mean) > 0L && length(nonnormal) > 0L &&
     continuous_stat != "mean"
   label_stat <- if (length(continuous) > 0L && length(nonnormal) == 0L)
     "mean" else if (mixed) "mixed" else continuous_stat
@@ -318,7 +335,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # variable takes a length-2 statistic.
   statistic <- c(
     stats::setNames(rep(list(cont_stat), length(nonnormal)), nonnormal),
-    stats::setNames(rep(list(normal_stat), length(normal)), normal),
+    stats::setNames(rep(list(normal_stat), length(shown_mean)), shown_mean),
     stats::setNames(
       rep(list(cat_stat), length(binary) + length(categorical)),
       c(binary, categorical)
@@ -327,11 +344,11 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   type <- stats::setNames(
     as.list(c(
       rep(cont_type, length(nonnormal)),
-      rep("continuous", length(normal)),
+      rep("continuous", length(shown_mean)),
       rep("dichotomous", length(binary)),
       rep("categorical", length(categorical))
     )),
-    c(nonnormal, normal, binary, categorical)
+    c(nonnormal, shown_mean, binary, categorical)
   )
 
   # Tell gtsummary which level is the event rather than letting it
@@ -394,7 +411,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     # "Age, Mean±SD", as the macro wrote it. A "both" variable already
     # names its statistics on its sub-rows, so it gets no suffix.
     suffix <- c(
-      stats::setNames(rep(mean_label, length(normal)), normal),
+      stats::setNames(rep(mean_label, length(shown_mean)), shown_mean),
       if (continuous_stat == "median")
         stats::setNames(rep(median_label, length(nonnormal)), nonnormal)
     )
@@ -415,7 +432,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     c("*", "\u2020")
   )
   mean_vars <- if (continuous_stat %in% c("mean", "both"))
-    continuous else normal
+    continuous else shown_mean
   tbl <- .format_blackstone_mean_sd(tbl, mean_vars)
 
   effective_compare <- if (is.null(by)) "none" else compare
