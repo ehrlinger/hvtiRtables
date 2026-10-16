@@ -35,6 +35,12 @@
 #' `file` (its `dirname()`) is not created for you; create it first
 #' with `dir.create(dirname(file), recursive = TRUE)`.
 #'
+#' **A wide table on a landscape page.** Expected: a table wider than a
+#' portrait page's text block (6.3 inches on A4), as a `"both"` table, a
+#' Variable column or several trailing columns make it, is saved on a
+#' landscape page. One wider than landscape's (9.7 inches) has its
+#' columns narrowed in proportion to fit; the font size is not changed.
+#'
 #' @param ft A `flextable`, from [hv_man_table_jtcvs()].
 #' @param file Output `.docx` path. The output directory (`dirname(file)`)
 #'   must already exist; this function does not create it. (`%summarytable`
@@ -122,7 +128,19 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
     }
   }
 
+  # The fixed column widths add up past a portrait page once a table
+  # has a median column per group, a Variable column or several trailing
+  # columns. Turn the page when it does not fit; narrow the columns, not
+  # the house font, when even landscape is too small.
+  wide <- sum(ft$body$colwidths)
+  if (wide > .text_width(landscape = TRUE))
+    ft <- flextable::width(
+      ft, j = ft$col_keys,
+      width = ft$body$colwidths * .text_width(landscape = TRUE) / wide
+    )
+
   doc <- officer::read_docx()
+  if (wide > .text_width(landscape = FALSE)) doc <- .landscape(doc)
   cap_par <- officer::fpar(
     officer::ftext(caption, prop = .note_prop(.table_font(ft), bold = TRUE))
   )

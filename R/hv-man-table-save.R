@@ -178,6 +178,12 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 
 # The template's own page (A4, 1417-twip margins) turned on its side,
 # so only the orientation changes.
+# Inches between the margins .landscape() sets, which are also the
+# default template's: A4, 1417 twips each side.
+.text_width <- function(landscape) {
+  ((if (landscape) 16840 else 11900) - 2 * 1417) / 1440
+}
+
 .landscape <- function(doc) {
   twip <- 1 / 1440
   officer::body_set_default_section(doc, officer::prop_section(

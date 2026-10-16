@@ -30,3 +30,6 @@
   existing "both" tables**: the statistic columns and their dagger now read
   "No. (%) or Mean±SD", the median column names itself in its header, and
   a two-group "both" table now saves in landscape.
+* `hv_man_table_save_jtcvs()` saves a table wider than a portrait page on
+  a landscape page, and narrows its columns in proportion when it is wider
+  than landscape too, so the rightmost columns are never clipped.
