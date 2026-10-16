@@ -194,22 +194,40 @@ test_that("hv_man_table_jtcvs rejects an unnamed trailing", {
       groups = c(stat_1 = "Group A", stat_2 = "Group B"),
       trailing = "std_diff"
     ),
-    "named character vector of length 1"
+    "`trailing` must be a named character vector",
+    fixed = TRUE
   )
 })
 
-test_that("hv_man_table_jtcvs rejects a length-2 trailing", {
+test_that("hv_man_table_jtcvs rejects a repeated trailing name", {
+  tbl <- mk_jtcvs_tbl()
+  tbl$table_body$a <- "x"
+  expect_error(
+    hv_man_table_jtcvs(
+      tbl, groups = c(stat_1 = "Group A", stat_2 = "Group B"),
+      trailing = c(a = "P", a = "Q")
+    ),
+    "`trailing` names a column more than once: a.",
+    fixed = TRUE
+  )
+})
+
+test_that("hv_man_table_jtcvs lays out two trailing columns in order", {
   tbl <- mk_jtcvs_tbl()
   tbl$table_body$a <- "x"
   tbl$table_body$b <- "y"
-  expect_error(
-    hv_man_table_jtcvs(
-      tbl,
-      groups = c(stat_1 = "Group A", stat_2 = "Group B"),
-      trailing = c(a = "A", b = "B")
-    ),
-    "named character vector of length 1"
+  ft <- hv_man_table_jtcvs(
+    tbl,
+    groups = c(stat_1 = "Group A", stat_2 = "Group B"),
+    trailing = c(a = "P", b = "Std. Diff. (%)")
   )
+  expect_identical(utils::tail(ft$col_keys, 2), c("a", "b"))
+  # Values, not just headers: flextable lays out a blank column for a
+  # key its data lacks, so a dropped column would pass a header check.
+  expect_true(all(ft$body$dataset$b[!is.na(ft$body$dataset$b)] == "y"))
+  expect_true(any(!is.na(ft$body$dataset$b)))
+  xml <- docx_xml_jtcvs(ft)
+  expect_true(grepl("Std. Diff. (%)", xml, fixed = TRUE))
 })
 
 test_that("hv_man_table_jtcvs adds an optional trailing column", {

@@ -28,10 +28,13 @@ Every name must be a column of \code{tbl$table_body}, and each may
 appear at most once; unknown names are rejected with the available
 ones listed, and a repeated name is rejected too.}
 
-\item{trailing}{Optional named character vector of length 1, an existing
-\code{tbl$table_body} column name -> header label, for a trailing
-comparison column (e.g. \code{c(std_diff = "Std. Diff.")} or
-\code{c(p_value = "P")}). Must already exist in \code{tbl$table_body}.}
+\item{trailing}{Optional named character vector, existing
+\code{tbl$table_body} column name -> header label, one entry per trailing
+comparison column, laid out in the order given (e.g.
+\code{c(std_diff = "Std. Diff.")} or \code{c(p_value = "P")}). Each must
+already exist in \code{tbl$table_body}. A table from \code{\link[=hv_tbl_summary]{hv_tbl_summary()}},
+with any columns \code{\link[=hv_tbl_compare]{hv_tbl_compare()}} added, records the right value
+as its \code{hv_trailing} attribute.}
 
 \item{stat_label}{Sub-header text under each group's statistic column.
 Default \code{NULL} takes it from the table: \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} records the

@@ -26,6 +26,7 @@
     row_type = tb$row_type,
     stringsAsFactors = FALSE
   )
+  if ("hv_variable" %in% names(tb)) out$hv_variable <- tb$hv_variable
 
   for (col in names(groups)) {
     parts <- strsplit(tb[[col]], " \\|\\|\\| ")
@@ -37,11 +38,13 @@
       parts, function(p) if (length(p) == 2) p[2] else NA_character_,
       character(1)
     )
+    # hv_tbl_summary(continuous_stat = "both") keeps the median in a
+    # column of its own beside each group's statistic.
+    med <- paste0("hv_median_", col)
+    if (med %in% names(tb)) out[[paste0("med_", col)]] <- tb[[med]]
   }
 
-  if (!is.null(trailing)) {
-    out[[names(trailing)]] <- tb[[names(trailing)]]
-  }
+  for (col in names(trailing)) out[[col]] <- tb[[col]]
 
   if (!has_sections) {
     rownames(out) <- NULL
@@ -121,10 +124,13 @@
 #'   Every name must be a column of `tbl$table_body`, and each may
 #'   appear at most once; unknown names are rejected with the available
 #'   ones listed, and a repeated name is rejected too.
-#' @param trailing Optional named character vector of length 1, an existing
-#'   `tbl$table_body` column name -> header label, for a trailing
-#'   comparison column (e.g. `c(std_diff = "Std. Diff.")` or
-#'   `c(p_value = "P")`). Must already exist in `tbl$table_body`.
+#' @param trailing Optional named character vector, existing
+#'   `tbl$table_body` column name -> header label, one entry per trailing
+#'   comparison column, laid out in the order given (e.g.
+#'   `c(std_diff = "Std. Diff.")` or `c(p_value = "P")`). Each must
+#'   already exist in `tbl$table_body`. A table from [hv_tbl_summary()],
+#'   with any columns [hv_tbl_compare()] added, records the right value
+#'   as its `hv_trailing` attribute.
 #' @param stat_label Sub-header text under each group's statistic column.
 #'   Default `NULL` takes it from the table: [hv_tbl_summary()] records the
 #'   statistic it used (e.g. `"No. (%) or Median (15th, 85th
@@ -182,12 +188,18 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   .check_string(font, "font")
   .check_font_size(font_size)
   if (!is.null(trailing)) {
-    if (!is.character(trailing) || length(trailing) != 1L ||
-          is.null(names(trailing)) || !nzchar(names(trailing)))
-      stop("`trailing` must be a named character vector of length 1 ",
-           "(e.g. c(std_diff = \"Std. Diff.\")).", call. = FALSE)
-    if (!names(trailing) %in% names(tbl$table_body))
-      stop("`trailing` name `", names(trailing), "` is not a column ",
+    if (!is.character(trailing) || length(trailing) == 0L ||
+          is.null(names(trailing)) || anyNA(names(trailing)) ||
+          any(!nzchar(names(trailing))))
+      stop("`trailing` must be a named character vector, one entry per ",
+           "column (e.g. c(std_diff = \"Std. Diff.\")).", call. = FALSE)
+    if (anyDuplicated(names(trailing)))
+      stop("`trailing` names a column more than once: ",
+           names(trailing)[duplicated(names(trailing))][1], ".",
+           call. = FALSE)
+    absent <- setdiff(names(trailing), names(tbl$table_body))
+    if (length(absent) > 0L)
+      stop("`trailing` name `", absent[1], "` is not a column ",
            "in `tbl$table_body`.", call. = FALSE)
   }
   # Runs before .reshape_jtcvs_body(), so a table lacking the
@@ -198,30 +210,42 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
 
   n_cols <- unlist(lapply(names(groups), function(g) paste0("n_", g)))
   disp_cols <- unlist(lapply(names(groups), function(g) paste0("disp_", g)))
-  interleaved <- as.vector(rbind(n_cols, disp_cols))
-  col_keys <- c("label", interleaved, if (!is.null(trailing)) names(trailing))
+  med_cols <- intersect(paste0("med_", names(groups)), names(reshaped))
+  interleaved <- unlist(lapply(names(groups), function(g) {
+    intersect(paste0(c("n_", "disp_", "med_"), g), names(reshaped))
+  }))
+  # hv_tbl_summary(show_variable = TRUE) carries the raw column name.
+  var_col <- if ("hv_variable" %in% names(reshaped)) "hv_variable"
+  col_keys <- c("label", var_col, interleaved,
+                if (!is.null(trailing)) names(trailing))
 
   ft <- flextable::flextable(reshaped, col_keys = col_keys)
 
   header_labels <- list(label = "Characteristic")
+  if (!is.null(var_col)) header_labels$hv_variable <- "Variable"
   for (g in names(groups)) {
     header_labels[[paste0("n_", g)]] <- "n"
     header_labels[[paste0("disp_", g)]] <- stat_label
   }
-  if (!is.null(trailing)) header_labels[[names(trailing)]] <- unname(trailing)
+  for (m in med_cols)
+    header_labels[[m]] <- attr(tbl, "hv_median_label", exact = TRUE) %||%
+      "Median"
+  for (col in names(trailing)) header_labels[[col]] <- trailing[[col]]
   ft <- do.call(flextable::set_header_labels, c(list(x = ft), header_labels))
 
-  top_values <- c("Characteristic", unname(groups))
-  top_widths <- c(1L, rep(2L, length(groups)))
-  if (!is.null(trailing)) {
-    top_values <- c(top_values, "")
-    top_widths <- c(top_widths, 1L)
-  }
+  top_values <- c("Characteristic", if (!is.null(var_col)) "Variable",
+                  unname(groups))
+  top_widths <- c(
+    1L, if (!is.null(var_col)) 1L,
+    2L + (paste0("med_", names(groups)) %in% med_cols)
+  )
+  top_values <- c(top_values, rep("", length(trailing)))
+  top_widths <- c(top_widths, rep(1L, length(trailing)))
   ft <- flextable::add_header_row(
     ft, top = TRUE, values = top_values, colwidths = top_widths
   )
   # One "Characteristic", spanning both header rows, not one per row.
-  ft <- flextable::merge_v(ft, j = "label", part = "header")
+  ft <- flextable::merge_v(ft, j = c("label", var_col), part = "header")
   # A real superscript: as plain header text the "a" printed as "na".
   # The saver writes the matching footnote and letters the body
   # footnotes from "b".
@@ -249,6 +273,8 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   ft <- flextable::width(ft, j = "label", width = 2.5)
   ft <- flextable::width(ft, j = n_cols, width = 0.6)
   ft <- flextable::width(ft, j = disp_cols, width = 0.9)
+  if (length(med_cols))
+    ft <- flextable::width(ft, j = med_cols, width = 0.9)
   if (!is.null(trailing))
     ft <- flextable::width(ft, j = names(trailing), width = 0.6)
 

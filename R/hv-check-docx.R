@@ -144,15 +144,58 @@
   do.call(rbind, out)
 }
 
+# A table may overrun its text block by this much before it is flagged:
+# 20 dxa is 1 pt, enough to absorb rounding when column widths are written
+# out, far short of a clipped column.
+.wide_tol_dxa <- 20
+
+# A table wider than the text block of the section it sits in runs into
+# the margin or off the page, and Word clips what does not fit. Each table
+# belongs to the first section break after it: a paragraph's w:sectPr, or
+# the body's own, which closes the last section.
+.detect_wide_table <- function(doc) {
+  out <- list()
+  tbls <- xml2::xml_find_all(doc, "//w:tbl")
+  for (i in seq_along(tbls)) {
+    grid <- xml2::xml_find_all(tbls[[i]], "./w:tblGrid/w:gridCol")
+    widths <- suppressWarnings(as.numeric(xml2::xml_attr(grid, "w")))
+    if (length(widths) == 0L || anyNA(widths)) next
+    # The body's own w:sectPr follows every table in the body, so this
+    # also finds the last section. With no w:sectPr at all the widths
+    # below are NA and the table is skipped.
+    sect <- xml2::xml_find_first(tbls[[i]], "following::w:sectPr[1]")
+    attr_num <- function(xp, at) {
+      suppressWarnings(as.numeric(
+        xml2::xml_attr(xml2::xml_find_first(sect, xp), at)
+      ))
+    }
+    text <- attr_num("./w:pgSz", "w") - attr_num("./w:pgMar", "left") -
+      attr_num("./w:pgMar", "right")
+    if (is.na(text) || sum(widths) <= text + .wide_tol_dxa) next
+    out[[length(out) + 1]] <- .finding(
+      "wide_table", i, NA_character_,
+      sprintf(
+        paste0("Table is %.2f in wide; the page leaves %.2f in between the ",
+               "margins, so Word clips the columns past them. Fit the ",
+               "table or turn the page."),
+        sum(widths) / 1440, text / 1440
+      )
+    )
+  }
+  if (length(out) == 0) return(.empty_report())
+  do.call(rbind, out)
+}
+
 #' Check a .docx for structural patterns the house rules forbid
 #'
 #' Read-only inspection of any Word document, whether written by this
 #' package or received from elsewhere. Reports the three structural
 #' failure patterns the canonical "Table Construction for Manuscripts"
-#' memo names, and never modifies the file.
+#' memo names, and a table too wide for its page, and never modifies the
+#' file.
 #'
 #' @details
-#' Three detectors run:
+#' Four detectors run:
 #'
 #' * `"layer"` (structural, high confidence): paragraphs positioned with
 #'   `w:framePr`, or floating text boxes (`w:txbxContent`). Table content
@@ -165,6 +208,10 @@
 #'   deliberate; width alone or emptiness alone would flag them. A cell
 #'   spanning several columns counts as filling every column it covers,
 #'   so a merged header never makes the columns beneath it look empty.
+#' * `"wide_table"` (structural, high confidence): a table whose grid is
+#'   wider than the text block of the page section it sits in (page width
+#'   less both margins), by more than 1 pt. Word clips what runs past the
+#'   margin, so the rightmost columns are lost from the page.
 #' * `"embedded_footnote"` (heuristic, lower confidence): a cell in a
 #'   table's last row whose text starts with a footnote marker (`*`, a
 #'   dagger or double dagger, a section or pilcrow sign, a lettered
@@ -185,7 +232,7 @@
 #' JTCVS templates do not trip it. A finding here is a real spacer.
 #'
 #' **Treating `embedded_footnote` as proof.** It is the one heuristic
-#' detector of the three: it matches a marker character opening a cell
+#' detector of the four: it matches a marker character opening a cell
 #' in a table's last row, and a legitimate last row that happens to
 #' start that way matches it too. Read it as a prompt to look, not a
 #' verdict.
@@ -231,6 +278,7 @@ hv_check_docx <- function(path) {
   rbind(
     .detect_layers(doc),
     .detect_hidden_col(doc),
-    .detect_embedded_footnote(doc)
+    .detect_embedded_footnote(doc),
+    .detect_wide_table(doc)
   )
 }

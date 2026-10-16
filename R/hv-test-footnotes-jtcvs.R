@@ -110,8 +110,11 @@ hv_test_footnotes_jtcvs <- function(tbl) {
   .check_gtsummary(tbl)
 
   tb <- tbl$table_body
-  trailing <- attr(tbl, "hv_trailing")
-  col <- if (is.null(trailing)) "hv_compare_col" else names(trailing)
+  # The tests belong to the column hv_tbl_summary()'s `compare` writes,
+  # and to no other. A column hv_tbl_compare() joined holds whatever the
+  # caller computed; guessing the first trailing column once footnoted a
+  # standardized difference "Fisher exact test."
+  col <- "hv_compare_col"
 
   if (!col %in% names(tb) || !"test_name" %in% names(tb)) return(list())
 

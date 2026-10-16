@@ -22,7 +22,8 @@
 #' - Change one: `modifyList(hv_man_footnotes(), list(...))` with
 #'   `` `†` `` = "custom text"
 #' - Add a study-specific one alongside: `c(hv_man_footnotes(), list(...))`
-#'   with `` `‡` `` = "extra note"
+#'   with `` `§` `` = "extra note". Avoid `‡` on a table from
+#'   [hv_tbl_summary()]: it marks Fisher exact p-values there.
 #'
 #' @section Common mistakes:
 #' **Passing the result to the JTCVS saver.** These footnotes are
@@ -39,7 +40,9 @@
 #'
 #' @param continuous_stat One of `"median"` (default), `"mean"`, or
 #'   `"both"`. Controls whether the dagger's continuous half reads as
-#'   median and percentiles, mean +/- SD, or both.
+#'   median and percentiles or mean +/- SD. Under `"both"` it reads as
+#'   mean +/- SD, because [hv_tbl_summary()] puts the medians in columns
+#'   of their own whose headers name them.
 #' @param percentiles Numeric vector of length 2, the increasing whole-number
 #'   percentile pair named by the dagger. Default `c(15, 85)`. Used for
 #'   `continuous_stat = "median"` and `"both"`; validated but not printed for
@@ -84,7 +87,9 @@ hv_man_footnotes <- function(
     continuous_stat,
     median = paste("No. (%) or", median_label),
     mean = paste("No. (%) or", mean_label),
-    both = paste0("No. (%), ", mean_label, ", or ", median_label),
+    # Under "both" the statistic columns show mean±SD; the medians sit
+    # in their own column, which names itself in its header.
+    both = paste("No. (%) or", mean_label),
     mixed = "No. (%) or as labeled"
   )
 }

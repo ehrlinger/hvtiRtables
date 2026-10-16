@@ -16,6 +16,9 @@ hv_tbl_summary(
   overall = TRUE,
   continuous_stat = c("median", "mean", "both"),
   normal = character(0),
+  mean_sd = character(0),
+  show_variable = TRUE,
+  cutexact = "any",
   ...
 )
 }
@@ -65,7 +68,15 @@ there is nothing to compare. \code{"smd"} and \code{"both"} require \code{by} to
 have exactly two groups, because a standardized mean difference is
 defined between two of them; they error otherwise. \code{"pvalue"} and
 \code{"none"} work at any number of groups. \verb{\%summarytable}
-\verb{PVALUES=}/\verb{ASD=} equivalent.}
+\verb{PVALUES=} equivalent, and \verb{ASD=} only in part: the \code{"smd"}
+number is gtsummary's generic standardized mean difference
+(\code{\link[gtsummary:add_difference]{gtsummary::add_difference()}}), a proportion computed alike for
+every continuous variable. \verb{\%summarytable}'s column came from the
+\verb{\%stddiff} macro, which treats non-Gaussian and ordinal variables
+differently and prints a percentage, so the two disagree for those
+variables (by 30\% on one skewed test variable). To show \verb{\%stddiff}'s
+number, compute it with \code{hvtiRpropensity::ps_stddiff()} and add it
+with \code{\link[=hv_tbl_compare]{hv_tbl_compare()}}, beside \code{compare = "pvalue"} if wanted.}
 
 \item{percentiles}{Numeric vector of length 2, the low/high percentile
 pair for continuous summaries, as increasing whole numbers between 0
@@ -84,9 +95,12 @@ there to show it.}
 summarized. \code{"median"} gives
 \verb{median (P<low>, P<high>)}; \code{"mean"} gives mean +/- SD, with no
 spaces around the plus-minus sign and EHB/Blackstone paired rounding;
-\code{"both"} puts the two on sub-rows under the variable, mean +/- SD
-first, with the N shown once, on the first. Choosing one for the
-manuscript is then a matter of deleting a row. The test does not
+\code{"both"} puts the two side by side: each group's statistic column
+shows mean +/- SD (or \verb{n (\%)} for a categorical row), and a median
+column beside it shows \verb{median (P<low>, P<high>)}, blank on rows
+with no median. Both renderers lay it out the same way. Choosing
+one for the manuscript is then a matter of dropping a column. The
+test does not
 change with the statistic: only \code{normal} selects ANOVA. The CORR
 footnote carried through \code{\link[=hv_man_table]{hv_man_table()}} to \code{\link[=hv_man_table_save]{hv_man_table_save()}}
 follows this choice automatically. Placed after
@@ -98,8 +112,39 @@ equivalent). Each is summarized as mean +/- SD whatever
 \code{continuous_stat} says, and, under \code{compare = "pvalue"} or
 \code{"both"}, tested with classical (pooled-variance) one-way ANOVA,
 the test the macro ran. Default none. Each name must also appear in
-\code{continuous}. Last in the signature so positional calls keep
+\code{continuous}. Placed after \code{continuous_stat} so positional calls
+keep working. To show mean +/- SD without the ANOVA, use \code{mean_sd}.}
+
+\item{mean_sd}{Character vector, a subset of \code{continuous}: the
+variables to \emph{display} as mean +/- SD while keeping the
+nonparametric test (Wilcoxon rank-sum, or Kruskal-Wallis for 3+
+groups). Use it for variables that are roughly symmetric in a
+table whose every continuous test should stay nonparametric. The
+display is the same as for \code{normal}, row label suffix included
+when the table mixes statistics; only \code{normal} changes the test. A
+variable may appear in both, and is then tested with ANOVA.
+Default none. Last in the signature so positional calls keep
 working.}
+
+\item{show_variable}{Single \code{TRUE}/\code{FALSE}. When \code{TRUE} (default),
+adds a "Variable" column beside the label holding each variable's
+column name in \code{data}, on its first row, as \verb{\%summarytable}'s
+report did. Both renderers show it. Set \code{FALSE} for a manuscript,
+so the report and the manuscript come from one table.}
+
+\item{cutexact}{When a binary or categorical variable is tested with
+Fisher's exact test rather than Pearson's chi-square (no continuity
+correction). The default, \code{"any"}, uses Fisher whenever any one
+group-by-level cell has an expected count below 5 (gtsummary's
+rule, and what the CORR team asked for). A number opts in to
+\verb{\%summarytable}'s \verb{CUTEXACT=} rule, to reproduce a SAS table:
+Fisher when at least that percentage of cells expect fewer than 5.
+The macro's default was \code{50}; \code{0} makes every categorical test
+exact and a value above 100 makes none exact. In the CORR table
+each Fisher p-value is marked with a superscript double dagger,
+footnoted "Fisher exact test."; the JTCVS
+route letters it through \code{\link[=hv_test_footnotes_jtcvs]{hv_test_footnotes_jtcvs()}}. Used only when
+\code{compare} produces p-values.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.}

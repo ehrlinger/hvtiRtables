@@ -81,7 +81,11 @@
 #'
 #' A table with three or more statistic columns, such as an Overall
 #' column and two groups, is written on a landscape page: with a `No.`
-#' column beside each, it does not fit a portrait one.
+#' column beside each, it does not fit a portrait one. So is any table
+#' wider than a portrait page's text block (6.3 inches on A4). A table
+#' wider than landscape's (9.7 inches), as a `continuous_stat = "both"`
+#' table with an Overall column can be, has its columns narrowed in
+#' proportion to fit; the font size is not changed.
 #'
 #' @return Invisibly, the `file` path.
 #'
@@ -129,12 +133,27 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
                "dangling reference with nothing after it. Give the ",
                "entry text, e.g. \"Values are median (P15, P85).\"")
       )
-    for (sym in fn_names) {
-      j <- which(ft$col_keys %in% .footnote_cols(ft, sym))
-      ft <- flextable::append_chunks(ft, i = 1, j = j, part = "header",
-                                     flextable::as_sup(sym))
-    }
   }
+  # hv_man_table() put these symbols on body cells, each meaning one
+  # thing (symbol -> text). A missing entry leaves the mark unexplained;
+  # a different text under the same symbol would explain it wrongly.
+  body_marks <- attr(ft, "hv_body_marks", exact = TRUE)
+  for (sym in names(body_marks)) {
+    if (!identical(footnotes[[sym]], body_marks[[sym]]))
+      stop("The table marks cells with ", sym, " for \"",
+           body_marks[[sym]], "\", so `footnotes` must carry ", sym,
+           " with that text. Give any note of your own another symbol.",
+           call. = FALSE)
+  }
+  # A symbol already on body cells needs no header mark.
+  for (sym in setdiff(names(footnotes), names(body_marks))) {
+    j <- which(ft$col_keys %in% .footnote_cols(ft, sym))
+    ft <- flextable::append_chunks(ft, i = 1, j = j, part = "header",
+                                   flextable::as_sup(sym))
+  }
+
+  fit <- .fit_page(ft, landscape = .is_wide(ft))
+  ft <- fit$ft
 
   doc <- officer::read_docx()
   doc <- flextable::body_add_flextable(doc, ft)
@@ -151,7 +170,7 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   }
 
   doc <- .add_abbreviations_key(doc, abbreviations, font)
-  if (.is_wide(ft)) doc <- .landscape(doc)
+  if (fit$landscape) doc <- .landscape(doc)
 
   print(doc, target = file)
   invisible(file)
@@ -161,11 +180,34 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 # with its No. column overflow a portrait page; Word clips the right
 # edge rather than wrapping.
 .is_wide <- function(ft) {
-  sum(grepl("^stat_[0-9]+$", ft$col_keys)) >= 3L
+  sum(grepl("^(hv_median_)?stat_[0-9]+$", ft$col_keys)) >= 3L
 }
 
 # The template's own page (A4, 1417-twip margins) turned on its side,
 # so only the orientation changes.
+# Inches between the margins .landscape() sets, which are also the
+# default template's: A4, 1417 twips each side.
+.text_width <- function(landscape) {
+  ((if (landscape) 16840 else 11900) - 2 * 1417) / 1440
+}
+
+# Fit a table to the page. Column widths add up past a portrait page once
+# a table has a median column per group, a Variable column or several
+# trailing columns, and gtsummary autofits each median column to its long
+# header. Turn the page when the table does not fit portrait (or when the
+# caller already wants landscape); narrow every column in proportion, not
+# the house font, when it does not fit landscape either. Landscape alone
+# used to clip the label and p-value columns of a 13-inch table.
+.fit_page <- function(ft, landscape = FALSE) {
+  wide <- sum(ft$body$colwidths)
+  if (wide > .text_width(landscape = TRUE))
+    ft <- flextable::width(
+      ft, j = ft$col_keys,
+      width = ft$body$colwidths * .text_width(landscape = TRUE) / wide
+    )
+  list(ft = ft, landscape = landscape || wide > .text_width(landscape = FALSE))
+}
+
 .landscape <- function(doc) {
   twip <- 1 / 1440
   officer::body_set_default_section(doc, officer::prop_section(

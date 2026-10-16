@@ -12,8 +12,10 @@ test_that("hv_man_footnotes follows the continuous statistic", {
     "No. (%) or Mean±SD."
   )
   expect_identical(
+    # Under "both" the dagger describes the statistic columns; the
+    # medians sit in their own, self-headed column.
     hv_man_footnotes(continuous_stat = "both")[["†"]],
-    "No. (%), Mean±SD, or Median (15th, 85th percentile)."
+    "No. (%) or Mean±SD."
   )
   expect_identical(
     hv_man_footnotes(percentiles = c(16, 84))[["†"]],

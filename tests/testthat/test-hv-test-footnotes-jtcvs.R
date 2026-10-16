@@ -195,3 +195,30 @@ test_that("hv_test_footnotes_jtcvs round-trips through a saved .docx", {
   expect_true(grepl("Fisher exact test.", xml, fixed = TRUE))
   expect_false(grepl("ANOVA", xml, fixed = TRUE))
 })
+
+test_that("a joined column is never lettered with a test", {
+  skip_if_not_installed("broom")
+  # Reported on #77: compare = "none", then add_p(), then an SMD joined
+  # with hv_tbl_compare(). The letters used to fall back to the first
+  # trailing column and footnoted the SMD "Fisher exact test."
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = c("age", "grade")),
+    continuous = "age", categorical = "grade", compare = "none",
+    show_variable = FALSE
+  ) |> gtsummary::add_p()
+  tbl <- hv_tbl_compare(tbl, c(age = "10.1", grade = "3.0"),
+                        "Standardized difference (%)")
+  expect_identical(hv_test_footnotes_jtcvs(tbl), list())
+})
+
+test_that("tests stay on the p-value column beside a joined column", {
+  skip_if_not_installed("broom")
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = c("age", "grade")),
+    continuous = "age", categorical = "grade", compare = "pvalue",
+    show_variable = FALSE
+  )
+  tbl <- hv_tbl_compare(tbl, c(age = "10.1", grade = "3.0"), "SD (%)")
+  cols <- vapply(hv_test_footnotes_jtcvs(tbl), `[[`, "", "col")
+  expect_true(length(cols) > 0L && all(cols == "hv_compare_col"))
+})

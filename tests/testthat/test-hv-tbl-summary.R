@@ -991,17 +991,15 @@ test_that("EHB/Blackstone rounding treats only exact ties as ties", {
   expect_identical(tbl$table_body$stat_0, "2 ||| 123±12.7")
 })
 
-test_that("paired rounding changes only the mean row under both", {
+test_that("paired rounding changes only the mean column under both", {
   dta <- data.frame(value = c(100, 110, 130, 150))
   tbl <- hv_tbl_summary(
     dta, groups = list(D = "value"), continuous = "value",
     continuous_stat = "both"
   )
 
-  expect_identical(tbl$table_body$stat_0[2], "4 ||| 120±22")
-  expect_identical(
-    tbl$table_body$stat_0[3], " ||| 120 (100, 150)"
-  )
+  expect_identical(tbl$table_body$stat_0, "4 ||| 120±22")
+  expect_identical(tbl$table_body$hv_median_stat_0, "120 (100, 150)")
 })
 
 test_that("zero or unavailable SD keeps gtsummary's rendering", {
@@ -1020,28 +1018,42 @@ test_that("zero or unavailable SD keeps gtsummary's rendering", {
   expect_identical(missing_sd$table_body$stat_0, "1 ||| 123.4560±NA")
 })
 
-test_that("continuous_stat = \"both\" puts mean and median on sub-rows", {
+test_that("continuous_stat = \"both\" puts mean and median side by side", {
   dta <- data.frame(age = c(10, 20, 30, NA, 40, 50), g = c(0, 0, 0, 1, 1, 1))
   tbl <- hv_tbl_summary(
     dta, by = "g", groups = list(D = "age"), continuous = "age",
     continuous_stat = "both"
   )
   tb <- tbl$table_body
-  expect_identical(tb$row_type, c("label", "level", "level"))
-  expect_identical(
-    tb$label[2:3], c("Mean±SD", "Median (15th, 85th percentile)")
+  # One row per variable: no sub-rows to stack.
+  expect_identical(tb$row_type, "label")
+  expect_match(tb$stat_1, "^3 \\|\\|\\| 20±[0-9.]+$")
+  expect_identical(tb$hv_median_stat_1, "20 (10, 30)")
+  expect_identical(tb$hv_median_stat_0, "30 (10, 50)")
+  expect_false(is.na(tb$hv_compare_col))
+  # The statistic columns hold mean±SD; the median columns name
+  # themselves in their own header.
+  expect_identical(attr(tbl, "hv_stat_label"), "No. (%) or Mean±SD")
+  expect_identical(attr(tbl, "hv_median_label"),
+                   "Median (15th, 85th percentile)")
+  st <- tbl$table_styling$header
+  expect_false(st$hide[st$column == "hv_median_stat_1"])
+  expect_match(st$label[st$column == "hv_median_stat_1"],
+               "Median \\(15th, 85th percentile\\)")
+})
+
+test_that("under 'both' the median column is blank on other rows", {
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(D = c("age", "marker", "grade", "response")),
+    continuous = c("age", "marker"), categorical = "grade",
+    binary = "response", continuous_stat = "both", mean_sd = "marker"
   )
-  # N once per variable, on the first sub-row; the second carries a
-  # blank N that the renderers split into an empty cell.
-  expect_identical(sub(" \\|\\|\\| .*$", "", tb$stat_1[2]), "3")
-  expect_true(startsWith(tb$stat_1[3], " ||| "))
-  # The comparison sits on the variable's label row, not a sub-row.
-  expect_false(is.na(tb$hv_compare_col[1]))
-  expect_true(all(is.na(tb$hv_compare_col[2:3])))
-  expect_identical(
-    attr(tbl, "hv_stat_label"),
-    "No. (%), Mean±SD, or Median (15th, 85th percentile)"
-  )
+  tb <- tbl$table_body
+  has_med <- !is.na(tb$hv_median_stat_1)
+  expect_identical(tb$variable[has_med], "age")
+  expect_identical(tb$label[tb$variable == "marker"],
+                   "Marker Level (ng/mL)")
 })
 
 test_that("continuous_stat = \"both\" renders through both renderers", {
@@ -1049,16 +1061,32 @@ test_that("continuous_stat = \"both\" renders through both renderers", {
     gtsummary::trial, by = "trt", groups = list(D = c("age", "grade")),
     continuous = "age", categorical = "grade", continuous_stat = "both"
   )
-  d <- hv_man_table(tbl)$body$dataset
+  corr <- hv_man_table(tbl)
+  d <- corr$body$dataset
   expect_false(any(grepl("|||", unlist(d), fixed = TRUE)))
-  expect_identical(d$n_stat_1[d$label == "Median (15th, 85th percentile)"],
-                   "")
-  ft <- hv_man_table_jtcvs(
+  expect_identical(
+    corr$col_keys[match("stat_1", corr$col_keys) + c(-1L, 1L)],
+    c("n_stat_1", "hv_median_stat_1")
+  )
+  expect_match(d$hv_median_stat_1[d$label == "Age"], "^[0-9]+ \\(")
+  jt <- hv_man_table_jtcvs(
     tbl, groups = c(stat_0 = "Overall", stat_1 = "A", stat_2 = "B"),
-    stat_label = attr(tbl, "hv_stat_label"),
     trailing = attr(tbl, "hv_trailing")
   )
-  expect_s3_class(ft, "flextable")
+  expect_identical(
+    jt$col_keys[match("disp_stat_1", jt$col_keys) + c(-1L, 1L)],
+    c("n_stat_1", "med_stat_1")
+  )
+  jd <- jt$body$dataset
+  expect_identical(jd$med_stat_1[jd$label == "Age"],
+                   d$hv_median_stat_1[d$label == "Age"])
+  chunks <- flextable::information_data_chunk(jt)
+  h <- chunks[chunks$.part == "header" & chunks$.col_id == "med_stat_1", ]
+  expect_true(any(h$txt == "Median (15th, 85th percentile)"))
+  expect_true(any(h$txt == "A"))
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save(corr, path)
+  expect_identical(nrow(hv_check_docx(path)), 0L)
 })
 
 test_that("overall must be a single TRUE or FALSE", {
@@ -1184,15 +1212,13 @@ test_that("an unmixed table keeps plain labels and one stated statistic", {
   expect_identical(attr(mean_tbl, "hv_stat_label"), "No. (%) or Mean±SD")
 })
 
-test_that("under 'both' a normal variable is one suffixed row", {
+test_that("under 'both' a normal variable has a blank median", {
   tbl <- nm_tbl(continuous_stat = "both")
   tb <- tbl$table_body
-  expect_identical(nm_label(tbl, "age"), "Age, Mean±SD")
+  expect_identical(nm_label(tbl, "age"), "Age")
   expect_identical(sum(tb$variable == "age"), 1L)
-  expect_identical(
-    tb$label[tb$variable == "marker" & tb$row_type == "level"],
-    c("Mean±SD", "Median (15th, 85th percentile)")
-  )
+  expect_true(is.na(tb$hv_median_stat_1[tb$variable == "age"]))
+  expect_false(is.na(tb$hv_median_stat_1[tb$variable == "marker"]))
 })
 
 test_that("a normal variable is tested with pooled-variance one-way ANOVA", {
@@ -1208,4 +1234,412 @@ test_that("a normal variable is tested with pooled-variance one-way ANOVA", {
   notes <- hv_test_footnotes_jtcvs(tbl)
   expect_true("One-way analysis of variance." %in%
                 vapply(notes, `[[`, "", "text"))
+})
+
+# -- mean_sd = (display mean±SD, keep the nonparametric test) ------------
+
+ms_tbl <- function(mean_sd = "age", normal = character(0),
+                   continuous_stat = "median", compare = "none") {
+  hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(D = c("age", "marker", "grade")),
+    continuous = c("age", "marker"), categorical = "grade",
+    compare = compare, continuous_stat = continuous_stat, normal = normal,
+    mean_sd = mean_sd
+  )
+}
+
+test_that("mean_sd rejects names outside `continuous`, repeats, non-strings", {
+  expect_error(
+    ms_tbl(mean_sd = "grade"),
+    "`mean_sd` variable(s) must also be listed in `continuous`: grade.",
+    fixed = TRUE
+  )
+  expect_error(ms_tbl(mean_sd = c("age", "age")),
+               "`mean_sd` lists a variable more than once: age.",
+               fixed = TRUE)
+  expect_error(ms_tbl(mean_sd = 1), "`mean_sd` must be a character vector",
+               fixed = TRUE)
+})
+
+test_that("a mean_sd variable shows mean±SD and names it, like normal", {
+  tbl <- ms_tbl()
+  tb <- tbl$table_body
+  expect_match(tb$stat_1[tb$variable == "age"],
+               "^[0-9]+ \\|\\|\\| [0-9.]+±[0-9.]+$")
+  expect_match(tb$stat_1[tb$variable == "marker" & tb$row_type == "label"],
+               "^[0-9]+ \\|\\|\\| [0-9.]+ \\([0-9.]+, [0-9.]+\\)$")
+  expect_identical(nm_label(tbl, "age"), "Age, Mean±SD")
+  expect_identical(attr(tbl, "hv_stat_label"), "No. (%) or as labeled")
+  # The display matches normal = "age" exactly; only the test differs.
+  expect_identical(tb$stat_1, nm_tbl()$table_body$stat_1)
+})
+
+test_that("a mean_sd variable keeps the Wilcoxon test, not ANOVA", {
+  skip_if_not_installed("broom")
+  tb <- ms_tbl(compare = "pvalue")$table_body
+  expect_identical(tb$test_name[tb$variable == "age"], "wilcox.test")
+  want <- suppressWarnings(
+    stats::wilcox.test(age ~ trt, gtsummary::trial)$p.value
+  )
+  expect_equal(unname(tb$p.value[tb$variable == "age"]), want,
+               tolerance = 1e-6)
+})
+
+test_that("mean_sd keeps its position after normal for positional callers", {
+  f <- names(formals(hv_tbl_summary))
+  expect_identical(f[match("normal", f) + 1L], "mean_sd")
+})
+
+test_that("normal and mean_sd may name the same variable; normal's test wins", {
+  skip_if_not_installed("broom")
+  tb <- ms_tbl(normal = "age", compare = "pvalue")$table_body
+  expect_identical(tb$test_name[tb$variable == "age"], "oneway.test")
+})
+
+# -- show_variable = (the raw column name beside the label) --------------
+
+sv_tbl <- function(...) {
+  hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(D = c("age", "grade")),
+    continuous = "age", categorical = "grade", ...
+  )
+}
+
+test_that("show_variable puts the column name on each variable's first row", {
+  tb <- sv_tbl()$table_body
+  expect_identical(names(tb)[match("label", names(tb)) + 1L], "hv_variable")
+  expect_identical(tb$hv_variable[tb$row_type == "label"], c("age", "grade"))
+  expect_true(all(is.na(tb$hv_variable[tb$row_type != "label"])))
+})
+
+test_that("show_variable's column is visible and headed Variable", {
+  st <- sv_tbl()$table_styling$header
+  row <- st[st$column == "hv_variable", ]
+  expect_false(row$hide)
+  expect_identical(row$label, "**Variable**")
+})
+
+test_that("show_variable = FALSE leaves the table as it was", {
+  tbl <- sv_tbl(show_variable = FALSE)
+  expect_false("hv_variable" %in% names(tbl$table_body))
+})
+
+test_that("show_variable must be a single TRUE or FALSE", {
+  for (bad in list(NA, "yes", c(TRUE, FALSE), 1)) {
+    expect_error(sv_tbl(show_variable = bad),
+                 "`show_variable` must be TRUE or FALSE.", fixed = TRUE)
+  }
+})
+
+test_that("show_variable follows mean_sd for positional callers", {
+  f <- names(formals(hv_tbl_summary))
+  expect_identical(f[match("mean_sd", f) + 1L], "show_variable")
+})
+
+test_that("the variable column renders beside the label in both renderers", {
+  tbl <- sv_tbl()
+  ft <- hv_man_table(tbl)
+  expect_identical(ft$col_keys[2], "hv_variable")
+  d <- ft$body$dataset
+  expect_identical(d$hv_variable[d$label == "Age"], "age")
+  # The section row, which hv_man_table() inserts, carries no name.
+  expect_true(is.na(d$hv_variable[d$label == "D"]) ||
+                d$hv_variable[d$label == "D"] == "")
+  jt <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
+  expect_identical(jt$col_keys[2], "hv_variable")
+  jd <- jt$body$dataset
+  expect_identical(jd$hv_variable[jd$label == "Age"], "age")
+  chunks <- flextable::information_data_chunk(jt)
+  hdr <- chunks[chunks$.part == "header" & chunks$.col_id == "hv_variable", ]
+  expect_true(all(hdr$txt == "Variable"))
+})
+
+test_that("the variable column survives into a saved, valid .docx", {
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(sv_tbl()), path)
+  expect_identical(nrow(hv_check_docx(path)), 0L)
+  jpath <- tempfile(fileext = ".docx")
+  tbl <- sv_tbl(compare = "pvalue")
+  hv_man_table_save_jtcvs(
+    hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
+                       trailing = attr(tbl, "hv_trailing")),
+    jpath, caption = "T1."
+  )
+  expect_true(file.exists(jpath))
+})
+
+# -- cutexact = (%summarytable's CUTEXACT=: Fisher's exact when sparse) ---
+
+# 2 groups x 2 levels. `rare` makes cells with expected count < 5:
+# with 40 per group and 4 events in all, both "1" cells expect 2.
+ce_data <- function() {
+  data.frame(
+    grp = rep(c("A", "B"), each = 40),
+    # 2 of 4 cells expect < 5: 50% exactly.
+    rare = c(rep(1, 3), rep(0, 37), rep(1, 1), rep(0, 39)),
+    # No cell expects < 5.
+    common = rep(c(0, 1), 40),
+    # 3 levels x 2 groups, 2 of 6 cells (33%) expect < 5.
+    tri = c(rep("x", 20), rep("y", 18), "z", "z",
+            rep("x", 20), rep("y", 18), "z", "z")
+  )
+}
+
+ce_tbl <- function(cutexact = 50, compare = "pvalue") {
+  hv_tbl_summary(
+    ce_data(), by = "grp",
+    groups = list(D = c("rare", "common", "tri")),
+    binary = c("rare", "common"), categorical = "tri",
+    compare = compare, cutexact = cutexact, show_variable = FALSE
+  )
+}
+
+ce_test <- function(tbl, v) {
+  tb <- tbl$table_body
+  tb$test_name[tb$variable == v & tb$row_type == "label"]
+}
+
+test_that(".cutexact_tests ports the macro's percentage-of-cells rule", {
+  d <- ce_data()
+  vars <- c("rare", "common", "tri")
+  f <- "fisher.test"
+  ch <- "chisq.test.no.correct"
+  expect_identical(.cutexact_tests(d, "grp", vars, 50),
+                   c(rare = f, common = ch, tri = ch))
+  # The comparison is >=, as the macro's "ge": 33.3% meets 33.
+  expect_identical(.cutexact_tests(d, "grp", vars, 33),
+                   c(rare = f, common = ch, tri = f))
+  expect_identical(.cutexact_tests(d, "grp", vars, 51)[["rare"]], ch)
+  # 0 is the macro's "exact tests only"; above 100, never.
+  expect_identical(unname(.cutexact_tests(d, "grp", vars, 0)), rep(f, 3))
+  expect_identical(unname(.cutexact_tests(d, "grp", vars, 101)),
+                   rep(ch, 3))
+})
+
+test_that(".cutexact_tests counts cells over observed levels only", {
+  d <- ce_data()
+  # An unused factor level is not a cell; SAS never knew it existed.
+  d$tri <- factor(d$tri, levels = c("x", "y", "z", "never"))
+  expect_identical(.cutexact_tests(d, "grp", "tri", 34)[["tri"]],
+                   "chisq.test.no.correct")
+})
+
+test_that("hv_tbl_summary picks each categorical test by cutexact", {
+  skip_if_not_installed("broom")
+  tbl <- ce_tbl()
+  expect_identical(ce_test(tbl, "rare"), "fisher.test")
+  expect_identical(ce_test(tbl, "common"), "chisq.test.no.correct")
+  # gtsummary's own default would give tri Fisher (any cell < 5); the
+  # macro's 50% rule gives chi-square.
+  expect_identical(ce_test(tbl, "tri"), "chisq.test.no.correct")
+  d <- ce_data()
+  # The fixture is sparse on purpose, so the reference test warns that
+  # its approximation may be poor; the p-value is what is compared.
+  want <- suppressWarnings(
+    stats::chisq.test(table(d$grp, d$tri), correct = FALSE)$p.value
+  )
+  tb <- tbl$table_body
+  expect_equal(unname(tb$p.value[tb$variable == "tri"][1]), want)
+  expect_identical(ce_test(ce_tbl(cutexact = 0), "common"), "fisher.test")
+  expect_identical(ce_test(ce_tbl(cutexact = 101), "rare"),
+                   "chisq.test.no.correct")
+})
+
+test_that("cutexact must be \"any\" or a single number from 0 up", {
+  for (bad in list(-1, NA_real_, c(10, 20), "50", "all", NA_character_)) {
+    expect_error(ce_tbl(cutexact = bad),
+                 "`cutexact` must be \"any\" or a single number from 0 up",
+                 fixed = TRUE)
+  }
+})
+
+test_that("cutexact defaults to \"any\", Fisher when any cell expects < 5", {
+  expect_identical(formals(hv_tbl_summary)$cutexact, "any")
+  skip_if_not_installed("broom")
+  tbl <- hv_tbl_summary(
+    ce_data(), by = "grp",
+    groups = list(D = c("rare", "common", "tri")),
+    binary = c("rare", "common"), categorical = "tri",
+    compare = "pvalue", show_variable = FALSE
+  )
+  # tri has 2 of 6 sparse cells: Fisher under "any", chi-square under
+  # the macro's 50%.
+  expect_identical(ce_test(tbl, "tri"), "fisher.test")
+  expect_identical(ce_test(tbl, "rare"), "fisher.test")
+  expect_identical(ce_test(tbl, "common"), "chisq.test.no.correct")
+  expect_identical(ce_test(ce_tbl(cutexact = 50), "tri"),
+                   "chisq.test.no.correct")
+})
+
+test_that("the \"any\" default leaves categorical tests as gtsummary chose", {
+  skip_if_not_installed("broom")
+  # The previous release called add_p() with no categorical tests, so
+  # gtsummary picked them. The default must reproduce that exactly,
+  # unused factor levels and all.
+  d <- ce_data()
+  d$tri <- factor(d$tri, levels = c("x", "y", "z", "never"))
+  ours <- hv_tbl_summary(
+    d, by = "grp", groups = list(D = c("rare", "common", "tri")),
+    binary = c("rare", "common"), categorical = "tri",
+    compare = "pvalue", show_variable = FALSE, overall = FALSE
+  )$table_body
+  theirs <- gtsummary::tbl_summary(
+    d, by = "grp", include = c("rare", "common", "tri"),
+    type = list(rare ~ "dichotomous", common ~ "dichotomous"),
+    value = list(rare ~ 1, common ~ 1), missing = "no"
+  ) |> gtsummary::add_p()
+  theirs <- theirs$table_body
+  first <- function(tb) tb[tb$row_type == "label", ]
+  expect_identical(first(ours)$test_name, first(theirs)$test_name)
+  expect_equal(first(ours)$p.value, first(theirs)$p.value)
+})
+
+test_that("cutexact is last in the signature", {
+  f <- names(formals(hv_tbl_summary))
+  expect_identical(f[length(f) - 1L], "cutexact")
+})
+
+test_that("a Fisher p-value is marked ‡ in the CORR table and footnoted", {
+  skip_if_not_installed("broom")
+  tbl <- ce_tbl()
+  expect_identical(attr(tbl, "hv_footnotes")[["‡"]], "Fisher exact test.")
+  ft <- hv_man_table(tbl)
+  chunks <- flextable::information_data_chunk(ft)
+  p <- chunks[chunks$.part == "body" & chunks$.col_id == "p.value", ]
+  marked <- unique(p$.row_id[p$txt == "‡"])
+  d <- ft$body$dataset
+  expect_identical(d$label[marked], "rare")
+  # The mark is on the cell, not the header: a header ‡ would claim
+  # every p-value for Fisher.
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save(ft, path)
+  saved <- officer::docx_summary(officer::read_docx(path))
+  expect_true(any(grepl("Fisher exact test.", saved$text, fixed = TRUE)))
+  hdr <- saved$text[saved$content_type == "table cell" & saved$is_header]
+  expect_false(any(grepl("\u2021", hdr)))
+  body <- saved$text[saved$content_type == "table cell" & !saved$is_header]
+  expect_true(any(grepl("\u2021", body)))
+  expect_identical(nrow(hv_check_docx(path)), 0L)
+})
+
+test_that("no Fisher row, no ‡ footnote and no mark", {
+  skip_if_not_installed("broom")
+  tbl <- ce_tbl(cutexact = 101)
+  expect_null(attr(tbl, "hv_footnotes")[["‡"]])
+  chunks <- flextable::information_data_chunk(hv_man_table(tbl))
+  expect_false(any(chunks$txt == "‡"))
+})
+
+test_that("the JTCVS test footnotes letter the Fisher row", {
+  skip_if_not_installed("broom")
+  notes <- hv_test_footnotes_jtcvs(ce_tbl())
+  expect_true("Fisher exact test." %in% vapply(notes, `[[`, "", "text"))
+})
+
+test_that("saving a ‡-marked table with footnotes lacking ‡ fails loud", {
+  skip_if_not_installed("broom")
+  ft <- hv_man_table(ce_tbl())
+  expect_error(
+    hv_man_table_save(ft, tempfile(fileext = ".docx"),
+                      footnotes = hv_man_footnotes()),
+    "The table marks cells with \u2021 for \"Fisher exact test.\", so",
+    fixed = TRUE
+  )
+})
+
+test_that("a two-group 'both' table counts its median columns as wide", {
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = "age"),
+    continuous = "age", continuous_stat = "both", overall = FALSE
+  )
+  expect_true(.is_wide(hv_man_table(tbl)))
+  narrow <- hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = "age"),
+    continuous = "age", overall = FALSE
+  )
+  expect_false(.is_wide(hv_man_table(narrow)))
+})
+
+test_that("an ungrouped 'both' table heads its median column plainly", {
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, groups = list(D = "age"), continuous = "age",
+    continuous_stat = "both"
+  )
+  st <- tbl$table_styling$header
+  expect_identical(st$label[st$column == "hv_median_stat_0"],
+                   "**Median (15th, 85th percentile)**")
+})
+
+test_that("a study footnote may not reuse the Fisher mark's symbol", {
+  skip_if_not_installed("broom")
+  ft <- hv_man_table(ce_tbl())
+  expect_error(
+    hv_man_table_save(
+      ft, tempfile(fileext = ".docx"),
+      footnotes = c(hv_man_footnotes(),
+                    stats::setNames(list("Adjusted."), "\u2021"))
+    ),
+    "The table marks cells with \u2021 for \"Fisher exact test.\", so",
+    fixed = TRUE
+  )
+})
+
+test_that("a malformed footnotes list is named as such on a marked table", {
+  skip_if_not_installed("broom")
+  ft <- hv_man_table(ce_tbl())
+  expect_error(
+    hv_man_table_save(ft, tempfile(fileext = ".docx"),
+                      footnotes = list("text")),
+    "`footnotes` must be a named list", fixed = TRUE
+  )
+})
+
+test_that("under the \"any\" default a Fisher row is still marked ‡", {
+  skip_if_not_installed("broom")
+  tbl <- hv_tbl_summary(
+    ce_data(), by = "grp", groups = list(D = c("tri", "common")),
+    binary = "common", categorical = "tri", compare = "pvalue",
+    show_variable = FALSE
+  )
+  expect_identical(attr(tbl, "hv_footnotes")[["‡"]],
+                   "Fisher exact test.")
+  chunks <- flextable::information_data_chunk(hv_man_table(tbl))
+  expect_true(any(chunks$.part == "body" & chunks$txt == "‡"))
+})
+
+test_that("a categorical missing in every grouped row is tested, not fatal", {
+  skip_if_not_installed("broom")
+  # Its only values sit in rows whose group is missing, so within the
+  # groups there is nothing to tabulate. The CUTEXACT rule sees an empty
+  # table; the variable is shown with zero counts and no p-value.
+  d <- data.frame(
+    grp = c(rep("A", 20), rep("B", 20), rep(NA, 4)),
+    x = seq_len(44),
+    cat = factor(c(rep(NA, 40), "u", "v", "u", "v"))
+  )
+  expect_identical(.cutexact_tests(d, "grp", "cat", 50),
+                   c(cat = "chisq.test.no.correct"))
+  tbl <- suppressMessages(hv_tbl_summary(
+    d, by = "grp", groups = list(D = c("x", "cat")), continuous = "x",
+    categorical = "cat", compare = "pvalue", cutexact = 50,
+    show_variable = FALSE
+  ))
+  tb <- tbl$table_body
+  levels_1 <- tb$stat_1[tb$variable == "cat" & tb$row_type == "level"]
+  expect_identical(levels_1, c("0 ||| 0 (NA)", "0 ||| 0 (NA)"))
+  expect_true(is.na(tb$p.value[tb$variable == "cat"][1]))
+})
+
+test_that("a ‡ footnote with no Fisher p-value marks no cell", {
+  skip_if_not_installed("broom")
+  # hv_tbl_summary() adds the footnote only when a Fisher test ran, so
+  # this is a caller's hand-set footnote on a chi-square-only table.
+  tbl <- ce_tbl(cutexact = 101)
+  attr(tbl, "hv_footnotes")[["‡"]] <- "Fisher exact test."
+  ft <- hv_man_table(tbl)
+  chunks <- flextable::information_data_chunk(ft)
+  expect_false(any(chunks$.part == "body" & chunks$txt == "‡"))
+  expect_null(attr(ft, "hv_body_marks"))
 })
