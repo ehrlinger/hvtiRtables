@@ -111,3 +111,17 @@ test_that("every stop() in the package passes call. = FALSE", {
   }
   expect_identical(unique(offenders), character(0))
 })
+
+test_that("display-copy contract is identical across both savers", {
+  shown <- hv_man_table_display(hv_man_table(fx_plain_tbl()),
+                                footnotes = NULL)
+  m1 <- tryCatch(hv_man_table_save(shown, tempfile(fileext = ".docx")),
+                 error = conditionMessage)
+  m2 <- tryCatch(
+    hv_man_table_save_jtcvs(shown, tempfile(fileext = ".docx"),
+                            caption = "T1."),
+    error = conditionMessage
+  )
+  expect_match(m1, "is a display copy", fixed = TRUE)
+  expect_identical(m1, m2)
+})
