@@ -108,15 +108,6 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   .check_abbreviations(abbreviations)
 
   valid_symbols <- c("*", "\u2020", "\u2021", "\u00A7", "\u00B6", "||")
-  # hv_man_table() puts these on body cells; a mark with no footnote
-  # text would leave the reader guessing.
-  body_marked <- attr(ft, "hv_body_marks", exact = TRUE)
-  unexplained <- setdiff(body_marked, names(footnotes))
-  if (length(unexplained) > 0L)
-    stop("The table marks p-values with ", unexplained[1], ", but ",
-         "`footnotes` has no ", unexplained[1], " entry to explain it. ",
-         "Add one, e.g. footnotes = c(hv_man_footnotes(), list(`",
-         unexplained[1], "` = \"Fisher exact test.\")).", call. = FALSE)
   if (!is.null(footnotes) && length(footnotes) > 0) {
     fn_names <- names(footnotes)
     if (is.null(fn_names) || anyNA(fn_names) || any(!nzchar(fn_names)))
@@ -138,13 +129,23 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
                "dangling reference with nothing after it. Give the ",
                "entry text, e.g. \"Values are median (P15, P85).\"")
       )
-    # A symbol hv_man_table() already put on body cells needs no header
-    # mark.
-    for (sym in setdiff(fn_names, body_marked)) {
-      j <- which(ft$col_keys %in% .footnote_cols(ft, sym))
-      ft <- flextable::append_chunks(ft, i = 1, j = j, part = "header",
-                                     flextable::as_sup(sym))
-    }
+  }
+  # hv_man_table() put these symbols on body cells, each meaning one
+  # thing (symbol -> text). A missing entry leaves the mark unexplained;
+  # a different text under the same symbol would explain it wrongly.
+  body_marks <- attr(ft, "hv_body_marks", exact = TRUE)
+  for (sym in names(body_marks)) {
+    if (!identical(footnotes[[sym]], body_marks[[sym]]))
+      stop("The table marks cells with ", sym, " for \"",
+           body_marks[[sym]], "\", so `footnotes` must carry ", sym,
+           " with that text. Give any note of your own another symbol.",
+           call. = FALSE)
+  }
+  # A symbol already on body cells needs no header mark.
+  for (sym in setdiff(names(footnotes), names(body_marks))) {
+    j <- which(ft$col_keys %in% .footnote_cols(ft, sym))
+    ft <- flextable::append_chunks(ft, i = 1, j = j, part = "header",
+                                   flextable::as_sup(sym))
   }
 
   doc <- officer::read_docx()

@@ -468,7 +468,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   if (overall && !is.null(by))
     tbl <- gtsummary::add_overall(tbl, last = FALSE)
   if (continuous_stat == "both" && length(nonnormal) > 0L) {
-    tbl <- .split_median(tbl, median_label)
+    tbl <- .split_median(tbl, median_label, grouped = !is.null(by))
     attr(tbl, "hv_median_label") <- median_label
   }
 
@@ -611,7 +611,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 # without a median (categorical, `normal`, `mean_sd`) are blank there.
 # The renderers lay the column out beside its group: the report and the
 # manuscript table show the same thing, side by side.
-.split_median <- function(tbl, median_label) {
+.split_median <- function(tbl, median_label, grouped) {
   stat_cols <- grep("^stat_[0-9]+$", names(tbl$table_body), value = TRUE)
   sep <- paste0(" ", .median_sep, " ")
   hdr <- tbl$table_styling$header
@@ -626,11 +626,17 @@ hv_tbl_summary <- function(data, by = NULL, groups,
       keep <- setdiff(names(tb), med)
       tb[, append(keep, med, after = match(col, keep)), drop = FALSE]
     })
-    group <- sub("\\s*\\n.*$", "", hdr$label[hdr$column == col])
+    # Ungrouped, the statistic header is only "N = <n>", which would
+    # read as the median column's own count.
+    label <- if (grouped) {
+      paste0(sub("\\s*\\n.*$", "", hdr$label[hdr$column == col]), "  \n",
+             median_label)
+    } else {
+      paste0("**", median_label, "**")
+    }
     tbl <- do.call(
       gtsummary::modify_header,
-      c(list(tbl),
-        stats::setNames(list(paste0(group, "  \n", median_label)), med))
+      c(list(tbl), stats::setNames(list(label), med))
     )
   }
   tbl

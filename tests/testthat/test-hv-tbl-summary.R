@@ -1499,7 +1499,7 @@ test_that("saving a ‡-marked table with footnotes lacking ‡ fails loud", {
   expect_error(
     hv_man_table_save(ft, tempfile(fileext = ".docx"),
                       footnotes = hv_man_footnotes()),
-    "The table marks p-values with \u2021, but `footnotes` has no \u2021 entry",
+    "The table marks cells with \u2021 for \"Fisher exact test.\", so",
     fixed = TRUE
   )
 })
@@ -1515,4 +1515,38 @@ test_that("a two-group 'both' table counts its median columns as wide", {
     continuous = "age", overall = FALSE
   )
   expect_false(.is_wide(hv_man_table(narrow)))
+})
+
+test_that("an ungrouped 'both' table heads its median column plainly", {
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, groups = list(D = "age"), continuous = "age",
+    continuous_stat = "both"
+  )
+  st <- tbl$table_styling$header
+  expect_identical(st$label[st$column == "hv_median_stat_0"],
+                   "**Median (15th, 85th percentile)**")
+})
+
+test_that("a study footnote may not reuse the Fisher mark's symbol", {
+  skip_if_not_installed("broom")
+  ft <- hv_man_table(ce_tbl())
+  expect_error(
+    hv_man_table_save(
+      ft, tempfile(fileext = ".docx"),
+      footnotes = c(hv_man_footnotes(),
+                    stats::setNames(list("Adjusted."), "\u2021"))
+    ),
+    "The table marks cells with \u2021 for \"Fisher exact test.\", so",
+    fixed = TRUE
+  )
+})
+
+test_that("a malformed footnotes list is named as such on a marked table", {
+  skip_if_not_installed("broom")
+  ft <- hv_man_table(ce_tbl())
+  expect_error(
+    hv_man_table_save(ft, tempfile(fileext = ".docx"),
+                      footnotes = list("text")),
+    "`footnotes` must be a named list", fixed = TRUE
+  )
 })

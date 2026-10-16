@@ -199,6 +199,19 @@ test_that("hv_man_table_jtcvs rejects an unnamed trailing", {
   )
 })
 
+test_that("hv_man_table_jtcvs rejects a repeated trailing name", {
+  tbl <- mk_jtcvs_tbl()
+  tbl$table_body$a <- "x"
+  expect_error(
+    hv_man_table_jtcvs(
+      tbl, groups = c(stat_1 = "Group A", stat_2 = "Group B"),
+      trailing = c(a = "P", a = "Q")
+    ),
+    "`trailing` names a column more than once: a.",
+    fixed = TRUE
+  )
+})
+
 test_that("hv_man_table_jtcvs lays out two trailing columns in order", {
   tbl <- mk_jtcvs_tbl()
   tbl$table_body$a <- "x"

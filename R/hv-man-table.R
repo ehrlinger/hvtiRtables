@@ -131,7 +131,7 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   if (length(i) == 0L) return(ft)
   ft <- flextable::append_chunks(ft, i = i, j = "p.value", part = "body",
                                  flextable::as_sup(ddag))
-  attr(ft, "hv_body_marks") <- ddag
+  attr(ft, "hv_body_marks") <- stats::setNames(footnotes[[ddag]], ddag)
   ft
 }
 

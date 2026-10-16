@@ -81,11 +81,7 @@ hv_tbl_compare <- function(tbl, values, label) {
   if (length(unknown) > 0L)
     stop("`values` names variable(s) not in the table: ",
          paste(unknown, collapse = ", "), ".", call. = FALSE)
-  if (!is.character(label) || length(label) != 1L || is.na(label) ||
-        !nzchar(label))
-    stop("`label` must be a single non-empty string, e.g. ",
-         "\"Std. Diff. (%)\". Received: ", .describe(label), ".",
-         call. = FALSE)
+  .check_string(label, "label")
 
   k <- 1L
   while (paste0("hv_join_", k) %in% names(tb)) k <- k + 1L

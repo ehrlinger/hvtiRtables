@@ -193,6 +193,10 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
           any(!nzchar(names(trailing))))
       stop("`trailing` must be a named character vector, one entry per ",
            "column (e.g. c(std_diff = \"Std. Diff.\")).", call. = FALSE)
+    if (anyDuplicated(names(trailing)))
+      stop("`trailing` names a column more than once: ",
+           names(trailing)[duplicated(names(trailing))][1], ".",
+           call. = FALSE)
     absent <- setdiff(names(trailing), names(tbl$table_body))
     if (length(absent) > 0L)
       stop("`trailing` name `", absent[1], "` is not a column ",
