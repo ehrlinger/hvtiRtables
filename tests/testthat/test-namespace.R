@@ -10,7 +10,8 @@ test_that("NAMESPACE exports exactly the public functions", {
   exports <- sub("^export\\((.*)\\)$", "\\1", declared)
   expect_setequal(exports, c(
     "hv_check_docx", "hv_correlation_table", "hv_man_footnotes",
-    "hv_man_table", "hv_man_table_jtcvs", "hv_man_table_save",
+    "hv_man_table", "hv_man_table_display", "hv_man_table_jtcvs",
+    "hv_man_table_save",
     "hv_man_table_save_jtcvs", "hv_tbl_compare", "hv_tbl_summary",
     "hv_test_footnotes_jtcvs"
   ))

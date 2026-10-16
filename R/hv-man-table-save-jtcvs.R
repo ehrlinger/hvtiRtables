@@ -104,6 +104,7 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
                                     abbreviations = NULL, ...) {
   .check_sas_args(list(...), "hv_man_table_save_jtcvs")
   .check_flextable(ft)
+  .check_not_display(ft)
   .check_file(file)
   .check_string(caption, "caption")
   .check_abbreviations(abbreviations)
