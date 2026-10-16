@@ -144,6 +144,47 @@
   do.call(rbind, out)
 }
 
+# A table may overrun its text block by this much before it is flagged:
+# 20 dxa is 1 pt, enough to absorb rounding when column widths are written
+# out, far short of a clipped column.
+.wide_tol_dxa <- 20
+
+# A table wider than the text block of the section it sits in runs into
+# the margin or off the page, and Word clips what does not fit. Each table
+# belongs to the first section break after it (a paragraph's w:sectPr), or
+# to the body's own w:sectPr when none follows.
+.detect_wide_table <- function(doc) {
+  out <- list()
+  tbls <- xml2::xml_find_all(doc, "//w:tbl")
+  for (i in seq_along(tbls)) {
+    grid <- xml2::xml_find_all(tbls[[i]], "./w:tblGrid/w:gridCol")
+    widths <- suppressWarnings(as.numeric(xml2::xml_attr(grid, "w")))
+    if (length(widths) == 0L || anyNA(widths)) next
+    sect <- xml2::xml_find_first(tbls[[i]], "following::w:sectPr[1]")
+    if (inherits(sect, "xml_missing"))
+      sect <- xml2::xml_find_first(doc, "//w:body/w:sectPr")
+    attr_num <- function(xp, at) {
+      suppressWarnings(as.numeric(
+        xml2::xml_attr(xml2::xml_find_first(sect, xp), at)
+      ))
+    }
+    text <- attr_num("./w:pgSz", "w") - attr_num("./w:pgMar", "left") -
+      attr_num("./w:pgMar", "right")
+    if (is.na(text) || sum(widths) <= text + .wide_tol_dxa) next
+    out[[length(out) + 1]] <- .finding(
+      "wide_table", i, NA_character_,
+      sprintf(
+        paste0("Table is %.2f in wide; the page leaves %.2f in between the ",
+               "margins, so Word clips the columns past them. Fit the ",
+               "table or turn the page."),
+        sum(widths) / 1440, text / 1440
+      )
+    )
+  }
+  if (length(out) == 0) return(.empty_report())
+  do.call(rbind, out)
+}
+
 #' Check a .docx for structural patterns the house rules forbid
 #'
 #' Read-only inspection of any Word document, whether written by this
@@ -230,47 +271,6 @@
 #' }
 #'
 #' @export
-# A table may overrun its text block by this much before it is flagged:
-# 20 dxa is 1 pt, enough to absorb rounding when column widths are written
-# out, far short of a clipped column.
-.wide_tol_dxa <- 20
-
-# A table wider than the text block of the section it sits in runs into
-# the margin or off the page, and Word clips what does not fit. Each table
-# belongs to the first section break after it (a paragraph's w:sectPr), or
-# to the body's own w:sectPr when none follows.
-.detect_wide_table <- function(doc) {
-  out <- list()
-  tbls <- xml2::xml_find_all(doc, "//w:tbl")
-  for (i in seq_along(tbls)) {
-    grid <- xml2::xml_find_all(tbls[[i]], "./w:tblGrid/w:gridCol")
-    widths <- suppressWarnings(as.numeric(xml2::xml_attr(grid, "w")))
-    if (length(widths) == 0L || anyNA(widths)) next
-    sect <- xml2::xml_find_first(tbls[[i]], "following::w:sectPr[1]")
-    if (inherits(sect, "xml_missing"))
-      sect <- xml2::xml_find_first(doc, "//w:body/w:sectPr")
-    attr_num <- function(xp, at) {
-      suppressWarnings(as.numeric(
-        xml2::xml_attr(xml2::xml_find_first(sect, xp), at)
-      ))
-    }
-    text <- attr_num("./w:pgSz", "w") - attr_num("./w:pgMar", "left") -
-      attr_num("./w:pgMar", "right")
-    if (is.na(text) || sum(widths) <= text + .wide_tol_dxa) next
-    out[[length(out) + 1]] <- .finding(
-      "wide_table", i, NA_character_,
-      sprintf(
-        paste0("Table is %.2f in wide; the page leaves %.2f in between the ",
-               "margins, so Word clips the columns past them. Fit the ",
-               "table or turn the page."),
-        sum(widths) / 1440, text / 1440
-      )
-    )
-  }
-  if (length(out) == 0) return(.empty_report())
-  do.call(rbind, out)
-}
-
 hv_check_docx <- function(path) {
   .check_string(path, "path")
   doc <- .docx_body_xml(path)
