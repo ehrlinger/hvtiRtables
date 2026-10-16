@@ -30,6 +30,9 @@
 #' unexplained or files another note under it. Omit `footnotes`, or add
 #' the entry the error names.
 #'
+#' **"`ft` is a JTCVS table ..."** The helper shows CORR tables. A JTCVS
+#' table letters its notes, and [hv_man_table_save_jtcvs()] places them.
+#'
 #' **Different notes in the report and in Word.** Pass the same
 #' `footnotes` and `abbreviations` to both calls.
 #'
@@ -60,6 +63,14 @@ hv_man_table_display <- function(ft, footnotes = NULL,
                                  abbreviations = NULL) {
   use_default_footnotes <- missing(footnotes)
   .check_flextable(ft)
+  .check_not_display(ft)
+  # A JTCVS table letters its notes and has no stat_ columns for the
+  # dagger, which would land on the first n column instead.
+  if (!is.null(attr(ft, "hv_header_footnotes", exact = TRUE)))
+    stop("`ft` is a JTCVS table from hv_man_table_jtcvs(). ",
+         "hv_man_table_display() shows CORR tables from hv_man_table(); ",
+         "a JTCVS table's notes are lettered by hv_man_table_save_jtcvs().",
+         call. = FALSE)
   if (use_default_footnotes) footnotes <- .default_footnotes(ft)
   .check_abbreviations(abbreviations)
   footnotes <- .resolve_footnotes(ft, footnotes)
@@ -78,6 +89,9 @@ hv_man_table_display <- function(ft, footnotes = NULL,
     font <- .table_font(ft)
     if (!is.null(font))
       ft <- flextable::font(ft, fontname = font, part = "footer")
+    size <- ft$body$styles$text$font.size$data
+    if (length(size) > 0L && !is.na(size[1]))
+      ft <- flextable::fontsize(ft, size = size[1], part = "footer")
     ft <- flextable::align(ft, align = "left", part = "footer")
   }
   attr(ft, "hv_display") <- TRUE

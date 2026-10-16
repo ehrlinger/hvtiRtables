@@ -142,3 +142,30 @@ test_that("a display copy cannot be saved to Word", {
     fixed = TRUE
   )
 })
+
+test_that("display refuses a JTCVS table, whose notes are lettered", {
+  expect_error(hv_man_table_display(fx_jtcvs_ft()),
+               "`ft` is a JTCVS table from hv_man_table_jtcvs()",
+               fixed = TRUE)
+})
+
+test_that("display refuses its own result rather than marking it twice", {
+  plain <- hv_man_table(fx_plain_tbl())
+  once <- hv_man_table_display(plain, abbreviations = dp_abbr)
+  expect_error(hv_man_table_display(once),
+               "`ft` is a display copy from hv_man_table_display()",
+               fixed = TRUE)
+})
+
+test_that("the footer lines take the table's font and size", {
+  # No footer of its own, so the new lines cannot copy one's style.
+  ft <- hv_man_table(hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = "age"),
+    continuous = "age", compare = "none"
+  ), font = "Arial", font_size = 12)
+  expect_identical(flextable::nrow_part(ft, "footer"), 0L)
+  shown <- hv_man_table_display(ft, abbreviations = dp_abbr)
+  sty <- shown$footer$styles$text
+  expect_true(all(sty$font.size$data == 12))
+  expect_true(all(sty$font.family$data == "Arial"))
+})

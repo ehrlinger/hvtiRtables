@@ -327,7 +327,7 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 .check_not_display <- function(ft) {
   if (isTRUE(attr(ft, "hv_display", exact = TRUE)))
     stop("`ft` is a display copy from hv_man_table_display(), with its ",
-         "notes as rows inside the table. Save the flextable it was made ",
+         "notes as rows inside the table. Pass the flextable it was made ",
          "from instead.", call. = FALSE)
   invisible(NULL)
 }

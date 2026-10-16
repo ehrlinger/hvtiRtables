@@ -54,6 +54,9 @@ p-value marked with a double dagger, and \code{footnotes} leaves it
 unexplained or files another note under it. Omit \code{footnotes}, or add
 the entry the error names.
 
+\strong{"\code{ft} is a JTCVS table ..."} The helper shows CORR tables. A JTCVS
+table letters its notes, and \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}} places them.
+
 \strong{Different notes in the report and in Word.} Pass the same
 \code{footnotes} and \code{abbreviations} to both calls.
 }
