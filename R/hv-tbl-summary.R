@@ -321,8 +321,8 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   p_hi <- percentiles[2]
   ordinal <- .format_ordinal(percentiles)
   # {N_nonmiss}, not {N_obs}: the N column is footnoted "Number of
-  # non-missing data available." (house rule 8), and {N_obs} counts
-  # every row, missing ones included. The SAS tables count non-missing (bsa shows
+  # non-missing values." (house rule 8), and {N_obs} counts every row,
+  # missing ones included. The SAS tables count non-missing (bsa shows
   # 7947 of 7948), so {N_obs} silently overstated n for any variable
   # with missing data.
   median_label <- sprintf(
