@@ -6,8 +6,8 @@ test_that("NAMESPACE exports exactly the public functions", {
   ns <- system.file("NAMESPACE", package = "hvtiRtables")
   skip_if(!nzchar(ns), "NAMESPACE file not found")
   lines <- readLines(ns)
-  exports <- sub("^export\\((.*)\\)$", "\\1", grep("^export\\(", lines,
-                                                    value = TRUE))
+  declared <- grep("^export\\(", lines, value = TRUE)
+  exports <- sub("^export\\((.*)\\)$", "\\1", declared)
   expect_setequal(exports, c(
     "hv_check_docx", "hv_correlation_table", "hv_man_footnotes",
     "hv_man_table", "hv_man_table_jtcvs", "hv_man_table_save",
