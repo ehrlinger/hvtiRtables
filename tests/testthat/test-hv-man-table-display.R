@@ -111,7 +111,8 @@ test_that("nothing to add leaves the table without a footer", {
 })
 
 test_that("display refuses what the saver refuses, in the same words", {
-  ft <- dp_ft()
+  # No p-values needed, so no broom: these checks run on every install.
+  ft <- hv_man_table(fx_plain_tbl())
   for (bad in list(list(`#` = "x"), list("unnamed"),
                    list(`*` = NA_character_))) {
     m1 <- tryCatch(hv_man_table_save(ft, tempfile(fileext = ".docx"),
