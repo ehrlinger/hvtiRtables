@@ -95,9 +95,12 @@ there to show it.}
 summarized. \code{"median"} gives
 \verb{median (P<low>, P<high>)}; \code{"mean"} gives mean +/- SD, with no
 spaces around the plus-minus sign and EHB/Blackstone paired rounding;
-\code{"both"} puts the two on sub-rows under the variable, mean +/- SD
-first, with the N shown once, on the first. Choosing one for the
-manuscript is then a matter of deleting a row. The test does not
+\code{"both"} puts the two side by side: each group's statistic column
+shows mean +/- SD (or \verb{n (\%)} for a categorical row), and a median
+column beside it shows \verb{median (P<low>, P<high>)}, blank on rows
+with no median. Both renderers lay it out the same way. Choosing
+one for the manuscript is then a matter of dropping a column. The
+test does not
 change with the statistic: only \code{normal} selects ANOVA. The CORR
 footnote carried through \code{\link[=hv_man_table]{hv_man_table()}} to \code{\link[=hv_man_table_save]{hv_man_table_save()}}
 follows this choice automatically. Placed after

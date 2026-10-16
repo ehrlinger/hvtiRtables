@@ -24,3 +24,9 @@
   p-value carries a superscript double dagger, footnoted "Fisher exact
   test."; `hv_man_table_save()` stops if given `footnotes` that leave
   that mark unexplained.
+* `continuous_stat = "both"` now shows mean±SD and the median side by side,
+  in a median column beside each group's statistic column, instead of
+  stacked sub-rows. Both renderers lay it out the same way. **This changes
+  existing "both" tables**: the statistic columns and their dagger now read
+  "No. (%) or Mean±SD", the median column names itself in its header, and
+  a two-group "both" table now saves in landscape.

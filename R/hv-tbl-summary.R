@@ -142,9 +142,12 @@
 #'   summarized. `"median"` gives
 #'   `median (P<low>, P<high>)`; `"mean"` gives mean +/- SD, with no
 #'   spaces around the plus-minus sign and EHB/Blackstone paired rounding;
-#'   `"both"` puts the two on sub-rows under the variable, mean +/- SD
-#'   first, with the N shown once, on the first. Choosing one for the
-#'   manuscript is then a matter of deleting a row. The test does not
+#'   `"both"` puts the two side by side: each group's statistic column
+#'   shows mean +/- SD (or `n (%)` for a categorical row), and a median
+#'   column beside it shows `median (P<low>, P<high>)`, blank on rows
+#'   with no median. Both renderers lay it out the same way. Choosing
+#'   one for the manuscript is then a matter of dropping a column. The
+#'   test does not
 #'   change with the statistic: only `normal` selects ANOVA. The CORR
 #'   footnote carried through [hv_man_table()] to [hv_man_table_save()]
 #'   follows this choice automatically. Placed after
@@ -318,8 +321,8 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   p_hi <- percentiles[2]
   ordinal <- .format_ordinal(percentiles)
   # {N_nonmiss}, not {N_obs}: the N column is footnoted "Number of
-  # non-missing values." (house rule 8), and {N_obs} counts every row,
-  # missing ones included. The SAS tables count non-missing (bsa shows
+  # non-missing data available." (house rule 8), and {N_obs} counts
+  # every row, missing ones included. The SAS tables count non-missing (bsa shows
   # 7947 of 7948), so {N_obs} silently overstated n for any variable
   # with missing data.
   median_label <- sprintf(
@@ -334,13 +337,13 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     continuous_stat,
     median = paste("{N_nonmiss} |||", median_stat),
     mean = paste("{N_nonmiss} |||", mean_stat),
-    # Two sub-rows under one label row (gtsummary's "continuous2"). The
-    # N sits on the first only: " ||| " with nothing before it splits
-    # into a blank N cell, so each variable shows its n once.
-    both = c(paste("{N_nonmiss} |||", mean_stat),
-             paste(" |||", median_stat))
+    # One row, both statistics: .split_median() below moves the part
+    # after the separator into a median column beside each group's
+    # statistic column, so the two read side by side rather than as
+    # stacked sub-rows.
+    both = paste("{N_nonmiss} |||", mean_stat, .median_sep, median_stat)
   )
-  cont_type <- if (continuous_stat == "both") "continuous2" else "continuous"
+  cont_type <- "continuous"
 
   # No "%" in the cell: the header or dagger says "No. (%)" once, as the
   # SAS macro does ("12 (39)"), and a repeated sign costs width and
@@ -359,10 +362,13 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # Mixed: rows of one table show different continuous statistics, so
   # no one header or footnote can name them all. Each continuous row
   # then names its own (the macro's DESCLABEL=1).
+  # Under "both" every statistic column shows mean±SD, and the median
+  # columns name themselves, so nothing is mixed.
   mixed <- length(shown_mean) > 0L && length(nonnormal) > 0L &&
-    continuous_stat != "mean"
+    continuous_stat == "median"
   label_stat <- if (length(continuous) > 0L && length(nonnormal) == 0L)
-    "mean" else if (mixed) "mixed" else continuous_stat
+    "mean" else if (mixed) "mixed" else if (continuous_stat == "both")
+      "mean" else continuous_stat
 
   # A list rather than a character vector: under "both" each continuous
   # variable takes a length-2 statistic.
@@ -429,10 +435,8 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # add_overall() must run before add_p()/add_difference() below --
   # gtsummary requires it ahead of comparison columns so the comparison
   # column stays rightmost.
-  # Applied at each return, not here: gtsummary labels continuous2
-  # sub-rows from the glue string, separator and all ("N Non-missing |||
-  # Mean ± SD"), and add_overall() matches rows on those labels, so
-  # renaming them any earlier makes it fail.
+  # Applied at each return, not here: add_overall() matches rows on
+  # their labels, so suffixing them any earlier makes it fail.
   # Every return goes through finish(): the relabel, then the variable
   # column, added last so add_overall() and the comparison calls never
   # see a column they do not know.
@@ -442,19 +446,11 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     tbl
   }
   relabel <- function(tbl) {
-    if (continuous_stat == "both")
-      tbl <- gtsummary::modify_table_body(tbl, function(tb) {
-        i <- tb$row_type == "level" & tb$variable %in% nonnormal
-        tb$label[i] <- rep_len(c(mean_label, median_label), sum(i))
-        tb
-      })
     if (!mixed) return(tbl)
-    # "Age, Mean±SD", as the macro wrote it. A "both" variable already
-    # names its statistics on its sub-rows, so it gets no suffix.
+    # "Age, Mean±SD", as the macro wrote it.
     suffix <- c(
       stats::setNames(rep(mean_label, length(shown_mean)), shown_mean),
-      if (continuous_stat == "median")
-        stats::setNames(rep(median_label, length(nonnormal)), nonnormal)
+      stats::setNames(rep(median_label, length(nonnormal)), nonnormal)
     )
     gtsummary::modify_table_body(tbl, function(tb) {
       i <- tb$row_type == "label" & tb$variable %in% names(suffix)
@@ -465,6 +461,10 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 
   if (overall && !is.null(by))
     tbl <- gtsummary::add_overall(tbl, last = FALSE)
+  if (continuous_stat == "both" && length(nonnormal) > 0L) {
+    tbl <- .split_median(tbl, median_label)
+    attr(tbl, "hv_median_label") <- median_label
+  }
 
   attr(tbl, "hv_stat_label") <- .stat_label(label_stat, percentiles)
   attr(tbl, "hv_footnotes") <- stats::setNames(
@@ -593,6 +593,40 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   attr(tbl, "hv_trailing") <- stats::setNames(compare_label, "hv_compare_col")
 
   finish(tbl)
+}
+
+# Separates mean±SD from the median inside one continuous_stat = "both"
+# cell, until .split_median() takes them apart.
+.median_sep <- "~~~"
+
+# Move the median out of each "both" cell into a column of its own,
+# `hv_median_<stat column>`, placed right after that statistic column
+# and headed with the group's name and the median's description. Rows
+# without a median (categorical, `normal`, `mean_sd`) are blank there.
+# The renderers lay the column out beside its group: the report and the
+# manuscript table show the same thing, side by side.
+.split_median <- function(tbl, median_label) {
+  stat_cols <- grep("^stat_[0-9]+$", names(tbl$table_body), value = TRUE)
+  sep <- paste0(" ", .median_sep, " ")
+  hdr <- tbl$table_styling$header
+  for (col in stat_cols) {
+    med <- paste0("hv_median_", col)
+    tbl <- gtsummary::modify_table_body(tbl, function(tb) {
+      parts <- strsplit(tb[[col]], sep, fixed = TRUE)
+      tb[[col]] <- vapply(parts, `[`, character(1), 1L)
+      tb[[med]] <- vapply(parts, function(p)
+        if (length(p) == 2L) p[2] else NA_character_, character(1))
+      keep <- setdiff(names(tb), med)
+      tb[, append(keep, med, after = match(col, keep)), drop = FALSE]
+    })
+    group <- sub("\\s*\\n.*$", "", hdr$label[hdr$column == col])
+    tbl <- do.call(
+      gtsummary::modify_header,
+      c(list(tbl),
+        stats::setNames(list(paste0(group, "  \n", median_label)), med))
+    )
+  }
+  tbl
 }
 
 # %summarytable's CUTEXACT= rule (summarytable.sas, lines 1265-1320):

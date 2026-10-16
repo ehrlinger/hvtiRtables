@@ -179,13 +179,18 @@ test_that("JTCVS: the statistic label follows the table's statistic", {
   expect_true("No. (%) or Mean±SD" %in% sub2)
 })
 
-test_that("JTCVS: under continuous_stat = 'both', each row names its stat", {
+test_that("JTCVS: under continuous_stat = 'both', the stats sit side by side", {
   f <- wx_save_jtcvs(wx_tbl("both"))
   on.exit(unlink(f), add = TRUE)
-  labels <- vapply(wx_rows(wx_doc(f)), function(r) r[[1]]$text, "")
+  rows <- wx_rows(wx_doc(f))
+  labels <- vapply(rows, function(r) r[[1]]$text, "")
   age <- which(labels == "Age")
-  expect_identical(labels[age + 1:2],
-                   c("Mean±SD", "Median (15th, 85th percentile)"))
+  # No sub-rows under the variable.
+  expect_false(labels[age + 1] %in% c("Mean±SD",
+                                      "Median (15th, 85th percentile)"))
+  sub <- cell_text(rows[[2]])
+  expect_true("No. (%) or Mean±SD" %in% sub)
+  expect_true("Median (15th, 85th percentile)" %in% sub)
 })
 
 test_that("JTCVS: no fill colour anywhere in the table", {

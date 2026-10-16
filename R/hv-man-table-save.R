@@ -172,7 +172,7 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 # with its No. column overflow a portrait page; Word clips the right
 # edge rather than wrapping.
 .is_wide <- function(ft) {
-  sum(grepl("^stat_[0-9]+$", ft$col_keys)) >= 3L
+  sum(grepl("^(hv_median_)?stat_[0-9]+$", ft$col_keys)) >= 3L
 }
 
 # The template's own page (A4, 1417-twip margins) turned on its side,

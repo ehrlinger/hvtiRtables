@@ -991,17 +991,15 @@ test_that("EHB/Blackstone rounding treats only exact ties as ties", {
   expect_identical(tbl$table_body$stat_0, "2 ||| 123±12.7")
 })
 
-test_that("paired rounding changes only the mean row under both", {
+test_that("paired rounding changes only the mean column under both", {
   dta <- data.frame(value = c(100, 110, 130, 150))
   tbl <- hv_tbl_summary(
     dta, groups = list(D = "value"), continuous = "value",
     continuous_stat = "both"
   )
 
-  expect_identical(tbl$table_body$stat_0[2], "4 ||| 120±22")
-  expect_identical(
-    tbl$table_body$stat_0[3], " ||| 120 (100, 150)"
-  )
+  expect_identical(tbl$table_body$stat_0, "4 ||| 120±22")
+  expect_identical(tbl$table_body$hv_median_stat_0, "120 (100, 150)")
 })
 
 test_that("zero or unavailable SD keeps gtsummary's rendering", {
@@ -1020,28 +1018,42 @@ test_that("zero or unavailable SD keeps gtsummary's rendering", {
   expect_identical(missing_sd$table_body$stat_0, "1 ||| 123.4560±NA")
 })
 
-test_that("continuous_stat = \"both\" puts mean and median on sub-rows", {
+test_that("continuous_stat = \"both\" puts mean and median side by side", {
   dta <- data.frame(age = c(10, 20, 30, NA, 40, 50), g = c(0, 0, 0, 1, 1, 1))
   tbl <- hv_tbl_summary(
     dta, by = "g", groups = list(D = "age"), continuous = "age",
     continuous_stat = "both"
   )
   tb <- tbl$table_body
-  expect_identical(tb$row_type, c("label", "level", "level"))
-  expect_identical(
-    tb$label[2:3], c("Mean±SD", "Median (15th, 85th percentile)")
+  # One row per variable: no sub-rows to stack.
+  expect_identical(tb$row_type, "label")
+  expect_match(tb$stat_1, "^3 \\|\\|\\| 20±[0-9.]+$")
+  expect_identical(tb$hv_median_stat_1, "20 (10, 30)")
+  expect_identical(tb$hv_median_stat_0, "30 (10, 50)")
+  expect_false(is.na(tb$hv_compare_col))
+  # The statistic columns hold mean±SD; the median columns name
+  # themselves in their own header.
+  expect_identical(attr(tbl, "hv_stat_label"), "No. (%) or Mean±SD")
+  expect_identical(attr(tbl, "hv_median_label"),
+                   "Median (15th, 85th percentile)")
+  st <- tbl$table_styling$header
+  expect_false(st$hide[st$column == "hv_median_stat_1"])
+  expect_match(st$label[st$column == "hv_median_stat_1"],
+               "Median \\(15th, 85th percentile\\)")
+})
+
+test_that("under 'both' the median column is blank on other rows", {
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(D = c("age", "marker", "grade", "response")),
+    continuous = c("age", "marker"), categorical = "grade",
+    binary = "response", continuous_stat = "both", mean_sd = "marker"
   )
-  # N once per variable, on the first sub-row; the second carries a
-  # blank N that the renderers split into an empty cell.
-  expect_identical(sub(" \\|\\|\\| .*$", "", tb$stat_1[2]), "3")
-  expect_true(startsWith(tb$stat_1[3], " ||| "))
-  # The comparison sits on the variable's label row, not a sub-row.
-  expect_false(is.na(tb$hv_compare_col[1]))
-  expect_true(all(is.na(tb$hv_compare_col[2:3])))
-  expect_identical(
-    attr(tbl, "hv_stat_label"),
-    "No. (%), Mean±SD, or Median (15th, 85th percentile)"
-  )
+  tb <- tbl$table_body
+  has_med <- !is.na(tb$hv_median_stat_1)
+  expect_identical(tb$variable[has_med], "age")
+  expect_identical(tb$label[tb$variable == "marker"],
+                   "Marker Level (ng/mL)")
 })
 
 test_that("continuous_stat = \"both\" renders through both renderers", {
@@ -1049,16 +1061,32 @@ test_that("continuous_stat = \"both\" renders through both renderers", {
     gtsummary::trial, by = "trt", groups = list(D = c("age", "grade")),
     continuous = "age", categorical = "grade", continuous_stat = "both"
   )
-  d <- hv_man_table(tbl)$body$dataset
+  corr <- hv_man_table(tbl)
+  d <- corr$body$dataset
   expect_false(any(grepl("|||", unlist(d), fixed = TRUE)))
-  expect_identical(d$n_stat_1[d$label == "Median (15th, 85th percentile)"],
-                   "")
-  ft <- hv_man_table_jtcvs(
+  expect_identical(
+    corr$col_keys[match("stat_1", corr$col_keys) + c(-1L, 1L)],
+    c("n_stat_1", "hv_median_stat_1")
+  )
+  expect_match(d$hv_median_stat_1[d$label == "Age"], "^[0-9]+ \\(")
+  jt <- hv_man_table_jtcvs(
     tbl, groups = c(stat_0 = "Overall", stat_1 = "A", stat_2 = "B"),
-    stat_label = attr(tbl, "hv_stat_label"),
     trailing = attr(tbl, "hv_trailing")
   )
-  expect_s3_class(ft, "flextable")
+  expect_identical(
+    jt$col_keys[match("disp_stat_1", jt$col_keys) + c(-1L, 1L)],
+    c("n_stat_1", "med_stat_1")
+  )
+  jd <- jt$body$dataset
+  expect_identical(jd$med_stat_1[jd$label == "Age"],
+                   d$hv_median_stat_1[d$label == "Age"])
+  chunks <- flextable::information_data_chunk(jt)
+  h <- chunks[chunks$.part == "header" & chunks$.col_id == "med_stat_1", ]
+  expect_true(any(h$txt == "Median (15th, 85th percentile)"))
+  expect_true(any(h$txt == "A"))
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save(corr, path)
+  expect_identical(nrow(hv_check_docx(path)), 0L)
 })
 
 test_that("overall must be a single TRUE or FALSE", {
@@ -1184,15 +1212,13 @@ test_that("an unmixed table keeps plain labels and one stated statistic", {
   expect_identical(attr(mean_tbl, "hv_stat_label"), "No. (%) or Mean±SD")
 })
 
-test_that("under 'both' a normal variable is one suffixed row", {
+test_that("under 'both' a normal variable has a blank median", {
   tbl <- nm_tbl(continuous_stat = "both")
   tb <- tbl$table_body
-  expect_identical(nm_label(tbl, "age"), "Age, Mean±SD")
+  expect_identical(nm_label(tbl, "age"), "Age")
   expect_identical(sum(tb$variable == "age"), 1L)
-  expect_identical(
-    tb$label[tb$variable == "marker" & tb$row_type == "level"],
-    c("Mean±SD", "Median (15th, 85th percentile)")
-  )
+  expect_true(is.na(tb$hv_median_stat_1[tb$variable == "age"]))
+  expect_false(is.na(tb$hv_median_stat_1[tb$variable == "marker"]))
 })
 
 test_that("a normal variable is tested with pooled-variance one-way ANOVA", {
@@ -1476,4 +1502,17 @@ test_that("saving a ‡-marked table with footnotes lacking ‡ fails loud", {
     "The table marks p-values with \u2021, but `footnotes` has no \u2021 entry",
     fixed = TRUE
   )
+})
+
+test_that("a two-group 'both' table counts its median columns as wide", {
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = "age"),
+    continuous = "age", continuous_stat = "both", overall = FALSE
+  )
+  expect_true(.is_wide(hv_man_table(tbl)))
+  narrow <- hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = "age"),
+    continuous = "age", overall = FALSE
+  )
+  expect_false(.is_wide(hv_man_table(narrow)))
 })

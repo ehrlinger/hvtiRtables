@@ -124,9 +124,10 @@ test_that("default footnotes follow a table with both statistics", {
   on.exit(unlink(f), add = TRUE)
   hv_man_table_save(ft, f)
   xml <- read_docx_text(f)
-  expect_true(grepl(
-    "No. (%), Mean±SD, or Median (15th, 85th percentile).", xml, fixed = TRUE
-  ))
+  # The statistic columns hold mean±SD; the median sits in its own
+  # column, which names itself in its header.
+  expect_true(grepl("No. (%) or Mean±SD.", xml, fixed = TRUE))
+  expect_true(grepl("Median (15th, 85th percentile)", xml, fixed = TRUE))
 })
 
 test_that("default footnotes follow custom percentiles", {

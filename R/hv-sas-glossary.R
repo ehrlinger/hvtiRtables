@@ -58,8 +58,14 @@
   pp       = list(arg = "percentiles", stage = "compute"),
   pvalues  = list(arg = "compare",     stage = "compute"),
   asd      = list(arg = "compare",     stage = "compute",
-                  note = "use `compare = \"smd\"` or `compare = \"both\"`"),
+                  note = paste0(
+                    "`compare = \"smd\"` gives gtsummary's generic SMD; ",
+                    "for `%stddiff`'s number, add ",
+                    "hvtiRpropensity::ps_stddiff() output with ",
+                    "hv_tbl_compare()"
+                  )),
   totalcol = list(arg = "overall",     stage = "compute"),
+  cutexact = list(arg = "cutexact",    stage = "compute"),
 
   con1 = list(
     arg = "normal", stage = "compute",
@@ -137,13 +143,6 @@
                    note = "ad-hoc pairwise comparisons are not supported"),
   oddsratios = list(arg = NA_character_, stage = NA_character_,
                     note = "odds-ratio columns are not supported"),
-  cutexact  = list(arg = NA_character_, stage = NA_character_,
-                   note = paste0(
-                     "the chi-square/Fisher switch is not tunable; ",
-                     "gtsummary uses Fisher's exact when any expected ",
-                     "count is below 5, where `CUTEXACT=50` used a ",
-                     "50% threshold"
-                   )),
   ncol      = list(arg = NA_character_, stage = NA_character_,
                    note = paste0(
                      "per-group Ns are always shown automatically; ",
