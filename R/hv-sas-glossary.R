@@ -65,7 +65,12 @@
                     "hv_tbl_compare()"
                   )),
   totalcol = list(arg = "overall",     stage = "compute"),
-  cutexact = list(arg = "cutexact",    stage = "compute"),
+  cutexact = list(arg = "cutexact",    stage = "compute",
+                  note = paste0(
+                    "the default `cutexact = \"any\"` uses Fisher when ",
+                    "any cell expects < 5; `cutexact = 50` reproduces ",
+                    "`CUTEXACT=50`"
+                  )),
 
   con1 = list(
     arg = "normal", stage = "compute",

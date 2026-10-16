@@ -49,12 +49,13 @@ hv_tbl_summary(
 
 ## Defaults that differ
 
-Four places where a faithful-looking port produces different numbers.
+Five places where a faithful-looking port produces different numbers.
 
 | Macro | Default there | Default here | Fix |
 |---|---|---|---|
 | `CON1=` | mean +/- SD, one-way ANOVA | median (percentiles), Kruskal-Wallis | list the variable in `normal` as well as `continuous` |
 | `PP=` | `16 84` nominal; house templates use both `15 85` and `16 84` | `percentiles = c(15, 85)` | `percentiles = c(16, 84)` |
+| `CUTEXACT=` | Fisher when >=50% of cells have expected < 5 | Fisher when *any* expected < 5 (`cutexact = "any"`) | `cutexact = 50` |
 | `ASD=` | `%stddiff`: Gaussian and non-Gaussian variables apart, printed as a percentage | gtsummary's generic standardized mean difference, a proportion | compute with `hvtiRpropensity::ps_stddiff()` and add it with `hv_tbl_compare()` |
 | `ORD1=` | `n (%)`, Kruskal-Wallis | folds into `categorical`, chi-square | none |
 
@@ -124,7 +125,7 @@ tbl <- hv_tbl_summary(
 | `PP=` | `percentiles` | |
 | `PVALUES=` | `compare = "pvalue"` | |
 | `ASD=` | `compare = "smd"` / `"both"`, or `hv_tbl_compare()` | **number changes** - see Defaults that differ |
-| `CUTEXACT=` | `cutexact` | same rule and default (50) |
+| `CUTEXACT=` | `cutexact` | **default differs** - see Defaults that differ |
 | `TOTALCOL=` | `overall` | defaults match (`overall = TRUE`); `totalcol=0` becomes `overall = FALSE` |
 | `NCOL=` | automatic | per-group Ns always shown, and the Overall column's N with the default `overall = TRUE` (`NCOL=3`) |
 | `TBLTITLE=` | `caption` | **JTCVS only** - `hv_man_table_save()` writes no caption |

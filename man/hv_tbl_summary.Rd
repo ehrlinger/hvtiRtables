@@ -18,7 +18,7 @@ hv_tbl_summary(
   normal = character(0),
   mean_sd = character(0),
   show_variable = TRUE,
-  cutexact = 50,
+  cutexact = "any",
   ...
 )
 }
@@ -132,14 +132,17 @@ column name in \code{data}, on its first row, as \verb{\%summarytable}'s
 report did. Both renderers show it. Set \code{FALSE} for a manuscript,
 so the report and the manuscript come from one table.}
 
-\item{cutexact}{Single number, a percentage: a binary or categorical
-variable is tested with Fisher's exact test when at least this
-percentage of its group-by-level cells have an expected count below
-5, and with Pearson's chi-square (no continuity correction)
-otherwise. Default 50, \verb{\%summarytable}'s \verb{CUTEXACT=} default. \code{0}
-makes every categorical test exact; a value above 100 makes none
-exact. In the CORR table each Fisher p-value is marked with a
-superscript double dagger, footnoted "Fisher exact test."; the JTCVS
+\item{cutexact}{When a binary or categorical variable is tested with
+Fisher's exact test rather than Pearson's chi-square (no continuity
+correction). The default, \code{"any"}, uses Fisher whenever any one
+group-by-level cell has an expected count below 5 (gtsummary's
+rule, and what the CORR team asked for). A number opts in to
+\verb{\%summarytable}'s \verb{CUTEXACT=} rule, to reproduce a SAS table:
+Fisher when at least that percentage of cells expect fewer than 5.
+The macro's default was \code{50}; \code{0} makes every categorical test
+exact and a value above 100 makes none exact. In the CORR table
+each Fisher p-value is marked with a superscript double dagger,
+footnoted "Fisher exact test."; the JTCVS
 route letters it through \code{\link[=hv_test_footnotes_jtcvs]{hv_test_footnotes_jtcvs()}}. Used only when
 \code{compare} produces p-values.}
 

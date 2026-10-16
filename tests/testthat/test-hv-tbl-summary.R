@@ -1443,12 +1443,53 @@ test_that("hv_tbl_summary picks each categorical test by cutexact", {
                    "chisq.test.no.correct")
 })
 
-test_that("cutexact must be a single number from 0 up", {
-  for (bad in list(-1, NA_real_, c(10, 20), "50")) {
+test_that("cutexact must be \"any\" or a single number from 0 up", {
+  for (bad in list(-1, NA_real_, c(10, 20), "50", "all", NA_character_)) {
     expect_error(ce_tbl(cutexact = bad),
-                 "`cutexact` must be a single number from 0 up",
+                 "`cutexact` must be \"any\" or a single number from 0 up",
                  fixed = TRUE)
   }
+})
+
+test_that("cutexact defaults to \"any\", Fisher when any cell expects < 5", {
+  expect_identical(formals(hv_tbl_summary)$cutexact, "any")
+  skip_if_not_installed("broom")
+  tbl <- hv_tbl_summary(
+    ce_data(), by = "grp",
+    groups = list(D = c("rare", "common", "tri")),
+    binary = c("rare", "common"), categorical = "tri",
+    compare = "pvalue", show_variable = FALSE
+  )
+  # tri has 2 of 6 sparse cells: Fisher under "any", chi-square under
+  # the macro's 50%.
+  expect_identical(ce_test(tbl, "tri"), "fisher.test")
+  expect_identical(ce_test(tbl, "rare"), "fisher.test")
+  expect_identical(ce_test(tbl, "common"), "chisq.test.no.correct")
+  expect_identical(ce_test(ce_tbl(cutexact = 50), "tri"),
+                   "chisq.test.no.correct")
+})
+
+test_that("the \"any\" default leaves categorical tests as gtsummary chose", {
+  skip_if_not_installed("broom")
+  # The previous release called add_p() with no categorical tests, so
+  # gtsummary picked them. The default must reproduce that exactly,
+  # unused factor levels and all.
+  d <- ce_data()
+  d$tri <- factor(d$tri, levels = c("x", "y", "z", "never"))
+  ours <- hv_tbl_summary(
+    d, by = "grp", groups = list(D = c("rare", "common", "tri")),
+    binary = c("rare", "common"), categorical = "tri",
+    compare = "pvalue", show_variable = FALSE, overall = FALSE
+  )$table_body
+  theirs <- gtsummary::tbl_summary(
+    d, by = "grp", include = c("rare", "common", "tri"),
+    type = list(rare ~ "dichotomous", common ~ "dichotomous"),
+    value = list(rare ~ 1, common ~ 1), missing = "no"
+  ) |> gtsummary::add_p()
+  theirs <- theirs$table_body
+  first <- function(tb) tb[tb$row_type == "label", ]
+  expect_identical(first(ours)$test_name, first(theirs)$test_name)
+  expect_equal(first(ours)$p.value, first(theirs)$p.value)
 })
 
 test_that("cutexact is last in the signature", {
@@ -1549,4 +1590,17 @@ test_that("a malformed footnotes list is named as such on a marked table", {
                       footnotes = list("text")),
     "`footnotes` must be a named list", fixed = TRUE
   )
+})
+
+test_that("under the \"any\" default a Fisher row is still marked ‡", {
+  skip_if_not_installed("broom")
+  tbl <- hv_tbl_summary(
+    ce_data(), by = "grp", groups = list(D = c("tri", "common")),
+    binary = "common", categorical = "tri", compare = "pvalue",
+    show_variable = FALSE
+  )
+  expect_identical(attr(tbl, "hv_footnotes")[["‡"]],
+                   "Fisher exact test.")
+  chunks <- flextable::information_data_chunk(hv_man_table(tbl))
+  expect_true(any(chunks$.part == "body" & chunks$txt == "‡"))
 })

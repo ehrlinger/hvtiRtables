@@ -175,14 +175,17 @@
 #'   column name in `data`, on its first row, as `%summarytable`'s
 #'   report did. Both renderers show it. Set `FALSE` for a manuscript,
 #'   so the report and the manuscript come from one table.
-#' @param cutexact Single number, a percentage: a binary or categorical
-#'   variable is tested with Fisher's exact test when at least this
-#'   percentage of its group-by-level cells have an expected count below
-#'   5, and with Pearson's chi-square (no continuity correction)
-#'   otherwise. Default 50, `%summarytable`'s `CUTEXACT=` default. `0`
-#'   makes every categorical test exact; a value above 100 makes none
-#'   exact. In the CORR table each Fisher p-value is marked with a
-#'   superscript double dagger, footnoted "Fisher exact test."; the JTCVS
+#' @param cutexact When a binary or categorical variable is tested with
+#'   Fisher's exact test rather than Pearson's chi-square (no continuity
+#'   correction). The default, `"any"`, uses Fisher whenever any one
+#'   group-by-level cell has an expected count below 5 (gtsummary's
+#'   rule, and what the CORR team asked for). A number opts in to
+#'   `%summarytable`'s `CUTEXACT=` rule, to reproduce a SAS table:
+#'   Fisher when at least that percentage of cells expect fewer than 5.
+#'   The macro's default was `50`; `0` makes every categorical test
+#'   exact and a value above 100 makes none exact. In the CORR table
+#'   each Fisher p-value is marked with a superscript double dagger,
+#'   footnoted "Fisher exact test."; the JTCVS
 #'   route letters it through [hv_test_footnotes_jtcvs()]. Used only when
 #'   `compare` produces p-values.
 #' @param ... Not used. Present so that `%summarytable` parameter names
@@ -223,7 +226,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
                            normal = character(0),
                            mean_sd = character(0),
                            show_variable = TRUE,
-                           cutexact = 50,
+                           cutexact = "any",
                            ...) {
   .check_sas_args(list(...), "hv_tbl_summary")
   compare <- match.arg(compare)
@@ -278,11 +281,12 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   if (!is.logical(show_variable) || length(show_variable) != 1L ||
         is.na(show_variable))
     stop("`show_variable` must be TRUE or FALSE.", call. = FALSE)
-  if (!is.numeric(cutexact) || length(cutexact) != 1L || is.na(cutexact) ||
-        cutexact < 0)
-    stop("`cutexact` must be a single number from 0 up, a percentage of ",
-         "cells (default 50). Received: ", .describe(cutexact), ".",
-         call. = FALSE)
+  if (!identical(cutexact, "any") &&
+        (!is.numeric(cutexact) || length(cutexact) != 1L ||
+           is.na(cutexact) || cutexact < 0))
+    stop("`cutexact` must be \"any\" or a single number from 0 up, a ",
+         "percentage of cells (e.g. 50, the macro's CUTEXACT=). Received: ",
+         .describe(cutexact), ".", call. = FALSE)
   # With no `by` the single column already is the overall one, so
   # `overall` is ignored there, the way `compare` is. It errored while
   # the default was FALSE; with TRUE the default, an error would break
@@ -542,10 +546,12 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   if (effective_compare %in% c("pvalue", "both")) {
     # CON1='s test: classical one-way ANOVA (pooled variance), which is
     # what SAS's npar1way anova runs. oneway.test() defaults to Welch.
-    # Categorical tests follow the macro's CUTEXACT= rule rather than
-    # gtsummary's, which switches to Fisher when any one cell expects
-    # fewer than 5.
-    cat_tests <- .cutexact_tests(data, by, c(binary, categorical), cutexact)
+    # Categorical tests: by default gtsummary's own rule, Fisher when any
+    # one cell expects fewer than 5, which is what the team asked for
+    # (SAS's 50% rule left chi-square rows they swapped by hand). A
+    # number opts in to the macro's CUTEXACT= rule, to reproduce SAS.
+    cat_tests <- if (is.numeric(cutexact))
+      .cutexact_tests(data, by, c(binary, categorical), cutexact)
     fisher <- names(cat_tests)[cat_tests == "fisher.test"]
     chisq <- names(cat_tests)[cat_tests != "fisher.test"]
     test <- c(
@@ -563,7 +569,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     # The macro marked these p-values (ExactTest = "F"). hv_man_table()
     # puts the mark on each Fisher p-value; the JTCVS route letters them
     # through hv_test_footnotes_jtcvs().
-    if (length(fisher))
+    if (any(tbl$table_body$test_name %in% "fisher.test"))
       attr(tbl, "hv_footnotes")[["\u2021"]] <- "Fisher exact test."
   }
 
