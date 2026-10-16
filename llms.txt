@@ -153,6 +153,8 @@ Where the macro’s `CON*=`, `CAT*=`, `LIST=`, `PP=`, `PVALUES=` and
 - [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
   : Build a gtsummary table from a SAS %summarytable-style grouped
   variable list
+- [`hv_tbl_compare()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_compare.md)
+  : Join a comparison column computed elsewhere onto a summary table
 
 ## 
 

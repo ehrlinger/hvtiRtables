@@ -40,10 +40,15 @@ hv_man_table_jtcvs(
 
 - trailing:
 
-  Optional named character vector of length 1, an existing
-  `tbl$table_body` column name -\> header label, for a trailing
-  comparison column (e.g. `c(std_diff = "Std. Diff.")` or
-  `c(p_value = "P")`). Must already exist in `tbl$table_body`.
+  Optional named character vector, existing `tbl$table_body` column name
+  -\> header label, one entry per trailing comparison column, laid out
+  in the order given (e.g. `c(std_diff = "Std. Diff.")` or
+  `c(p_value = "P")`). Each must already exist in `tbl$table_body`. A
+  table from
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md),
+  with any columns
+  [`hv_tbl_compare()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_compare.md)
+  added, records the right value as its `hv_trailing` attribute.
 
 - stat_label:
 

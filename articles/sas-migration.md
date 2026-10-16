@@ -19,7 +19,7 @@ so the parameters you know are distributed across separate calls:
 
 | Stage | Function | Macro parameters that land here |
 |----|----|----|
-| Compute stats and tests | [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md) | `DATA=`, `CLASS=`, `CON*=`, `CAT*=`, `ORD1=`, `LIST=`, `PP=`, `PVALUES=`, `ASD=`, `TOTALCOL=` |
+| Compute stats and tests | [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md) | `DATA=`, `CLASS=`, `CON*=`, `CAT*=`, `ORD1=`, `LIST=`, `PP=`, `PVALUES=`, `ASD=`, `TOTALCOL=`, `CUTEXACT=` |
 | Shape the table | [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md), [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md) | *(none - house style is fixed)* |
 | Write the file | [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md), [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md) | `RTFFILE=`, `PDFFILE=`, `XMLFILE=`, `TBLTITLE=`, `ADDFN=`, `PRINTFN=` |
 | Verify the file | [`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md) | *(no analogue)* |
@@ -40,21 +40,24 @@ hv_tbl_summary(
 
 ## Defaults that differ
 
-Four places where a faithful-looking port produces different numbers.
+Five places where a faithful-looking port produces different numbers.
 
 | Macro | Default there | Default here | Fix |
 |----|----|----|----|
 | `CON1=` | mean +/- SD, one-way ANOVA | median (percentiles), Kruskal-Wallis | list the variable in `normal` as well as `continuous` |
 | `PP=` | `16 84` nominal; house templates use both `15 85` and `16 84` | `percentiles = c(15, 85)` | `percentiles = c(16, 84)` |
-| `CUTEXACT=` | Fisher when \>=50% of cells have expected \< 5 | Fisher when *any* expected \< 5 | none - not tunable |
+| `CUTEXACT=` | Fisher when \>=50% of cells have expected \< 5 | Fisher when *any* expected \< 5 (`cutexact = "any"`) | `cutexact = 50` |
+| `ASD=` | `%stddiff`: Gaussian and non-Gaussian variables apart, printed as a percentage | gtsummary’s generic standardized mean difference, a proportion | compute with `hvtiRpropensity::ps_stddiff()` and add it with [`hv_tbl_compare()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_compare.md) |
 | `ORD1=` | `n (%)`, Kruskal-Wallis | folds into `categorical`, chi-square | none |
 
 `overall = TRUE` matches the macro’s `TOTALCOL=1`.
 [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
 lays out only the `stat_<k>` columns its `groups` vector names, so name
 `stat_0` there to show the Overall column. `continuous_stat = "both"`
-shows mean +/- SD and median (percentiles) on sub-rows under each
-continuous variable, for choosing one when the manuscript is drafted.
+shows mean +/- SD and median (percentiles) side by side, in two columns
+per group, for choosing one when the manuscript is drafted. To show mean
++/- SD for some variables and medians for others while every continuous
+test stays nonparametric, list the former in `mean_sd`.
 
 ## A ported call
 
@@ -114,7 +117,8 @@ tbl <- hv_tbl_summary(
 | `ORD1=` | `categorical` | **test changes** - Kruskal-Wallis becomes chi-square |
 | `PP=` | `percentiles` |  |
 | `PVALUES=` | `compare = "pvalue"` |  |
-| `ASD=` | `compare = "smd"` / `"both"` |  |
+| `ASD=` | `compare = "smd"` / `"both"`, or [`hv_tbl_compare()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_compare.md) | **number changes** - see Defaults that differ |
+| `CUTEXACT=` | `cutexact` | **default differs** - see Defaults that differ |
 | `TOTALCOL=` | `overall` | defaults match (`overall = TRUE`); `totalcol=0` becomes `overall = FALSE` |
 | `NCOL=` | automatic | per-group Ns always shown, and the Overall column’s N with the default `overall = TRUE` (`NCOL=3`) |
 | `TBLTITLE=` | `caption` | **JTCVS only** - [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md) writes no caption |

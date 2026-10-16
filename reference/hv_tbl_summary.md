@@ -27,6 +27,9 @@ hv_tbl_summary(
   overall = TRUE,
   continuous_stat = c("median", "mean", "both"),
   normal = character(0),
+  mean_sd = character(0),
+  show_variable = TRUE,
+  cutexact = "any",
   ...
 )
 ```
@@ -90,7 +93,18 @@ hv_tbl_summary(
   compare. `"smd"` and `"both"` require `by` to have exactly two groups,
   because a standardized mean difference is defined between two of them;
   they error otherwise. `"pvalue"` and `"none"` work at any number of
-  groups. `%summarytable` `PVALUES=`/`ASD=` equivalent.
+  groups. `%summarytable` `PVALUES=` equivalent, and `ASD=` only in
+  part: the `"smd"` number is gtsummary's generic standardized mean
+  difference
+  ([`gtsummary::add_difference()`](https://www.danieldsjoberg.com/gtsummary/reference/add_difference.html)),
+  a proportion computed alike for every continuous variable.
+  `%summarytable`'s column came from the `%stddiff` macro, which treats
+  non-Gaussian and ordinal variables differently and prints a
+  percentage, so the two disagree for those variables (by 30% on one
+  skewed test variable). To show `%stddiff`'s number, compute it with
+  `hvtiRpropensity::ps_stddiff()` and add it with
+  [`hv_tbl_compare()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_compare.md),
+  beside `compare = "pvalue"` if wanted.
 
 - percentiles:
 
@@ -116,10 +130,12 @@ hv_tbl_summary(
   variables not listed in `normal` are summarized. `"median"` gives
   `median (P<low>, P<high>)`; `"mean"` gives mean +/- SD, with no spaces
   around the plus-minus sign and EHB/Blackstone paired rounding;
-  `"both"` puts the two on sub-rows under the variable, mean +/- SD
-  first, with the N shown once, on the first. Choosing one for the
-  manuscript is then a matter of deleting a row. The test does not
-  change with the statistic: only `normal` selects ANOVA. The CORR
+  `"both"` puts the two side by side: each group's statistic column
+  shows mean +/- SD (or `n (%)` for a categorical row), and a median
+  column beside it shows `median (P<low>, P<high>)`, blank on rows with
+  no median. Both renderers lay it out the same way. Choosing one for
+  the manuscript is then a matter of dropping a column. The test does
+  not change with the statistic: only `normal` selects ANOVA. The CORR
   footnote carried through
   [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
   to
@@ -134,8 +150,45 @@ hv_tbl_summary(
   summarized as mean +/- SD whatever `continuous_stat` says, and, under
   `compare = "pvalue"` or `"both"`, tested with classical
   (pooled-variance) one-way ANOVA, the test the macro ran. Default none.
-  Each name must also appear in `continuous`. Last in the signature so
-  positional calls keep working.
+  Each name must also appear in `continuous`. Placed after
+  `continuous_stat` so positional calls keep working. To show mean +/-
+  SD without the ANOVA, use `mean_sd`.
+
+- mean_sd:
+
+  Character vector, a subset of `continuous`: the variables to *display*
+  as mean +/- SD while keeping the nonparametric test (Wilcoxon
+  rank-sum, or Kruskal-Wallis for 3+ groups). Use it for variables that
+  are roughly symmetric in a table whose every continuous test should
+  stay nonparametric. The display is the same as for `normal`, row label
+  suffix included when the table mixes statistics; only `normal` changes
+  the test. A variable may appear in both, and is then tested with
+  ANOVA. Default none. Last in the signature so positional calls keep
+  working.
+
+- show_variable:
+
+  Single `TRUE`/`FALSE`. When `TRUE` (default), adds a "Variable" column
+  beside the label holding each variable's column name in `data`, on its
+  first row, as `%summarytable`'s report did. Both renderers show it.
+  Set `FALSE` for a manuscript, so the report and the manuscript come
+  from one table.
+
+- cutexact:
+
+  When a binary or categorical variable is tested with Fisher's exact
+  test rather than Pearson's chi-square (no continuity correction). The
+  default, `"any"`, uses Fisher whenever any one group-by-level cell has
+  an expected count below 5 (gtsummary's rule, and what the CORR team
+  asked for). A number opts in to `%summarytable`'s `CUTEXACT=` rule, to
+  reproduce a SAS table: Fisher when at least that percentage of cells
+  expect fewer than 5. The macro's default was `50`; `0` makes every
+  categorical test exact and a value above 100 makes none exact. In the
+  CORR table each Fisher p-value is marked with a superscript double
+  dagger, footnoted "Fisher exact test."; the JTCVS route letters it
+  through
+  [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md).
+  Used only when `compare` produces p-values.
 
 - ...:
 

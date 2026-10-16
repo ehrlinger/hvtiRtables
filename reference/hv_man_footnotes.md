@@ -16,8 +16,10 @@ hv_man_footnotes(
 - continuous_stat:
 
   One of `"median"` (default), `"mean"`, or `"both"`. Controls whether
-  the dagger's continuous half reads as median and percentiles, mean +/-
-  SD, or both.
+  the dagger's continuous half reads as median and percentiles or mean
+  +/- SD. Under `"both"` it reads as mean +/- SD, because
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  puts the medians in columns of their own whose headers name them.
 
 - percentiles:
 
@@ -65,7 +67,9 @@ values needed:
   = "custom text"
 
 - Add a study-specific one alongside: `c(hv_man_footnotes(), list(...))`
-  with `` `‡` `` = "extra note"
+  with `` `§` `` = "extra note". Avoid `‡` on a table from
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md):
+  it marks Fisher exact p-values there.
 
 ## Common mistakes
 
@@ -114,7 +118,7 @@ hv_man_footnotes(continuous_stat = "both", percentiles = c(16, 84))
 #> [1] "Number of non-missing values."
 #> 
 #> $`†`
-#> [1] "No. (%), Mean±SD, or Median (16th, 84th percentile)."
+#> [1] "No. (%) or Mean±SD."
 #> 
 modifyList(hv_man_footnotes(), list(`†` = "custom text"))
 #> $`*`

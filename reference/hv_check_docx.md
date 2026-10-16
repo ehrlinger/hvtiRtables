@@ -3,7 +3,7 @@
 Read-only inspection of any Word document, whether written by this
 package or received from elsewhere. Reports the three structural failure
 patterns the canonical "Table Construction for Manuscripts" memo names,
-and never modifies the file.
+and a table too wide for its page, and never modifies the file.
 
 ## Usage
 
@@ -26,7 +26,7 @@ A `data.frame` with one row per finding and columns `type`, `table`
 
 ## Details
 
-Three detectors run:
+Four detectors run:
 
 - `"layer"` (structural, high confidence): paragraphs positioned with
   `w:framePr`, or floating text boxes (`w:txbxContent`). Table content
@@ -40,6 +40,11 @@ Three detectors run:
   deliberate; width alone or emptiness alone would flag them. A cell
   spanning several columns counts as filling every column it covers, so
   a merged header never makes the columns beneath it look empty.
+
+- `"wide_table"` (structural, high confidence): a table whose grid is
+  wider than the text block of the page section it sits in (page width
+  less both margins), by more than 1 pt. Word clips what runs past the
+  margin, so the rightmost columns are lost from the page.
 
 - `"embedded_footnote"` (heuristic, lower confidence): a cell in a
   table's last row whose text starts with a footnote marker (`*`, a
@@ -62,7 +67,7 @@ the deliberate half-inch gutter columns in the house JTCVS templates do
 not trip it. A finding here is a real spacer.
 
 **Treating `embedded_footnote` as proof.** It is the one heuristic
-detector of the three: it matches a marker character opening a cell in a
+detector of the four: it matches a marker character opening a cell in a
 table's last row, and a legitimate last row that happens to start that
 way matches it too. Read it as a prompt to look, not a verdict.
 

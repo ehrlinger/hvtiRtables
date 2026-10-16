@@ -93,10 +93,13 @@ ones listed, and a repeated name is rejected too.</p></dd>
 
 
 <dt id="arg-trailing">trailing<a class="anchor" aria-label="anchor" href="#arg-trailing"></a></dt>
-<dd><p>Optional named character vector of length 1, an existing
-<code>tbl$table_body</code> column name -&gt; header label, for a trailing
-comparison column (e.g. <code>c(std_diff = "Std. Diff.")</code> or
-<code>c(p_value = "P")</code>). Must already exist in <code>tbl$table_body</code>.</p></dd>
+<dd><p>Optional named character vector, existing
+<code>tbl$table_body</code> column name -&gt; header label, one entry per trailing
+comparison column, laid out in the order given (e.g.
+<code>c(std_diff = "Std. Diff.")</code> or <code>c(p_value = "P")</code>). Each must
+already exist in <code>tbl$table_body</code>. A table from <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>,
+with any columns <code><a href="hv_tbl_compare.html">hv_tbl_compare()</a></code> added, records the right value
+as its <code>hv_trailing</code> attribute.</p></dd>
 
 
 <dt id="arg-stat-label">stat_label<a class="anchor" aria-label="anchor" href="#arg-stat-label"></a></dt>

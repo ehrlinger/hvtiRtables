@@ -64,7 +64,9 @@
 <dl><dt id="arg-continuous-stat">continuous_stat<a class="anchor" aria-label="anchor" href="#arg-continuous-stat"></a></dt>
 <dd><p>One of <code>"median"</code> (default), <code>"mean"</code>, or
 <code>"both"</code>. Controls whether the dagger's continuous half reads as
-median and percentiles, mean +/- SD, or both.</p></dd>
+median and percentiles or mean +/- SD. Under <code>"both"</code> it reads as
+mean +/- SD, because <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> puts the medians in columns
+of their own whose headers name them.</p></dd>
 
 
 <dt id="arg-percentiles">percentiles<a class="anchor" aria-label="anchor" href="#arg-percentiles"></a></dt>
@@ -99,7 +101,8 @@ no special sentinel values needed:</p><ul><li><p>Suppress both: <code>footnotes 
 <li><p>Change one: <code>modifyList(hv_man_footnotes(), list(...))</code> with
 <code>`†`</code> = "custom text"</p></li>
 <li><p>Add a study-specific one alongside: <code>c(hv_man_footnotes(), list(...))</code>
-with <code>`‡`</code> = "extra note"</p></li>
+with <code>`§`</code> = "extra note". Avoid <code>‡</code> on a table from
+<code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>: it marks Fisher exact p-values there.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="common-mistakes">Common mistakes<a class="anchor" aria-label="anchor" href="#common-mistakes"></a></h2>
@@ -142,7 +145,7 @@ the table, or override the dagger explicitly.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of non-missing values."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`†`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "No. (%), Mean±SD, or Median (16th, 84th percentile)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "No. (%) or Mean±SD."</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/modifyList.html" class="external-link">modifyList</a></span><span class="op">(</span><span class="fu">hv_man_footnotes</span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>`†` <span class="op">=</span> <span class="st">"custom text"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`*`</span>

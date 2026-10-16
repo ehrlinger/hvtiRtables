@@ -70,7 +70,7 @@
       <h1>Porting a %summarytable program to R</h1>
 
       <p class="author">John Ehrlinger</p>
-      <p class="date">2026-10-14</p>
+      <p class="date">2026-10-16</p>
 
       <small class="dont-index">Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/vignettes/sas-migration.qmd" class="external-link"><code>vignettes/sas-migration.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
@@ -105,7 +105,7 @@
 <td>Compute stats and tests</td>
 <td><code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code></td>
 <td>
-<code>DATA=</code>, <code>CLASS=</code>, <code>CON*=</code>, <code>CAT*=</code>, <code>ORD1=</code>, <code>LIST=</code>, <code>PP=</code>, <code>PVALUES=</code>, <code>ASD=</code>, <code>TOTALCOL=</code>
+<code>DATA=</code>, <code>CLASS=</code>, <code>CON*=</code>, <code>CAT*=</code>, <code>ORD1=</code>, <code>LIST=</code>, <code>PP=</code>, <code>PVALUES=</code>, <code>ASD=</code>, <code>TOTALCOL=</code>, <code>CUTEXACT=</code>
 </td>
 </tr>
 <tr class="even">
@@ -144,7 +144,7 @@
 </div>
 </section><section class="level2"><h2 id="defaults-that-differ">Defaults that differ<a class="anchor" aria-label="anchor" href="#defaults-that-differ"></a>
 </h2>
-<p>Four places where a faithful-looking port produces different numbers.</p>
+<p>Five places where a faithful-looking port produces different numbers.</p>
 <table class="table caption-top">
 <colgroup>
 <col style="width: 25%">
@@ -177,10 +177,18 @@
 <tr class="odd">
 <td><code>CUTEXACT=</code></td>
 <td>Fisher when &gt;=50% of cells have expected &lt; 5</td>
-<td>Fisher when <em>any</em> expected &lt; 5</td>
-<td>none - not tunable</td>
+<td>Fisher when <em>any</em> expected &lt; 5 (<code>cutexact = "any"</code>)</td>
+<td><code>cutexact = 50</code></td>
 </tr>
 <tr class="even">
+<td><code>ASD=</code></td>
+<td>
+<code>%stddiff</code>: Gaussian and non-Gaussian variables apart, printed as a percentage</td>
+<td>gtsummary’s generic standardized mean difference, a proportion</td>
+<td>compute with <code>hvtiRpropensity::ps_stddiff()</code> and add it with <code><a href="../reference/hv_tbl_compare.html">hv_tbl_compare()</a></code>
+</td>
+</tr>
+<tr class="odd">
 <td><code>ORD1=</code></td>
 <td>
 <code>n (%)</code>, Kruskal-Wallis</td>
@@ -189,7 +197,7 @@
 </tr>
 </tbody>
 </table>
-<p><code>overall = TRUE</code> matches the macro’s <code>TOTALCOL=1</code>. <code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> lays out only the <code>stat_&lt;k&gt;</code> columns its <code>groups</code> vector names, so name <code>stat_0</code> there to show the Overall column. <code>continuous_stat = "both"</code> shows mean +/- SD and median (percentiles) on sub-rows under each continuous variable, for choosing one when the manuscript is drafted.</p>
+<p><code>overall = TRUE</code> matches the macro’s <code>TOTALCOL=1</code>. <code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> lays out only the <code>stat_&lt;k&gt;</code> columns its <code>groups</code> vector names, so name <code>stat_0</code> there to show the Overall column. <code>continuous_stat = "both"</code> shows mean +/- SD and median (percentiles) side by side, in two columns per group, for choosing one when the manuscript is drafted. To show mean +/- SD for some variables and medians for others while every continuous test stays nonparametric, list the former in <code>mean_sd</code>.</p>
 </section><section class="level2"><h2 id="a-ported-call">A ported call<a class="anchor" aria-label="anchor" href="#a-ported-call"></a>
 </h2>
 <p>The <code>%summarytable</code> call from <code>tp.dc.stddiff.summarytable.sas</code>:</p>
@@ -301,39 +309,46 @@
 <tr class="even">
 <td><code>ASD=</code></td>
 <td>
-<code>compare = "smd"</code> / <code>"both"</code>
+<code>compare = "smd"</code> / <code>"both"</code>, or <code><a href="../reference/hv_tbl_compare.html">hv_tbl_compare()</a></code>
 </td>
-<td></td>
+<td>
+<strong>number changes</strong> - see Defaults that differ</td>
 </tr>
 <tr class="odd">
+<td><code>CUTEXACT=</code></td>
+<td><code>cutexact</code></td>
+<td>
+<strong>default differs</strong> - see Defaults that differ</td>
+</tr>
+<tr class="even">
 <td><code>TOTALCOL=</code></td>
 <td><code>overall</code></td>
 <td>defaults match (<code>overall = TRUE</code>); <code>totalcol=0</code> becomes <code>overall = FALSE</code>
 </td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>NCOL=</code></td>
 <td>automatic</td>
 <td>per-group Ns always shown, and the Overall column’s N with the default <code>overall = TRUE</code> (<code>NCOL=3</code>)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>TBLTITLE=</code></td>
 <td><code>caption</code></td>
 <td>
 <strong>JTCVS only</strong> - <code><a href="../reference/hv_man_table_save.html">hv_man_table_save()</a></code> writes no caption</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>ADDFN=</code></td>
 <td><code>footnotes</code></td>
 <td>on the save function</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>PRINTFN=</code></td>
 <td>omit <code>footnotes</code> (default)</td>
 <td>
 <strong>CORR only.</strong> The house block is CORR-shaped and cannot be passed to <code><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>, which needs <code>list(row =, col =, text =)</code> entries; build those, or use <code><a href="../reference/hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code>. On the standard <code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> -&gt; <code><a href="../reference/hv_man_table.html">hv_man_table()</a></code> path, the default dagger follows <code>continuous_stat</code> and <code>percentiles</code> automatically. Use <code>footnotes = NULL</code> for <code>PRINTFN=0</code>.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>
 <code>RTFFILE=</code>, <code>PDFFILE=</code>, <code>XMLFILE=</code>
 </td>
