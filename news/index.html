@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,19 @@
       <small>Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.6" id="hvtirtables-106">hvtiRtables 1.0.6<a class="anchor" aria-label="anchor" href="#hvtirtables-106"></a></h2>
+<ul><li><p>The README’s Installation section now leads with <code>hvtiR::install()</code>, which installs the whole HVTI R family in one call, and then gives <code>pak::pak("ehrlinger/hvtiRtables")</code> for this package alone.</p></li>
+<li><p><code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> gains <code>mean_sd</code>, the continuous variables to <em>show</em> as mean±SD while keeping the Wilcoxon or Kruskal-Wallis test. <code>normal</code> still couples mean±SD to one-way ANOVA and is unchanged.</p></li>
+<li><p><code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> gains <code>show_variable</code>, on by default: a “Variable” column beside the label holds each variable’s column name, as <code>%summarytable</code>’s report did. <code><a href="../reference/hv_man_table.html">hv_man_table()</a></code> and <code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> both show it. <strong>Existing tables gain this column</strong>; pass <code>show_variable = FALSE</code> for a manuscript.</p></li>
+<li><p>New <code><a href="../reference/hv_tbl_compare.html">hv_tbl_compare()</a></code> adds a comparison column you computed yourself, one value on each variable’s first row, rightmost in the table. It is how <code>hvtiRpropensity::ps_stddiff()</code>’s <code>%stddiff</code> standardized difference reaches a table, beside <code>compare = "pvalue"</code>, without hvtiRtables depending on hvtiRpropensity. <code>compare = "smd"</code> is unchanged; its help now says it is gtsummary’s generic SMD, not <code>%stddiff</code>’s.</p></li>
+<li><p><code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>’s <code>trailing</code> now takes several columns, laid out in order. Its error for a malformed <code>trailing</code> no longer says “of length 1”.</p></li>
+<li><p><code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> gains <code>cutexact</code>. The default, <code>"any"</code>, keeps the rule used until now: Fisher’s exact test when any cell expects fewer than 5, so categorical p-values are unchanged. A number opts in to <code>%summarytable</code>’s <code>CUTEXACT=</code> rule to reproduce a SAS table (<code>cutexact = 50</code> is the macro’s default). In the CORR table each Fisher p-value now carries a superscript double dagger, footnoted “Fisher exact test.”; <code><a href="../reference/hv_man_table_save.html">hv_man_table_save()</a></code> stops if given <code>footnotes</code> that leave that mark unexplained or file another note under it.</p></li>
+<li><p><code>continuous_stat = "both"</code> now shows mean±SD and the median side by side, in a median column beside each group’s statistic column, instead of stacked sub-rows. Both renderers lay it out the same way. <strong>This changes existing “both” tables</strong>: the statistic columns and their dagger now read “No. (%) or Mean±SD”, the median column names itself in its header, and a two-group “both” table now saves in landscape.</p></li>
+<li><p><code><a href="../reference/hv_man_table_save.html">hv_man_table_save()</a></code> and <code><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> save a table wider than a portrait page on a landscape page, and narrow its columns in proportion when it is wider than landscape too, so the label and rightmost columns are never clipped. A two-group “both” CORR table with an Overall column measured 13 inches and lost both on a landscape page.</p></li>
+<li><p><code><a href="../reference/hv_check_docx.html">hv_check_docx()</a></code> gains a fourth detector, <code>"wide_table"</code>: a table wider than its page’s text block, which Word clips.</p></li>
+<li><p><code><a href="../reference/hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code> letters only the p-value column <code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> writes. It no longer falls back to another trailing column, which footnoted a joined standardized difference “Fisher exact test.”</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.5" id="hvtirtables-105">hvtiRtables 1.0.5<a class="anchor" aria-label="anchor" href="#hvtirtables-105"></a></h2>
 <ul><li>The Word tables from <code><a href="../reference/hv_man_table_save.html">hv_man_table_save()</a></code> and <code><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> now match the SAS <code>%summarytable</code> layout, after a review of two commented example tables:
