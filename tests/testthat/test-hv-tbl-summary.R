@@ -1720,3 +1720,21 @@ test_that("a ‡ footnote with no Fisher p-value marks no cell", {
   expect_false(any(chunks$.part == "body" & chunks$txt == "‡"))
   expect_null(attr(ft, "hv_body_marks"))
 })
+
+test_that(".format_sig2() gives 2 significant digits, and whole numbers from 10 up", {
+  x <- c(9.9, 0.31, 102.4, 0.8, 7, 9.96, 0, -0.0123, 18250.4, 2.067, 0.153,
+         0.0049, NA, Inf)
+  expect_identical(
+    .format_sig2(x),
+    c("9.9", "0.31", "102", "0.80", "7.0", "10", "0", "-0.012", "18250", "2.1",
+      "0.15", "0.0049", NA, NA)
+  )
+})
+
+test_that(".format_sig2() keeps whole numbers past the integer range", {
+  # formatC(format = "d") coerces to R integers: 2.2e9 and 1e12 became "NA"
+  # with a warning. Whole numbers stay doubles.
+  expect_no_warning(out <- .format_sig2(c(2147483647, 2.2e9, 1e12, -3e10)))
+  expect_identical(out, c("2147483647", "2200000000", "1000000000000",
+                          "-30000000000"))
+})

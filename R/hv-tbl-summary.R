@@ -706,6 +706,28 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   )
 }
 
+# The house standard's precision for a median and its percentiles: 2
+# significant digits, and a value of 10 or more to the units place, never
+# coarser. Rounding 102 to 2 significant digits would print 100; a long
+# right tail is exactly where a reader needs the digits. No thousands
+# separator, as for the counts (house tables print plain digits).
+.format_sig2 <- function(x) {
+  out <- rep(NA_character_, length(x))
+  ok <- is.finite(x)
+  r <- signif(x[ok], 2)
+  shown <- character(length(r))
+  whole <- abs(r) >= 10
+  # format = "f" with no decimals, not "d": "d" coerces to R integers, and
+  # a finite value past 2^31 - 1 printed "NA".
+  shown[whole] <- formatC(round(x[ok][whole]), format = "f", digits = 0,
+                          big.mark = "")
+  shown[!whole] <- sub("\\.$", "",
+                       formatC(r[!whole], digits = 2, format = "fg", flag = "#"))
+  shown[r == 0] <- "0"
+  out[ok] <- shown
+  out
+}
+
 # Apply EHB/Blackstone's paired reporting precision. The mean is rounded to
 # the first-significant-digit place of the SD and the SD one place finer. An
 # SD beginning with 1 shifts both one additional place finer.
