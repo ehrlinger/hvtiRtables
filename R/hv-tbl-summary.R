@@ -829,10 +829,13 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     # otherwise the statistic column itself.
     median_col <- paste0("hv_median_", col)
     target <- if (median_col %in% names(tbl$table_body)) median_col else col
-    if (!target %in% names(tbl$table_body)) next
-    cells <- tbl$table_body[[target]]
-    hit <- tbl$table_body$variable == v & !is.na(cells) &
-      grepl("[", cells, fixed = TRUE)
+    hit <- if (target %in% names(tbl$table_body)) {
+      cells <- tbl$table_body[[target]]
+      tbl$table_body$variable == v & !is.na(cells) &
+        grepl("[", cells, fixed = TRUE)
+    } else {
+      FALSE
+    }
     if (sum(hit) != 1L) {
       # Failing loud: a median left in gtsummary's own digits would pass
       # for the standard's.
