@@ -170,7 +170,7 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   # whole twips, and rounding every column up could otherwise put the
   # grid a twip or two past the text block.
   room <- .text_width(landscape = TRUE) - 0.01
-  if (wide > .text_width(landscape = TRUE))
+  if (wide > room)
     ft <- flextable::width(
       ft, j = ft$col_keys, width = ft$body$colwidths * room / wide
     )

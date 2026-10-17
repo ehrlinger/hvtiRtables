@@ -7,6 +7,10 @@
 #' the notes are paragraphs below the table; here they are footer lines,
 #' since HTML has no page to put them on.
 #'
+#' The one deliberate difference is the "Variable" column
+#' [hv_tbl_summary()]'s `show_variable` adds: the display keeps it, as the
+#' report view, while the saved table never has it.
+#'
 #' The marks, the note text and the key come from the same internal code
 #' the saver uses, so the displayed table and the saved one cannot
 #' disagree. `footnotes` resolves the same way too: left out, it is the
