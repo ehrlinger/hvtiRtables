@@ -187,7 +187,7 @@ Three rows of the matrix cannot be met by a renderer alone:
 4. **Page size.** US Letter for every style, or only `"grid"`? Both savers write A4 today.
 5. **Font.** Is rule 5 (Times New Roman, 11 or 12 pt) a content rule or a look? `"grid"`
    follows the document's body font at 11 pt, as the manuscript does.
-6. **Shading colour.** `#CAEDFB` for every style, or a property each style can set?
+6. **Shading color.** `#CAEDFB` for every style, or a property each style can set?
 
 ## 11. Out of scope
 
