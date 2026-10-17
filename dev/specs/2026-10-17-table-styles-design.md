@@ -1,8 +1,8 @@
 # Table styles: one renderer, styles named by role (design)
 
 Date: 2026-10-17
-Status: draft for John's review. Decisions taken on 2026-10-17 are in section 2; the open
-questions in section 10 need an answer before an implementation plan.
+Status: draft for John's review. Decisions taken on 2026-10-17 are in section 2; questions 2
+to 5 in section 10 need an answer before an implementation plan.
 
 This note is self-contained. It assumes no memory of the session that produced it.
 
@@ -34,7 +34,9 @@ finished by hand, and both carry hand-edit errors as a result.
 5. **The differences are documented clearly.** The matrix in section 5 is the definition of
    the styles, and the package gains an article that renders one table in each style beside
    it (section 8, D6).
-6. **Some house rules exist because tables were edited by hand,** to make a hand-edited
+6. **`hv_man_table_jtcvs()` and `hv_man_table_save_jtcvs()` are deprecated in favor of
+   `"manuscript"`.** Neither submission uses their look, including the JTCVS one.
+7. **Some house rules exist because tables were edited by hand,** to make a hand-edited
    table look right, not because of their content. Once tables are generated, those rules
    are open to change style by style (section 6).
 
@@ -44,7 +46,7 @@ finished by hand, and both carry hand-edit errors as a result.
 |---|---|---|---|
 | `"report"` | the analysis report, read on screen | `hv_man_table()` | horizontal rules only, one flat header row, a count column per group, the Variable column on screen |
 | `"manuscript"` | tables a journal receives, main text and supplement | none | full grid, one overall `n*` column, the grouping spanning its levels, full-width shaded section rows, bracketed percentiles |
-| *(the JTCVS renderer's look)* | no role found yet | `hv_man_table_jtcvs()` | each group spans its own (n, statistic) pair, lettered notes. Neither submission uses it (question 1) |
+| *(the JTCVS renderer's look)* | none: **deprecated** 2026-10-17 | `hv_man_table_jtcvs()` | each group spans its own (n, statistic) pair, lettered notes. Neither submission uses it |
 
 ## 4. Evidence
 
@@ -82,7 +84,7 @@ details that are hand edits.
 
 This table **is** the specification. Each row is a property the renderer sets. Rows
 marked † change what an existing renderer produces today. The JTCVS column records today's
-renderer, pending question 1.
+renderer, which is deprecated (D3); it is kept here so the article can show what changes.
 
 | # | property | `"report"` | `"manuscript"` | JTCVS renderer today |
 |---|---|---|---|---|
@@ -159,9 +161,13 @@ Three rows of the matrix cannot be met by a renderer alone:
   `hv_man_table_save(ft, file, ...)`. The flextable carries its style, so the saver writes
   that style's notes, caption and page without being told again.
   `hv_man_table_display()` follows the style too.
-- **D3. The JTCVS functions,** depending on question 1: either wrappers for a third role, or
-  deprecated over one release with a message naming the replacement. No other hvtiR package
-  calls them (checked 2026-10-17 across hvtiRtemplates, hvtiRutilities and hvtiPlotR).
+- **D3. Deprecate the JTCVS functions.** `hv_man_table_jtcvs()`,
+  `hv_man_table_save_jtcvs()` and `hv_test_footnotes_jtcvs()` keep working for one release
+  with a deprecation message naming `hv_man_table(style = "manuscript")`, then go. No other
+  hvtiR package calls them (checked 2026-10-17 across hvtiRtemplates, hvtiRutilities and
+  hvtiPlotR). Their tests move to the `"manuscript"` style where a behavior carries over
+  (multiple trailing columns, letters only on the p-value column) and are retired where it
+  does not (lettered notes).
 - **D4. Section shading in every style.** In `"report"` the fill goes on every cell of the
   section row and nothing is merged, so rule 3 holds there. In `"manuscript"` the spanned
   cell is filled.
@@ -192,9 +198,8 @@ Three rows of the matrix cannot be met by a renderer alone:
 
 ## 10. Open questions
 
-1. ~~Names.~~ **Answered 2026-10-17: by role.** Follow-on: the JTCVS renderer's look is used
-   by neither submission. Is there a role for it (a journal whose template requires it), or
-   should it be deprecated in favor of `"manuscript"`?
+1. ~~Names.~~ **Answered 2026-10-17: by role.** The JTCVS renderer, whose look neither
+   submission uses, is deprecated in favor of `"manuscript"` (decision 6, D3).
 2. **Which house rules exist only for hand editing.** Section 6 treats rules 2 and 3 and the
    hidden constructs as hand-edit rules, and rules 8 and 14 as content. Is that right, and is
    anything else in the house rules document a hand-edit rule?
