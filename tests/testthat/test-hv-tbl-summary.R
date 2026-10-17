@@ -1406,17 +1406,24 @@ test_that("the JTCVS saver drops the column from any flextable", {
 
 test_that("the saved width leaves the variable column out", {
   # A two-group "both" table: the grid in the .docx is the table without
-  # the column, at its own widths, since it fits landscape unnarrowed.
+  # the column, then fitted to the page. Autofit widths follow the
+  # platform's font metrics (8.8 in without the column on macOS, 9.8 on
+  # Linux, where it is then narrowed), so the expectation is computed the
+  # same way rather than hard-coded.
   ft <- hv_man_table(hv_tbl_summary(
     gtsummary::trial, by = "trt", groups = list(D = c("age", "grade")),
     continuous = "age", categorical = "grade", continuous_stat = "both",
     overall = FALSE, compare = "none"
   ))
-  without <- sum(ft$body$colwidths) - ft$body$colwidths[["hv_variable"]]
+  fitted <- .fit_page(.drop_variable_column(ft))
+  want <- sum(fitted$ft$body$colwidths) * 1440
+  # Fitting with the column and dropping it afterwards gives a narrower
+  # grid whenever the fit narrows, and the same one when it does not.
   path <- tempfile(fileext = ".docx")
   hv_man_table_save(ft, path)
   g <- fit_geometry(path)
-  expect_equal(g$table, without * 1440, tolerance = 2 / (without * 1440))
+  expect_equal(g$table, want, tolerance = 2 / want)
+  expect_identical(g$landscape, fitted$landscape)
   expect_true(g$landscape)
 })
 
