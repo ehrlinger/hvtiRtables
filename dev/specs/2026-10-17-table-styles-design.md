@@ -127,7 +127,7 @@ details that are hand edits.
 
 This table **is** the specification. Each row is a property the renderer sets. Rows
 marked † change what an existing renderer produces today. The JTCVS column records today's
-renderer, which is deprecated (D3); it is kept here so the article can show what changes.
+renderer, whose layout becomes `"describe"` (D3, section 5.1).
 
 | # | property | `"report"` | `"manuscript"` | JTCVS renderer today |
 |---|---|---|---|---|
