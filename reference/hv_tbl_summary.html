@@ -223,8 +223,12 @@ working.</p></dd>
 <dd><p>Single <code>TRUE</code>/<code>FALSE</code>. When <code>TRUE</code> (default),
 adds a "Variable" column beside the label holding each variable's
 column name in <code>data</code>, on its first row, as <code>%summarytable</code>'s
-report did. Both renderers show it. Set <code>FALSE</code> for a manuscript,
-so the report and the manuscript come from one table.</p></dd>
+report did. It belongs to the report view: <code><a href="hv_man_table.html">hv_man_table()</a></code> and
+<code><a href="hv_man_table_display.html">hv_man_table_display()</a></code> show it, while <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> and
+<code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> always drop it and <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>
+never shows it, so a saved or JTCVS table is a manuscript table
+whatever this says. Set <code>FALSE</code> to leave it out of the report view
+too.</p></dd>
 
 
 <dt id="arg-cutexact">cutexact<a class="anchor" aria-label="anchor" href="#arg-cutexact"></a></dt>

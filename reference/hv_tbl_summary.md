@@ -170,9 +170,20 @@ hv_tbl_summary(
 
   Single `TRUE`/`FALSE`. When `TRUE` (default), adds a "Variable" column
   beside the label holding each variable's column name in `data`, on its
-  first row, as `%summarytable`'s report did. Both renderers show it.
-  Set `FALSE` for a manuscript, so the report and the manuscript come
-  from one table.
+  first row, as `%summarytable`'s report did. It belongs to the report
+  view:
+  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+  and
+  [`hv_man_table_display()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_display.md)
+  show it, while
+  [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
+  and
+  [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
+  always drop it and
+  [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
+  never shows it, so a saved or JTCVS table is a manuscript table
+  whatever this says. Set `FALSE` to leave it out of the report view
+  too.
 
 - cutexact:
 

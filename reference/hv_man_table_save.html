@@ -112,7 +112,11 @@ column beside each, it does not fit a portrait one. So is any table
 wider than a portrait page's text block (6.3 inches on A4). A table
 wider than landscape's (9.7 inches), as a <code>continuous_stat = "both"</code>
 table with an Overall column can be, has its columns narrowed in
-proportion to fit; the font size is not changed.</p></dd>
+proportion to fit; the font size is not changed.</p>
+<p>The saved table is always a manuscript table: the "Variable" column
+<code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>'s <code>show_variable</code> adds for the report view is
+dropped before the page is fitted, so it never reaches Word and never
+widens the page. <code><a href="hv_man_table_display.html">hv_man_table_display()</a></code> keeps it, for the report.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -75,6 +75,13 @@ hv_man_table_save(ft, file, footnotes = NULL, abbreviations = NULL, ...)
   table with an Overall column can be, has its columns narrowed in
   proportion to fit; the font size is not changed.
 
+  The saved table is always a manuscript table: the "Variable" column
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)'s
+  `show_variable` adds for the report view is dropped before the page is
+  fitted, so it never reaches Word and never widens the page.
+  [`hv_man_table_display()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_display.md)
+  keeps it, for the report.
+
 ## Value
 
 Invisibly, the `file` path.

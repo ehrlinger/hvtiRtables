@@ -42,6 +42,11 @@ hv_man_table_display(ft, footnotes = NULL, abbreviations = NULL)
 
 ## Details
 
+The one deliberate difference is the "Variable" column
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)'s
+`show_variable` adds: the display keeps it, as the report view, while
+the saved table never has it.
+
 The marks, the note text and the key come from the same internal code
 the saver uses, so the displayed table and the saved one cannot
 disagree. `footnotes` resolves the same way too: left out, it is the
