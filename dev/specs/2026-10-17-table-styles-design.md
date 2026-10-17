@@ -1,8 +1,8 @@
 # Table styles: one renderer, styles named by role (design)
 
 Date: 2026-10-17
-Status: decided 2026-10-17, including a house standard for table notation (section 5.2).
-Question 15 is open. Decisions are in section 2.
+Status: decided 2026-10-17, including a house standard for table notation (section 5.2)
+that every style follows. Ready for an implementation plan. Decisions are in section 2.
 
 This note is self-contained. It assumes no memory of the session that produced it.
 
@@ -168,8 +168,8 @@ renderer, whose layout becomes `"describe"` (D3, section 5.1).
 | 3 | Borders | horizontal rules only | full grid: box plus all inner lines, single 0.5 pt | horizontal rules only |
 | 4 | Header | one row; `No.*`, then `<group> N = n†` per group | two rows: `Characteristic` and `n*` merged down, the grouping label with † spanning its levels; row 2 `<level> (N = n)` | two rows; each group spans its (n, statistic) pair |
 | 5 | Non-missing count | one column per group | **one overall `n*` column** (needs `hv_tbl_summary()`, section 7) | one column per group |
-| 6 | Continuous values | `10.35 (8.11, 12.74)`: parentheses, 2 decimals | `9.9 [8.5, 11.0]`, `63 ± 13`: the standard (section 5.2) | as `"report"` |
-| 7 | Categorical values | `3 (6.8)` | `30 (42)` | `3 (6.8)` |
+| 6 | Continuous values | `9.9 [8.5, 11.0]`, `63 ± 13`: the standard (section 5.2) † | `9.9 [8.5, 11.0]`, `63 ± 13`: the standard (section 5.2) | as `"report"` |
+| 7 | Categorical values | `3 (6.8)`, the standard | `30 (42)`, the standard | `3 (6.8)` |
 | 8 | Note markers | `*`, `†`, `‡` superscript | `*`, `†` at the start of the note, not superscript | lettered `a.`, `b.` |
 | 9 | Count note | `Number of non-missing values.` (house rule 8) | `Patients with non-missing data.` | `Patients with data available.` |
 | 10 | Statistic note | `No. (%) or Median (15th, 85th percentile).` | `Values are No. (%) or median [15th, 85th percentiles].` | named in the header row |
@@ -207,7 +207,9 @@ and describes cohorts in Table 2 uses both in one manuscript.
 
 ### 5.2 The house standard, adopted 2026-10-17
 
-The notation every `"manuscript"` table follows, whatever journal it goes to. A journal that
+The notation every table follows, `"report"` and `"manuscript"` alike, so a report reads like
+the manuscript and only the layout differs (question 15). It holds whatever journal a table
+goes to. A journal that
 requires otherwise overrides a property; it does not get a new style.
 
 | element | standard | reason |
@@ -314,7 +316,7 @@ Three rows of the matrix cannot be met by a renderer alone:
 
 ## 10. Questions
 
-All answered on 2026-10-17 except question 15.
+All answered on 2026-10-17.
 
 1. **Names.** By role. The JTCVS functions' names are deprecated; their layout survives as
    `"manuscript"`'s `"describe"` layout (question 9).
@@ -351,9 +353,10 @@ All answered on 2026-10-17 except question 15.
 12. **Section form.** Heading rows (section 5.2).
 13. **Mean and SD notation.** `63 ± 13`, never `63 (13)` (section 5.2).
 14. **P-value format.** `.013`, `<.001`, `>.99`, a default a journal can override (section 5.2).
-15. **Open: does `"report"` follow the standard's notation too?** It writes
-    `10.35 (8.11, 12.74)` today. The standard was adopted for `"manuscript"`; a report that
-    reads the same as the manuscript would remove one more difference.
+15. **Does `"report"` follow the standard's notation?** Yes. A report reads like the
+    manuscript; only the layout differs. `"report"`'s `10.35 (8.11, 12.74)` becomes
+    `10.4 [8.1, 12.7]` under the standard's rounding (spread 4.63, so tenths), a change to every existing
+    report, listed in the PR that makes it.
 
 ## 11. Out of scope
 
