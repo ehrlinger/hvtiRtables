@@ -1,8 +1,8 @@
 # Table styles: one renderer, styles named by role (design)
 
 Date: 2026-10-17
-Status: decided 2026-10-17 apart from question 11 (significant digits), which the
-implementation plan can carry. Decisions are in section 2.
+Status: decided 2026-10-17 apart from questions 11 to 14 (digits, section form, mean and SD
+notation, P format), which the implementation plan can propose. Decisions are in section 2.
 
 This note is self-contained. It assumes no memory of the session that produced it.
 
@@ -66,6 +66,9 @@ Measured on 2026-10-17 from the Word XML of four files:
 - **ms.0939**, `rvn.0939.cpb_descriptive.ats.submitted.docx` and its current supplemental
   table, to *Annals of Thoracic Surgery*: a single-cohort table, a repeated-measures table
   (Pre-CPB, CPB and Post-CPB phases of the same patients), and a supplemental table.
+- **ms.939 modeling**, `ms.939.cpb_modeling.current.docx`, the companion modeling paper:
+  Table 1 (no grouping, sections as a column), Table 2 and Supplemental Tables 2 to 4 (by
+  lactate cluster), and Table 3 (variables considered for the model).
 - **CAA proof**, `ViewPageProof_YMTC_20718.pdf`, the JTCVS page proof of the coronary artery
   aneurysm paper (Alshneikat et al., 16 October 2026): Tables 1 to 4 as the journal typeset
   them.
@@ -105,6 +108,16 @@ show `2.10±0.543`, a mean ± SD under a median label; Table 1 has vertical bord
 supplemental table, in the same submission, has none; and gtsummary's default `¹` footnote
 marks and `(70%)` percent signs were left in. It rounds to **3** significant digits
 (`1.20 [0.800, 1.80]`, `81.8±6.99`), where ms.1264 and BVR rv3 round to 2 (question 11).
+
+**ms.939 modeling adds three notation differences and one new shape.** Its Table 1 puts
+section names in a leftmost `Category` column, gtsummary's grouped-column layout, rather than
+in heading rows. Tables 2 and S2 write mean and SD as `9.69 (1.52)`, where every other
+document uses `±`, with the decimals varying inside one table (`28.71 (6.01)` beside
+`64.0 (12.2)`). Supplemental Table 4 prints P as `<0.001`, with the leading zero the JTCVS
+proof dropped (`<.001`), under "p-value (adjusted)²". Its Table 3 is a list of the variables
+considered for a model, `Category | Sub-category | Variable | Included in Model?`, with raw
+`TRUE` values left in. Like ms.0939, it has vertical borders on some tables and not others,
+and gtsummary's default `¹` footnote marks.
 
 The difference looks driven by content rather than journal: ms.1264 and BVR rv3 **compare**
 groups (an Overall column, P values), where one overall `n*` column reads naturally; ms.1333
@@ -273,7 +286,7 @@ Three rows of the matrix cannot be met by a renderer alone:
 
 ## 10. Questions
 
-All answered on 2026-10-17 except question 11.
+All answered on 2026-10-17 except questions 11 to 14.
 
 1. **Names.** By role. The JTCVS functions' names are deprecated; their layout survives as
    `"manuscript"`'s `"describe"` layout (question 9).
@@ -310,6 +323,14 @@ All answered on 2026-10-17 except question 11.
     CAA proof mixes the EHB paired rule for mean ± SD (`1.2 ± 0.70`) with 3 digits for medians
     (`102 [63, 170]`). One rule for `"manuscript"`, or a property? This decides row 6 and the
     rounding design in section 7.
+12. **Open: section names as heading rows or as a column.** Every document but one marks
+    sections with a heading row; ms.939 modeling's Table 1 uses a `Category` column. The
+    styles shade heading rows (question 7), so heading rows are the working assumption.
+    Should `"manuscript"` ever produce the column form?
+13. **Open: mean and SD notation.** `63 ± 13` (the CAA proof, BVR rv3), `63.1±12.6` (ms.0939),
+    or `64.0 (12.2)` (ms.939 modeling). One notation for `"manuscript"`, with spacing fixed.
+14. **Open: P-value format.** `<.001`, as JTCVS printed it, or `<0.001` (ms.939 modeling)?
+    A leading zero is a journal convention, so this is likely a property a journal sets.
 
 ## 11. Out of scope
 
@@ -324,6 +345,8 @@ later:
 - **Sectioned single-column lists** of observations and measurements (ms.1264 S3 and S4, BVR
   rv3 E2 and E3), and **banded lists** (ms.1264 S1 and BVR rv3 E1, participating
   institutions, alternating `#A5C9EB` and `#DAE9F7` in BVR rv3).
+- **Model-variable lists** (ms.939 modeling Table 3): the variables considered for a model,
+  by category, and whether each was included.
 - Weighted summaries (hvtiRtables#76, parked).
 
 ## 12. Versioning
