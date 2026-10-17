@@ -168,7 +168,7 @@ renderer, whose layout becomes `"describe"` (D3, section 5.1).
 | 3 | Borders | horizontal rules only | full grid: box plus all inner lines, single 0.5 pt | horizontal rules only |
 | 4 | Header | one row; `No.*`, then `<group> N = n†` per group | two rows: `Characteristic` and `n*` merged down, the grouping label with † spanning its levels; row 2 `<level> (N = n)` | two rows; each group spans its (n, statistic) pair |
 | 5 | Non-missing count | one column per group | **one overall `n*` column** (needs `hv_tbl_summary()`, section 7) | one column per group |
-| 6 | Continuous values | `9.9 [8.5, 11.0]`, `63 ± 13`: the standard (section 5.2) † | `9.9 [8.5, 11.0]`, `63 ± 13`: the standard (section 5.2) | as `"report"` |
+| 6 | Continuous values | `9.9 [8.5, 11]`, `63±13`: the standard (section 5.2) † | `9.9 [8.5, 11]`, `63±13`: the standard (section 5.2) | as `"report"` |
 | 7 | Categorical values | `3 (6.8)`, the standard | `30 (42)`, the standard | `3 (6.8)` |
 | 8 | Note markers | the standard's symbols by meaning (section 5.2), superscript | the standard's symbols by meaning (section 5.2), at the start of the note, not superscript | lettered `a.`, `b.` |
 | 9 | Count note | `Number of non-missing values.` (house rule 8) | `Patients with non-missing data.` | `Patients with data available.` |
@@ -223,19 +223,18 @@ requires otherwise overrides a property; it does not get a new style.
 | element | standard | reason |
 |---|---|---|
 | Counts | `30 (42)`: a space, no `%` sign | the most common form; "%" is said once, in the note |
-| Mean and SD | `63 ± 13`: a spaced `±`, rounded by the EHB paired rule | already the house rule in `hv_tbl_summary()`; the spaced form is what JTCVS typesets |
-| Median | `9.9 [8.5, 11.0]`: brackets, a space before them | brackets keep percentiles distinct from `n (%)` parentheses in the same table |
-| Median digits | a paired rule like EHB's: the median and percentiles are rounded one place finer than the first significant digit of their spread (P85 minus P15) | one principle for both statistics, not a fixed digit count, which is too coarse for 0.31 and too fine for 1,200 |
+| Mean and SD | `63±13`: **unspaced**, rounded by the EHB paired rule | today's form, kept on purpose: journals count `63 ± 13` as three words toward table word limits. A journal that typesets spaces it itself (JTCVS did). Revised 2026-10-17 in the plan |
+| Median | `9.9 [8.5, 11]`: brackets, a space before them | brackets keep percentiles distinct from `n (%)` parentheses in the same table |
+| Median digits | each number to **2 significant digits**, and a value of 10 or more to the units place, never coarser: `102 [63, 170]`, `0.31 [0.21, 0.39]` | revised 2026-10-17: the spread rule first proposed here coarsened skewed variables (`102 [63, 170]` became `100 [60, 170]`); the check is in the plan, `2026-10-17-table-styles-plan.md` |
 | Sections | heading rows, shaded | decided with the shading (question 7); a column costs width |
 | Mean and SD, never | `63 (13)` | reads like a percent beside `n (%)` rows |
-| P values | `.013`, `<.001`, `>.99`: no leading zero, as a default a journal can override | AMA style, which most US clinical journals follow |
+| P values | `.013`, `<.001`, `>.9`: gtsummary's `style_pvalue(digits = 1)`, which `hv_tbl_summary()` already uses, with the leading zero dropped; a default a journal can override | AMA style; reproduces the typeset JTCVS proof exactly |
 | Count note | `*Patients with non-missing data.` | question 3 |
-| Medians among means | `102 [63, 170]§`, with `§Median [15th, 85th percentiles].` | question 8; `§`, not the CAA proof's `‡`, because `‡` already marks Fisher's exact p-values |
-| Note symbols | fixed by meaning, in the house order `* † ‡ § ¶ ||`: `*` the count, `†` the statistic and test note, `‡` a Fisher exact p-value, `§` a median among means; further notes take `¶` and then `||` | one symbol, one meaning in every table, so two marks never collide. `hv_man_table_save()` already refuses to file any other note under `‡` when a table marks Fisher cells |
+| Mixed statistics | the statistic fewer continuous rows use is marked on its cells: `102 [63, 170]§` with `§Median [15th, 85th percentiles].`, or `63±13¶` with `¶Mean±SD.`; the † note names the other, the default | question 8, extended 2026-10-17 to both directions; replaces the row-label suffixes (`Age, Mean±SD`) |
+| Note symbols | fixed by meaning, in the house order `* † ‡ § ¶ ||`: `*` the count, `†` the statistic and test note, `‡` a Fisher exact p-value, `§` a median among means, `¶` a mean among medians; further notes take `||` | one symbol, one meaning in every table, so two marks never collide. `hv_man_table_save()` already refuses to file any other note under `‡` when a table marks Fisher cells |
 
-The median-digits rule is new: none of the documents follows it. The implementation plan
-checks it against real ranges (small proportions such as `0.31 [0.21, 0.39]`, and large counts)
-before it is built.
+The median-digits rule reproduces ms.1264, BVR rv3 and the CAA proof; only ms.0939, at 3
+digits, differs. The check that chose it is in the plan.
 
 ## 6. Which house rules still bind
 
@@ -270,12 +269,10 @@ Three rows of the matrix cannot be met by a renderer alone:
 - **Overall non-missing count (row 5).** `hv_tbl_summary()` computes one count per group;
   `"manuscript"` shows one across all groups. Proposal: `hv_tbl_summary()` always carries
   both counts in its table body, and the style picks which to show.
-- **Median rounding (row 6, section 5.2).** The standard rounds a median and its percentiles
-  one place finer than the first significant digit of their spread, as the EHB paired rule
-  does for mean ± SD. The EHB rule exists in `hv_tbl_summary()` for mean ± SD only.
-  Formatting happens in `hv_tbl_summary()` today, so a style property for rounding means
-  re-formatting from the raw statistics at render time; gtsummary keeps those in the table's
-  cards, so that is possible. A design question for the plan.
+- **Median rounding (row 6, section 5.2).** Each median and percentile to 2 significant
+  digits, and a value of 10 or more to the units place. Formatting happens in
+  `hv_tbl_summary()`, re-formatting from the raw statistics in gtsummary's cards, as the EHB
+  paired rule already does for mean ± SD (plan, Phase 1, Task 2).
 - **Labels with units and superscripts.** `LAVV area (cm²/m²)` comes from the variable's
   label, which the study sets (its `vars()` or the data build). The renderer will turn a
   `^2^` markup in a label into a superscript, so a label can carry it as plain text. Both
@@ -362,14 +359,14 @@ All answered on 2026-10-17.
 10. **Borders and note markers in `"describe"`.** Match `"compare"`: a full grid and `*`, `†`
     notes in both layouts, so one style looks alike. ms.1333's horizontal rules and lettered
     note are not carried over.
-11. **Significant digits.** The standard's paired rule for medians (section 5.2), checked
-    against real ranges in the plan.
+11. **Significant digits.** 2 significant digits, whole from 10 up (section 5.2); the spread
+    rule failed the check in the plan.
 12. **Section form.** Heading rows (section 5.2).
-13. **Mean and SD notation.** `63 ± 13`, never `63 (13)` (section 5.2).
-14. **P-value format.** `.013`, `<.001`, `>.99`, a default a journal can override (section 5.2).
+13. **Mean and SD notation.** `63±13`, unspaced, never `63 (13)` (section 5.2, revised in the plan).
+14. **P-value format.** `.013`, `<.001`, `>.9`, a default a journal can override (section 5.2).
 15. **Does `"report"` follow the standard's notation?** Yes. A report reads like the
     manuscript; only the layout differs. `"report"`'s `10.35 (8.11, 12.74)` becomes
-    `10.4 [8.1, 12.7]` under the standard's rounding (spread 4.63, so tenths), a change to every existing
+    `10 [8.1, 13]` under the standard's rounding (2 significant digits each), a change to every existing
     report, listed in the PR that makes it.
 
 ## 11. Out of scope
