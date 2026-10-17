@@ -76,7 +76,7 @@ structure do. What survived typesetting in the proof:
   `P†` column with no leading zero (`.013`, `<.001`, `>.9`);
 - mean ± SD by default, with skewed variables shown as `102 [63, 170]‡`, the median marked per
   cell (hvtiRtables' `mean_sd` plus a mark);
-- the notes: `Data: n (%) or mean ± SD.`, the abbreviations, `*Patients with data
+- the notes, as the authors wrote them (JTCVS kept the wording): `Data: n (%) or mean ± SD.`, the abbreviations, `*Patients with data
   available.`, `†Wilcoxon rank sum; Pearson's chi-square; Fisher exact.`, `‡Median [15th, 85th
   percentiles].`
 
@@ -231,10 +231,12 @@ Three rows of the matrix cannot be met by a renderer alone:
 2. **Which house rules exist only for hand editing.** Section 6 treats rules 2 and 3 and the
    hidden constructs as hand-edit rules, and rules 8 and 14 as content. Is that right, and is
    anything else in the house rules document a hand-edit rule?
-3. **Count-note wording for `"manuscript"`.** The submissions disagree: "Patients with
-   non-missing data." (ms.1264, Circulation) and "Patients with data available." (BVR rv3, and
-   the typeset CAA proof, both JTCVS). `"report"` keeps rule 8's "Number of non-missing
-   values." Pick one for `"manuscript"`, or make it a property a journal sets.
+3. **Count-note wording for `"manuscript"`.** The documents disagree: ms.1264 says "Patients
+   with non-missing data.", while BVR rv3 and the CAA paper say "Patients with data
+   available." These are the authors' wordings in each document, not journal requirements:
+   nothing here shows what Circulation or JTCVS asks for, only that JTCVS kept the CAA
+   paper's wording when it typeset it. `"report"` keeps rule 8's "Number of non-missing
+   values." Pick one wording for `"manuscript"`.
 7. **Shading section rows or section blocks.** Both submissions shade the heading row; JTCVS
    shaded whole sections in alternating bands. Which should the styles do?
 8. **Mixed statistics in one table.** The CAA proof shows mean ± SD by default with medians
