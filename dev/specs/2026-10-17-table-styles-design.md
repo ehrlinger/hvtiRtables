@@ -1,8 +1,8 @@
 # Table styles: one renderer, styles named by role (design)
 
 Date: 2026-10-17
-Status: draft for John's review. Decisions taken on 2026-10-17 are in section 2; question 10 in
-section 10 needs an answer before an implementation plan.
+Status: decided 2026-10-17, ready for an implementation plan. Decisions are in section 2;
+every question in section 10 is answered.
 
 This note is self-contained. It assumes no memory of the session that produced it.
 
@@ -153,17 +153,17 @@ renderer, whose layout becomes `"describe"` (D3, section 5.1).
 
 ### 5.1 The `"describe"` layout
 
-The matrix's `"manuscript"` column is the `"compare"` layout. `"describe"` shares its notes'
-wording, font, page, shading and digits, and differs where the content differs, as measured in
-ms.1333:
+The matrix's `"manuscript"` column is the `"compare"` layout. `"describe"` shares its borders,
+note markers and wording, font, page, shading and digits, so one style looks alike, and
+differs only where the content differs, as measured in ms.1333:
 
 | property | `"compare"` | `"describe"` |
 |---|---|---|
 | Groups | compared: an Overall column and a P column | described side by side: no Overall, no P |
 | Count | one overall `n*` column | one count column per group |
 | Header | `Characteristic` and `n*` merged down; the grouping spans its levels | each group spans its own (n, statistic) pair; row 2 names them |
-| Borders | full grid | horizontal rules only (ms.1333); question 10 |
-| Note markers | `*`, `†` | lettered `a` in ms.1333; question 10 |
+| Borders | full grid | full grid, as `"compare"` (ms.1333 used horizontal rules) |
+| Note markers | `*`, `†` | `*`, `†`, as `"compare"` (ms.1333 used a lettered `a`) |
 
 The layout is chosen by the table, not the journal: a study that compares groups in Table 1
 and describes cohorts in Table 2 uses both in one manuscript.
@@ -255,7 +255,7 @@ Three rows of the matrix cannot be met by a renderer alone:
 
 ## 10. Questions
 
-All answered on 2026-10-17 except question 10.
+All answered on 2026-10-17.
 
 1. **Names.** By role. The JTCVS functions' names are deprecated; their layout survives as
    `"manuscript"`'s `"describe"` layout (question 9).
@@ -284,9 +284,9 @@ All answered on 2026-10-17 except question 10.
 9. **Two manuscript layouts, chosen by content.** `"compare"` (overall `n*`, Overall, P) and
    `"describe"` (a count per group, no Overall, no P); the JTCVS layout survives as
    `"describe"` (decision 6, section 5.1).
-10. **Open: borders and note markers in `"describe"`.** ms.1333 uses horizontal rules and a
-    lettered note; `"compare"` uses a grid and `*`, `†`. Follow ms.1333, or match `"compare"`
-    so the two layouts of one style look alike?
+10. **Borders and note markers in `"describe"`.** Match `"compare"`: a full grid and `*`, `†`
+    notes in both layouts, so one style looks alike. ms.1333's horizontal rules and lettered
+    note are not carried over.
 
 ## 11. Out of scope
 
