@@ -1,7 +1,7 @@
 # Table styles: one renderer, styles named by role (design)
 
 Date: 2026-10-17
-Status: draft for John's review. Decisions taken on 2026-10-17 are in section 2; questions 2
+Status: draft for John's review. Decisions taken on 2026-10-17 are in section 2; questions 3
 to 5 and 8 in section 10 need an answer before an implementation plan.
 
 This note is self-contained. It assumes no memory of the session that produced it.
@@ -36,9 +36,9 @@ finished by hand, and both carry hand-edit errors as a result.
    it (section 8, D6).
 6. **`hv_man_table_jtcvs()` and `hv_man_table_save_jtcvs()` are deprecated in favor of
    `"manuscript"`.** Neither submission uses their look, including the JTCVS one.
-7. **Some house rules exist because tables were edited by hand,** to make a hand-edited
-   table look right, not because of their content. Once tables are generated, those rules
-   are open to change style by style (section 6).
+7. **The house rules were built for editing tables by hand for submission.** A generated
+   table meets their purpose by construction, so each becomes a style property; what binds
+   every style is the content beneath them (section 6).
 
 ## 3. The styles
 
@@ -134,35 +134,33 @@ renderer, which is deprecated (D3); it is kept here so the article can show what
 | 16 | Header repeated on a new page | yes | yes (neither submission has it; the generated style adds it) | yes |
 | 17 | Page | A4 landscape † | **US Letter**, landscape when wide, else portrait (question 4) | A4 landscape |
 | 18 | Variable column | on screen only; every saved `.docx` drops it (hvtiRtables#82) | never | never |
-| 19 | Merged cells | none (house rule 3) | header and section rows (section 6, question 2) | header and section rows |
+| 19 | Merged cells | none (house rule 3) | header and section rows (section 6) | header and section rows |
 
 ## 6. Which house rules still bind
 
-The house rules (`Table Construction for Manuscripts.docx`, 7/14/2026) mix two kinds of
-rule. Generating tables removes the reason for one kind and not the other.
+**Answered 2026-10-17: the house rules (`Table Construction for Manuscripts.docx`, 7/14/2026)
+were, in general, built because of problems editing tables for submission.** No merged cells
+(rule 3), where a table is pasted (rule 2), the font (rule 5), the exact count wording
+(rule 8), the abbreviation key's format (rule 14), and the bans on hidden spacing columns,
+floating layers and footnotes inside the table all exist so that a table someone edits by hand
+stays editable and comes out looking right.
 
-**Rules about content.** These say what a reader is told, so they bind every style:
+A generated table is never edited by hand, so it meets the purpose of those rules by
+construction, and each rule becomes a style property rather than a constraint on every style.
+`"report"` keeps today's values, since it is read and sometimes edited as a working document.
+`"manuscript"` takes the values the submissions use where they differ (merged header and
+section cells, the document's body font, Letter pages).
 
-- Rule 8: the count column and its note.
-- Rule 14: the abbreviation key, sorted, with its separators.
-- The notes say which statistic each cell holds, and every mark in the table is explained.
+**What still binds every style is the content beneath the rules**, which a reader needs
+whoever made the table:
 
-**Rules that exist because tables were edited by hand.** These keep a hand-edited table
-manageable, or make it *look* right after editing, not what it says:
+- the non-missing count is shown, and its note says what it counts;
+- every cell's statistic is named, and every mark in the table is explained;
+- abbreviations used in the table are defined.
 
-- Rule 3: no merged cells. Merged cells are hard to edit and break when a row is added by
-  hand. A generated table is never edited, and both submissions merge.
-- Rule 2: where a table is pasted into the manuscript, a concern of the paste-in workflow.
-- No hidden spacing columns, floating layers, or footnotes inside the table: constructs that
-  SAS RTF output used to reach a look, and that an editor could not see or reach.
-- Possibly rule 5 (Times New Roman 11 or 12 pt): both submissions use the document's body
-  font instead (question 5).
-
-Proposal: content rules hold in every style. Hand-edit rules hold in `"report"`, which is
-read and sometimes edited as a working document, and `"manuscript"` may set them aside where
-the submitted look needs it. `hv_check_docx()` keeps checking the constructs that hide
-content (layers, hidden columns, embedded footnotes) in every style. John to confirm which
-rules are which (question 2).
+`hv_check_docx()` keeps checking, in every style, the constructs that hide content from a
+reader (floating layers, hidden columns, footnotes inside the table), since those are content
+problems whatever produced the file.
 
 ## 7. Changes outside the renderer
 
@@ -228,9 +226,9 @@ Three rows of the matrix cannot be met by a renderer alone:
 
 1. ~~Names.~~ **Answered 2026-10-17: by role.** The JTCVS renderer, whose look neither
    submission uses, is deprecated in favor of `"manuscript"` (decision 6, D3).
-2. **Which house rules exist only for hand editing.** Section 6 treats rules 2 and 3 and the
-   hidden constructs as hand-edit rules, and rules 8 and 14 as content. Is that right, and is
-   anything else in the house rules document a hand-edit rule?
+2. ~~Which house rules exist only for hand editing.~~ **Answered 2026-10-17: in general, all
+   of them** were built because of problems editing tables for submission (section 6). They
+   become style properties; the content beneath them binds every style.
 3. **Count-note wording for `"manuscript"`.** The documents disagree: ms.1264 says "Patients
    with non-missing data.", while BVR rv3 and the CAA paper say "Patients with data
    available." These are the authors' wordings in each document, not journal requirements:
@@ -246,8 +244,9 @@ Three rows of the matrix cannot be met by a renderer alone:
    variable; should `"manuscript"` add the per-cell mark and its note?
 4. **Page size.** US Letter for every style, or only `"manuscript"`? Both savers write A4
    today; both submissions are on Letter.
-5. **Font.** Is rule 5 (Times New Roman, 11 or 12 pt) a content rule or only how the table
-   looks? Both submissions use the document's body font at 11 pt.
+5. **Font for `"manuscript"`.** Rule 5 (Times New Roman, 11 or 12 pt) is an editing rule
+   (section 6), so it no longer binds `"manuscript"`. Both submissions use the document's body
+   font at 11 pt. Follow the document's font, or set one?
 6. ~~Shading color.~~ **Answered by the evidence:** a style property, since the two
    submissions differ. Is `#CAEDFB` the right default?
 
