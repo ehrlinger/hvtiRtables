@@ -1,5 +1,19 @@
 # Changelog
 
+## hvtiRtables 1.0.7
+
+- New
+  [`hv_man_table_display()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_display.md)
+  adds to a flextable from
+  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+  what
+  [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
+  writes around it in Word, so a report shows the same table in HTML:
+  the asterisk and dagger header marks, the footnotes and the
+  abbreviation key, the last two as footer lines. It shares that code
+  with the saver, so the two cannot disagree. Both savers refuse its
+  result, whose notes are rows inside the table.
+
 ## hvtiRtables 1.0.6
 
 - The README’s Installation section now leads with `hvtiR::install()`,

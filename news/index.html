@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,10 @@
       <small>Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.7" id="hvtirtables-107">hvtiRtables 1.0.7<a class="anchor" aria-label="anchor" href="#hvtirtables-107"></a></h2>
+<ul><li>New <code><a href="../reference/hv_man_table_display.html">hv_man_table_display()</a></code> adds to a flextable from <code><a href="../reference/hv_man_table.html">hv_man_table()</a></code> what <code><a href="../reference/hv_man_table_save.html">hv_man_table_save()</a></code> writes around it in Word, so a report shows the same table in HTML: the asterisk and dagger header marks, the footnotes and the abbreviation key, the last two as footer lines. It shares that code with the saver, so the two cannot disagree. Both savers refuse its result, whose notes are rows inside the table.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.6" id="hvtirtables-106">hvtiRtables 1.0.6<a class="anchor" aria-label="anchor" href="#hvtirtables-106"></a></h2>
 <ul><li><p>The README’s Installation section now leads with <code>hvtiR::install()</code>, which installs the whole HVTI R family in one call, and then gives <code>pak::pak("ehrlinger/hvtiRtables")</code> for this package alone.</p></li>
