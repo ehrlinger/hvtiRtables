@@ -327,8 +327,10 @@ All answered on 2026-10-17 except questions 11 to 14.
     sections with a heading row; ms.939 modeling's Table 1 uses a `Category` column. The
     styles shade heading rows (question 7), so heading rows are the working assumption.
     Should `"manuscript"` ever produce the column form?
-13. **Open: mean and SD notation.** `63 ± 13` (the CAA proof, BVR rv3), `63.1±12.6` (ms.0939),
-    or `64.0 (12.2)` (ms.939 modeling). One notation for `"manuscript"`, with spacing fixed.
+13. **Open: mean and SD notation.** `63 ± 13` (the CAA proof, as typeset), `63.1±12.6`
+    (ms.0939), or `64.0 (12.2)` (ms.939 modeling); BVR rv3's risk-factor tables write
+    coefficient ± SE unspaced, `0.64±0.30`. One notation for `"manuscript"`, with spacing
+    fixed.
 14. **Open: P-value format.** `<.001`, as JTCVS printed it, or `<0.001` (ms.939 modeling)?
     A leading zero is a journal convention, so this is likely a property a journal sets.
 
