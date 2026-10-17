@@ -401,3 +401,24 @@ test_that("the JTCVS comparison column has no leading zero", {
   expect_true(length(p) > 0L)
   expect_false(any(grepl("^[<>]?0\\.", p)))
 })
+
+test_that("the JTCVS table letters the minority mark and its note", {
+  # One mean row and one median row: a tie, so the default stays median
+  # and the mean row is the one marked.
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "marker")),
+                        continuous = c("age", "marker"), mean_sd = "age",
+                        compare = "none", show_variable = FALSE)
+  ft <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
+  expect_identical(attr(ft, "hv_header_footnotes")$b, "Mean±SD.")
+  ch <- flextable::information_data_chunk(ft)
+  age_row <- which(ft$body$dataset$variable == "age")
+  marked <- ch$txt[ch$.part == "body" & ch$.row_id == age_row &
+                     ch$.col_id == "disp_stat_1"]
+  expect_true("b" %in% marked)
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save_jtcvs(ft, path, caption = "Table 1. Test")
+  text <- officer::docx_summary(officer::read_docx(path))$text
+  expect_true(any(grepl("Mean±SD.", text, fixed = TRUE)))
+  expect_false(any(grepl("Age, Mean", text, fixed = TRUE)))
+})

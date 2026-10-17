@@ -98,6 +98,7 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   .check_font_size(font_size)
 
   footnotes <- attr(tbl, "hv_footnotes", exact = TRUE)
+  cell_marks <- attr(tbl, "hv_cell_marks", exact = TRUE)
   tbl <- .split_stat_sentinel(tbl)
   tbl <- .flatten_sections(tbl)
   sec_i <- which(tbl$table_body$row_type == "section")
@@ -112,6 +113,7 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   ft <- flextable::fontsize(ft, size = font_size, part = "all")
   ft <- flextable::valign(ft, valign = "center", part = "all")
   ft <- .mark_fisher(ft, tbl$table_body, footnotes)
+  ft <- .mark_cells(ft, tbl$table_body, cell_marks, footnotes)
   attr(ft, "hv_footnotes") <- footnotes
   ft
 }
@@ -132,6 +134,25 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   ft <- flextable::append_chunks(ft, i = i, j = "p.value", part = "body",
                                  flextable::as_sup(ddag))
   attr(ft, "hv_body_marks") <- stats::setNames(footnotes[[ddag]], ddag)
+  ft
+}
+
+# The house standard marks the cells of the statistic fewer rows use (a
+# section sign on medians, a pilcrow on means; hv_tbl_summary() decides).
+# Superscripted on each statistic cell of those rows, as Fisher's double
+# dagger is on its p-values, and recorded in `hv_body_marks` so the saver
+# requires the matching note and leaves the symbol off the header.
+.mark_cells <- function(ft, tb, marks, footnotes) {
+  if (is.null(marks) || is.null(footnotes[[marks$symbol]])) return(ft)
+  i <- which(tb$row_type == "label" & tb$variable %in% marks$variables)
+  cols <- intersect(grep("^stat_[0-9]+$", names(tb), value = TRUE), ft$col_keys)
+  if (length(i) == 0L || length(cols) == 0L) return(ft)
+  ft <- flextable::append_chunks(ft, i = i, j = cols, part = "body",
+                                 flextable::as_sup(marks$symbol))
+  attr(ft, "hv_body_marks") <- c(
+    attr(ft, "hv_body_marks", exact = TRUE),
+    stats::setNames(footnotes[[marks$symbol]], marks$symbol)
+  )
   ft
 }
 

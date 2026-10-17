@@ -24,6 +24,7 @@
     label = tb$label,
     is_section = FALSE,
     row_type = tb$row_type,
+    variable = tb$variable,
     stringsAsFactors = FALSE
   )
 
@@ -260,9 +261,24 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   ft <- flextable::fontsize(ft, size = font_size, part = "all")
   ft <- flextable::valign(ft, valign = "center", part = "all")
 
-  attr(ft, "hv_header_footnotes") <- list(
-    a = "Patients with data available."
-  )
+  # The minority statistic's mark (hv_tbl_summary()'s hv_cell_marks). This
+  # renderer letters its notes, so the cells take the next free letter,
+  # "b", and the note joins the header notes, which the saver writes.
+  # Phase 3 moves this layout onto the standard's section sign and pilcrow.
+  header_notes <- list(a = "Patients with data available.")
+  marks <- attr(tbl, "hv_cell_marks", exact = TRUE)
+  mark_note <- if (!is.null(marks))
+    attr(tbl, "hv_footnotes", exact = TRUE)[[marks$symbol]]
+  if (!is.null(mark_note)) {
+    i <- which(reshaped$row_type == "label" &
+                 reshaped$variable %in% marks$variables)
+    if (length(i) > 0L) {
+      ft <- flextable::append_chunks(ft, i = i, j = disp_cols, part = "body",
+                                     flextable::as_sup("b"))
+      header_notes$b <- mark_note
+    }
+  }
+  attr(ft, "hv_header_footnotes") <- header_notes
 
   ft <- flextable::width(ft, j = "label", width = 2.5)
   ft <- flextable::width(ft, j = n_cols, width = 0.6)

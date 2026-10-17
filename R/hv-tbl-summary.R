@@ -370,17 +370,24 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   shown_mean <- union(normal, mean_sd)
   nonnormal <- setdiff(continuous, shown_mean)
   normal_stat <- paste("{N_nonmiss} |||", mean_stat)
-  # Mixed: rows of one table show different continuous statistics, so
-  # no one header or footnote can name them all. Each continuous row
-  # then names its own (the macro's DESCLABEL=1).
+  # Mixed: rows of one table show different continuous statistics. The
+  # house standard names the statistic most rows use once, in the dagger
+  # note, and marks the cells of the other: a section sign on medians, a
+  # pilcrow on means. It replaces the macro's DESCLABEL=1 row suffixes.
   # Under "both" every statistic column shows mean±SD, and the median
   # columns name themselves, so nothing is mixed.
   mixed <- length(shown_mean) > 0L && length(nonnormal) > 0L &&
     continuous_stat == "median"
+  mean_default <- mixed && length(shown_mean) > length(nonnormal)
+  cell_marks <- if (!mixed) NULL else if (mean_default) {
+    list(symbol = "\u00A7", variables = nonnormal)
+  } else {
+    list(symbol = "\u00B6", variables = shown_mean)
+  }
   label_stat <- if (length(continuous) > 0L && length(nonnormal) == 0L) {
     "mean"
-  } else if (mixed) {
-    "mixed"
+  } else if (mean_default) {
+    "mean"
   } else if (continuous_stat == "both") {
     "mean"
   } else {
@@ -452,28 +459,12 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # add_overall() must run before add_p()/add_difference() below --
   # gtsummary requires it ahead of comparison columns so the comparison
   # column stays rightmost.
-  # Applied at each return, not here: add_overall() matches rows on
-  # their labels, so suffixing them any earlier makes it fail.
-  # Every return goes through finish(): the relabel, then the variable
-  # column, added last so add_overall() and the comparison calls never
-  # see a column they do not know.
+  # Every return goes through finish(): the variable column is added
+  # last so add_overall() and the comparison calls never see a column
+  # they do not know.
   finish <- function(tbl) {
-    tbl <- relabel(tbl)
     if (show_variable) tbl <- .add_variable_column(tbl)
     tbl
-  }
-  relabel <- function(tbl) {
-    if (!mixed) return(tbl)
-    # "Age, Mean±SD", as the macro wrote it.
-    suffix <- c(
-      stats::setNames(rep(mean_label, length(shown_mean)), shown_mean),
-      stats::setNames(rep(median_label, length(nonnormal)), nonnormal)
-    )
-    gtsummary::modify_table_body(tbl, function(tb) {
-      i <- tb$row_type == "label" & tb$variable %in% names(suffix)
-      tb$label[i] <- paste0(tb$label[i], ", ", suffix[tb$variable[i]])
-      tb
-    })
   }
 
   if (overall && !is.null(by))
@@ -489,6 +480,12 @@ hv_tbl_summary <- function(data, by = NULL, groups,
          paste0(attr(tbl, "hv_stat_label"), ".")),
     c("*", "\u2020")
   )
+  if (!is.null(cell_marks)) {
+    attr(tbl, "hv_cell_marks") <- cell_marks
+    attr(tbl, "hv_footnotes")[[cell_marks$symbol]] <-
+      if (identical(cell_marks$symbol, "\u00A7")) paste0(median_label, ".")
+      else paste0(mean_label, ".")
+  }
   mean_vars <- if (continuous_stat %in% c("mean", "both"))
     continuous else shown_mean
   tbl <- .format_blackstone_mean_sd(tbl, mean_vars)

@@ -1850,3 +1850,40 @@ test_that("the comparison column prints P without a leading zero", {
   expect_true(length(p) > 0L)
   expect_false(any(grepl("^[<>]?0\\.", p)))
 })
+
+test_that("medians among means are marked with a section sign", {
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "marker", "ttdeath")),
+                        continuous = c("age", "marker", "ttdeath"),
+                        mean_sd = c("age", "ttdeath"), compare = "none",
+                        show_variable = FALSE)
+  expect_identical(attr(tbl, "hv_cell_marks"),
+                   list(symbol = "§", variables = "marker"))
+  fn <- attr(tbl, "hv_footnotes")
+  expect_identical(fn[["§"]], "Median [15th, 85th percentiles].")
+  expect_identical(fn[["†"]], "No. (%) or Mean±SD.")
+  labels <- tbl$table_body$label[tbl$table_body$row_type == "label"]
+  expect_false(any(grepl(", (Mean|Median)", labels)))
+})
+
+test_that("means among medians are marked with a pilcrow", {
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "marker", "ttdeath")),
+                        continuous = c("age", "marker", "ttdeath"),
+                        mean_sd = "age", compare = "none",
+                        show_variable = FALSE)
+  expect_identical(attr(tbl, "hv_cell_marks"),
+                   list(symbol = "¶", variables = "age"))
+  fn <- attr(tbl, "hv_footnotes")
+  expect_identical(fn[["¶"]], "Mean±SD.")
+  expect_identical(fn[["†"]],
+                   "No. (%) or Median [15th, 85th percentiles].")
+})
+
+test_that("a table showing one statistic carries no cell marks", {
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "marker")),
+                        continuous = c("age", "marker"), compare = "none",
+                        show_variable = FALSE)
+  expect_null(attr(tbl, "hv_cell_marks"))
+})

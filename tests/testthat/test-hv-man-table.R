@@ -217,3 +217,39 @@ test_that("CORR's rendered P column has no leading zero", {
   expect_true(length(p) > 0L)
   expect_false(any(grepl("^[<>]?0\\.", p)))
 })
+
+test_that("hv_man_table() superscripts the minority mark on its cells", {
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "marker", "ttdeath")),
+                        continuous = c("age", "marker", "ttdeath"),
+                        mean_sd = c("age", "ttdeath"), compare = "none",
+                        show_variable = FALSE)
+  ft <- hv_man_table(tbl)
+  expect_identical(attr(ft, "hv_body_marks")[["§"]],
+                   "Median [15th, 85th percentiles].")
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save(ft, path)
+  text <- officer::docx_summary(officer::read_docx(path))$text
+  expect_true(any(grepl("§", text, fixed = TRUE)))
+})
+
+test_that("a cell mark and Fisher's double dagger both survive in hv_body_marks", {
+  skip_if_not_installed("broom")
+  d <- data.frame(
+    grp = rep(c("A", "B"), each = 40),
+    rare = c(rep(1, 3), rep(0, 37), rep(1, 1), rep(0, 39)),
+    x = seq_len(80),
+    y = rev(seq_len(80)) %% 7
+  )
+  tbl <- hv_tbl_summary(d, by = "grp", groups = list(D = c("rare", "x", "y")),
+                        binary = "rare", continuous = c("x", "y"),
+                        mean_sd = "x", compare = "pvalue", cutexact = 50,
+                        show_variable = FALSE)
+  # One mean row against one median row: a tie, so the mean row is marked.
+  expect_identical(attr(tbl, "hv_cell_marks")$symbol, "¶")
+  expect_true("‡" %in% names(attr(tbl, "hv_footnotes")))
+  ft <- hv_man_table(tbl)
+  expect_setequal(names(attr(ft, "hv_body_marks")), c("‡", "¶"))
+  path <- tempfile(fileext = ".docx")
+  expect_no_error(hv_man_table_save(ft, path))
+})
