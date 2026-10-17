@@ -173,8 +173,12 @@
 #' @param show_variable Single `TRUE`/`FALSE`. When `TRUE` (default),
 #'   adds a "Variable" column beside the label holding each variable's
 #'   column name in `data`, on its first row, as `%summarytable`'s
-#'   report did. Both renderers show it. Set `FALSE` for a manuscript,
-#'   so the report and the manuscript come from one table.
+#'   report did. It belongs to the report view: [hv_man_table()] and
+#'   [hv_man_table_display()] show it, while [hv_man_table_save()] and
+#'   [hv_man_table_save_jtcvs()] always drop it and [hv_man_table_jtcvs()]
+#'   never shows it, so a saved or JTCVS table is a manuscript table
+#'   whatever this says. Set `FALSE` to leave it out of the report view
+#'   too.
 #' @param cutexact When a binary or categorical variable is tested with
 #'   Fisher's exact test rather than Pearson's chi-square (no continuity
 #'   correction). The default, `"any"`, uses Fisher whenever any one
@@ -675,8 +679,9 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 
 # The raw column name beside its label, on the variable's first row, the
 # column %summarytable printed as "Variable". A report shows it so the
-# reader can find the column in the data; a manuscript drops it with
-# `show_variable = FALSE`, so both come from one regenerated table.
+# reader can find the column in the data. The savers drop it and the JTCVS
+# renderer never shows it, so the report and the manuscript come from one
+# regenerated table with no hand edit.
 .add_variable_column <- function(tbl) {
   tbl <- gtsummary::modify_table_body(tbl, function(tb) {
     tb$hv_variable <- ifelse(tb$row_type == "label", tb$variable,

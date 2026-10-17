@@ -57,7 +57,12 @@ test_that("display and .docx carry the same marks, notes and key", {
   hv_man_table_save(ft, path, abbreviations = dp_abbr)
   saved <- dp_docx(path)
   shown <- hv_man_table_display(ft, abbreviations = dp_abbr)
-  expect_identical(unname(dp_row_text(shown, "header", 1)), saved$header)
+  # The display keeps the report's Variable column; the saved table never
+  # has one. Every other header cell matches.
+  shown_header <- dp_row_text(shown, "header", 1)
+  expect_true("hv_variable" %in% names(shown_header))
+  expect_identical(unname(shown_header[names(shown_header) != "hv_variable"]),
+                   saved$header)
   # The lines the helper adds, after any footer gtsummary already put on
   # the table (its test note), which the saver keeps in the table too.
   added <- dp_footer_lines(shown)[-seq_len(flextable::nrow_part(ft, "footer"))]

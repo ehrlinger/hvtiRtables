@@ -87,8 +87,8 @@ argument order: it is \verb{(ft, file, caption)}.
 with \code{dir.create(dirname(file), recursive = TRUE)}.
 
 \strong{A wide table on a landscape page.} Expected: a table wider than a
-portrait page's text block (6.3 inches on A4), as a \code{"both"} table, a
-Variable column or several trailing columns make it, is saved on a
+portrait page's text block (6.3 inches on A4), as a \code{"both"} table or
+several trailing columns make it, is saved on a
 landscape page. One wider than landscape's (9.7 inches) has its
 columns narrowed in proportion to fit; the font size is not changed.
 }

@@ -1338,7 +1338,7 @@ test_that("show_variable follows mean_sd for positional callers", {
   expect_identical(f[match("mean_sd", f) + 1L], "show_variable")
 })
 
-test_that("the variable column renders beside the label in both renderers", {
+test_that("the report view shows the variable column beside the label", {
   tbl <- sv_tbl()
   ft <- hv_man_table(tbl)
   expect_identical(ft$col_keys[2], "hv_variable")
@@ -1347,27 +1347,96 @@ test_that("the variable column renders beside the label in both renderers", {
   # The section row, which hv_man_table() inserts, carries no name.
   expect_true(is.na(d$hv_variable[d$label == "D"]) ||
                 d$hv_variable[d$label == "D"] == "")
-  jt <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
-  expect_identical(jt$col_keys[2], "hv_variable")
-  jd <- jt$body$dataset
-  expect_identical(jd$hv_variable[jd$label == "Age"], "age")
-  chunks <- flextable::information_data_chunk(jt)
+  shown <- hv_man_table_display(ft)
+  expect_identical(shown$col_keys[2], "hv_variable")
+  chunks <- flextable::information_data_chunk(shown)
   hdr <- chunks[chunks$.part == "header" & chunks$.col_id == "hv_variable", ]
-  expect_true(all(hdr$txt == "Variable"))
+  expect_identical(paste(hdr$txt, collapse = ""), "Variable")
 })
 
-test_that("the variable column survives into a saved, valid .docx", {
+test_that("a JTCVS table, always a manuscript, never shows the column", {
+  tbl <- sv_tbl()
+  jt <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
+  expect_false("hv_variable" %in% jt$col_keys)
+  chunks <- flextable::information_data_chunk(jt)
+  expect_false(any(chunks$txt == "Variable"))
+  expect_false(any(chunks$.part == "body" & chunks$txt == "age"))
+})
+
+# Every table cell of a saved .docx, header and body.
+sv_cells <- function(path) {
+  s <- officer::docx_summary(officer::read_docx(path))
+  s[s$content_type == "table cell", ]
+}
+
+test_that("a saved CORR table never has the variable column", {
   path <- tempfile(fileext = ".docx")
   hv_man_table_save(hv_man_table(sv_tbl()), path)
+  cells <- sv_cells(path)
+  expect_false(any(cells$text == "Variable"))
+  # The raw names "age" and "grade" appear nowhere; the labels do.
+  expect_false(any(cells$text %in% c("age", "grade")))
+  expect_true(all(c("Age", "Grade") %in% cells$text))
   expect_identical(nrow(hv_check_docx(path)), 0L)
-  jpath <- tempfile(fileext = ".docx")
+})
+
+test_that("a saved JTCVS table never has the variable column", {
+  skip_if_not_installed("broom")
   tbl <- sv_tbl(compare = "pvalue")
+  path <- tempfile(fileext = ".docx")
   hv_man_table_save_jtcvs(
     hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
                        trailing = attr(tbl, "hv_trailing")),
-    jpath, caption = "T1."
+    path, caption = "T1."
   )
-  expect_true(file.exists(jpath))
+  cells <- sv_cells(path)
+  expect_false(any(cells$text == "Variable"))
+  expect_false(any(cells$text %in% c("age", "grade")))
+})
+
+test_that("the JTCVS saver drops the column from any flextable", {
+  # hv_man_table_jtcvs() no longer builds it, so the saver's drop is the
+  # guard for a flextable that carries it some other way.
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save_jtcvs(hv_man_table(sv_tbl()), path, caption = "T1.")
+  cells <- sv_cells(path)
+  expect_false(any(cells$text == "Variable"))
+  expect_false(any(cells$text %in% c("age", "grade")))
+})
+
+test_that("the saved width leaves the variable column out", {
+  # A two-group "both" table: the grid in the .docx is the table without
+  # the column, at its own widths, since it fits landscape unnarrowed.
+  ft <- hv_man_table(hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = c("age", "grade")),
+    continuous = "age", categorical = "grade", continuous_stat = "both",
+    overall = FALSE, compare = "none"
+  ))
+  without <- sum(ft$body$colwidths) - ft$body$colwidths[["hv_variable"]]
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save(ft, path)
+  g <- fit_geometry(path)
+  expect_equal(g$table, without * 1440, tolerance = 2 / (without * 1440))
+  expect_true(g$landscape)
+})
+
+test_that("a table that fits portrait without its variable column stays so", {
+  skip_if_not_installed("broom")
+  ft <- hv_man_table(hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = c("age", "grade")),
+    continuous = "age", categorical = "grade", overall = FALSE,
+    compare = "pvalue"
+  ))
+  # Widen the label so the table is 6.8 in with the column (past a
+  # portrait page's 6.3) and 5.9 in without it.
+  extra <- 6.8 - sum(ft$body$colwidths)
+  ft <- flextable::width(ft, j = "label",
+                         width = ft$body$colwidths[["label"]] + extra)
+  expect_gt(sum(ft$body$colwidths), 6.3)
+  expect_lt(sum(ft$body$colwidths) - ft$body$colwidths[["hv_variable"]], 6.3)
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save(ft, path)
+  expect_false(fit_geometry(path)$landscape)
 })
 
 # -- cutexact = (%summarytable's CUTEXACT=: Fisher's exact when sparse) ---

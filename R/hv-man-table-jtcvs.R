@@ -26,7 +26,6 @@
     row_type = tb$row_type,
     stringsAsFactors = FALSE
   )
-  if ("hv_variable" %in% names(tb)) out$hv_variable <- tb$hv_variable
 
   for (col in names(groups)) {
     parts <- strsplit(tb[[col]], " \\|\\|\\| ")
@@ -214,15 +213,14 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   interleaved <- unlist(lapply(names(groups), function(g) {
     intersect(paste0(c("n_", "disp_", "med_"), g), names(reshaped))
   }))
-  # hv_tbl_summary(show_variable = TRUE) carries the raw column name.
-  var_col <- if ("hv_variable" %in% names(reshaped)) "hv_variable"
-  col_keys <- c("label", var_col, interleaved,
+  # No Variable column, whatever hv_tbl_summary(show_variable =) said: a
+  # JTCVS table is a manuscript table, and its saver would drop it.
+  col_keys <- c("label", interleaved,
                 if (!is.null(trailing)) names(trailing))
 
   ft <- flextable::flextable(reshaped, col_keys = col_keys)
 
   header_labels <- list(label = "Characteristic")
-  if (!is.null(var_col)) header_labels$hv_variable <- "Variable"
   for (g in names(groups)) {
     header_labels[[paste0("n_", g)]] <- "n"
     header_labels[[paste0("disp_", g)]] <- stat_label
@@ -233,19 +231,15 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   for (col in names(trailing)) header_labels[[col]] <- trailing[[col]]
   ft <- do.call(flextable::set_header_labels, c(list(x = ft), header_labels))
 
-  top_values <- c("Characteristic", if (!is.null(var_col)) "Variable",
-                  unname(groups))
-  top_widths <- c(
-    1L, if (!is.null(var_col)) 1L,
-    2L + (paste0("med_", names(groups)) %in% med_cols)
-  )
+  top_values <- c("Characteristic", unname(groups))
+  top_widths <- c(1L, 2L + (paste0("med_", names(groups)) %in% med_cols))
   top_values <- c(top_values, rep("", length(trailing)))
   top_widths <- c(top_widths, rep(1L, length(trailing)))
   ft <- flextable::add_header_row(
     ft, top = TRUE, values = top_values, colwidths = top_widths
   )
   # One "Characteristic", spanning both header rows, not one per row.
-  ft <- flextable::merge_v(ft, j = c("label", var_col), part = "header")
+  ft <- flextable::merge_v(ft, j = "label", part = "header")
   # A real superscript: as plain header text the "a" printed as "na".
   # The saver writes the matching footnote and letters the body
   # footnotes from "b".

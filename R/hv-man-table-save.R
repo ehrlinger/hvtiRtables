@@ -87,6 +87,11 @@
 #' table with an Overall column can be, has its columns narrowed in
 #' proportion to fit; the font size is not changed.
 #'
+#' The saved table is always a manuscript table: the "Variable" column
+#' [hv_tbl_summary()]'s `show_variable` adds for the report view is
+#' dropped before the page is fitted, so it never reaches Word and never
+#' widens the page. [hv_man_table_display()] keeps it, for the report.
+#'
 #' @return Invisibly, the `file` path.
 #'
 #' @seealso [hv_man_table()] to build a compliant `flextable` first.
@@ -107,6 +112,7 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   .check_flextable(ft)
   .check_not_display(ft)
   .check_file(file)
+  ft <- .drop_variable_column(ft)
   if (use_default_footnotes) footnotes <- .default_footnotes(ft)
   # Hoisted out of .add_abbreviations_key() so it fires at entry
   # rather than mid-render: no partial .docx on a bad argument.
@@ -160,10 +166,13 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 # used to clip the label and p-value columns of a 13-inch table.
 .fit_page <- function(ft, landscape = FALSE) {
   wide <- sum(ft$body$colwidths)
+  # Narrowed to 0.01 in inside the margins: Word stores each column in
+  # whole twips, and rounding every column up could otherwise put the
+  # grid a twip or two past the text block.
+  room <- .text_width(landscape = TRUE) - 0.01
   if (wide > .text_width(landscape = TRUE))
     ft <- flextable::width(
-      ft, j = ft$col_keys,
-      width = ft$body$colwidths * .text_width(landscape = TRUE) / wide
+      ft, j = ft$col_keys, width = ft$body$colwidths * room / wide
     )
   list(ft = ft, landscape = landscape || wide > .text_width(landscape = FALSE))
 }
@@ -320,6 +329,16 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
       flextable::as_chunk(runs$text[k])
     }
   }))
+}
+
+# A saved table is a manuscript table: the Variable column
+# hv_tbl_summary(show_variable = TRUE) adds is for the report view
+# (hv_man_table(), hv_man_table_display()) and never reaches Word. Dropped
+# before the page is fitted, so the width and the orientation are the
+# manuscript table's.
+.drop_variable_column <- function(ft) {
+  if (!"hv_variable" %in% ft$col_keys) return(ft)
+  flextable::delete_columns(ft, j = "hv_variable")
 }
 
 # A display copy carries its notes as footer rows inside the table, which
