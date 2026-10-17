@@ -37,6 +37,7 @@ reference:
     `gtsummary` object for the stages below.
   contents:
   - hv_tbl_summary
+  - hv_tbl_compare
 
 - title: "2. Shape the table - house style is fixed"
   desc: >
@@ -53,6 +54,7 @@ reference:
     `PRINTFN=` become `footnotes`. Output is always `.docx`.
   contents:
   - hv_man_table_save
+  - hv_man_table_display
   - hv_man_table_save_jtcvs
   - hv_man_footnotes
   - hv_test_footnotes_jtcvs

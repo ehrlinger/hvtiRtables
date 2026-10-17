@@ -81,7 +81,11 @@
 #'
 #' A table with three or more statistic columns, such as an Overall
 #' column and two groups, is written on a landscape page: with a `No.`
-#' column beside each, it does not fit a portrait one.
+#' column beside each, it does not fit a portrait one. So is any table
+#' wider than a portrait page's text block (6.3 inches on A4). A table
+#' wider than landscape's (9.7 inches), as a `continuous_stat = "both"`
+#' table with an Overall column can be, has its columns narrowed in
+#' proportion to fit; the font size is not changed.
 #'
 #' @return Invisibly, the `file` path.
 #'
@@ -101,57 +105,32 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   use_default_footnotes <- missing(footnotes)
   .check_sas_args(list(...), "hv_man_table_save")
   .check_flextable(ft)
+  .check_not_display(ft)
   .check_file(file)
   if (use_default_footnotes) footnotes <- .default_footnotes(ft)
   # Hoisted out of .add_abbreviations_key() so it fires at entry
   # rather than mid-render: no partial .docx on a bad argument.
   .check_abbreviations(abbreviations)
 
-  valid_symbols <- c("*", "\u2020", "\u2021", "\u00A7", "\u00B6", "||")
-  if (!is.null(footnotes) && length(footnotes) > 0) {
-    fn_names <- names(footnotes)
-    if (is.null(fn_names) || anyNA(fn_names) || any(!nzchar(fn_names)))
-      stop("`footnotes` must be a named list (symbol -> footnote text); ",
-           "every element must have a non-empty name. Valid symbols: ",
-           paste(valid_symbols, collapse = " "), call. = FALSE)
-    bad <- setdiff(fn_names, valid_symbols)
-    if (length(bad) > 0)
-      stop("Invalid footnote symbol(s): ", paste(bad, collapse = ", "),
-           ". Must be one of: ", paste(valid_symbols, collapse = " "),
-           call. = FALSE)
-    # Validated at entry, alongside the symbol check, so a footnote
-    # with no usable text never reaches print(doc): the defect this
-    # prevents is a written .docx, not a bad object.
-    for (k in seq_along(footnotes))
-      .check_footnote_text(
-        footnotes[[k]], sprintf('footnotes[["%s"]]', fn_names[k]),
-        paste0("A marker whose text is missing renders as a ",
-               "dangling reference with nothing after it. Give the ",
-               "entry text, e.g. \"Values are median (P15, P85).\"")
-      )
-    for (sym in fn_names) {
-      j <- which(ft$col_keys %in% .footnote_cols(ft, sym))
-      ft <- flextable::append_chunks(ft, i = 1, j = j, part = "header",
-                                     flextable::as_sup(sym))
-    }
-  }
+  footnotes <- .resolve_footnotes(ft, footnotes)
+  ft <- .mark_header(ft, footnotes)
+
+  fit <- .fit_page(ft, landscape = .is_wide(ft))
+  ft <- fit$ft
 
   doc <- officer::read_docx()
   doc <- flextable::body_add_flextable(doc, ft)
 
   font <- .table_font(ft)
-  if (!is.null(footnotes)) {
-    for (sym in names(footnotes)) {
-      note_par <- officer::fpar(
-        officer::ftext(sym, prop = .note_prop(font, "superscript")),
-        officer::ftext(paste0(" ", footnotes[[sym]]), prop = .note_prop(font))
-      )
-      doc <- officer::body_add_fpar(doc, note_par, style = "Normal")
-    }
+  for (sym in names(footnotes)) {
+    doc <- officer::body_add_fpar(
+      doc, .runs_fpar(.note_runs(sym, footnotes[[sym]]), font),
+      style = "Normal"
+    )
   }
 
   doc <- .add_abbreviations_key(doc, abbreviations, font)
-  if (.is_wide(ft)) doc <- .landscape(doc)
+  if (fit$landscape) doc <- .landscape(doc)
 
   print(doc, target = file)
   invisible(file)
@@ -161,11 +140,34 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 # with its No. column overflow a portrait page; Word clips the right
 # edge rather than wrapping.
 .is_wide <- function(ft) {
-  sum(grepl("^stat_[0-9]+$", ft$col_keys)) >= 3L
+  sum(grepl("^(hv_median_)?stat_[0-9]+$", ft$col_keys)) >= 3L
 }
 
 # The template's own page (A4, 1417-twip margins) turned on its side,
 # so only the orientation changes.
+# Inches between the margins .landscape() sets, which are also the
+# default template's: A4, 1417 twips each side.
+.text_width <- function(landscape) {
+  ((if (landscape) 16840 else 11900) - 2 * 1417) / 1440
+}
+
+# Fit a table to the page. Column widths add up past a portrait page once
+# a table has a median column per group, a Variable column or several
+# trailing columns, and gtsummary autofits each median column to its long
+# header. Turn the page when the table does not fit portrait (or when the
+# caller already wants landscape); narrow every column in proportion, not
+# the house font, when it does not fit landscape either. Landscape alone
+# used to clip the label and p-value columns of a 13-inch table.
+.fit_page <- function(ft, landscape = FALSE) {
+  wide <- sum(ft$body$colwidths)
+  if (wide > .text_width(landscape = TRUE))
+    ft <- flextable::width(
+      ft, j = ft$col_keys,
+      width = ft$body$colwidths * .text_width(landscape = TRUE) / wide
+    )
+  list(ft = ft, landscape = landscape || wide > .text_width(landscape = FALSE))
+}
+
 .landscape <- function(doc) {
   twip <- 1 / 1440
   officer::body_set_default_section(doc, officer::prop_section(
@@ -210,21 +212,124 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 }
 
 .add_abbreviations_key <- function(doc, abbreviations, font = NULL) {
-  if (is.null(abbreviations) || length(abbreviations) == 0) return(doc)
-  ordered <- abbreviations[order(names(abbreviations))]
-  runs <- list(officer::ftext("Key: ", prop = .note_prop(font)))
-  italic_prop <- .note_prop(font, italic = TRUE)
-  for (i in seq_along(ordered)) {
-    runs <- c(runs, list(officer::ftext(names(ordered)[i], prop = italic_prop)))
-    suffix <- if (i < length(ordered)) {
-      paste0(", ", ordered[i], "; ")
-    } else {
-      paste0(", ", ordered[i])
-    }
-    runs <- c(runs, list(officer::ftext(suffix, prop = .note_prop(font))))
+  runs <- .key_runs(abbreviations)
+  if (is.null(runs)) return(doc)
+  officer::body_add_fpar(doc, .runs_fpar(runs, font), style = "Normal")
+}
+
+# -- Shared with hv_man_table_display() -----------------------------------
+#
+# The saver writes the notes as paragraphs below the table (the CORR
+# layout requires it); the display helper writes them as footer lines.
+# Both build them from these functions, so the two cannot drift.
+
+# Validate `footnotes` and check it against the marks hv_man_table() put
+# on body cells. Returns it unchanged.
+.resolve_footnotes <- function(ft, footnotes) {
+  valid_symbols <- c("*", "\u2020", "\u2021", "\u00A7", "\u00B6", "||")
+  if (!is.null(footnotes) && length(footnotes) > 0) {
+    fn_names <- names(footnotes)
+    if (is.null(fn_names) || anyNA(fn_names) || any(!nzchar(fn_names)))
+      stop("`footnotes` must be a named list (symbol -> footnote text); ",
+           "every element must have a non-empty name. Valid symbols: ",
+           paste(valid_symbols, collapse = " "), call. = FALSE)
+    bad <- setdiff(fn_names, valid_symbols)
+    if (length(bad) > 0)
+      stop("Invalid footnote symbol(s): ", paste(bad, collapse = ", "),
+           ". Must be one of: ", paste(valid_symbols, collapse = " "),
+           call. = FALSE)
+    # Validated at entry, alongside the symbol check, so a footnote
+    # with no usable text never reaches print(doc): the defect this
+    # prevents is a written .docx, not a bad object.
+    for (k in seq_along(footnotes))
+      .check_footnote_text(
+        footnotes[[k]], sprintf('footnotes[["%s"]]', fn_names[k]),
+        paste0("A marker whose text is missing renders as a ",
+               "dangling reference with nothing after it. Give the ",
+               "entry text, e.g. \"Values are median (P15, P85).\"")
+      )
   }
-  key_par <- do.call(officer::fpar, runs)
-  officer::body_add_fpar(doc, key_par, style = "Normal")
+  # hv_man_table() put these symbols on body cells, each meaning one
+  # thing (symbol -> text). A missing entry leaves the mark unexplained;
+  # a different text under the same symbol would explain it wrongly.
+  body_marks <- attr(ft, "hv_body_marks", exact = TRUE)
+  for (sym in names(body_marks)) {
+    if (!identical(footnotes[[sym]], body_marks[[sym]]))
+      stop("The table marks cells with ", sym, " for \"",
+           body_marks[[sym]], "\", so `footnotes` must carry ", sym,
+           " with that text. Give any note of your own another symbol.",
+           call. = FALSE)
+  }
+  footnotes
+}
+
+# Superscript each footnote symbol onto its header cells. A symbol
+# already on body cells needs no header mark.
+.mark_header <- function(ft, footnotes) {
+  body_marks <- attr(ft, "hv_body_marks", exact = TRUE)
+  for (sym in setdiff(names(footnotes), names(body_marks))) {
+    j <- which(ft$col_keys %in% .footnote_cols(ft, sym))
+    ft <- flextable::append_chunks(ft, i = 1, j = j, part = "header",
+                                   flextable::as_sup(sym))
+  }
+  ft
+}
+
+# One note line as runs: the superscript symbol, then " " and the text.
+.note_runs <- function(sym, text) {
+  data.frame(text = c(sym, paste0(" ", text)), sup = c(TRUE, FALSE),
+             italic = FALSE, stringsAsFactors = FALSE)
+}
+
+# The abbreviation key as runs, sorted by abbreviation: "Key: ", then
+# each abbreviation in italics followed by ", definition; ". NULL when
+# there is nothing to key.
+.key_runs <- function(abbreviations) {
+  if (is.null(abbreviations) || length(abbreviations) == 0) return(NULL)
+  ordered <- abbreviations[order(names(abbreviations))]
+  n <- length(ordered)
+  suffix <- paste0(", ", unname(ordered), c(rep("; ", n - 1L), ""))
+  text <- c("Key: ", as.vector(rbind(names(ordered), suffix)))
+  data.frame(text = text, sup = FALSE,
+             italic = c(FALSE, rep(c(TRUE, FALSE), n)),
+             stringsAsFactors = FALSE)
+}
+
+# Runs as a Word paragraph, in the table's font.
+.runs_fpar <- function(runs, font) {
+  do.call(officer::fpar, lapply(seq_len(nrow(runs)), function(k) {
+    prop <- if (runs$sup[k]) {
+      .note_prop(font, "superscript")
+    } else if (runs$italic[k]) {
+      .note_prop(font, italic = TRUE)
+    } else {
+      .note_prop(font)
+    }
+    officer::ftext(runs$text[k], prop = prop)
+  }))
+}
+
+# Runs as a flextable paragraph, for a footer line.
+.runs_paragraph <- function(runs) {
+  do.call(flextable::as_paragraph, lapply(seq_len(nrow(runs)), function(k) {
+    if (runs$sup[k]) {
+      flextable::as_sup(runs$text[k])
+    } else if (runs$italic[k]) {
+      flextable::as_i(runs$text[k])
+    } else {
+      flextable::as_chunk(runs$text[k])
+    }
+  }))
+}
+
+# A display copy carries its notes as footer rows inside the table, which
+# the Word layout forbids; the saver writes them below the table itself.
+.check_not_display <- function(ft) {
+  if (isTRUE(attr(ft, "hv_display", exact = TRUE)))
+    stop("`ft` is a display copy from hv_man_table_display(), with its ",
+         "notes as rows inside the table. Pass the flextable it was made ",
+         "from instead.", call. = FALSE)
+  invisible(NULL)
 }
 
 # Header cell the house footnote symbols attach to. `*` is "Number of

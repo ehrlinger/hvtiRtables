@@ -111,7 +111,27 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   ft <- flextable::font(ft, fontname = font, part = "all")
   ft <- flextable::fontsize(ft, size = font_size, part = "all")
   ft <- flextable::valign(ft, valign = "center", part = "all")
+  ft <- .mark_fisher(ft, tbl$table_body, footnotes)
   attr(ft, "hv_footnotes") <- footnotes
+  ft
+}
+
+# hv_tbl_summary() footnotes Fisher's exact test with a double dagger
+# when it ran one. The mark goes on each Fisher p-value, the way the
+# macro superscripted them, not on the header: a header mark would claim
+# every p-value. hv_man_table_save() reads `hv_body_marks` and leaves
+# those symbols off the header.
+.mark_fisher <- function(ft, tb, footnotes) {
+  ddag <- "\u2021"
+  if (is.null(footnotes[[ddag]]) || !"test_name" %in% names(tb) ||
+        !"p.value" %in% ft$col_keys)
+    return(ft)
+  i <- which(!is.na(tb$test_name) & tb$test_name == "fisher.test" &
+               !is.na(tb$p.value))
+  if (length(i) == 0L) return(ft)
+  ft <- flextable::append_chunks(ft, i = i, j = "p.value", part = "body",
+                                 flextable::as_sup(ddag))
+  attr(ft, "hv_body_marks") <- stats::setNames(footnotes[[ddag]], ddag)
   ft
 }
 

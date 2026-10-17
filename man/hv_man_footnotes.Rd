@@ -12,7 +12,9 @@ hv_man_footnotes(
 \arguments{
 \item{continuous_stat}{One of \code{"median"} (default), \code{"mean"}, or
 \code{"both"}. Controls whether the dagger's continuous half reads as
-median and percentiles, mean +/- SD, or both.}
+median and percentiles or mean +/- SD. Under \code{"both"} it reads as
+mean +/- SD, because \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} puts the medians in columns
+of their own whose headers name them.}
 
 \item{percentiles}{Numeric vector of length 2, the increasing whole-number
 percentile pair named by the dagger. Default \code{c(15, 85)}. Used for
@@ -48,7 +50,8 @@ no special sentinel values needed:
 \item Change one: \code{modifyList(hv_man_footnotes(), list(...))} with
 \code{`†`} = "custom text"
 \item Add a study-specific one alongside: \code{c(hv_man_footnotes(), list(...))}
-with \code{`‡`} = "extra note"
+with \code{`§`} = "extra note". Avoid \verb{‡} on a table from
+\code{\link[=hv_tbl_summary]{hv_tbl_summary()}}: it marks Fisher exact p-values there.
 }
 }
 \section{Common mistakes}{

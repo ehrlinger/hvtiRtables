@@ -118,7 +118,15 @@
 #'   have exactly two groups, because a standardized mean difference is
 #'   defined between two of them; they error otherwise. `"pvalue"` and
 #'   `"none"` work at any number of groups. `%summarytable`
-#'   `PVALUES=`/`ASD=` equivalent.
+#'   `PVALUES=` equivalent, and `ASD=` only in part: the `"smd"`
+#'   number is gtsummary's generic standardized mean difference
+#'   ([gtsummary::add_difference()]), a proportion computed alike for
+#'   every continuous variable. `%summarytable`'s column came from the
+#'   `%stddiff` macro, which treats non-Gaussian and ordinal variables
+#'   differently and prints a percentage, so the two disagree for those
+#'   variables (by 30% on one skewed test variable). To show `%stddiff`'s
+#'   number, compute it with `hvtiRpropensity::ps_stddiff()` and add it
+#'   with [hv_tbl_compare()], beside `compare = "pvalue"` if wanted.
 #' @param percentiles Numeric vector of length 2, the low/high percentile
 #'   pair for continuous summaries, as increasing whole numbers between 0
 #'   and 100. Default `c(15, 85)`, the [hv_man_footnotes()] house
@@ -134,9 +142,12 @@
 #'   summarized. `"median"` gives
 #'   `median (P<low>, P<high>)`; `"mean"` gives mean +/- SD, with no
 #'   spaces around the plus-minus sign and EHB/Blackstone paired rounding;
-#'   `"both"` puts the two on sub-rows under the variable, mean +/- SD
-#'   first, with the N shown once, on the first. Choosing one for the
-#'   manuscript is then a matter of deleting a row. The test does not
+#'   `"both"` puts the two side by side: each group's statistic column
+#'   shows mean +/- SD (or `n (%)` for a categorical row), and a median
+#'   column beside it shows `median (P<low>, P<high>)`, blank on rows
+#'   with no median. Both renderers lay it out the same way. Choosing
+#'   one for the manuscript is then a matter of dropping a column. The
+#'   test does not
 #'   change with the statistic: only `normal` selects ANOVA. The CORR
 #'   footnote carried through [hv_man_table()] to [hv_man_table_save()]
 #'   follows this choice automatically. Placed after
@@ -147,8 +158,36 @@
 #'   `continuous_stat` says, and, under `compare = "pvalue"` or
 #'   `"both"`, tested with classical (pooled-variance) one-way ANOVA,
 #'   the test the macro ran. Default none. Each name must also appear in
-#'   `continuous`. Last in the signature so positional calls keep
+#'   `continuous`. Placed after `continuous_stat` so positional calls
+#'   keep working. To show mean +/- SD without the ANOVA, use `mean_sd`.
+#' @param mean_sd Character vector, a subset of `continuous`: the
+#'   variables to *display* as mean +/- SD while keeping the
+#'   nonparametric test (Wilcoxon rank-sum, or Kruskal-Wallis for 3+
+#'   groups). Use it for variables that are roughly symmetric in a
+#'   table whose every continuous test should stay nonparametric. The
+#'   display is the same as for `normal`, row label suffix included
+#'   when the table mixes statistics; only `normal` changes the test. A
+#'   variable may appear in both, and is then tested with ANOVA.
+#'   Default none. Last in the signature so positional calls keep
 #'   working.
+#' @param show_variable Single `TRUE`/`FALSE`. When `TRUE` (default),
+#'   adds a "Variable" column beside the label holding each variable's
+#'   column name in `data`, on its first row, as `%summarytable`'s
+#'   report did. Both renderers show it. Set `FALSE` for a manuscript,
+#'   so the report and the manuscript come from one table.
+#' @param cutexact When a binary or categorical variable is tested with
+#'   Fisher's exact test rather than Pearson's chi-square (no continuity
+#'   correction). The default, `"any"`, uses Fisher whenever any one
+#'   group-by-level cell has an expected count below 5 (gtsummary's
+#'   rule, and what the CORR team asked for). A number opts in to
+#'   `%summarytable`'s `CUTEXACT=` rule, to reproduce a SAS table:
+#'   Fisher when at least that percentage of cells expect fewer than 5.
+#'   The macro's default was `50`; `0` makes every categorical test
+#'   exact and a value above 100 makes none exact. In the CORR table
+#'   each Fisher p-value is marked with a superscript double dagger,
+#'   footnoted "Fisher exact test."; the JTCVS
+#'   route letters it through [hv_test_footnotes_jtcvs()]. Used only when
+#'   `compare` produces p-values.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
@@ -185,6 +224,9 @@ hv_tbl_summary <- function(data, by = NULL, groups,
                            overall = TRUE,
                            continuous_stat = c("median", "mean", "both"),
                            normal = character(0),
+                           mean_sd = character(0),
+                           show_variable = TRUE,
+                           cutexact = "any",
                            ...) {
   .check_sas_args(list(...), "hv_tbl_summary")
   compare <- match.arg(compare)
@@ -194,6 +236,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     stop("`data` must be a data frame.", call. = FALSE)
   .assert_type_buckets(continuous, binary, categorical)
   .assert_normal(normal, continuous)
+  .assert_normal(mean_sd, continuous, "mean_sd")
   # `by` fails the same way `groups` variables do, in this function's
   # own words. gtsummary's own error here is unusually good, but having
   # `by` fail differently from `groups` inside one function is exactly
@@ -235,6 +278,15 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   .check_percentiles(percentiles)
   if (!is.logical(overall) || length(overall) != 1L || is.na(overall))
     stop("`overall` must be TRUE or FALSE.", call. = FALSE)
+  if (!is.logical(show_variable) || length(show_variable) != 1L ||
+        is.na(show_variable))
+    stop("`show_variable` must be TRUE or FALSE.", call. = FALSE)
+  if (!identical(cutexact, "any") &&
+        (!is.numeric(cutexact) || length(cutexact) != 1L ||
+           is.na(cutexact) || cutexact < 0))
+    stop("`cutexact` must be \"any\" or a single number from 0 up, a ",
+         "percentage of cells (e.g. 50, the macro's CUTEXACT=). Received: ",
+         .describe(cutexact), ".", call. = FALSE)
   # With no `by` the single column already is the overall one, so
   # `overall` is ignored there, the way `compare` is. It errored while
   # the default was FALSE; with TRUE the default, an error would break
@@ -289,13 +341,13 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     continuous_stat,
     median = paste("{N_nonmiss} |||", median_stat),
     mean = paste("{N_nonmiss} |||", mean_stat),
-    # Two sub-rows under one label row (gtsummary's "continuous2"). The
-    # N sits on the first only: " ||| " with nothing before it splits
-    # into a blank N cell, so each variable shows its n once.
-    both = c(paste("{N_nonmiss} |||", mean_stat),
-             paste(" |||", median_stat))
+    # One row, both statistics: .split_median() below moves the part
+    # after the separator into a median column beside each group's
+    # statistic column, so the two read side by side rather than as
+    # stacked sub-rows.
+    both = paste("{N_nonmiss} |||", mean_stat, .median_sep, median_stat)
   )
-  cont_type <- if (continuous_stat == "both") "continuous2" else "continuous"
+  cont_type <- "continuous"
 
   # No "%" in the cell: the header or dagger says "No. (%)" once, as the
   # SAS macro does ("12 (39)"), and a repeated sign costs width and
@@ -304,21 +356,35 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 
   # SAS CON1=: a `normal` variable is mean +/- SD whatever
   # continuous_stat says, on one row, tested with one-way ANOVA below.
-  nonnormal <- setdiff(continuous, normal)
+  # A `mean_sd` variable is displayed the same way but keeps the
+  # nonparametric test: the display and the test are separate choices.
+  # `nonnormal` and `shown_mean` describe the display only; the test
+  # reads `normal` alone.
+  shown_mean <- union(normal, mean_sd)
+  nonnormal <- setdiff(continuous, shown_mean)
   normal_stat <- paste("{N_nonmiss} |||", mean_stat)
   # Mixed: rows of one table show different continuous statistics, so
   # no one header or footnote can name them all. Each continuous row
   # then names its own (the macro's DESCLABEL=1).
-  mixed <- length(normal) > 0L && length(nonnormal) > 0L &&
-    continuous_stat != "mean"
-  label_stat <- if (length(continuous) > 0L && length(nonnormal) == 0L)
-    "mean" else if (mixed) "mixed" else continuous_stat
+  # Under "both" every statistic column shows mean±SD, and the median
+  # columns name themselves, so nothing is mixed.
+  mixed <- length(shown_mean) > 0L && length(nonnormal) > 0L &&
+    continuous_stat == "median"
+  label_stat <- if (length(continuous) > 0L && length(nonnormal) == 0L) {
+    "mean"
+  } else if (mixed) {
+    "mixed"
+  } else if (continuous_stat == "both") {
+    "mean"
+  } else {
+    continuous_stat
+  }
 
   # A list rather than a character vector: under "both" each continuous
   # variable takes a length-2 statistic.
   statistic <- c(
     stats::setNames(rep(list(cont_stat), length(nonnormal)), nonnormal),
-    stats::setNames(rep(list(normal_stat), length(normal)), normal),
+    stats::setNames(rep(list(normal_stat), length(shown_mean)), shown_mean),
     stats::setNames(
       rep(list(cat_stat), length(binary) + length(categorical)),
       c(binary, categorical)
@@ -327,11 +393,11 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   type <- stats::setNames(
     as.list(c(
       rep(cont_type, length(nonnormal)),
-      rep("continuous", length(normal)),
+      rep("continuous", length(shown_mean)),
       rep("dichotomous", length(binary)),
       rep("categorical", length(categorical))
     )),
-    c(nonnormal, normal, binary, categorical)
+    c(nonnormal, shown_mean, binary, categorical)
   )
 
   # Tell gtsummary which level is the event rather than letting it
@@ -379,24 +445,22 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # add_overall() must run before add_p()/add_difference() below --
   # gtsummary requires it ahead of comparison columns so the comparison
   # column stays rightmost.
-  # Applied at each return, not here: gtsummary labels continuous2
-  # sub-rows from the glue string, separator and all ("N Non-missing |||
-  # Mean ± SD"), and add_overall() matches rows on those labels, so
-  # renaming them any earlier makes it fail.
+  # Applied at each return, not here: add_overall() matches rows on
+  # their labels, so suffixing them any earlier makes it fail.
+  # Every return goes through finish(): the relabel, then the variable
+  # column, added last so add_overall() and the comparison calls never
+  # see a column they do not know.
+  finish <- function(tbl) {
+    tbl <- relabel(tbl)
+    if (show_variable) tbl <- .add_variable_column(tbl)
+    tbl
+  }
   relabel <- function(tbl) {
-    if (continuous_stat == "both")
-      tbl <- gtsummary::modify_table_body(tbl, function(tb) {
-        i <- tb$row_type == "level" & tb$variable %in% nonnormal
-        tb$label[i] <- rep_len(c(mean_label, median_label), sum(i))
-        tb
-      })
     if (!mixed) return(tbl)
-    # "Age, Mean±SD", as the macro wrote it. A "both" variable already
-    # names its statistics on its sub-rows, so it gets no suffix.
+    # "Age, Mean±SD", as the macro wrote it.
     suffix <- c(
-      stats::setNames(rep(mean_label, length(normal)), normal),
-      if (continuous_stat == "median")
-        stats::setNames(rep(median_label, length(nonnormal)), nonnormal)
+      stats::setNames(rep(mean_label, length(shown_mean)), shown_mean),
+      stats::setNames(rep(median_label, length(nonnormal)), nonnormal)
     )
     gtsummary::modify_table_body(tbl, function(tb) {
       i <- tb$row_type == "label" & tb$variable %in% names(suffix)
@@ -407,6 +471,10 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 
   if (overall && !is.null(by))
     tbl <- gtsummary::add_overall(tbl, last = FALSE)
+  if (continuous_stat == "both" && length(nonnormal) > 0L) {
+    tbl <- .split_median(tbl, median_label, grouped = !is.null(by))
+    attr(tbl, "hv_median_label") <- median_label
+  }
 
   attr(tbl, "hv_stat_label") <- .stat_label(label_stat, percentiles)
   attr(tbl, "hv_footnotes") <- stats::setNames(
@@ -415,12 +483,12 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     c("*", "\u2020")
   )
   mean_vars <- if (continuous_stat %in% c("mean", "both"))
-    continuous else normal
+    continuous else shown_mean
   tbl <- .format_blackstone_mean_sd(tbl, mean_vars)
 
   effective_compare <- if (is.null(by)) "none" else compare
   if (effective_compare == "none") {
-    return(relabel(tbl))
+    return(finish(tbl))
   }
 
   # gtsummary::add_difference() needs exactly two groups. Left to itself
@@ -478,14 +546,31 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   if (effective_compare %in% c("pvalue", "both")) {
     # CON1='s test: classical one-way ANOVA (pooled variance), which is
     # what SAS's npar1way anova runs. oneway.test() defaults to Welch.
-    tbl <- if (length(normal) == 0L) gtsummary::add_p(tbl) else
-      gtsummary::add_p(
-        tbl,
-        test = list(gtsummary::all_of(normal) ~ "oneway.test"),
-        test.args = list(
-          gtsummary::all_of(normal) ~ list(var.equal = TRUE)
-        )
+    # Categorical tests: by default gtsummary's own rule, Fisher when any
+    # one cell expects fewer than 5, which is what the team asked for
+    # (SAS's 50% rule left chi-square rows they swapped by hand). A
+    # number opts in to the macro's CUTEXACT= rule, to reproduce SAS.
+    cat_tests <- if (is.numeric(cutexact))
+      .cutexact_tests(data, by, c(binary, categorical), cutexact)
+    fisher <- names(cat_tests)[cat_tests == "fisher.test"]
+    chisq <- names(cat_tests)[cat_tests != "fisher.test"]
+    test <- c(
+      if (length(normal)) list(gtsummary::all_of(normal) ~ "oneway.test"),
+      if (length(fisher)) list(gtsummary::all_of(fisher) ~ "fisher.test"),
+      if (length(chisq))
+        list(gtsummary::all_of(chisq) ~ "chisq.test.no.correct")
+    )
+    tbl <- gtsummary::add_p(
+      tbl, test = test,
+      test.args = if (length(normal)) list(
+        gtsummary::all_of(normal) ~ list(var.equal = TRUE)
       )
+    )
+    # The macro marked these p-values (ExactTest = "F"). hv_man_table()
+    # puts the mark on each Fisher p-value; the JTCVS route letters them
+    # through hv_test_footnotes_jtcvs().
+    if (any(tbl$table_body$test_name %in% "fisher.test"))
+      attr(tbl, "hv_footnotes")[["\u2021"]] <- "Fisher exact test."
   }
 
   tb <- tbl$table_body
@@ -519,7 +604,88 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   )
   attr(tbl, "hv_trailing") <- stats::setNames(compare_label, "hv_compare_col")
 
-  relabel(tbl)
+  finish(tbl)
+}
+
+# Separates mean±SD from the median inside one continuous_stat = "both"
+# cell, until .split_median() takes them apart.
+.median_sep <- "~~~"
+
+# Move the median out of each "both" cell into a column of its own,
+# `hv_median_<stat column>`, placed right after that statistic column
+# and headed with the group's name and the median's description. Rows
+# without a median (categorical, `normal`, `mean_sd`) are blank there.
+# The renderers lay the column out beside its group: the report and the
+# manuscript table show the same thing, side by side.
+.split_median <- function(tbl, median_label, grouped) {
+  stat_cols <- grep("^stat_[0-9]+$", names(tbl$table_body), value = TRUE)
+  sep <- paste0(" ", .median_sep, " ")
+  hdr <- tbl$table_styling$header
+  for (col in stat_cols) {
+    med <- paste0("hv_median_", col)
+    tbl <- gtsummary::modify_table_body(tbl, function(tb) {
+      parts <- strsplit(tb[[col]], sep, fixed = TRUE)
+      tb[[col]] <- vapply(parts, `[`, character(1), 1L)
+      tb[[med]] <- vapply(parts, function(p) {
+        if (length(p) == 2L) p[2] else NA_character_
+      }, character(1))
+      keep <- setdiff(names(tb), med)
+      tb[, append(keep, med, after = match(col, keep)), drop = FALSE]
+    })
+    # Ungrouped, the statistic header is only "N = <n>", which would
+    # read as the median column's own count.
+    label <- if (grouped) {
+      paste0(sub("\\s*\\n.*$", "", hdr$label[hdr$column == col]), "  \n",
+             median_label)
+    } else {
+      paste0("**", median_label, "**")
+    }
+    tbl <- do.call(
+      gtsummary::modify_header,
+      c(list(tbl), stats::setNames(list(label), med))
+    )
+  }
+  tbl
+}
+
+# %summarytable's CUTEXACT= rule (summarytable.sas, lines 1265-1320):
+# for each categorical variable, the percentage of cells in the group x
+# level table whose expected count is below 5; at or above `cutexact`,
+# Fisher's exact test, otherwise Pearson chi-square without continuity
+# correction. Cells are every combination of the observed groups and
+# levels among rows with both present, zero counts included (proc freq's
+# SPARSE). An unused factor level is not a cell: SAS never knew it.
+# cutexact = 0 makes every test exact; above 100, none.
+.cutexact_tests <- function(data, by, vars, cutexact) {
+  plain <- function(z) {
+    if (is.factor(z)) as.character(z) else as.vector(unclass(z))
+  }
+  g <- plain(data[[by]])
+  out <- vapply(vars, function(v) {
+    x <- plain(data[[v]])
+    ok <- !is.na(x) & !is.na(g)
+    tab <- table(g[ok], x[ok])
+    if (sum(tab) == 0) return("chisq.test.no.correct")
+    expected <- outer(rowSums(tab), colSums(tab)) / sum(tab)
+    if (100 * mean(expected < 5) >= cutexact) "fisher.test" else
+      "chisq.test.no.correct"
+  }, character(1))
+  stats::setNames(out, vars)
+}
+
+# The raw column name beside its label, on the variable's first row, the
+# column %summarytable printed as "Variable". A report shows it so the
+# reader can find the column in the data; a manuscript drops it with
+# `show_variable = FALSE`, so both come from one regenerated table.
+.add_variable_column <- function(tbl) {
+  tbl <- gtsummary::modify_table_body(tbl, function(tb) {
+    tb$hv_variable <- ifelse(tb$row_type == "label", tb$variable,
+                             NA_character_)
+    keep <- setdiff(names(tb), "hv_variable")
+    tb[, append(keep, "hv_variable", after = match("label", keep)),
+       drop = FALSE]
+  })
+  gtsummary::modify_header(tbl, hv_variable = "**Variable**")
 }
 
 # Round one reported number to a base-10 place using R's round-to-even rule,
