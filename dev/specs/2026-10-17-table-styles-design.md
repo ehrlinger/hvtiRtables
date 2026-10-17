@@ -259,11 +259,12 @@ Three rows of the matrix cannot be met by a renderer alone:
 - **Overall non-missing count (row 5).** `hv_tbl_summary()` computes one count per group;
   `"manuscript"` shows one across all groups. Proposal: `hv_tbl_summary()` always carries
   both counts in its table body, and the style picks which to show.
-- **Significant-digit rounding (row 6, question 11).** In ms.1264 and BVR rv3, each median
-  and percentile is shown to 2 significant digits (`0.31 [0.21, 0.39]`, `11 [9.3, 12]`, `8.6 [7.7, 9.3]`). The EHB paired
-  rule covers mean ± SD only. Formatting happens in `hv_tbl_summary()` today, so a style
-  property for digits means re-formatting from the raw statistics at render time. gtsummary
-  keeps those in the table's cards, so that is possible. A design question for the plan.
+- **Median rounding (row 6, section 5.2).** The standard rounds a median and its percentiles
+  one place finer than the first significant digit of their spread, as the EHB paired rule
+  does for mean ± SD. The EHB rule exists in `hv_tbl_summary()` for mean ± SD only.
+  Formatting happens in `hv_tbl_summary()` today, so a style property for rounding means
+  re-formatting from the raw statistics at render time; gtsummary keeps those in the table's
+  cards, so that is possible. A design question for the plan.
 - **Labels with units and superscripts.** `LAVV area (cm²/m²)` comes from the variable's
   label, which the study sets (its `vars()` or the data build). The renderer will turn a
   `^2^` markup in a label into a superscript, so a label can carry it as plain text. Both
