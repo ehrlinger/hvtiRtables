@@ -1832,3 +1832,21 @@ test_that("a median whose column is missing from the table warns, and says where
     "Could not apply the house median format to `x` in column `stat_1`"
   )
 })
+
+test_that(".format_p() drops the leading zero and keeps today's digits", {
+  expect_identical(
+    .format_p(c(0.0004, 0.001, 0.0094, 0.013, 0.043, 0.12, 0.3, 0.7, 0.95, NA)),
+    c("<.001", ".001", ".009", ".013", ".043", ".12", ".3", ".7", ">.9", NA)
+  )
+})
+
+test_that("the comparison column prints P without a leading zero", {
+  skip_if_not_installed("broom")
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "grade")),
+                        continuous = "age", categorical = "grade",
+                        compare = "pvalue", show_variable = FALSE)
+  p <- stats::na.omit(tbl$table_body$hv_compare_col)
+  expect_true(length(p) > 0L)
+  expect_false(any(grepl("^[<>]?0\\.", p)))
+})

@@ -576,6 +576,10 @@ hv_tbl_summary <- function(data, by = NULL, groups,
         gtsummary::all_of(normal) ~ list(var.equal = TRUE)
       )
     )
+    # hv_man_table() shows gtsummary's own p.value column, not
+    # hv_compare_col, so its format function has to follow the standard
+    # as well.
+    tbl <- gtsummary::modify_fmt_fun(tbl, p.value ~ .format_p)
     # The macro marked these p-values (ExactTest = "F"). hv_man_table()
     # puts the mark on each Fisher p-value; the JTCVS route letters them
     # through hv_test_footnotes_jtcvs().
@@ -586,16 +590,16 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   tb <- tbl$table_body
   compare_col <- switch(
     effective_compare,
-    pvalue = gtsummary::style_pvalue(tb$p.value, digits = 1),
+    pvalue = .format_p(tb$p.value),
     smd    = gtsummary::style_sigfig(tb$estimate),
     both   = ifelse(
       is.na(tb$p.value), NA_character_,
       ifelse(
         is.na(tb$estimate),
-        gtsummary::style_pvalue(tb$p.value, digits = 1),
+        .format_p(tb$p.value),
         sprintf(
           "%s (SMD %s)",
-          gtsummary::style_pvalue(tb$p.value, digits = 1),
+          .format_p(tb$p.value),
           gtsummary::style_sigfig(tb$estimate)
         )
       )
@@ -710,6 +714,13 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     big.mark = if (identical(decimal_mark, ",")) " " else ",",
     decimal.mark = decimal_mark
   )
+}
+
+# P values, the house standard: gtsummary's style_pvalue(digits = 1),
+# which hv_tbl_summary() has always used, with the leading zero dropped,
+# as AMA style and the typeset JTCVS tables print them (.013, <.001, >.9).
+.format_p <- function(p) {
+  sub("^([<>]?)0\\.", "\\1.", gtsummary::style_pvalue(p, digits = 1))
 }
 
 # The house standard's precision for a median and its percentiles: 2

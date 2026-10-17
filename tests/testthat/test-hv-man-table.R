@@ -203,3 +203,17 @@ test_that("no sentinel survives into the rendered .docx", {
   expect_true(grepl("Number of non-missing values", txt, fixed = TRUE))
   expect_true(grepl("No.", txt, fixed = TRUE))
 })
+
+test_that("CORR's rendered P column has no leading zero", {
+  skip_if_not_installed("broom")
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "grade")),
+                        continuous = "age", categorical = "grade",
+                        compare = "pvalue", show_variable = FALSE)
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(tbl), path)
+  text <- officer::docx_summary(officer::read_docx(path))$text
+  p <- text[grepl("^[<>]?0?\\.[0-9]+$", text)]
+  expect_true(length(p) > 0L)
+  expect_false(any(grepl("^[<>]?0\\.", p)))
+})

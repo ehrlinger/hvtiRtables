@@ -388,3 +388,16 @@ test_that("hv_man_table_jtcvs rejects a duplicated groups name", {
   expect_false(grepl("col_keys", msg, fixed = TRUE))
   expect_match(msg, "must name each column at most once", fixed = TRUE)
 })
+
+test_that("the JTCVS comparison column has no leading zero", {
+  skip_if_not_installed("broom")
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "grade")),
+                        continuous = "age", categorical = "grade",
+                        compare = "pvalue", show_variable = FALSE)
+  ft <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
+                           trailing = attr(tbl, "hv_trailing"))
+  p <- stats::na.omit(ft$body$dataset$hv_compare_col)
+  expect_true(length(p) > 0L)
+  expect_false(any(grepl("^[<>]?0\\.", p)))
+})
