@@ -1,9 +1,30 @@
 # Weighted summaries for `hv_tbl_summary()`: design
 
 **Date:** 2026-10-16
-**Status:** design with measurements, not an implementation. It feeds the `dc-summary`
-template in hvtiRtemplates, whose weighted panel may be dropped at the 2026-10-16 meeting. If
-it is, this note records what was measured and stops there.
+**Status:** **parked, 2026-10-16.** Not implemented. The 2026-10-16 meeting asked for the
+`%summarytable` shape, one table with p-values and `%stddiff`'s difference, and never for a
+matched or weighted panel, so `dc-summary` became an extension of `dc-tables` and the weighted
+panel was deferred (hvtiRtemplates `dev/specs/2026-10-16-dc-summary-design.md`, sections 5a
+and 7). Pick this up when a study asks for a matching-weighted table.
+
+What has happened since, as of 2026-10-17:
+
+- **Shipped from this design.** The comparison-column seam of section 4.5 is
+  `hv_tbl_compare()`, released in hvtiRtables 1.0.6. It is how hvtiRtemplates' `dc-tables`
+  shows `hvtiRpropensity::ps_stddiff()`'s difference without hvtiRtables depending on
+  hvtiRpropensity. Section 5.1's finding was acted on the same way: `compare = "smd"` keeps
+  gtsummary's generic SMD and its help says it is not `%stddiff`'s. `hv_man_table_display()`
+  (1.0.7) shows the saver's notes in HTML.
+- **To redo when picked up.** The renderer parts, sections 3.2 and 4.4 (how the weighted
+  table and its weighted counts are laid out and printed), are written against today's two
+  renderers. `dev/specs/2026-10-17-table-styles-design.md` (hvtiRtables#81) replaces those
+  with one renderer and three named styles, and moves number formatting toward render time.
+  Redo both sections against the styles.
+- **Still stands.** The measurements in section 3.1 (`survey` against SAS's `VARDEF=WDF`
+  standard deviation and its percentile tie rule; weighted N, n, % and mean identical), the
+  recommendation in 4.3 to adopt SAS's definitions, and the findings in 5.2 to 5.4
+  (`ps_mw_var()`'s own SDs, the seed-dependent bootstrap p-value, the SAS defect in the
+  weighted Total column). The parity script beside this note reproduces them.
 **Reads with:** `2026-07-17-hv-tbl-summary-sas-migration-design.md`, which deferred `WEIGHT=`
 and `PROPENMT=` on purpose; hvtiRtemplates `dev/specs/2026-10-16-dc-summary-design.md`
 (branch `spec/dc-summary`, section 3), which found that hvtiRtables has no weight support.
