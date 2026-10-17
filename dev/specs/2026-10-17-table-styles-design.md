@@ -1,4 +1,4 @@
-# Table styles: one renderer, three named styles (design)
+# Table styles: one renderer, styles named by role (design)
 
 Date: 2026-10-17
 Status: draft for John's review. Decisions taken on 2026-10-17 are in section 2; the open
@@ -11,83 +11,100 @@ This note is self-contained. It assumes no memory of the session that produced i
 The goal is that **nobody ever hand-edits a manuscript table**. A table that leaves the
 package must already be the table the journal gets.
 
-There are three table looks in use today, and the package names two of them after their
-first users rather than after what they look like:
+The package has two renderers today, named after their first users rather than their role:
 
 - `hv_man_table()` and `hv_man_table_save()`: the CORR look, used for analysis reports.
-- `hv_man_table_jtcvs()` and `hv_man_table_save_jtcvs()`: the JTCVS look.
-- The look of the tables in the AVSD morphology manuscript (ms.1264, submitted to
-  *Circulation* in October 2026), which no function produces. Its tables were finished by
-  hand, and two hand-edit inconsistencies survive in the submitted file (section 4).
+- `hv_man_table_jtcvs()` and `hv_man_table_save_jtcvs()`: a JTCVS look, built in July 2026
+  from a JTCVS template document.
 
-Naming each look after a journal does not scale: a second journal that wants the JTCVS
-look would need a third copy of it, and a journal that changes its rules would rename a
-look that has not changed.
+Neither produces the tables the group actually submits. Two submissions measured on
+2026-10-17, to two journals, share one look that no function produces (section 4). Both were
+finished by hand, and both carry hand-edit errors as a result.
 
 ## 2. Decisions taken, 2026-10-17
 
-1. **Three named styles**, named for what they look like, not for a journal. A journal is
-   a choice of style. The JTCVS functions are a temporary name for one of them.
-2. **Reports keep the CORR look, with the Variable column.** Manuscript exports use a
-   manuscript style and **never** carry variable names (the savers drop the column; see
-   hvtiRtables `feat/savers-drop-variable`, in progress).
-3. **The ms.1264 look becomes a named style** beside the other two.
-4. **Section-row shading goes into all three styles.**
-5. **The differences are documented clearly.** The matrix in section 5 is the definition
-   of the styles, and the package gains an article that renders one table in each style
-   beside it (section 8, D6).
+1. **Styles are named by role,** not by journal and not by look. A journal is a choice of
+   style, and a style's properties can vary where journals differ (the fill color does,
+   section 4).
+2. **Reports keep the CORR look, with the Variable column on screen.** Every saved `.docx`
+   drops the Variable column (hvtiRtables#82), so a manuscript export never carries variable
+   names.
+3. **The submitted look becomes the `"manuscript"` style.**
+4. **Section-row shading goes into every style.**
+5. **The differences are documented clearly.** The matrix in section 5 is the definition of
+   the styles, and the package gains an article that renders one table in each style beside
+   it (section 8, D6).
 6. **Some house rules exist because tables were edited by hand,** to make a hand-edited
    table look right, not because of their content. Once tables are generated, those rules
    are open to change style by style (section 6).
 
-## 3. The three styles
+## 3. The styles
 
-Working names, chosen for the look (question 1 in section 10):
-
-| style | today | used for | defining trait |
+| style | role | today | defining trait |
 |---|---|---|---|
-| `"report"` | `hv_man_table()` | analysis reports | horizontal rules only, one flat header row, a count column per group, the Variable column |
-| `"spanned"` | `hv_man_table_jtcvs()` | JTCVS submissions | each group spans its own (n, statistic) pair, lettered notes, statistic named in the header |
-| `"grid"` | none | ms.1264; manuscripts in that look | full grid, one overall `n*` column, `GROUP†` spanning the groups, bracketed percentiles |
+| `"report"` | the analysis report, read on screen | `hv_man_table()` | horizontal rules only, one flat header row, a count column per group, the Variable column on screen |
+| `"manuscript"` | tables a journal receives, main text and supplement | none | full grid, one overall `n*` column, the grouping spanning its levels, full-width shaded section rows, bracketed percentiles |
+| *(the JTCVS renderer's look)* | no role found yet | `hv_man_table_jtcvs()` | each group spans its own (n, statistic) pair, lettered notes. Neither submission uses it (question 1) |
 
 ## 4. Evidence
 
-Measured on 2026-10-17 from the Word XML of three files: Table 1 of
-`ms.1264.avsd_morphology.circulation.complete.final20261016.docx` (Tables 2, S2 and S6
-share its layout); and the same synthetic table saved with hvtiRtables 1.0.7's
-`hv_man_table_save()` and `hv_man_table_save_jtcvs()`. The manuscript is unpublished and
-is **not** committed; this note records its properties only.
+Measured on 2026-10-17 from the Word XML of four files:
 
-Two inconsistencies in the submitted manuscript show hand editing: the header reads
-`B (N = 94)` beside `F(N=114)`, and the cells read `30(42)` under a note that says
-`No. (%)`. A generated table would carry one form throughout.
+- **ms.1264**, `ms.1264.avsd_morphology.circulation.complete.final20261016.docx`, to be
+  submitted to *Circulation*: Tables 1, 2, S2 and S6 (characteristics by group).
+- **BVR rv3**, `ms.rv3.jtcvs.biventricular_repair.current.docx`, a JTCVS revision: Tables 1
+  and E4 (characteristics by cluster), and Tables 2 and 3 (risk factors).
+- The same synthetic table saved with hvtiRtables 1.0.7's `hv_man_table_save()` and
+  `hv_man_table_save_jtcvs()`.
+
+Neither manuscript is published, and neither is committed; this note records their measured
+properties only.
+
+**The two submissions share one look across two journals.** Both have a full single-line
+grid; a two-row header with `Characteristic` and `n*` merged down and the grouping
+(`GROUP†`, `Cluster†`) spanning its levels; full-width shaded section rows; one overall `n*`
+column; `median [P15, P85]`; US Letter pages; and the document's 11 pt body font. **What
+differs between them is the fill color** (`#CAEDFB` in ms.1264, `#A5C9EB` in BVR rv3) and
+details that are hand edits.
+
+**Hand-edit errors in the submitted files.** These are what a generated table removes:
+
+- BVR rv3 Table 1's note reads "median [15th, **18th** percentiles]", a typo for 85th.
+- The bracket spacing differs between the papers: `9.9 [8.5, 11]` in ms.1264 against
+  `8.6[7.7, 9.3]` in BVR rv3.
+- The count-in-percent spacing differs too: `30(42)` in ms.1264 under a note saying
+  `No. (%)`, and `65 (49)` in BVR rv3.
+- ms.1264's header reads `B (N = 94)` beside `F(N=114)` in one row.
+- The count note differs: "Patients with non-missing data." (ms.1264) against "Patients with
+  data available." (BVR rv3).
 
 ## 5. The style matrix
 
-This table **is** the specification. Each row is a property the renderer sets, and every
-style has a value. Rows marked † change what an existing style produces today.
+This table **is** the specification. Each row is a property the renderer sets. Rows
+marked † change what an existing renderer produces today. The JTCVS column records today's
+renderer, pending question 1.
 
-| # | property | `"report"` (CORR) | `"spanned"` (JTCVS) | `"grid"` (ms.1264) |
+| # | property | `"report"` | `"manuscript"` | JTCVS renderer today |
 |---|---|---|---|---|
-| 1 | Section row | label in the first cell, bold, left; **fill #CAEDFB on every cell of the row**, unmerged † | spans the full width, bold, left; **fill #CAEDFB** † | spans the full width, bold, centered; fill #CAEDFB |
-| 2 | Borders | horizontal rules only | horizontal rules only | full grid: box plus all inner lines, single 0.5 pt |
-| 3 | Header | one row; `No.*`, then `<group> N = n†` per group | two rows; each group spans its (n, statistic) pair; row 2 names the statistic | two rows; `Characteristic` and `n*` merged down; `GROUP†` spans the groups; row 2 `<group> (N = n)` |
-| 4 | Non-missing count | one column per group | one column per group | **one overall `n*` column** (needs `hv_tbl_summary()`, section 7) |
-| 5 | Group header text | `A N = 44†` | `A (n = 44)` | `A (N = 44)` |
-| 6 | Continuous values | `10.35 (8.11, 12.74)`: parentheses, 2 decimals | as `"report"` | `9.9 [8.5, 11]`: square brackets, each number to 2 significant digits (section 7) |
-| 7 | Categorical values | `3 (6.8)` | `3 (6.8)` | `30 (42)`; the manuscript's `30(42)` is a hand edit (section 4) |
-| 8 | Note markers | `*`, `†`, `‡` superscript | lettered `a.`, `b.` | `*`, `†` at the start of the note, not superscript |
-| 9 | Count note | `Number of non-missing values.` (house rule 8) | `Patients with data available.` | `Patients with non-missing data.` (question 3) |
-| 10 | Statistic note | `No. (%) or Median (15th, 85th percentile).` | named in the header row | `Values are No. (%) or median [15th, 85th percentiles].` |
-| 11 | Abbreviations | `Key: A=…; B=…` (house rule 14) | its own key | `Key: A=…; B=…` |
-| 12 | Font | Times New Roman 12 pt (house rule 5) | Times New Roman 12 pt | the document's body font, 11 pt (question 5) |
-| 13 | Caption | none | above the table, plain | `Table 1. …`, bold, above the table |
-| 14 | Alignment and weight | header bold; first column left, others centered | everything left; header plain | first column left, others centered; only `GROUP†` bold |
-| 15 | Row height | auto, about 600 twips | 360 twips | 300 twips, rows kept on one page |
-| 16 | Header repeated on a new page | yes | yes | yes (the manuscript lacks it; the generated style adds it) |
-| 17 | Page | A4 landscape † | A4 landscape † | **US Letter** landscape, 1 in margins (question 4) |
-| 18 | Variable column | shown (`show_variable = TRUE`) | never | never |
-| 19 | Merged cells | none (house rule 3) | header and section rows | header and section rows (sections 6 and 10, question 2) |
+| 1 | Section row | label in the first cell, bold, left; **fill on every cell of the row**, unmerged † | spans the full width, bold; fill | spans the full width, bold, left; no fill |
+| 2 | Fill color | `#CAEDFB` by default | **a property:** `#CAEDFB` (ms.1264), `#A5C9EB` (BVR rv3) | none |
+| 3 | Borders | horizontal rules only | full grid: box plus all inner lines, single 0.5 pt | horizontal rules only |
+| 4 | Header | one row; `No.*`, then `<group> N = n†` per group | two rows: `Characteristic` and `n*` merged down, the grouping label with † spanning its levels; row 2 `<level> (N = n)` | two rows; each group spans its (n, statistic) pair |
+| 5 | Non-missing count | one column per group | **one overall `n*` column** (needs `hv_tbl_summary()`, section 7) | one column per group |
+| 6 | Continuous values | `10.35 (8.11, 12.74)`: parentheses, 2 decimals | `9.9 [8.5, 11]`: brackets, a space before them, each number to 2 significant digits (section 7) | as `"report"` |
+| 7 | Categorical values | `3 (6.8)` | `30 (42)` | `3 (6.8)` |
+| 8 | Note markers | `*`, `†`, `‡` superscript | `*`, `†` at the start of the note, not superscript | lettered `a.`, `b.` |
+| 9 | Count note | `Number of non-missing values.` (house rule 8) | question 3 | `Patients with data available.` |
+| 10 | Statistic note | `No. (%) or Median (15th, 85th percentile).` | `Values are No. (%) or median [15th, 85th percentiles].` | named in the header row |
+| 11 | Abbreviations | `Key: A=…; B=…` (house rule 14) | `Key: A=…; B=…` | its own key |
+| 12 | Font | Times New Roman 12 pt (house rule 5) | the document's body font, 11 pt (question 5) | Times New Roman 12 pt |
+| 13 | Caption | none | `Table 1. …`, bold, above the table | above the table, plain |
+| 14 | Alignment and weight | header bold; first column left, others centered | first column left, others centered | everything left; header plain |
+| 15 | Row height | auto, about 600 twips | 300 twips, rows kept on one page | 360 twips |
+| 16 | Header repeated on a new page | yes | yes (neither submission has it; the generated style adds it) | yes |
+| 17 | Page | A4 landscape † | **US Letter**, landscape when wide, else portrait (question 4) | A4 landscape |
+| 18 | Variable column | on screen only; every saved `.docx` drops it (hvtiRtables#82) | never | never |
+| 19 | Merged cells | none (house rule 3) | header and section rows (section 6, question 2) | header and section rows |
 
 ## 6. Which house rules still bind
 
@@ -96,103 +113,114 @@ rule. Generating tables removes the reason for one kind and not the other.
 
 **Rules about content.** These say what a reader is told, so they bind every style:
 
-- Rule 8: the count column and its exact note wording.
+- Rule 8: the count column and its note.
 - Rule 14: the abbreviation key, sorted, with its separators.
 - The notes say which statistic each cell holds, and every mark in the table is explained.
 
 **Rules that exist because tables were edited by hand.** These keep a hand-edited table
-manageable or make it *look* right after editing, not what it says:
+manageable, or make it *look* right after editing, not what it says:
 
 - Rule 3: no merged cells. Merged cells are hard to edit and break when a row is added by
-  hand. A generated table is never edited, and `"spanned"` already merges.
+  hand. A generated table is never edited, and both submissions merge.
 - Rule 2: where a table is pasted into the manuscript, a concern of the paste-in workflow.
-- No hidden spacing columns, floating layers, or footnotes inside the table: constructs
-  that SAS RTF output used to reach a look, and that an editor could not see or reach.
-- Possibly rule 5 (Times New Roman 11 or 12 pt): to confirm (question 5).
+- No hidden spacing columns, floating layers, or footnotes inside the table: constructs that
+  SAS RTF output used to reach a look, and that an editor could not see or reach.
+- Possibly rule 5 (Times New Roman 11 or 12 pt): both submissions use the document's body
+  font instead (question 5).
 
 Proposal: content rules hold in every style. Hand-edit rules hold in `"report"`, which is
-read and sometimes edited as a working document, and each manuscript style may set them
-aside where the journal's look needs it. `hv_check_docx()` keeps checking the constructs
-that hide content (layers, hidden columns, embedded footnotes) in every style, since those
-are content problems for a reader whatever produced the table. John to confirm which rules
-are which (question 2).
+read and sometimes edited as a working document, and `"manuscript"` may set them aside where
+the submitted look needs it. `hv_check_docx()` keeps checking the constructs that hide
+content (layers, hidden columns, embedded footnotes) in every style. John to confirm which
+rules are which (question 2).
 
 ## 7. Changes outside the renderer
 
 Three rows of the matrix cannot be met by a renderer alone:
 
-- **Overall non-missing count (row 4).** `hv_tbl_summary()` computes one count per group;
-  `"grid"` shows one across all groups. Proposal: `hv_tbl_summary()` always carries both
-  counts in its table body, and the style picks which to show.
+- **Overall non-missing count (row 5).** `hv_tbl_summary()` computes one count per group;
+  `"manuscript"` shows one across all groups. Proposal: `hv_tbl_summary()` always carries
+  both counts in its table body, and the style picks which to show.
 - **Significant-digit rounding (row 6).** Each median and percentile is shown to 2
-  significant digits (`0.31 [0.21, 0.39]`, `11 [9.3, 12]`, `3.0 [2.1, 4.4]`). The EHB
-  paired rule covers mean ± SD only. Formatting happens in `hv_tbl_summary()` today, so a
-  style property for digits means re-formatting from the raw statistics at render time.
-  gtsummary keeps those in the table's cards, so that is possible. A design question for
-  the plan, not for this note.
+  significant digits (`0.31 [0.21, 0.39]`, `11 [9.3, 12]`, `8.6 [7.7, 9.3]`). The EHB paired
+  rule covers mean ± SD only. Formatting happens in `hv_tbl_summary()` today, so a style
+  property for digits means re-formatting from the raw statistics at render time. gtsummary
+  keeps those in the table's cards, so that is possible. A design question for the plan.
 - **Labels with units and superscripts.** `LAVV area (cm²/m²)` comes from the variable's
   label, which the study sets (its `vars()` or the data build). The renderer will turn a
-  `^2^` markup in a label into a superscript, so a label can carry it as plain text.
+  `^2^` markup in a label into a superscript, so a label can carry it as plain text. Both
+  submissions have them (18 in ms.1264 Table 1, 13 in BVR rv3 Table 1).
 
 ## 8. Deliverables
 
-- **D1. A style object.** `hv_table_style(name)` returns the properties of section 5 for
-  one of the three names. A future journal is a new name or a variant of an existing one,
-  not a new function.
+- **D1. A style object.** `hv_table_style(name, ...)` returns the properties of section 5
+  for a role, with overrides for the properties journals vary (the fill color first).
 - **D2. One renderer and one saver.** `hv_man_table(tbl, style = "report")` and
   `hv_man_table_save(ft, file, ...)`. The flextable carries its style, so the saver writes
   that style's notes, caption and page without being told again.
   `hv_man_table_display()` follows the style too.
-- **D3. The JTCVS functions become wrappers** for `style = "spanned"`, deprecated over one
-  release with a message naming the replacement. No other hvtiR package calls them
-  (checked 2026-10-17 across hvtiRtemplates, hvtiRutilities and hvtiPlotR).
-- **D4. Section shading in all three styles.** In `"report"` the fill goes on every cell
-  of the section row and nothing is merged, so rule 3 holds there. In the two styles that
-  span, the spanned cell is filled.
-- **D5. `hv_tbl_summary()`**: the overall count beside the per-group ones, and whatever
-  the rounding design needs (section 7).
+- **D3. The JTCVS functions,** depending on question 1: either wrappers for a third role, or
+  deprecated over one release with a message naming the replacement. No other hvtiR package
+  calls them (checked 2026-10-17 across hvtiRtemplates, hvtiRutilities and hvtiPlotR).
+- **D4. Section shading in every style.** In `"report"` the fill goes on every cell of the
+  section row and nothing is merged, so rule 3 holds there. In `"manuscript"` the spanned
+  cell is filled.
+- **D5. `hv_tbl_summary()`**: the overall count beside the per-group ones, and whatever the
+  rounding design needs (section 7).
 - **D6. Documentation of the differences.** A pkgdown article, "Table styles", renders one
-  synthetic table in each of the three styles beside the matrix of section 5, so a reader
-  sees each difference. The article's matrix is generated from `hv_table_style()`, not
-  written by hand, so the two cannot drift. It also states, for each house rule, whether it
-  is a content rule or a hand-edit rule and which styles keep it (section 6). The
-  `@details` of `hv_man_table()` link to the article.
-- **D7. hvtiRtemplates.** `dc-tables`' report stays `"report"` with the Variable column. Its
-  Word export takes a `MANUSCRIPT_STYLE` study choice (`"grid"` or `"spanned"`). A later
-  PR, after the hvtiRtables release.
+  synthetic table in each style beside the matrix of section 5, so a reader sees each
+  difference. The article's matrix is generated from `hv_table_style()`, not written by
+  hand, so the two cannot drift. It also states, for each house rule, whether it is a
+  content rule or a hand-edit rule and which styles keep it (section 6). The `@details` of
+  `hv_man_table()` link to the article.
+- **D7. hvtiRtemplates.** `dc-tables`' report stays `"report"`, with the Variable column on
+  screen. Its Word export takes `"manuscript"`, with the fill color as a study choice. A
+  later PR, after the hvtiRtables release.
 
 ## 9. Testing
 
-- For each style, a structural test reads the saved `.docx` XML and asserts every row of
-  the matrix: fills, spans, borders, header rows, the count column, cell text patterns,
-  notes, font, caption, row height, header repeat and page size. The matrix is the
-  fixture.
-- A synthetic replica of ms.1264 Table 1's shape (five groups, four sections, continuous
-  and binary rows, missing values), saved in `"grid"`, must match the manuscript's measured
-  properties in section 5, apart from the two hand-edit inconsistencies.
-- `hv_check_docx()` passes on all three, with its merged-cell expectation set per style
+- For each style, a structural test reads the saved `.docx` XML and asserts every row of the
+  matrix: fills, spans, borders, header rows, the count column, cell text patterns, notes,
+  font, caption, row height, header repeat and page size. The matrix is the fixture.
+- Synthetic replicas of ms.1264 Table 1 and BVR rv3 Table 1 (their shapes, not their data),
+  saved in `"manuscript"` with each paper's fill color, must match the measured properties
+  in sections 4 and 5, apart from the hand-edit errors listed in section 4.
+- `hv_check_docx()` passes on every style, with its merged-cell expectation set per style
   (section 6).
-- Existing CORR and JTCVS tests keep passing through the wrappers, apart from rows marked
-  † in section 5, whose expectations change on purpose and are listed in the PR.
+- Existing CORR and JTCVS tests keep passing, apart from rows marked † in section 5, whose
+  expectations change on purpose and are listed in the PR.
 
 ## 10. Open questions
 
-1. **Names.** `"report"`, `"spanned"` and `"grid"` describe the look. The alternative,
-   naming by role (`"report"`, `"journal"`, …), breaks as soon as two journals differ.
-2. **Which house rules are hand-edit rules.** Section 6 sorts rules 2 and 3 and the hidden
-   constructs as hand-edit rules, and rules 8 and 14 as content. Is that right, and is
+1. ~~Names.~~ **Answered 2026-10-17: by role.** Follow-on: the JTCVS renderer's look is used
+   by neither submission. Is there a role for it (a journal whose template requires it), or
+   should it be deprecated in favor of `"manuscript"`?
+2. **Which house rules exist only for hand editing.** Section 6 treats rules 2 and 3 and the
+   hidden constructs as hand-edit rules, and rules 8 and 14 as content. Is that right, and is
    anything else in the house rules document a hand-edit rule?
-3. **Count-note wording.** `"grid"` uses the manuscript's `Patients with non-missing data.`
-   while `"report"` keeps rule 8's `Number of non-missing values.`? Or one wording for all?
-4. **Page size.** US Letter for every style, or only `"grid"`? Both savers write A4 today.
-5. **Font.** Is rule 5 (Times New Roman, 11 or 12 pt) a content rule or a look? `"grid"`
-   follows the document's body font at 11 pt, as the manuscript does.
-6. **Shading color.** `#CAEDFB` for every style, or a property each style can set?
+3. **Count-note wording for `"manuscript"`.** The two submissions disagree: "Patients with
+   non-missing data." and "Patients with data available." `"report"` keeps rule 8's "Number
+   of non-missing values." Pick one for `"manuscript"`.
+4. **Page size.** US Letter for every style, or only `"manuscript"`? Both savers write A4
+   today; both submissions are on Letter.
+5. **Font.** Is rule 5 (Times New Roman, 11 or 12 pt) a content rule or only how the table
+   looks? Both submissions use the document's body font at 11 pt.
+6. ~~Shading color.~~ **Answered by the evidence:** a style property, since the two
+   submissions differ. Is `#CAEDFB` the right default?
 
 ## 11. Out of scope
 
-- The other general shapes in ms.1264: the cross-tabulation with a two-level header (S5),
-  and the sectioned or banded lists (S1, S3, S4). Each is a template of its own, later.
+Other general table shapes that appear in **both** submissions, each a template of its own
+later:
+
+- **Risk-factor tables** from a hazard model (BVR rv3 Tables 2 and 3): sections per stratum,
+  phase sub-headings (early, late hazard phase), `Coefficient±SE`, `P` without a leading
+  zero, and bootstrap reliability (%), with notes for transformations ("After inverse squared
+  transformation."). The natural home is the `hm` and `bh` templates.
+- **Cross-tabulations** with a two- or three-row header (ms.1264 S5, BVR rv3 E5).
+- **Sectioned single-column lists** of observations and measurements (ms.1264 S3 and S4, BVR
+  rv3 E2 and E3), and **banded lists** (ms.1264 S1 and BVR rv3 E1, participating
+  institutions, alternating `#A5C9EB` and `#DAE9F7` in BVR rv3).
 - Weighted summaries (hvtiRtables#76, parked).
 
 ## 12. Versioning
