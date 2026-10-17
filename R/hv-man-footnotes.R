@@ -80,7 +80,7 @@ hv_man_footnotes <- function(
 .stat_label <- function(continuous_stat, percentiles) {
   ordinal <- .format_ordinal(percentiles)
   median_label <- sprintf(
-    "Median (%s, %s percentile)", ordinal[1], ordinal[2]
+    "Median [%s, %s percentiles]", ordinal[1], ordinal[2]
   )
   mean_label <- "Mean\u00B1SD"
   switch(

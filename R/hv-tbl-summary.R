@@ -334,10 +334,13 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # 7947 of 7948), so {N_obs} silently overstated n for any variable
   # with missing data.
   median_label <- sprintf(
-    "Median (%s, %s percentile)", ordinal[1], ordinal[2]
+    "Median [%s, %s percentiles]", ordinal[1], ordinal[2]
   )
   mean_label <- "Mean\u00B1SD"
-  median_stat <- sprintf("{median} ({p%s}, {p%s})", p_lo, p_hi)
+  # Brackets, the house standard: they keep the percentiles apart from
+  # the n (%) parentheses in the same table. The numbers are re-formatted
+  # from gtsummary's cards by .format_standard_median() below.
+  median_stat <- sprintf("{median} [{p%s}, {p%s}]", p_lo, p_hi)
   # No spaces around the plus-minus: journals count table entries toward
   # word limits, and "64 +/- 12" is three words (house table rules).
   mean_stat <- "{mean}\u00B1{sd}"
@@ -489,6 +492,9 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   mean_vars <- if (continuous_stat %in% c("mean", "both"))
     continuous else shown_mean
   tbl <- .format_blackstone_mean_sd(tbl, mean_vars)
+  median_vars <- if (continuous_stat %in% c("median", "both"))
+    nonnormal else character(0)
+  tbl <- .format_standard_median(tbl, median_vars, percentiles)
 
   effective_compare <- if (is.null(by)) "none" else compare
   if (effective_compare == "none") {
@@ -781,6 +787,51 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     if (sum(target) != 1L) next
     prefix <- strsplit(cells[target], " ||| ", fixed = TRUE)[[1]][1]
     tbl$table_body[[column]][target] <- paste(prefix, formatted, sep = " ||| ")
+  }
+  tbl
+}
+
+# The house standard's medians: each number from gtsummary's cards, to
+# 2 significant digits (.format_sig2()), in brackets. Reads the raw
+# statistics rather than parsing gtsummary's rounded text, as
+# .format_blackstone_mean_sd() does. Under continuous_stat = "both" the
+# median sits in hv_median_<col>, which .split_median() made.
+.format_standard_median <- function(tbl, median_vars, percentiles) {
+  if (!length(median_vars)) return(tbl)
+  lo_name <- paste0("p", percentiles[1])
+  hi_name <- paste0("p", percentiles[2])
+  card_names <- intersect(c("tbl_summary", "add_overall"), names(tbl$cards))
+  raw <- do.call(rbind, lapply(card_names, function(card_name) {
+    card <- tbl$cards[[card_name]]
+    keep <- card$variable %in% median_vars &
+      card$stat_name %in% c("median", lo_name, hi_name)
+    data.frame(
+      variable = card$variable[keep], gts_column = card$gts_column[keep],
+      stat_name = card$stat_name[keep],
+      stat = as.numeric(unlist(card$stat[keep])), stringsAsFactors = FALSE
+    )
+  }))
+  if (is.null(raw) || !nrow(raw)) return(tbl)
+  keys <- unique(raw[c("variable", "gts_column")])
+  for (i in seq_len(nrow(keys))) {
+    v <- keys$variable[i]
+    col <- keys$gts_column[i]
+    s <- raw[raw$variable == v & raw$gts_column == col, ]
+    get <- function(name) s$stat[s$stat_name == name]
+    m <- get("median"); lo <- get(lo_name); hi <- get(hi_name)
+    if (length(m) != 1L || length(lo) != 1L || length(hi) != 1L) next
+    text <- sprintf("%s [%s, %s]", .format_sig2(m), .format_sig2(lo),
+                    .format_sig2(hi))
+    for (target in c(col, paste0("hv_median_", col))) {
+      if (!target %in% names(tbl$table_body)) next
+      cells <- tbl$table_body[[target]]
+      hit <- tbl$table_body$variable == v & !is.na(cells) &
+        grepl("[", cells, fixed = TRUE)
+      if (sum(hit) != 1L) next
+      parts <- strsplit(cells[hit], " ||| ", fixed = TRUE)[[1]]
+      tbl$table_body[[target]][hit] <- if (length(parts) == 2L)
+        paste(parts[1], text, sep = " ||| ") else text
+    }
   }
   tbl
 }

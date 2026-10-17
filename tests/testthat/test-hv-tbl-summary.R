@@ -1738,3 +1738,39 @@ test_that(".format_sig2() keeps whole numbers past the integer range", {
   expect_identical(out, c("2147483647", "2200000000", "1000000000000",
                           "-30000000000"))
 })
+
+test_that("a median is shown in brackets, to 2 significant digits", {
+  d <- data.frame(
+    g = rep(c("a", "b"), each = 9),
+    x = c(5, 20, 63, 80, 102.4, 110, 150, 170.3, 400,
+          0.1, 0.153, 0.21, 0.31, 0.33, 0.39, 0.5, 0.6, 0.9)
+  )
+  tbl <- hv_tbl_summary(d, by = "g", groups = list(A = "x"),
+                        continuous = "x", compare = "none", overall = FALSE,
+                        show_variable = FALSE)
+  row <- tbl$table_body[tbl$table_body$variable == "x", ]
+  want <- function(v) {
+    q <- stats::quantile(v, c(0.5, 0.15, 0.85), type = 2, names = FALSE)
+    sprintf("9 ||| %s [%s, %s]", .format_sig2(q[1]), .format_sig2(q[2]),
+            .format_sig2(q[3]))
+  }
+  expect_identical(row$stat_1, want(d$x[d$g == "a"]))
+  expect_identical(row$stat_2, want(d$x[d$g == "b"]))
+  expect_match(row$stat_1, "^9 \\|\\|\\| 102 \\[")
+})
+
+test_that("the statistic note names brackets and percentiles", {
+  expect_identical(.stat_label("median", c(15, 85)),
+                   "No. (%) or Median [15th, 85th percentiles]")
+  expect_identical(hv_man_footnotes()[["†"]],
+                   "No. (%) or Median [15th, 85th percentiles].")
+})
+
+test_that("under \"both\" the median column is in brackets too", {
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = "marker"), continuous = "marker",
+                        continuous_stat = "both", compare = "none",
+                        overall = FALSE, show_variable = FALSE)
+  med <- tbl$table_body$hv_median_stat_1[tbl$table_body$variable == "marker"]
+  expect_match(med, "^[0-9.]+ \\[[0-9.]+, [0-9.]+\\]$")
+})
