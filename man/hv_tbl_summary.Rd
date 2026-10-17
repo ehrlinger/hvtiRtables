@@ -198,8 +198,8 @@ rule: the mean is rounded to the first-significant-digit place of the SD,
 and the SD is rounded one place finer. When the SD begins with 1, both
 retain one additional place. Exact ties round to even; values beyond a tie
 round up. This applies to every group and Overall column when
-\code{continuous_stat = "mean"}, and to the mean row under \code{"both"}. Median and
-percentile precision is unchanged. When an SD is zero or unavailable, no
+\code{continuous_stat = "mean"}, and to the mean row under \code{"both"}. Medians and
+percentiles follow the house notation above instead. When an SD is zero or unavailable, no
 paired precision can be inferred, so gtsummary's existing display is kept.
 
 The returned object carries three renderer attributes:
