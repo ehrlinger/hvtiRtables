@@ -1766,11 +1766,60 @@ test_that("the statistic note names brackets and percentiles", {
                    "No. (%) or Median [15th, 85th percentiles].")
 })
 
-test_that("under \"both\" the median column is in brackets too", {
+test_that("under \"both\" the median column is in brackets, to the standard's precision", {
   tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
                         groups = list(A = "marker"), continuous = "marker",
                         continuous_stat = "both", compare = "none",
                         overall = FALSE, show_variable = FALSE)
-  med <- tbl$table_body$hv_median_stat_1[tbl$table_body$variable == "marker"]
-  expect_match(med, "^[0-9.]+ \\[[0-9.]+, [0-9.]+\\]$")
+  want <- function(arm) {
+    x <- gtsummary::trial$marker[gtsummary::trial$trt == arm]
+    q <- stats::quantile(x, c(0.5, 0.15, 0.85), type = 2, na.rm = TRUE,
+                         names = FALSE)
+    sprintf("%s [%s, %s]", .format_sig2(q[1]), .format_sig2(q[2]),
+            .format_sig2(q[3]))
+  }
+  is_marker <- tbl$table_body$variable == "marker"
+  expect_identical(tbl$table_body$hv_median_stat_1[is_marker], want("Drug A"))
+  expect_identical(tbl$table_body$hv_median_stat_2[is_marker], want("Drug B"))
+})
+
+test_that("a median cell the format cannot reach warns, and says where", {
+  d <- data.frame(g = rep(c("a", "b"), each = 9), x = c(1:9, 11:19))
+  tbl <- hv_tbl_summary(d, by = "g", groups = list(A = "x"),
+                        continuous = "x", compare = "none", overall = FALSE,
+                        show_variable = FALSE)
+  tbl$table_body$stat_1[tbl$table_body$variable == "x"] <- "9 ||| 5"
+  expect_warning(
+    .format_standard_median(tbl, "x", c(15, 85)),
+    "Could not apply the house median format to `x` in column `stat_1`"
+  )
+})
+
+test_that("a group with no data is left as gtsummary shows it, without a warning", {
+  d <- data.frame(g = factor(rep(c("a", "b"), each = 6)),
+                  x = c(1:6, rep(NA_real_, 6)))
+  expect_no_warning(
+    tbl <- hv_tbl_summary(d, by = "g", groups = list(A = "x"),
+                          continuous = "x", compare = "none", overall = FALSE,
+                          show_variable = FALSE)
+  )
+  row <- tbl$table_body[tbl$table_body$variable == "x", ]
+  # gtsummary's own NA text, untouched.
+  expect_identical(row$stat_2, "0 ||| NA [NA, NA]")
+  expect_identical(row$stat_1, "6 ||| 3.5 [1.0, 6.0]")
+})
+
+test_that("a non-finite median is left as gtsummary shows it, not rewritten to NA", {
+  d <- data.frame(g = factor(rep(c("a", "b"), each = 6)),
+                  x = c(1:6, rep(Inf, 6)))
+  tbl <- suppressWarnings(
+    hv_tbl_summary(d, by = "g", groups = list(A = "x"), continuous = "x",
+                   compare = "none", overall = FALSE, show_variable = FALSE)
+  )
+  row <- tbl$table_body[tbl$table_body$variable == "x", ]
+  expect_match(row$stat_2, "Inf", fixed = TRUE)
+  expect_no_warning(
+    hv_tbl_summary(d, by = "g", groups = list(A = "x"), continuous = "x",
+                   compare = "none", overall = FALSE, show_variable = FALSE)
+  )
 })

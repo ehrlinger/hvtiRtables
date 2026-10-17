@@ -820,18 +820,30 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     get <- function(name) s$stat[s$stat_name == name]
     m <- get("median"); lo <- get(lo_name); hi <- get(hi_name)
     if (length(m) != 1L || length(lo) != 1L || length(hi) != 1L) next
+    # A group with no data: gtsummary already shows NA there, so no
+    # unrounded number is hidden. Leave the cell as it is.
+    if (!all(is.finite(c(m, lo, hi)))) next
     text <- sprintf("%s [%s, %s]", .format_sig2(m), .format_sig2(lo),
                     .format_sig2(hi))
-    for (target in c(col, paste0("hv_median_", col))) {
-      if (!target %in% names(tbl$table_body)) next
-      cells <- tbl$table_body[[target]]
-      hit <- tbl$table_body$variable == v & !is.na(cells) &
-        grepl("[", cells, fixed = TRUE)
-      if (sum(hit) != 1L) next
-      parts <- strsplit(cells[hit], " ||| ", fixed = TRUE)[[1]]
-      tbl$table_body[[target]][hit] <- if (length(parts) == 2L)
-        paste(parts[1], text, sep = " ||| ") else text
+    # The column that carries the median: hv_median_<col> under "both",
+    # otherwise the statistic column itself.
+    median_col <- paste0("hv_median_", col)
+    target <- if (median_col %in% names(tbl$table_body)) median_col else col
+    if (!target %in% names(tbl$table_body)) next
+    cells <- tbl$table_body[[target]]
+    hit <- tbl$table_body$variable == v & !is.na(cells) &
+      grepl("[", cells, fixed = TRUE)
+    if (sum(hit) != 1L) {
+      # Failing loud: a median left in gtsummary's own digits would pass
+      # for the standard's.
+      warning("Could not apply the house median format to `", v,
+              "` in column `", target, "`; the cell keeps gtsummary's text.",
+              call. = FALSE)
+      next
     }
+    parts <- strsplit(cells[hit], " ||| ", fixed = TRUE)[[1]]
+    tbl$table_body[[target]][hit] <- if (length(parts) == 2L)
+      paste(parts[1], text, sep = " ||| ") else text
   }
   tbl
 }
