@@ -231,6 +231,18 @@ test_that("hv_man_table() superscripts the minority mark on its cells", {
   hv_man_table_save(ft, path)
   text <- officer::docx_summary(officer::read_docx(path))$text
   expect_true(any(grepl("§", text, fixed = TRUE)))
+  # The footnote line also holds the symbol, so assert on the cells.
+  ch <- flextable::information_data_chunk(ft)
+  body <- ch[ch$.part == "body" & ch$.col_id == "stat_1", ]
+  lab <- ch[ch$.part == "body" & ch$.col_id == "label", ]
+  sup <- function(pattern) {
+    r <- lab$.row_id[grepl(pattern, lab$txt)]
+    body[body$.row_id %in% r & body$txt == "\u00a7", ]
+  }
+  marked <- sup("^Marker")
+  expect_equal(nrow(marked), 1L)
+  expect_identical(marked$vertical.align, "superscript")
+  expect_equal(nrow(sup("^Age")), 0L)
 })
 
 test_that("a cell mark and Fisher's double dagger both survive in hv_body_marks", {

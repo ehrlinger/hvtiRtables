@@ -402,6 +402,22 @@ test_that("the JTCVS comparison column has no leading zero", {
   expect_false(any(grepl("^[<>]?0\\.", p)))
 })
 
+test_that("the JTCVS minority mark reaches every display column", {
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "marker")),
+                        continuous = c("age", "marker"), mean_sd = "age",
+                        compare = "none", show_variable = FALSE)
+  ft <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
+  ch <- flextable::information_data_chunk(ft)
+  age_row <- which(ft$body$dataset$variable == "age")
+  for (col in c("disp_stat_1", "disp_stat_2")) {
+    cell <- ch[ch$.part == "body" & ch$.row_id == age_row &
+                 ch$.col_id == col & ch$txt == "b", ]
+    expect_equal(nrow(cell), 1L, info = col)
+    expect_identical(cell$vertical.align, "superscript", info = col)
+  }
+})
+
 test_that("the JTCVS table letters the minority mark and its note", {
   # One mean row and one median row: a tie, so the default stays median
   # and the mean row is the one marked.
