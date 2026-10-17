@@ -1,8 +1,8 @@
 # Table styles: one renderer, styles named by role (design)
 
 Date: 2026-10-17
-Status: draft for John's review. Decisions taken on 2026-10-17 are in section 2; questions 3
-to 5 and 8 in section 10 need an answer before an implementation plan.
+Status: draft for John's review. Decisions taken on 2026-10-17 are in section 2; question 4 in
+section 10 needs an answer before an implementation plan.
 
 This note is self-contained. It assumes no memory of the session that produced it.
 
@@ -124,10 +124,10 @@ renderer, which is deprecated (D3); it is kept here so the article can show what
 | 6 | Continuous values | `10.35 (8.11, 12.74)`: parentheses, 2 decimals | `9.9 [8.5, 11]`: brackets, a space before them, each number to 2 significant digits (section 7) | as `"report"` |
 | 7 | Categorical values | `3 (6.8)` | `30 (42)` | `3 (6.8)` |
 | 8 | Note markers | `*`, `†`, `‡` superscript | `*`, `†` at the start of the note, not superscript | lettered `a.`, `b.` |
-| 9 | Count note | `Number of non-missing values.` (house rule 8) | question 3 | `Patients with data available.` |
+| 9 | Count note | `Number of non-missing values.` (house rule 8) | `Patients with non-missing data.` | `Patients with data available.` |
 | 10 | Statistic note | `No. (%) or Median (15th, 85th percentile).` | `Values are No. (%) or median [15th, 85th percentiles].` | named in the header row |
 | 11 | Abbreviations | `Key: A=…; B=…` (house rule 14) | `Key: A=…; B=…` | its own key |
-| 12 | Font | Times New Roman 12 pt (house rule 5) | the document's body font, 11 pt (question 5) | Times New Roman 12 pt |
+| 12 | Font | Times New Roman 12 pt (house rule 5) | none set: the document's body font (11 pt in the submissions) | Times New Roman 12 pt |
 | 13 | Caption | none | `Table 1. …`, bold, above the table | above the table, plain |
 | 14 | Alignment and weight | header bold; first column left, others centered | first column left, others centered | everything left; header plain |
 | 15 | Row height | auto, about 600 twips | 300 twips, rows kept on one page | 360 twips |
@@ -222,33 +222,34 @@ Three rows of the matrix cannot be met by a renderer alone:
 - Existing CORR and JTCVS tests keep passing, apart from rows marked † in section 5, whose
   expectations change on purpose and are listed in the PR.
 
-## 10. Open questions
+## 10. Questions
 
-1. ~~Names.~~ **Answered 2026-10-17: by role.** The JTCVS renderer, whose look neither
-   submission uses, is deprecated in favor of `"manuscript"` (decision 6, D3).
-2. ~~Which house rules exist only for hand editing.~~ **Answered 2026-10-17: in general, all
-   of them** were built because of problems editing tables for submission (section 6). They
-   become style properties; the content beneath them binds every style.
-3. **Count-note wording for `"manuscript"`.** The documents disagree: ms.1264 says "Patients
-   with non-missing data.", while BVR rv3 and the CAA paper say "Patients with data
-   available." These are the authors' wordings in each document, not journal requirements:
-   nothing here shows what Circulation or JTCVS asks for, only that JTCVS kept the CAA
-   paper's wording when it typeset it. `"report"` keeps rule 8's "Number of non-missing
-   values." Pick one wording for `"manuscript"`.
-7. ~~Shading section rows or section blocks.~~ **Answered 2026-10-17: the heading rows.** Our
-   styles shade the section heading row, as both submissions do. A journal that typesets
-   applies its own shading (JTCVS shaded whole sections in alternating bands), and the
-   package does not imitate it.
-8. **Mixed statistics in one table.** The CAA proof shows mean ± SD by default with medians
-   marked `‡` per cell. `hv_tbl_summary(mean_sd =)` already chooses the statistic per
-   variable; should `"manuscript"` add the per-cell mark and its note?
-4. **Page size.** US Letter for every style, or only `"manuscript"`? Both savers write A4
-   today; both submissions are on Letter.
-5. **Font for `"manuscript"`.** Rule 5 (Times New Roman, 11 or 12 pt) is an editing rule
-   (section 6), so it no longer binds `"manuscript"`. Both submissions use the document's body
-   font at 11 pt. Follow the document's font, or set one?
-6. ~~Shading color.~~ **Answered by the evidence:** a style property, since the two
-   submissions differ. Is `#CAEDFB` the right default?
+All answered on 2026-10-17 except question 4.
+
+1. **Names.** By role. The JTCVS renderer, whose look neither submission uses, is deprecated
+   in favor of `"manuscript"` (decision 6, D3).
+2. **Which house rules exist only for hand editing.** In general, all of them were built
+   because of problems editing tables for submission (section 6). They become style
+   properties; the content beneath them binds every style.
+3. **Count-note wording for `"manuscript"`.** "Patients with non-missing data." The documents
+   disagreed (ms.1264 said this; BVR rv3 and the CAA paper said "Patients with data
+   available."), and those were authors' choices, not journal requirements. `"report"` keeps
+   rule 8's "Number of non-missing values."
+4. **Page size. Open.** US Letter for every style, or only `"manuscript"`? Both savers write
+   A4 today; every submission measured is on Letter.
+5. **Font for `"manuscript"`.** Follow the document's body font: `"manuscript"` sets no font
+   on the table, so it takes the font and size of the document it is saved into, as the
+   submissions do.
+6. **Shading color.** A style property, since the submissions differ (`#CAEDFB`, `#A5C9EB`).
+   Default `#CAEDFB`.
+7. **Shading section rows or section blocks.** The heading rows. A journal that typesets
+   applies its own shading (JTCVS shaded whole sections in alternating bands), and the package
+   does not imitate it.
+8. **Mixed statistics in one table.** Add the per-cell mark. In `"manuscript"`, when a table
+   shows mean ± SD by default and some variables as medians (`hv_tbl_summary(mean_sd =)`),
+   each median cell carries a mark, `102 [63, 170]‡`, and the notes gain `‡Median [15th, 85th
+   percentiles].`, with the percentiles the table uses. The default statistic is named once,
+   in a `Data:` note.
 
 ## 11. Out of scope
 
