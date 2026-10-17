@@ -2,7 +2,7 @@
 
 Date: 2026-10-17
 Status: draft for John's review. Decisions taken on 2026-10-17 are in section 2; questions 2
-to 5, 7 and 8 in section 10 need an answer before an implementation plan.
+to 5 and 8 in section 10 need an answer before an implementation plan.
 
 This note is self-contained. It assumes no memory of the session that produced it.
 
@@ -237,8 +237,10 @@ Three rows of the matrix cannot be met by a renderer alone:
    nothing here shows what Circulation or JTCVS asks for, only that JTCVS kept the CAA
    paper's wording when it typeset it. `"report"` keeps rule 8's "Number of non-missing
    values." Pick one wording for `"manuscript"`.
-7. **Shading section rows or section blocks.** Both submissions shade the heading row; JTCVS
-   shaded whole sections in alternating bands. Which should the styles do?
+7. ~~Shading section rows or section blocks.~~ **Answered 2026-10-17: the heading rows.** Our
+   styles shade the section heading row, as both submissions do. A journal that typesets
+   applies its own shading (JTCVS shaded whole sections in alternating bands), and the
+   package does not imitate it.
 8. **Mixed statistics in one table.** The CAA proof shows mean ± SD by default with medians
    marked `‡` per cell. `hv_tbl_summary(mean_sd =)` already chooses the statistic per
    variable; should `"manuscript"` add the per-cell mark and its note?
