@@ -256,11 +256,11 @@ test_that("hv_man_table_jtcvs accepts a custom stat_label", {
   ft <- hv_man_table_jtcvs(
     mk_jtcvs_tbl(),
     groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)"),
-    stat_label = "No. (%) or Median (15th, 85th percentile)"
+    stat_label = "No. (%) or Median [15th, 85th percentiles]"
   )
   xml <- docx_xml_jtcvs(ft)
   expect_true(
-    grepl("No. (%) or Median (15th, 85th percentile)", xml, fixed = TRUE)
+    grepl("No. (%) or Median [15th, 85th percentiles]", xml, fixed = TRUE)
   )
   expect_false(grepl("Mean", xml, fixed = TRUE))
 })

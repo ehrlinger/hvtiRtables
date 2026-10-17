@@ -93,11 +93,11 @@ there to show it.}
 \item{continuous_stat}{One of \code{"median"} (default), \code{"mean"}, or
 \code{"both"}: how continuous variables not listed in \code{normal} are
 summarized. \code{"median"} gives
-\verb{median (P<low>, P<high>)}; \code{"mean"} gives mean +/- SD, with no
+\verb{median [P<low>, P<high>]}; \code{"mean"} gives mean +/- SD, with no
 spaces around the plus-minus sign and EHB/Blackstone paired rounding;
 \code{"both"} puts the two side by side: each group's statistic column
 shows mean +/- SD (or \verb{n (\%)} for a categorical row), and a median
-column beside it shows \verb{median (P<low>, P<high>)}, blank on rows
+column beside it shows \verb{median [P<low>, P<high>]}, blank on rows
 with no median. Both renderers lay it out the same way. Choosing
 one for the manuscript is then a matter of dropping a column. The
 test does not
@@ -120,8 +120,8 @@ variables to \emph{display} as mean +/- SD while keeping the
 nonparametric test (Wilcoxon rank-sum, or Kruskal-Wallis for 3+
 groups). Use it for variables that are roughly symmetric in a
 table whose every continuous test should stay nonparametric. The
-display is the same as for \code{normal}, row label suffix included
-when the table mixes statistics; only \code{normal} changes the test. A
+display is the same as for \code{normal}, cell mark included when the
+table mixes statistics; only \code{normal} changes the test. A
 variable may appear in both, and is then tested with ANOVA.
 Default none. Last in the signature so positional calls keep
 working.}
@@ -156,7 +156,10 @@ produce an error naming the argument to use instead.}
 \value{
 A \code{gtsummary} object, ready for \code{\link[=hv_man_table]{hv_man_table()}} or
 \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}. See Details for the \code{hv_stat_label},
-\code{hv_trailing}, and \code{hv_footnotes} renderer attributes.
+\code{hv_trailing}, and \code{hv_footnotes} renderer attributes. A table whose
+rows mix mean and median also carries \code{hv_cell_marks}, a list with
+\code{symbol} (\code{"§"} or \code{"¶"}) and \code{variables} (the names whose cells
+carry it); the attribute is \code{NULL} otherwise.
 }
 \description{
 Thin wrapper over \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} modeled on the interface
@@ -168,17 +171,27 @@ gtsummary's own tidyselect-based interface. Returns a plain \code{gtsummary}
 object, ready for \code{\link[=hv_man_table]{hv_man_table()}} or \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}.
 }
 \details{
-Continuous variables are summarized as \verb{median (P<low>, P<high>)} by
+Continuous variables are summarized as \verb{median [P<low>, P<high>]} by
 default, or as mean +/- SD, or both (\code{continuous_stat}), and tested
 non-parametrically (Wilcoxon rank-sum for 2 groups, Kruskal-Wallis for
 3+), the macro's \verb{CON3=}. A variable you also list in \code{normal} is the
-macro's \verb{CON1=} instead: mean +/- SD, tested with one-way ANOVA. When
-that leaves rows of one table showing different statistics, each
-continuous row names its own, \code{"Age, Mean±SD"}, as the macro's
-\code{DESCLABEL=1} did, and the header and dagger read "No. (\%) or as
-labeled". \code{percentiles} defaults to the house convention documented in
+macro's \verb{CON1=} instead: mean +/- SD, tested with one-way ANOVA.
+\code{percentiles} defaults to the house convention documented in
 \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} (15th/85th), overridable per study
 (\verb{\%summarytable} equivalent: \verb{PP=}).
+
+The house notation: each median and percentile is shown to 2 significant
+digits, and a value of 10 or more to the units place (\code{102 [63, 170]},
+\code{0.31 [0.21, 0.39]}), and a P value has no leading zero (\code{.013},
+\verb{<.001}, \verb{>.9}).
+
+When rows of one table show different statistics, the header and dagger
+name the statistic most rows use, and the cells of the other are marked
+instead of the row labels (the macro's \code{DESCLABEL=1} suffixes, such as
+\code{"Age, Mean±SD"}, are gone). When more rows show mean +/- SD than a
+median, the mean is the default and a section sign (\verb{§}) marks the
+median cells; otherwise a pilcrow (\verb{¶}) marks the mean cells. Each mark
+has its own footnote. A tie leaves the median as the default.
 
 Mean/SD output follows Eugene H. Blackstone's (EHB's) paired reporting
 rule: the mean is rounded to the first-significant-digit place of the SD,
@@ -191,9 +204,8 @@ paired precision can be inferred, so gtsummary's existing display is kept.
 
 The returned object carries three renderer attributes:
 \code{hv_stat_label}, the sub-header text naming the statistics shown
-(\code{"No. (\%) or Median (<low>, <high> percentile)"} by default, with
-ordinal suffixes; it
-follows \code{continuous_stat});
+(\code{"No. (\%) or Median [<low>, <high> percentiles]"} by default, with
+ordinal suffixes; it follows \code{continuous_stat});
 \code{hv_trailing}, a named character vector ready to pass as
 \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}'s \code{trailing} argument when \code{compare} produced a
 comparison column (\code{NULL} when \code{compare = "none"}); and \code{hv_footnotes},

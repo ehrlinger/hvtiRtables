@@ -8,17 +8,27 @@
 #' gtsummary's own tidyselect-based interface. Returns a plain `gtsummary`
 #' object, ready for [hv_man_table()] or [hv_man_table_jtcvs()].
 #'
-#' Continuous variables are summarized as `median (P<low>, P<high>)` by
+#' Continuous variables are summarized as `median [P<low>, P<high>]` by
 #' default, or as mean +/- SD, or both (`continuous_stat`), and tested
 #' non-parametrically (Wilcoxon rank-sum for 2 groups, Kruskal-Wallis for
 #' 3+), the macro's `CON3=`. A variable you also list in `normal` is the
-#' macro's `CON1=` instead: mean +/- SD, tested with one-way ANOVA. When
-#' that leaves rows of one table showing different statistics, each
-#' continuous row names its own, `"Age, Mean±SD"`, as the macro's
-#' `DESCLABEL=1` did, and the header and dagger read "No. (%) or as
-#' labeled". `percentiles` defaults to the house convention documented in
+#' macro's `CON1=` instead: mean +/- SD, tested with one-way ANOVA.
+#' `percentiles` defaults to the house convention documented in
 #' [hv_man_footnotes()] (15th/85th), overridable per study
 #' (`%summarytable` equivalent: `PP=`).
+#'
+#' The house notation: each median and percentile is shown to 2 significant
+#' digits, and a value of 10 or more to the units place (`102 [63, 170]`,
+#' `0.31 [0.21, 0.39]`), and a P value has no leading zero (`.013`,
+#' `<.001`, `>.9`).
+#'
+#' When rows of one table show different statistics, the header and dagger
+#' name the statistic most rows use, and the cells of the other are marked
+#' instead of the row labels (the macro's `DESCLABEL=1` suffixes, such as
+#' `"Age, Mean±SD"`, are gone). When more rows show mean +/- SD than a
+#' median, the mean is the default and a section sign (`§`) marks the
+#' median cells; otherwise a pilcrow (`¶`) marks the mean cells. Each mark
+#' has its own footnote. A tie leaves the median as the default.
 #'
 #' Mean/SD output follows Eugene H. Blackstone's (EHB's) paired reporting
 #' rule: the mean is rounded to the first-significant-digit place of the SD,
@@ -31,9 +41,8 @@
 #'
 #' The returned object carries three renderer attributes:
 #' `hv_stat_label`, the sub-header text naming the statistics shown
-#' (`"No. (%) or Median (<low>, <high> percentile)"` by default, with
-#' ordinal suffixes; it
-#' follows `continuous_stat`);
+#' (`"No. (%) or Median [<low>, <high> percentiles]"` by default, with
+#' ordinal suffixes; it follows `continuous_stat`);
 #' `hv_trailing`, a named character vector ready to pass as
 #' [hv_man_table_jtcvs()]'s `trailing` argument when `compare` produced a
 #' comparison column (`NULL` when `compare = "none"`); and `hv_footnotes`,
@@ -140,11 +149,11 @@
 #' @param continuous_stat One of `"median"` (default), `"mean"`, or
 #'   `"both"`: how continuous variables not listed in `normal` are
 #'   summarized. `"median"` gives
-#'   `median (P<low>, P<high>)`; `"mean"` gives mean +/- SD, with no
+#'   `median [P<low>, P<high>]`; `"mean"` gives mean +/- SD, with no
 #'   spaces around the plus-minus sign and EHB/Blackstone paired rounding;
 #'   `"both"` puts the two side by side: each group's statistic column
 #'   shows mean +/- SD (or `n (%)` for a categorical row), and a median
-#'   column beside it shows `median (P<low>, P<high>)`, blank on rows
+#'   column beside it shows `median [P<low>, P<high>]`, blank on rows
 #'   with no median. Both renderers lay it out the same way. Choosing
 #'   one for the manuscript is then a matter of dropping a column. The
 #'   test does not
@@ -165,8 +174,8 @@
 #'   nonparametric test (Wilcoxon rank-sum, or Kruskal-Wallis for 3+
 #'   groups). Use it for variables that are roughly symmetric in a
 #'   table whose every continuous test should stay nonparametric. The
-#'   display is the same as for `normal`, row label suffix included
-#'   when the table mixes statistics; only `normal` changes the test. A
+#'   display is the same as for `normal`, cell mark included when the
+#'   table mixes statistics; only `normal` changes the test. A
 #'   variable may appear in both, and is then tested with ANOVA.
 #'   Default none. Last in the signature so positional calls keep
 #'   working.
@@ -197,7 +206,10 @@
 #'
 #' @return A `gtsummary` object, ready for [hv_man_table()] or
 #'   [hv_man_table_jtcvs()]. See Details for the `hv_stat_label`,
-#'   `hv_trailing`, and `hv_footnotes` renderer attributes.
+#'   `hv_trailing`, and `hv_footnotes` renderer attributes. A table whose
+#'   rows mix mean and median also carries `hv_cell_marks`, a list with
+#'   `symbol` (`"§"` or `"¶"`) and `variables` (the names whose cells
+#'   carry it); the attribute is `NULL` otherwise.
 #'
 #' @seealso [hv_man_table()] or [hv_man_table_jtcvs()] to render the
 #'   result. [hv_man_footnotes()] for the percentile-footnote house
@@ -735,8 +747,9 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # a finite value past 2^31 - 1 printed "NA".
   shown[whole] <- formatC(round(x[ok][whole]), format = "f", digits = 0,
                           big.mark = "")
-  shown[!whole] <- sub("\\.$", "",
-                       formatC(r[!whole], digits = 2, format = "fg", flag = "#"))
+  shown[!whole] <- sub(
+    "\\.$", "", formatC(r[!whole], digits = 2, format = "fg", flag = "#")
+  )
   shown[r == 0] <- "0"
   out[ok] <- shown
   out
@@ -826,7 +839,9 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     col <- keys$gts_column[i]
     s <- raw[raw$variable == v & raw$gts_column == col, ]
     get <- function(name) s$stat[s$stat_name == name]
-    m <- get("median"); lo <- get(lo_name); hi <- get(hi_name)
+    m <- get("median")
+    lo <- get(lo_name)
+    hi <- get(hi_name)
     if (length(m) != 1L || length(lo) != 1L || length(hi) != 1L) next
     # A group with no data: gtsummary already shows NA there, so no
     # unrounded number is hidden. Leave the cell as it is.

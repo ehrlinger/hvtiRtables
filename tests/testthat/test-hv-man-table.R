@@ -104,7 +104,7 @@ test_that("hv_man_table splits the ||| sentinel into flat N and stat columns", {
   # Row 1 is the section header "D"; age is row 2.
   # 91, not 98: Drug A has 98 rows, 7 of them with missing age.
   expect_identical(d$n_stat_1[2], "91")
-  expect_identical(d$stat_1[2], "46 (32, 63)")
+  expect_identical(d$stat_1[2], "46 [32, 63]")
   # The N column sits immediately before the statistic it counts.
   expect_identical(
     which(ft$col_keys == "n_stat_1") + 1L,
@@ -245,7 +245,7 @@ test_that("hv_man_table() superscripts the minority mark on its cells", {
   expect_equal(nrow(sup("^Age")), 0L)
 })
 
-test_that("a cell mark and Fisher's double dagger both survive in hv_body_marks", {
+test_that("a cell mark and Fisher's dagger both survive in hv_body_marks", {
   skip_if_not_installed("broom")
   d <- data.frame(
     grp = rep(c("A", "B"), each = 40),

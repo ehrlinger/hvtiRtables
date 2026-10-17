@@ -133,8 +133,9 @@
 #'   as its `hv_trailing` attribute.
 #' @param stat_label Sub-header text under each group's statistic column.
 #'   Default `NULL` takes it from the table: [hv_tbl_summary()] records the
-#'   statistic it used (e.g. `"No. (%) or Median (15th, 85th
-#'   percentile)"`), so the header cannot disagree with the cells. A
+#'   statistic it used (e.g.
+#'   `"No. (%) or Median [15th, 85th percentiles]"`), so the header
+#'   cannot disagree with the cells. A
 #'   table without that record falls back to `"No. (%) or Mean±SD"`;
 #'   pass the right text yourself for any other statistic.
 #' @param font Font family. Default `"Times New Roman"` (house rule).

@@ -7,7 +7,7 @@
 #' re-type them at every [hv_man_table_save()] call site: a `*` for the
 #' non-missing-value count (house rule 8, exact wording required) and a
 #' `†` explaining the statistic in each group column, e.g.
-#' "No. (%) or Median (15th, 85th percentile)." The categorical half is
+#' `"No. (%) or Median [15th, 85th percentiles]."` The categorical half is
 #' part of it because the cells print `12 (39)` with no `%` sign (house
 #' rules 10/12), and the flat CORR header names only the group.
 #'
@@ -22,8 +22,10 @@
 #' - Change one: `modifyList(hv_man_footnotes(), list(...))` with
 #'   `` `†` `` = "custom text"
 #' - Add a study-specific one alongside: `c(hv_man_footnotes(), list(...))`
-#'   with `` `§` `` = "extra note". Avoid `‡` on a table from
-#'   [hv_tbl_summary()]: it marks Fisher exact p-values there.
+#'   with `` `||` `` = "extra note". Avoid `‡`, `§` and `¶` on a table from
+#'   [hv_tbl_summary()]: `‡` marks Fisher exact p-values there, and `§`
+#'   and `¶` mark the minority statistic when a table mixes mean and
+#'   median.
 #'
 #' @section Common mistakes:
 #' **Passing the result to the JTCVS saver.** These footnotes are
@@ -89,8 +91,7 @@ hv_man_footnotes <- function(
     mean = paste("No. (%) or", mean_label),
     # Under "both" the statistic columns show mean±SD; the medians sit
     # in their own column, which names itself in its header.
-    both = paste("No. (%) or", mean_label),
-    mixed = "No. (%) or as labeled"
+    both = paste("No. (%) or", mean_label)
   )
 }
 

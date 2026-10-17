@@ -92,7 +92,7 @@ test_that("hv_tbl_summary sets hv_stat_label on every compare path", {
   # survive the add_p()/add_difference()/modify_table_body() chain rather
   # than being re-set afterwards.
   dta <- mk_tbl_summary_data()
-  expected <- "No. (%) or Median (15th, 85th percentile)"
+  expected <- "No. (%) or Median [15th, 85th percentiles]"
   for (cmp in c("none", "pvalue", "smd", "both")) {
     tbl <- hv_tbl_summary(
       dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
@@ -110,7 +110,7 @@ test_that("hv_tbl_summary formats custom percentile labels as ordinals", {
   )
   expect_identical(
     attr(tbl, "hv_stat_label"),
-    "No. (%) or Median (1st, 2nd percentile)"
+    "No. (%) or Median [1st, 2nd percentiles]"
   )
 })
 
@@ -249,7 +249,7 @@ test_that("hv_tbl_summary's percentiles argument changes the glue statistic", {
   )
   expect_match(
     custom_tbl$table_body$stat_0,
-    "^[0-9]+ \\|\\|\\| [0-9.]+ \\([0-9.]+, [0-9.]+\\)$"
+    "^[0-9]+ \\|\\|\\| [0-9.]+ \\[[0-9.]+, [0-9.]+\\]$"
   )
   expect_false(
     identical(default_tbl$table_body$stat_0, custom_tbl$table_body$stat_0)
@@ -896,6 +896,12 @@ test_that("overall = FALSE reproduces the previous output exactly", {
   # primitives with the same statistic/type/digits arguments
   # hv_tbl_summary() itself uses -- not just the absence of stat_0, which
   # would also pass for a table with the wrong stat_1/stat_2 values.
+  #
+  # The reference's own median text is gtsummary's old rounding, so its
+  # numbers are taken from its cards and shown in the house notation here:
+  # brackets, and whole numbers because every value is 10 or more. R's
+  # round() sends a tie to the even digit (62.5 to 62, not gtsummary's 63),
+  # as the EHB paired rule for mean and SD does.
   dta <- mk_tbl_summary_data()
   actual <- hv_tbl_summary(
     dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
@@ -914,11 +920,24 @@ test_that("overall = FALSE reproduces the previous output exactly", {
       gtsummary::everything() ~ list(N_nonmiss = no_comma, n = no_comma)
     )
   )
+  cards <- reference$cards$tbl_summary
+  want <- function(column) {
+    s <- cards[cards$gts_column == column, ]
+    get <- function(name) as.numeric(unlist(s$stat[s$stat_name == name]))
+    sprintf("%d ||| %d [%d, %d]", as.integer(get("N_nonmiss")),
+            as.integer(round(get("median"))), as.integer(round(get("p15"))),
+            as.integer(round(get("p85"))))
+  }
 
   expect_false("stat_0" %in% names(actual$table_body))
   expect_identical(actual$table_body$variable, reference$table_body$variable)
-  expect_identical(actual$table_body$stat_1, reference$table_body$stat_1)
-  expect_identical(actual$table_body$stat_2, reference$table_body$stat_2)
+  expect_identical(actual$table_body$stat_1, want("stat_1"))
+  expect_identical(actual$table_body$stat_2, want("stat_2"))
+  # The counts and everything else about the layout are gtsummary's own.
+  expect_identical(
+    sub(" .*$", "", actual$table_body$stat_1),
+    sub(" .*$", "", reference$table_body$stat_1)
+  )
 })
 
 test_that("overall keeps its position for positional callers", {
@@ -999,7 +1018,7 @@ test_that("paired rounding changes only the mean column under both", {
   )
 
   expect_identical(tbl$table_body$stat_0, "4 ||| 120±22")
-  expect_identical(tbl$table_body$hv_median_stat_0, "120 (100, 150)")
+  expect_identical(tbl$table_body$hv_median_stat_0, "120 [100, 150]")
 })
 
 test_that("zero or unavailable SD keeps gtsummary's rendering", {
@@ -1028,18 +1047,18 @@ test_that("continuous_stat = \"both\" puts mean and median side by side", {
   # One row per variable: no sub-rows to stack.
   expect_identical(tb$row_type, "label")
   expect_match(tb$stat_1, "^3 \\|\\|\\| 20±[0-9.]+$")
-  expect_identical(tb$hv_median_stat_1, "20 (10, 30)")
-  expect_identical(tb$hv_median_stat_0, "30 (10, 50)")
+  expect_identical(tb$hv_median_stat_1, "20 [10, 30]")
+  expect_identical(tb$hv_median_stat_0, "30 [10, 50]")
   expect_false(is.na(tb$hv_compare_col))
   # The statistic columns hold mean±SD; the median columns name
   # themselves in their own header.
   expect_identical(attr(tbl, "hv_stat_label"), "No. (%) or Mean±SD")
   expect_identical(attr(tbl, "hv_median_label"),
-                   "Median (15th, 85th percentile)")
+                   "Median [15th, 85th percentiles]")
   st <- tbl$table_styling$header
   expect_false(st$hide[st$column == "hv_median_stat_1"])
   expect_match(st$label[st$column == "hv_median_stat_1"],
-               "Median \\(15th, 85th percentile\\)")
+               "Median \\[15th, 85th percentiles\\]")
 })
 
 test_that("under 'both' the median column is blank on other rows", {
@@ -1068,7 +1087,7 @@ test_that("continuous_stat = \"both\" renders through both renderers", {
     corr$col_keys[match("stat_1", corr$col_keys) + c(-1L, 1L)],
     c("n_stat_1", "hv_median_stat_1")
   )
-  expect_match(d$hv_median_stat_1[d$label == "Age"], "^[0-9]+ \\(")
+  expect_match(d$hv_median_stat_1[d$label == "Age"], "^[0-9]+ \\[")
   jt <- hv_man_table_jtcvs(
     tbl, groups = c(stat_0 = "Overall", stat_1 = "A", stat_2 = "B"),
     trailing = attr(tbl, "hv_trailing")
@@ -1082,7 +1101,7 @@ test_that("continuous_stat = \"both\" renders through both renderers", {
                    d$hv_median_stat_1[d$label == "Age"])
   chunks <- flextable::information_data_chunk(jt)
   h <- chunks[chunks$.part == "header" & chunks$.col_id == "med_stat_1", ]
-  expect_true(any(h$txt == "Median (15th, 85th percentile)"))
+  expect_true(any(h$txt == "Median [15th, 85th percentiles]"))
   expect_true(any(h$txt == "A"))
   path <- tempfile(fileext = ".docx")
   hv_man_table_save(corr, path)
@@ -1186,19 +1205,24 @@ test_that("a normal variable shows mean±SD while the rest show medians", {
   age <- tb$stat_1[tb$variable == "age"]
   marker <- tb$stat_1[tb$variable == "marker" & tb$row_type == "label"]
   expect_match(age, "^[0-9]+ \\|\\|\\| [0-9.]+±[0-9.]+$")
-  expect_match(marker, "^[0-9]+ \\|\\|\\| [0-9.]+ \\([0-9.]+, [0-9.]+\\)$")
+  expect_match(marker, "^[0-9]+ \\|\\|\\| [0-9.]+ \\[[0-9.]+, [0-9.]+\\]$")
 })
 
-test_that("a mixed table names each continuous row's statistic", {
+test_that("a mixed table marks the minority statistic, not the row labels", {
+  # One mean row against one median row is a tie, so the median is the
+  # default: the dagger names it, and the mean cells carry a pilcrow.
   tbl <- nm_tbl()
-  expect_identical(nm_label(tbl, "age"), "Age, Mean±SD")
-  expect_identical(nm_label(tbl, "marker"),
-                   "Marker Level (ng/mL), Median (15th, 85th percentile)")
+  expect_identical(nm_label(tbl, "age"), "Age")
+  expect_identical(nm_label(tbl, "marker"), "Marker Level (ng/mL)")
   expect_identical(nm_label(tbl, "grade"), "Grade")
   expect_identical(attr(tbl, "hv_stat_label"),
-                   "No. (%) or as labeled")
-  expect_identical(attr(tbl, "hv_footnotes")[["†"]],
-                   "No. (%) or as labeled.")
+                   "No. (%) or Median [15th, 85th percentiles]")
+  expect_identical(attr(tbl, "hv_cell_marks"),
+                   list(symbol = "\u00B6", variables = "age"))
+  fn <- attr(tbl, "hv_footnotes")
+  expect_identical(fn[["\u2020"]],
+                   "No. (%) or Median [15th, 85th percentiles].")
+  expect_identical(fn[["\u00B6"]], "Mean\u00B1SD.")
 })
 
 test_that("an unmixed table keeps plain labels and one stated statistic", {
@@ -1262,15 +1286,17 @@ test_that("mean_sd rejects names outside `continuous`, repeats, non-strings", {
                fixed = TRUE)
 })
 
-test_that("a mean_sd variable shows mean±SD and names it, like normal", {
+test_that("a mean_sd variable shows mean±SD and marks it, like normal", {
   tbl <- ms_tbl()
   tb <- tbl$table_body
   expect_match(tb$stat_1[tb$variable == "age"],
                "^[0-9]+ \\|\\|\\| [0-9.]+±[0-9.]+$")
   expect_match(tb$stat_1[tb$variable == "marker" & tb$row_type == "label"],
-               "^[0-9]+ \\|\\|\\| [0-9.]+ \\([0-9.]+, [0-9.]+\\)$")
-  expect_identical(nm_label(tbl, "age"), "Age, Mean±SD")
-  expect_identical(attr(tbl, "hv_stat_label"), "No. (%) or as labeled")
+               "^[0-9]+ \\|\\|\\| [0-9.]+ \\[[0-9.]+, [0-9.]+\\]$")
+  expect_identical(nm_label(tbl, "age"), "Age")
+  expect_identical(attr(tbl, "hv_stat_label"),
+                   "No. (%) or Median [15th, 85th percentiles]")
+  expect_identical(attr(tbl, "hv_cell_marks")$variables, "age")
   # The display matches normal = "age" exactly; only the test differs.
   expect_identical(tb$stat_1, nm_tbl()$table_body$stat_1)
 })
@@ -1646,7 +1672,7 @@ test_that("an ungrouped 'both' table heads its median column plainly", {
   )
   st <- tbl$table_styling$header
   expect_identical(st$label[st$column == "hv_median_stat_0"],
-                   "**Median (15th, 85th percentile)**")
+                   "**Median [15th, 85th percentiles]**")
 })
 
 test_that("a study footnote may not reuse the Fisher mark's symbol", {
@@ -1721,7 +1747,7 @@ test_that("a ‡ footnote with no Fisher p-value marks no cell", {
   expect_null(attr(ft, "hv_body_marks"))
 })
 
-test_that(".format_sig2() gives 2 significant digits, and whole numbers from 10 up", {
+test_that(".format_sig2() gives 2 significant digits, whole from 10 up", {
   x <- c(9.9, 0.31, 102.4, 0.8, 7, 9.96, 0, -0.0123, 18250.4, 2.067, 0.153,
          0.0049, NA, Inf)
   expect_identical(
@@ -1766,7 +1792,7 @@ test_that("the statistic note names brackets and percentiles", {
                    "No. (%) or Median [15th, 85th percentiles].")
 })
 
-test_that("under \"both\" the median column is in brackets, to the standard's precision", {
+test_that("under \"both\" the median column is bracketed to the standard", {
   tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
                         groups = list(A = "marker"), continuous = "marker",
                         continuous_stat = "both", compare = "none",
@@ -1795,7 +1821,7 @@ test_that("a median cell the format cannot reach warns, and says where", {
   )
 })
 
-test_that("a group with no data is left as gtsummary shows it, without a warning", {
+test_that("a group with no data is left as gtsummary shows it, silently", {
   d <- data.frame(g = factor(rep(c("a", "b"), each = 6)),
                   x = c(1:6, rep(NA_real_, 6)))
   expect_no_warning(
@@ -1809,7 +1835,7 @@ test_that("a group with no data is left as gtsummary shows it, without a warning
   expect_identical(row$stat_1, "6 ||| 3.5 [1.0, 6.0]")
 })
 
-test_that("a non-finite median is left as gtsummary shows it, not rewritten to NA", {
+test_that("a non-finite median is left as gtsummary shows it", {
   d <- data.frame(g = factor(rep(c("a", "b"), each = 6)),
                   x = c(1:6, rep(Inf, 6)))
   expect_no_warning(
@@ -1821,7 +1847,7 @@ test_that("a non-finite median is left as gtsummary shows it, not rewritten to N
   expect_match(row$stat_2, "Inf", fixed = TRUE)
 })
 
-test_that("a median whose column is missing from the table warns, and says where", {
+test_that("a median whose column is missing warns, and says where", {
   d <- data.frame(g = rep(c("a", "b"), each = 9), x = c(1:9, 11:19))
   tbl <- hv_tbl_summary(d, by = "g", groups = list(A = "x"),
                         continuous = "x", compare = "none", overall = FALSE,

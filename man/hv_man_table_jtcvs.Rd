@@ -38,7 +38,9 @@ as its \code{hv_trailing} attribute.}
 
 \item{stat_label}{Sub-header text under each group's statistic column.
 Default \code{NULL} takes it from the table: \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} records the
-statistic it used (e.g. \code{"No. (\%) or Median (15th, 85th percentile)"}), so the header cannot disagree with the cells. A
+statistic it used (e.g.
+\code{"No. (\%) or Median [15th, 85th percentiles]"}), so the header
+cannot disagree with the cells. A
 table without that record falls back to \code{"No. (\%) or Mean±SD"};
 pass the right text yourself for any other statistic.}
 
