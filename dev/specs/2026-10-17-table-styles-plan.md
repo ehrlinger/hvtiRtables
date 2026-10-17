@@ -119,6 +119,14 @@ test_that(".format_sig2() gives 2 significant digits, and whole numbers from 10 
       "0.15", "0.0049", NA, NA)
   )
 })
+
+test_that(".format_sig2() keeps whole numbers past the integer range", {
+  # formatC(format = "d") coerces to R integers: 2.2e9 and 1e12 became "NA"
+  # with a warning. Whole numbers stay doubles.
+  expect_no_warning(out <- .format_sig2(c(2147483647, 2.2e9, 1e12, -3e10)))
+  expect_identical(out, c("2147483647", "2200000000", "1000000000000",
+                          "-30000000000"))
+})
 ```
 
 - [ ] **Step 2: Run it and confirm it fails**
@@ -142,7 +150,10 @@ Insert after `.format_to_place()` in `R/hv-tbl-summary.R`:
   r <- signif(x[ok], 2)
   shown <- character(length(r))
   whole <- abs(r) >= 10
-  shown[whole] <- formatC(round(x[ok][whole]), format = "d", big.mark = "")
+  # format = "f" with no decimals, not "d": "d" coerces to R integers, and
+  # a finite value past 2^31 - 1 printed "NA".
+  shown[whole] <- formatC(round(x[ok][whole]), format = "f", digits = 0,
+                          big.mark = "")
   shown[!whole] <- sub("\\.$", "",
                        formatC(r[!whole], digits = 2, format = "fg", flag = "#"))
   shown[r == 0] <- "0"
@@ -156,8 +167,9 @@ Insert after `.format_to_place()` in `R/hv-tbl-summary.R`:
 Run: `Rscript -e 'devtools::test(filter = "hv-tbl-summary")'`
 Expected: the new test passes.
 
-- [ ] **Step 5: Prove it by mutation.** Change `abs(r) >= 10` to `abs(r) >= 100`; the test
-  fails on `102` and `18250`. Restore.
+- [ ] **Step 5: Prove it by mutation.** (a) Change `abs(r) >= 10` to `abs(r) >= 100`; the first
+  test fails on `102` and `18250`. (b) Change `format = "f", digits = 0` back to `format = "d"`;
+  the second test fails. Restore both.
 
 - [ ] **Step 6: Commit**
 
@@ -327,13 +339,20 @@ git commit -m "feat: medians in brackets, to 2 significant digits"
 
 ### Task 3: P values without a leading zero
 
+Two columns carry P, and both must change. `hv_compare_col` is what the JTCVS renderer shows
+(through `trailing`). The CORR renderer, `hv_man_table()`, shows gtsummary's own `p.value`
+column, formatted by the function `add_p()` registered on it, so changing `hv_compare_col`
+alone leaves CORR printing `0.7`.
+
 **Files:**
-- Modify: `R/hv-tbl-summary.R` (the `compare_col` switch near line 581; a new `.format_p()`)
-- Test: `tests/testthat/test-hv-tbl-summary.R`
+- Modify: `R/hv-tbl-summary.R` (the `compare_col` switch near line 581; after `add_p()` near
+  line 572; a new `.format_p()`)
+- Test: `tests/testthat/test-hv-tbl-summary.R`, `tests/testthat/test-hv-man-table.R`,
+  `tests/testthat/test-hv-man-table-jtcvs.R`
 
 **Interfaces:**
 - Produces: `.format_p(p)`: numeric in, character out; `hv_compare_col` P values without a
-  leading zero.
+  leading zero; the `p.value` column's format function set to `.format_p`.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -343,6 +362,33 @@ test_that(".format_p() drops the leading zero and keeps today's digits", {
     .format_p(c(0.0004, 0.001, 0.0094, 0.013, 0.043, 0.12, 0.3, 0.7, 0.95, NA)),
     c("<.001", ".001", ".009", ".013", ".043", ".12", ".3", ".7", ">.9", NA)
   )
+})
+
+test_that("CORR's rendered P column has no leading zero", {
+  skip_if_not_installed("broom")
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "grade")),
+                        continuous = "age", categorical = "grade",
+                        compare = "pvalue", show_variable = FALSE)
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(tbl), path)
+  text <- officer::docx_summary(officer::read_docx(path))$text
+  p <- text[grepl("^[<>]?0?\\.[0-9]+$", text)]
+  expect_true(length(p) > 0L)
+  expect_false(any(grepl("^[<>]?0\\.", p)))
+})
+
+test_that("the JTCVS comparison column has no leading zero", {
+  skip_if_not_installed("broom")
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "grade")),
+                        continuous = "age", categorical = "grade",
+                        compare = "pvalue", show_variable = FALSE)
+  ft <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
+                           trailing = attr(tbl, "hv_trailing"))
+  p <- stats::na.omit(ft$body$dataset$hv_compare_col)
+  expect_true(length(p) > 0L)
+  expect_false(any(grepl("^[<>]?0\\.", p)))
 })
 
 test_that("the comparison column prints P without a leading zero", {
@@ -378,19 +424,30 @@ Add near `.format_sig2()`:
 In the `compare_col` switch, replace each `gtsummary::style_pvalue(tb$p.value, digits = 1)`
 (three occurrences) with `.format_p(tb$p.value)`.
 
+Right after the `gtsummary::add_p(...)` call, set the displayed column's format too, so the CORR
+renderer prints what the JTCVS one does:
+
+```r
+    # hv_man_table() shows gtsummary's own p.value column, not
+    # hv_compare_col, so its format function has to follow the standard
+    # as well.
+    tbl <- gtsummary::modify_fmt_fun(tbl, p.value ~ .format_p)
+```
+
 - [ ] **Step 4: Run them and confirm they pass**
 
-Run: `Rscript -e 'devtools::test(filter = "hv-tbl-summary")'`
-Expected: both new tests pass.
+Run: `Rscript -e 'devtools::test(filter = "hv-tbl-summary|hv-man-table")'`
+Expected: the four new tests pass.
 
-- [ ] **Step 5: Prove it by mutation.** Make `.format_p()` return `style_pvalue()` unchanged;
-  both tests fail. Restore.
+- [ ] **Step 5: Prove it by mutation.** (a) Make `.format_p()` return `style_pvalue()` unchanged;
+  all four fail. (b) Remove the `modify_fmt_fun()` call; only the CORR test fails, which shows
+  it is what covers the displayed column. Restore both.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add R/hv-tbl-summary.R tests/testthat/test-hv-tbl-summary.R
-git commit -m "feat: P values without a leading zero"
+git add R/hv-tbl-summary.R tests/testthat/test-hv-tbl-summary.R tests/testthat/test-hv-man-table.R tests/testthat/test-hv-man-table-jtcvs.R
+git commit -m "feat: P values without a leading zero, in both renderers"
 ```
 
 ### Task 4: Mark the minority statistic on its cells
@@ -399,16 +456,28 @@ Replaces the row-label suffixes (`"Age, Mean±SD"`, the macro's `DESCLABEL=1`) w
 the cells of whichever statistic fewer continuous rows use: `§` on median cells, `¶` on
 mean ± SD cells. The † note names the other, the default.
 
+**Both renderer families take the mark in this task.** The suffixes were the only thing telling
+a JTCVS reader which rows differ: without a replacement there, a JTCVS table shows `47±14.7`
+under a "Median" header with nothing to explain it. The JTCVS renderer letters every note, so it
+marks the cells with the next free letter (`b`; `a` is its count note) and registers the note
+in `hv_header_footnotes`, which its saver already writes. Phase 3 moves that layout onto the
+standard's `§` and `¶`.
+
 **Files:**
 - Modify: `R/hv-tbl-summary.R` (`relabel()`, `label_stat`, the footnotes block near 483-488)
 - Modify: `R/hv-man-table.R` (a new `.mark_cells()`, called after `.mark_fisher()`; merge
   `hv_body_marks`)
-- Test: `tests/testthat/test-hv-tbl-summary.R`, `tests/testthat/test-hv-man-table.R`
+- Modify: `R/hv-man-table-jtcvs.R` (`.reshape_jtcvs_body()` keeps `variable`;
+  `hv_man_table_jtcvs()` marks the cells and adds the note to `hv_header_footnotes`)
+- Test: `tests/testthat/test-hv-tbl-summary.R`, `tests/testthat/test-hv-man-table.R`,
+  `tests/testthat/test-hv-man-table-jtcvs.R`
 
 **Interfaces:**
 - Produces: `attr(tbl, "hv_cell_marks")`, `list(symbol = "§" or "¶", variables = <chr>)` or
   `NULL`; the footnote under that symbol; `hv_man_table()` superscripting the symbol on the
-  marked rows' `stat_N` cells and adding it to `attr(ft, "hv_body_marks")`.
+  marked rows' `stat_N` cells and adding it to `attr(ft, "hv_body_marks")`; `hv_man_table_jtcvs()`
+  superscripting `b` on the marked rows' `disp_` cells and setting
+  `attr(ft, "hv_header_footnotes")$b` to the same note.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -471,10 +540,36 @@ test_that("hv_man_table() superscripts the minority mark on its cells", {
 })
 ```
 
+In `tests/testthat/test-hv-man-table-jtcvs.R`:
+
+```r
+test_that("the JTCVS table letters the minority mark and its note", {
+  # One mean row and one median row: a tie, so the default stays median
+  # and the mean row is the one marked.
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "marker")),
+                        continuous = c("age", "marker"), mean_sd = "age",
+                        compare = "none", show_variable = FALSE)
+  ft <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
+  expect_identical(attr(ft, "hv_header_footnotes")$b, "Mean\u00B1SD.")
+  ch <- flextable::information_data_chunk(ft)
+  age_row <- which(ft$body$dataset$variable == "age")
+  marked <- ch$txt[ch$.part == "body" & ch$.row_id == age_row &
+                     ch$.col_id == "disp_stat_1"]
+  expect_true("b" %in% marked)
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save_jtcvs(ft, path, caption = "Table 1. Test")
+  text <- officer::docx_summary(officer::read_docx(path))$text
+  expect_true(any(grepl("Mean\u00B1SD.", text, fixed = TRUE)))
+  expect_false(any(grepl("Age, Mean", text, fixed = TRUE)))
+})
+```
+
 - [ ] **Step 2: Run them and confirm they fail**
 
-Run: `Rscript -e 'devtools::test(filter = "hv-tbl-summary|hv-man-table$")'`
-Expected: FAIL; `hv_cell_marks` is `NULL` and the labels carry `", Median (…)"` suffixes.
+Run: `Rscript -e 'devtools::test(filter = "hv-tbl-summary|hv-man-table")'`
+Expected: FAIL; `hv_cell_marks` is `NULL`, the labels carry `", Median (…)"` suffixes, and the
+JTCVS table has no `b` note.
 
 - [ ] **Step 3: Implement in `R/hv-tbl-summary.R`**
 
@@ -556,20 +651,59 @@ Add after `.mark_fisher()`:
 }
 ```
 
-- [ ] **Step 5: Run them and confirm they pass**
+- [ ] **Step 5: Implement in `R/hv-man-table-jtcvs.R`**
 
-Run: `Rscript -e 'devtools::test(filter = "hv-tbl-summary|hv-man-table$")'`
-Expected: the four new tests pass.
+In `.reshape_jtcvs_body()`, carry the variable name, so a row can be found by it (section rows
+inserted later get `NA`, since the section-row code sets every column but `label`,
+`is_section` and `row_type` to `NA`):
 
-- [ ] **Step 6: Prove it by mutation.** (a) Swap `>` for `<` in `mean_default`; the section
+```r
+  out <- data.frame(
+    label = tb$label,
+    is_section = FALSE,
+    row_type = tb$row_type,
+    variable = tb$variable,
+    stringsAsFactors = FALSE
+  )
+```
+
+In `hv_man_table_jtcvs()`, replace the `attr(ft, "hv_header_footnotes") <- list(...)` assignment:
+
+```r
+  # The minority statistic's mark (hv_tbl_summary()'s hv_cell_marks). This
+  # renderer letters its notes, so the cells take the next free letter,
+  # "b", and the note joins the header notes, which the saver writes.
+  # Phase 3 moves this layout onto the standard's section sign and pilcrow.
+  header_notes <- list(a = "Patients with data available.")
+  marks <- attr(tbl, "hv_cell_marks", exact = TRUE)
+  mark_note <- if (!is.null(marks))
+    attr(tbl, "hv_footnotes", exact = TRUE)[[marks$symbol]]
+  if (!is.null(mark_note)) {
+    i <- which(reshaped$row_type == "label" &
+                 reshaped$variable %in% marks$variables)
+    if (length(i) > 0L) {
+      ft <- flextable::append_chunks(ft, i = i, j = disp_cols, part = "body",
+                                     flextable::as_sup("b"))
+      header_notes$b <- mark_note
+    }
+  }
+  attr(ft, "hv_header_footnotes") <- header_notes
+```
+
+- [ ] **Step 6: Run them and confirm they pass**
+
+Run: `Rscript -e 'devtools::test(filter = "hv-tbl-summary|hv-man-table")'`
+Expected: the five new tests pass.
+
+- [ ] **Step 7: Prove it by mutation.** (a) Swap `>` for `<` in `mean_default`; the section
   sign test fails. (b) Remove the `.mark_cells()` call; the `hv_man_table()` test fails.
-  Restore both.
+  (c) Remove the JTCVS `append_chunks()` call; the JTCVS test fails. Restore all three.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
-git add R/hv-tbl-summary.R R/hv-man-table.R tests/testthat/test-hv-tbl-summary.R tests/testthat/test-hv-man-table.R
-git commit -m "feat: mark the minority statistic on its cells, replacing row-label suffixes"
+git add R/hv-tbl-summary.R R/hv-man-table.R R/hv-man-table-jtcvs.R tests/testthat/test-hv-tbl-summary.R tests/testthat/test-hv-man-table.R tests/testthat/test-hv-man-table-jtcvs.R
+git commit -m "feat: mark the minority statistic on its cells in both renderers, replacing row-label suffixes"
 ```
 
 ### Task 5: Update what asserted the old notation; docs; gates
@@ -657,6 +791,9 @@ Copilot if its quota is spent.
   standard keeps today's form.
 - **Names used across tasks:** `.format_sig2()` (Task 1; used in 2), `.format_standard_median()`
   (2), `.format_p()` (3), `hv_cell_marks` and `.mark_cells()` (4), `hv_body_marks` (existing;
-  merged in 4).
+  merged in 4), `hv_header_footnotes` (existing; extended with `b` in 4).
+- **Both renderer families:** P (Task 3) and the minority mark (Task 4) are tested through
+  `hv_man_table()` and `hv_man_table_jtcvs()`, after the review of `99b2a4b` found each covered
+  in only one.
 - **Changed output on purpose:** every report's medians, P values and mixed-statistic labels.
   Task 5 lists each changed expectation.
