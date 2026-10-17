@@ -35,9 +35,9 @@ finished by hand, and both carry hand-edit errors as a result.
    the styles, and the package gains an article that renders one table in each style beside
    it (section 8, D6).
 6. **`"manuscript"` has two layouts, chosen by the table's content:** `"compare"` (one overall
-   `n*` column, an Overall column, P values), for tables that compare groups, and `"describe"`
-   (a count per group, no Overall, no P), for tables that describe separate cohorts side by
-   side. The JTCVS functions' names are deprecated; their layout survives as `"describe"`.
+   `n*` column), for tables that compare groups, and `"describe"` (a count beside each group),
+   for tables that describe separate cohorts or repeated measures side by side. Either shows an
+   Overall column and comparison columns when the table carries them. The JTCVS functions' names are deprecated; their layout survives as `"describe"`.
 7. **The house rules were built for editing tables by hand for submission.** A generated
    table meets their purpose by construction, so each becomes a style property; what binds
    every style is the content beneath them (section 6).
@@ -91,7 +91,7 @@ structure do. What survived typesetting in the proof:
 - one `N*` column (patients with data available), an Overall column beside the groups, and a
   `P†` column with no leading zero (`.013`, `<.001`, `>.9`);
 - mean ± SD by default, with skewed variables shown as `102 [63, 170]‡`, the median marked per
-  cell (hvtiRtables' `mean_sd` plus a mark);
+  cell (hvtiRtables' `mean_sd` plus a mark; the standard uses `§` for this, section 5.2);
 - the notes, as the authors wrote them (JTCVS kept the wording): `Data: n (%) or mean ± SD.`, the abbreviations, `*Patients with data
   available.`, `†Wilcoxon rank sum; Pearson's chi-square; Fisher exact.`, `‡Median [15th, 85th
   percentiles].`
@@ -170,7 +170,7 @@ renderer, whose layout becomes `"describe"` (D3, section 5.1).
 | 5 | Non-missing count | one column per group | **one overall `n*` column** (needs `hv_tbl_summary()`, section 7) | one column per group |
 | 6 | Continuous values | `9.9 [8.5, 11.0]`, `63 ± 13`: the standard (section 5.2) † | `9.9 [8.5, 11.0]`, `63 ± 13`: the standard (section 5.2) | as `"report"` |
 | 7 | Categorical values | `3 (6.8)`, the standard | `30 (42)`, the standard | `3 (6.8)` |
-| 8 | Note markers | `*`, `†`, `‡` superscript | `*`, `†` at the start of the note, not superscript | lettered `a.`, `b.` |
+| 8 | Note markers | the standard's symbols by meaning (section 5.2), superscript | the standard's symbols by meaning (section 5.2), at the start of the note, not superscript | lettered `a.`, `b.` |
 | 9 | Count note | `Number of non-missing values.` (house rule 8) | `Patients with non-missing data.` | `Patients with data available.` |
 | 10 | Statistic note | `No. (%) or Median (15th, 85th percentile).` | `Values are No. (%) or median [15th, 85th percentiles].` | named in the header row |
 | 11 | Abbreviations | `Key: A=…; B=…` (house rule 14) | `Key: A=…; B=…` | its own key |
@@ -191,16 +191,24 @@ differs only where the content differs, as measured in ms.1333:
 
 | property | `"compare"` | `"describe"` |
 |---|---|---|
-| Groups | compared: an Overall column and a P column | described side by side: no Overall, no P |
-| Count | one overall `n*` column | one count column per group |
+| Count | one overall `n*` column | one count column per group, and one for Overall when shown |
+| Overall and comparison columns | shown when the table carries them | shown when the table carries them, as today's JTCVS renderer does; ms.1333's tables carry neither |
 | Header | `Characteristic` and `n*` merged down; the grouping spans its levels | each group spans its own (n, statistic) pair; row 2 names them |
 | Borders | full grid | full grid, as `"compare"` (ms.1333 used horizontal rules) |
 | Note markers | `*`, `†` | `*`, `†`, as `"compare"` (ms.1333 used a lettered `a`) |
 
+The two layouts differ in **where the counts go**, not in which columns may appear. An Overall
+column and comparison columns (P, a standardized difference) appear in either layout when the
+summary table carries them; the layout only decides whether the non-missing count is one
+overall `n*` column (`"compare"`) or a column beside each group (`"describe"`). This keeps every
+existing `hv_man_table_jtcvs()` call valid as `"describe"` (D3).
+
 `"describe"` covers repeated measures too: ms.0939's phases (Pre-CPB, CPB, Post-CPB) are
 groups of the same patients, each with its own count. A table with **no grouping** (ms.0939
-Table 1) is `"describe"` with one group: `Characteristic | N = n`, the count in the header, no
-count column, no P.
+Table 1) keeps a count column: `Characteristic | n* | All patients (N = n)`. The header `N` is
+the cohort and `n*` is each variable's non-missing count, which differs by variable (age
+n = 8 and weight n = 5 under N = 10). Dropping the column would hide every denominator, which
+section 6's content rule forbids.
 
 The layout is chosen by the table, not the journal: a study that compares groups in Table 1
 and describes cohorts in Table 2 uses both in one manuscript.
@@ -222,7 +230,8 @@ requires otherwise overrides a property; it does not get a new style.
 | Mean and SD, never | `63 (13)` | reads like a percent beside `n (%)` rows |
 | P values | `.013`, `<.001`, `>.99`: no leading zero, as a default a journal can override | AMA style, which most US clinical journals follow |
 | Count note | `*Patients with non-missing data.` | question 3 |
-| Medians among means | `102 [63, 170]‡`, with `‡Median [15th, 85th percentiles].` | question 8 |
+| Medians among means | `102 [63, 170]§`, with `§Median [15th, 85th percentiles].` | question 8; `§`, not the CAA proof's `‡`, because `‡` already marks Fisher's exact p-values |
+| Note symbols | fixed by meaning, in the house order `* † ‡ § ¶ ||`: `*` the count, `†` the statistic and test note, `‡` a Fisher exact p-value, `§` a median among means; further notes take `¶` and then `||` | one symbol, one meaning in every table, so two marks never collide. `hv_man_table_save()` already refuses to file any other note under `‡` when a table marks Fisher cells |
 
 The median-digits rule is new: none of the documents follows it. The implementation plan
 checks it against real ranges (small proportions such as `0.31 [0.21, 0.39]`, and large counts)
@@ -283,9 +292,13 @@ Three rows of the matrix cannot be met by a renderer alone:
 - **D3. Rename the JTCVS functions.** Their layout becomes `"manuscript"`'s `"describe"`
   layout. `hv_man_table_jtcvs()`, `hv_man_table_save_jtcvs()` and `hv_test_footnotes_jtcvs()`
   keep working for one release with a deprecation message naming
-  `hv_man_table(style = "manuscript", layout = "describe")`, then go. No other hvtiR package
-  calls them (checked 2026-10-17 across hvtiRtemplates, hvtiRutilities and hvtiPlotR). Their
-  tests move to `"describe"`.
+  `hv_man_table(style = "manuscript", layout = "describe")`, then go. During that release each
+  wrapper passes its arguments through unchanged: `groups` and `trailing` select the same
+  group, Overall (`stat_0`) and comparison columns they select today, since `"describe"` shows
+  Overall and comparison columns when the table carries them (section 5.1). A test calls each
+  wrapper with an Overall column and a P and a standardized-difference column and asserts the
+  output keeps all three. No other hvtiR package calls them (checked 2026-10-17 across
+  hvtiRtemplates, hvtiRutilities and hvtiPlotR). Their tests move to `"describe"`.
 - **D4. Section shading in every style.** In `"report"` the fill goes on every cell of the
   section row and nothing is merged, so rule 3 holds there. In `"manuscript"` the spanned
   cell is filled.
@@ -339,12 +352,13 @@ All answered on 2026-10-17.
    does not imitate it.
 8. **Mixed statistics in one table.** Add the per-cell mark. In `"manuscript"`, when a table
    shows mean ± SD by default and some variables as medians (`hv_tbl_summary(mean_sd =)`),
-   each median cell carries a mark, `102 [63, 170]‡`, and the notes gain `‡Median [15th, 85th
+   each median cell carries a mark, `102 [63, 170]§`, and the notes gain `§Median [15th, 85th
    percentiles].`, with the percentiles the table uses. The default statistic is named once,
    in a `Data:` note.
-9. **Two manuscript layouts, chosen by content.** `"compare"` (overall `n*`, Overall, P) and
-   `"describe"` (a count per group, no Overall, no P); the JTCVS layout survives as
-   `"describe"` (decision 6, section 5.1).
+9. **Two manuscript layouts, chosen by content.** `"compare"` (one overall `n*` column) and
+   `"describe"` (a count beside each group); either shows an Overall column and comparison
+   columns when the table carries them. The JTCVS layout survives as `"describe"` (decision 6,
+   section 5.1).
 10. **Borders and note markers in `"describe"`.** Match `"compare"`: a full grid and `*`, `†`
     notes in both layouts, so one style looks alike. ms.1333's horizontal rules and lettered
     note are not carried over.
