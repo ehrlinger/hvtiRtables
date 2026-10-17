@@ -1,8 +1,8 @@
 # Table styles: one renderer, styles named by role (design)
 
 Date: 2026-10-17
-Status: decided 2026-10-17 apart from questions 11 to 14 (digits, section form, mean and SD
-notation, P format), which the implementation plan can propose. Decisions are in section 2.
+Status: decided 2026-10-17, including a house standard for table notation (section 5.2).
+Question 15 is open. Decisions are in section 2.
 
 This note is self-contained. It assumes no memory of the session that produced it.
 
@@ -41,6 +41,12 @@ finished by hand, and both carry hand-edit errors as a result.
 7. **The house rules were built for editing tables by hand for submission.** A generated
    table meets their purpose by construction, so each becomes a style property; what binds
    every style is the content beneath them (section 6).
+
+8. **The group has no table standard, so this design makes one** (section 5.2). The documents
+   in section 4 are evidence of its absence, not something to copy. **The standard lives in
+   the style object** (`hv_table_style()`), and the "Table styles" article renders it from that
+   object (D6), so the published standard and the package's output cannot drift. It replaces
+   *Table Construction for Manuscripts.docx* as the reference.
 
 ## 3. The styles
 
@@ -162,7 +168,7 @@ renderer, whose layout becomes `"describe"` (D3, section 5.1).
 | 3 | Borders | horizontal rules only | full grid: box plus all inner lines, single 0.5 pt | horizontal rules only |
 | 4 | Header | one row; `No.*`, then `<group> N = n†` per group | two rows: `Characteristic` and `n*` merged down, the grouping label with † spanning its levels; row 2 `<level> (N = n)` | two rows; each group spans its (n, statistic) pair |
 | 5 | Non-missing count | one column per group | **one overall `n*` column** (needs `hv_tbl_summary()`, section 7) | one column per group |
-| 6 | Continuous values | `10.35 (8.11, 12.74)`: parentheses, 2 decimals | `9.9 [8.5, 11]`: brackets, a space before them, each number to 2 significant digits (section 7) | as `"report"` |
+| 6 | Continuous values | `10.35 (8.11, 12.74)`: parentheses, 2 decimals | `9.9 [8.5, 11.0]`, `63 ± 13`: the standard (section 5.2) | as `"report"` |
 | 7 | Categorical values | `3 (6.8)` | `30 (42)` | `3 (6.8)` |
 | 8 | Note markers | `*`, `†`, `‡` superscript | `*`, `†` at the start of the note, not superscript | lettered `a.`, `b.` |
 | 9 | Count note | `Number of non-missing values.` (house rule 8) | `Patients with non-missing data.` | `Patients with data available.` |
@@ -198,6 +204,27 @@ count column, no P.
 
 The layout is chosen by the table, not the journal: a study that compares groups in Table 1
 and describes cohorts in Table 2 uses both in one manuscript.
+
+### 5.2 The house standard, adopted 2026-10-17
+
+The notation every `"manuscript"` table follows, whatever journal it goes to. A journal that
+requires otherwise overrides a property; it does not get a new style.
+
+| element | standard | reason |
+|---|---|---|
+| Counts | `30 (42)`: a space, no `%` sign | the most common form; "%" is said once, in the note |
+| Mean and SD | `63 ± 13`: a spaced `±`, rounded by the EHB paired rule | already the house rule in `hv_tbl_summary()`; the spaced form is what JTCVS typesets |
+| Median | `9.9 [8.5, 11.0]`: brackets, a space before them | brackets keep percentiles distinct from `n (%)` parentheses in the same table |
+| Median digits | a paired rule like EHB's: the median and percentiles are rounded one place finer than the first significant digit of their spread (P85 minus P15) | one principle for both statistics, not a fixed digit count, which is too coarse for 0.31 and too fine for 1,200 |
+| Sections | heading rows, shaded | decided with the shading (question 7); a column costs width |
+| Mean and SD, never | `63 (13)` | reads like a percent beside `n (%)` rows |
+| P values | `.013`, `<.001`, `>.99`: no leading zero, as a default a journal can override | AMA style, which most US clinical journals follow |
+| Count note | `*Patients with non-missing data.` | question 3 |
+| Medians among means | `102 [63, 170]‡`, with `‡Median [15th, 85th percentiles].` | question 8 |
+
+The median-digits rule is new: none of the documents follows it. The implementation plan
+checks it against real ranges (small proportions such as `0.31 [0.21, 0.39]`, and large counts)
+before it is built.
 
 ## 6. Which house rules still bind
 
@@ -286,7 +313,7 @@ Three rows of the matrix cannot be met by a renderer alone:
 
 ## 10. Questions
 
-All answered on 2026-10-17 except questions 11 to 14.
+All answered on 2026-10-17 except question 15.
 
 1. **Names.** By role. The JTCVS functions' names are deprecated; their layout survives as
    `"manuscript"`'s `"describe"` layout (question 9).
@@ -318,21 +345,14 @@ All answered on 2026-10-17 except questions 11 to 14.
 10. **Borders and note markers in `"describe"`.** Match `"compare"`: a full grid and `*`, `†`
     notes in both layouts, so one style looks alike. ms.1333's horizontal rules and lettered
     note are not carried over.
-11. **Open: how many significant digits.** ms.1264 and BVR rv3 round medians and percentiles
-    to 2 significant digits (`9.9 [8.5, 11]`); ms.0939 rounds to 3 (`1.20 [0.800, 1.80]`); the
-    CAA proof mixes the EHB paired rule for mean ± SD (`1.2 ± 0.70`) with 3 digits for medians
-    (`102 [63, 170]`). One rule for `"manuscript"`, or a property? This decides row 6 and the
-    rounding design in section 7.
-12. **Open: section names as heading rows or as a column.** Every document but one marks
-    sections with a heading row; ms.939 modeling's Table 1 uses a `Category` column. The
-    styles shade heading rows (question 7), so heading rows are the working assumption.
-    Should `"manuscript"` ever produce the column form?
-13. **Open: mean and SD notation.** `63 ± 13` (the CAA proof, as typeset), `63.1±12.6`
-    (ms.0939), or `64.0 (12.2)` (ms.939 modeling); BVR rv3's risk-factor tables write
-    coefficient ± SE unspaced, `0.64±0.30`. One notation for `"manuscript"`, with spacing
-    fixed.
-14. **Open: P-value format.** `<.001`, as JTCVS printed it, or `<0.001` (ms.939 modeling)?
-    A leading zero is a journal convention, so this is likely a property a journal sets.
+11. **Significant digits.** The standard's paired rule for medians (section 5.2), checked
+    against real ranges in the plan.
+12. **Section form.** Heading rows (section 5.2).
+13. **Mean and SD notation.** `63 ± 13`, never `63 (13)` (section 5.2).
+14. **P-value format.** `.013`, `<.001`, `>.99`, a default a journal can override (section 5.2).
+15. **Open: does `"report"` follow the standard's notation too?** It writes
+    `10.35 (8.11, 12.74)` today. The standard was adopted for `"manuscript"`; a report that
+    reads the same as the manuscript would remove one more difference.
 
 ## 11. Out of scope
 
