@@ -373,3 +373,19 @@ test_that("a CORR table wider than portrait but under 3 groups turns", {
   expect_true(g$landscape)
   expect_lte(g$table, g$text)
 })
+
+test_that("a table just inside the landscape text block is still narrowed", {
+  # Between 0.01 in inside the margins and the margins themselves, the
+  # per-column twip rounding could put the grid past the text block.
+  ft <- hv_man_table(hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = "age"),
+    continuous = "age", compare = "none", show_variable = FALSE
+  ))
+  target <- .text_width(landscape = TRUE) - 0.005
+  ft <- flextable::width(ft, j = "label",
+                         width = ft$body$colwidths[["label"]] +
+                           target - sum(ft$body$colwidths))
+  fit <- .fit_page(ft)
+  expect_lte(sum(fit$ft$body$colwidths), .text_width(landscape = TRUE) - 0.01)
+  expect_true(fit$landscape)
+})

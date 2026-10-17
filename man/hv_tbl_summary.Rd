@@ -129,8 +129,12 @@ working.}
 \item{show_variable}{Single \code{TRUE}/\code{FALSE}. When \code{TRUE} (default),
 adds a "Variable" column beside the label holding each variable's
 column name in \code{data}, on its first row, as \verb{\%summarytable}'s
-report did. Both renderers show it. Set \code{FALSE} for a manuscript,
-so the report and the manuscript come from one table.}
+report did. It belongs to the report view: \code{\link[=hv_man_table]{hv_man_table()}} and
+\code{\link[=hv_man_table_display]{hv_man_table_display()}} show it, while \code{\link[=hv_man_table_save]{hv_man_table_save()}} and
+\code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}} always drop it and \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}
+never shows it, so a saved or JTCVS table is a manuscript table
+whatever this says. Set \code{FALSE} to leave it out of the report view
+too.}
 
 \item{cutexact}{When a binary or categorical variable is tested with
 Fisher's exact test rather than Pearson's chi-square (no continuity
