@@ -2,7 +2,7 @@
 
 Date: 2026-10-17
 Status: draft for John's review. Decisions taken on 2026-10-17 are in section 2; questions 2
-to 5 in section 10 need an answer before an implementation plan.
+to 5, 7 and 8 in section 10 need an answer before an implementation plan.
 
 This note is self-contained. It assumes no memory of the session that produced it.
 
@@ -59,8 +59,36 @@ Measured on 2026-10-17 from the Word XML of four files:
 - The same synthetic table saved with hvtiRtables 1.0.7's `hv_man_table_save()` and
   `hv_man_table_save_jtcvs()`.
 
-Neither manuscript is published, and neither is committed; this note records their measured
-properties only.
+- **CAA proof**, `ViewPageProof_YMTC_20718.pdf`, the JTCVS page proof of the coronary artery
+  aneurysm paper (Alshneikat et al., 16 October 2026): Tables 1 to 4 as the journal typeset
+  them.
+
+Neither manuscript is published, and none of the files is committed; this note records their
+measured properties only.
+
+**A typesetting journal discards the submitted styling.** JTCVS re-set every table in its own
+style: horizontal rules, no grid, its own font, and **whole section blocks** (the heading and
+its rows) shaded in alternating bands, not only the heading row. So for a journal that
+typesets, borders, fills and fonts in the submitted file do not reach the reader; content and
+structure do. What survived typesetting in the proof:
+
+- one `N*` column (patients with data available), an Overall column beside the groups, and a
+  `P†` column with no leading zero (`.013`, `<.001`, `>.9`);
+- mean ± SD by default, with skewed variables shown as `102 [63, 170]‡`, the median marked per
+  cell (hvtiRtables' `mean_sd` plus a mark);
+- the notes: `Data: n (%) or mean ± SD.`, the abbreviations, `*Patients with data
+  available.`, `†Wilcoxon rank sum; Pearson's chi-square; Fisher exact.`, `‡Median [15th, 85th
+  percentiles].`
+
+The proof is itself inconsistent: Table 1 writes percentiles in brackets and Tables 3 and 4 in
+parentheses, so a journal does not repair hand-made tables either.
+
+**What this means for `"manuscript"`.** Its first job is content and structure: the overall
+`N*` column, the Overall column, the P column and its format, the per-cell mark for medians,
+and notes that name the statistics and tests. Those survive any journal. Its visual
+properties (grid, fill, font) matter for journals that print the submitted table, for
+reviewers, and for co-authors reading the draft, and are properties a journal's choice can
+set.
 
 **The two submissions share one look across two journals.** Both have a full single-line
 grid; a two-row header with `Characteristic` and `n*` merged down and the grouping
@@ -203,9 +231,15 @@ Three rows of the matrix cannot be met by a renderer alone:
 2. **Which house rules exist only for hand editing.** Section 6 treats rules 2 and 3 and the
    hidden constructs as hand-edit rules, and rules 8 and 14 as content. Is that right, and is
    anything else in the house rules document a hand-edit rule?
-3. **Count-note wording for `"manuscript"`.** The two submissions disagree: "Patients with
-   non-missing data." and "Patients with data available." `"report"` keeps rule 8's "Number
-   of non-missing values." Pick one for `"manuscript"`.
+3. **Count-note wording for `"manuscript"`.** The submissions disagree: "Patients with
+   non-missing data." (ms.1264, Circulation) and "Patients with data available." (BVR rv3, and
+   the typeset CAA proof, both JTCVS). `"report"` keeps rule 8's "Number of non-missing
+   values." Pick one for `"manuscript"`, or make it a property a journal sets.
+7. **Shading section rows or section blocks.** Both submissions shade the heading row; JTCVS
+   shaded whole sections in alternating bands. Which should the styles do?
+8. **Mixed statistics in one table.** The CAA proof shows mean ± SD by default with medians
+   marked `‡` per cell. `hv_tbl_summary(mean_sd =)` already chooses the statistic per
+   variable; should `"manuscript"` add the per-cell mark and its note?
 4. **Page size.** US Letter for every style, or only `"manuscript"`? Both savers write A4
    today; both submissions are on Letter.
 5. **Font.** Is rule 5 (Times New Roman, 11 or 12 pt) a content rule or only how the table
