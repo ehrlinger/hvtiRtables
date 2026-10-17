@@ -1,7 +1,7 @@
 # Table styles: one renderer, styles named by role (design)
 
 Date: 2026-10-17
-Status: draft for John's review. Decisions taken on 2026-10-17 are in section 2; question 4 in
+Status: draft for John's review. Decisions taken on 2026-10-17 are in section 2; question 9 in
 section 10 needs an answer before an implementation plan.
 
 This note is self-contained. It assumes no memory of the session that produced it.
@@ -59,6 +59,8 @@ Measured on 2026-10-17 from the Word XML of four files:
 - The same synthetic table saved with hvtiRtables 1.0.7's `hv_man_table_save()` and
   `hv_man_table_save_jtcvs()`.
 
+- **ms.1333**, `ms.1333.aqg_gts_development.jtcvs.current.docx`, a JTCVS submission
+  describing two separate cohorts (lung resection, esophagectomy): Tables 2 to 4 and S1.
 - **CAA proof**, `ViewPageProof_YMTC_20718.pdf`, the JTCVS page proof of the coronary artery
   aneurysm paper (Alshneikat et al., 16 October 2026): Tables 1 to 4 as the journal typeset
   them.
@@ -82,6 +84,17 @@ structure do. What survived typesetting in the proof:
 
 The proof is itself inconsistent: Table 1 writes percentiles in brackets and Tables 3 and 4 in
 parentheses, so a journal does not repair hand-made tables either.
+
+**ms.1333 uses the JTCVS renderer's layout, not the grid.** Each cohort spans its own
+`n^a | No. (%)` pair, the count is per cohort, the note is lettered (`aNumber of non-missing
+values`, house rule 8's wording), and there are horizontal rules only. Its section rows are
+filled `#D9E2F3` on every cell, unmerged. It also carries editing debris in its current
+version: one table cell highlighted yellow and 36 highlights in the document.
+
+The difference looks driven by content rather than journal: ms.1264 and BVR rv3 **compare**
+groups (an Overall column, P values), where one overall `n*` column reads naturally; ms.1333
+**describes two cohorts side by side** with no Overall and no P, where a count per cohort
+does. See question 9.
 
 **What this means for `"manuscript"`.** Its first job is content and structure: the overall
 `N*` column, the Overall column, the P column and its format, the per-cell mark for medians,
@@ -132,7 +145,7 @@ renderer, which is deprecated (D3); it is kept here so the article can show what
 | 14 | Alignment and weight | header bold; first column left, others centered | first column left, others centered | everything left; header plain |
 | 15 | Row height | auto, about 600 twips | 300 twips, rows kept on one page | 360 twips |
 | 16 | Header repeated on a new page | yes | yes (neither submission has it; the generated style adds it) | yes |
-| 17 | Page | A4 landscape † | **US Letter**, landscape when wide, else portrait (question 4) | A4 landscape |
+| 17 | Page | **US Letter** †, landscape when wide, else portrait | **US Letter**, landscape when wide, else portrait | A4 landscape |
 | 18 | Variable column | on screen only; every saved `.docx` drops it (hvtiRtables#82) | never | never |
 | 19 | Merged cells | none (house rule 3) | header and section rows (section 6) | header and section rows |
 
@@ -224,7 +237,7 @@ Three rows of the matrix cannot be met by a renderer alone:
 
 ## 10. Questions
 
-All answered on 2026-10-17 except question 4.
+All answered on 2026-10-17. Question 9 reopens part of question 1 and is open.
 
 1. **Names.** By role. The JTCVS renderer, whose look neither submission uses, is deprecated
    in favor of `"manuscript"` (decision 6, D3).
@@ -235,8 +248,8 @@ All answered on 2026-10-17 except question 4.
    disagreed (ms.1264 said this; BVR rv3 and the CAA paper said "Patients with data
    available."), and those were authors' choices, not journal requirements. `"report"` keeps
    rule 8's "Number of non-missing values."
-4. **Page size. Open.** US Letter for every style, or only `"manuscript"`? Both savers write
-   A4 today; every submission measured is on Letter.
+4. **Page size.** US Letter for every style. Both savers write A4 today, which changes for
+   `"report"` too (row 17); every submission measured is on Letter.
 5. **Font for `"manuscript"`.** Follow the document's body font: `"manuscript"` sets no font
    on the table, so it takes the font and size of the document it is saved into, as the
    submissions do.
@@ -250,6 +263,13 @@ All answered on 2026-10-17 except question 4.
    each median cell carries a mark, `102 [63, 170]‡`, and the notes gain `‡Median [15th, 85th
    percentiles].`, with the percentiles the table uses. The default statistic is named once,
    in a `Data:` note.
+9. **Open: two manuscript layouts, chosen by content?** ms.1333 (section 4) uses the layout
+   question 1 deprecated, for a table that describes separate cohorts rather than comparing
+   groups. Options: keep the deprecation and draw such tables in the grid layout with a
+   per-group count; or make the layout a property of `"manuscript"` chosen by the table's
+   content, `"compare"` (overall `n*`, Overall column, P) and `"describe"` (a count per group,
+   no Overall, no P), so the JTCVS renderer's layout survives as `"describe"` rather than as a
+   journal name.
 
 ## 11. Out of scope
 
