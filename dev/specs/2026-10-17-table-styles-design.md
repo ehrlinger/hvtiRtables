@@ -1,7 +1,7 @@
 # Table styles: one renderer, styles named by role (design)
 
 Date: 2026-10-17
-Status: draft for John's review. Decisions taken on 2026-10-17 are in section 2; question 9 in
+Status: draft for John's review. Decisions taken on 2026-10-17 are in section 2; question 10 in
 section 10 needs an answer before an implementation plan.
 
 This note is self-contained. It assumes no memory of the session that produced it.
@@ -34,8 +34,10 @@ finished by hand, and both carry hand-edit errors as a result.
 5. **The differences are documented clearly.** The matrix in section 5 is the definition of
    the styles, and the package gains an article that renders one table in each style beside
    it (section 8, D6).
-6. **`hv_man_table_jtcvs()` and `hv_man_table_save_jtcvs()` are deprecated in favor of
-   `"manuscript"`.** Neither submission uses their look, including the JTCVS one.
+6. **`"manuscript"` has two layouts, chosen by the table's content:** `"compare"` (one overall
+   `n*` column, an Overall column, P values), for tables that compare groups, and `"describe"`
+   (a count per group, no Overall, no P), for tables that describe separate cohorts side by
+   side. The JTCVS functions' names are deprecated; their layout survives as `"describe"`.
 7. **The house rules were built for editing tables by hand for submission.** A generated
    table meets their purpose by construction, so each becomes a style property; what binds
    every style is the content beneath them (section 6).
@@ -45,8 +47,8 @@ finished by hand, and both carry hand-edit errors as a result.
 | style | role | today | defining trait |
 |---|---|---|---|
 | `"report"` | the analysis report, read on screen | `hv_man_table()` | horizontal rules only, one flat header row, a count column per group, the Variable column on screen |
-| `"manuscript"` | tables a journal receives, main text and supplement | none | full grid, one overall `n*` column, the grouping spanning its levels, full-width shaded section rows, bracketed percentiles |
-| *(the JTCVS renderer's look)* | none: **deprecated** 2026-10-17 | `hv_man_table_jtcvs()` | each group spans its own (n, statistic) pair, lettered notes. Neither submission uses it |
+| `"manuscript"`, layout `"compare"` | tables a journal receives that compare groups | none | full grid, one overall `n*` column, the grouping spanning its levels, full-width shaded section rows, bracketed percentiles (ms.1264, BVR rv3) |
+| `"manuscript"`, layout `"describe"` | tables describing separate cohorts | `hv_man_table_jtcvs()`, renamed | each group spans its own (n, statistic) pair, a count per group, no Overall, no P (ms.1333) |
 
 ## 4. Evidence
 
@@ -149,6 +151,23 @@ renderer, which is deprecated (D3); it is kept here so the article can show what
 | 18 | Variable column | on screen only; every saved `.docx` drops it (hvtiRtables#82) | never | never |
 | 19 | Merged cells | none (house rule 3) | header and section rows (section 6) | header and section rows |
 
+### 5.1 The `"describe"` layout
+
+The matrix's `"manuscript"` column is the `"compare"` layout. `"describe"` shares its notes'
+wording, font, page, shading and digits, and differs where the content differs, as measured in
+ms.1333:
+
+| property | `"compare"` | `"describe"` |
+|---|---|---|
+| Groups | compared: an Overall column and a P column | described side by side: no Overall, no P |
+| Count | one overall `n*` column | one count column per group |
+| Header | `Characteristic` and `n*` merged down; the grouping spans its levels | each group spans its own (n, statistic) pair; row 2 names them |
+| Borders | full grid | horizontal rules only (ms.1333); question 10 |
+| Note markers | `*`, `†` | lettered `a` in ms.1333; question 10 |
+
+The layout is chosen by the table, not the journal: a study that compares groups in Table 1
+and describes cohorts in Table 2 uses both in one manuscript.
+
 ## 6. Which house rules still bind
 
 **Answered 2026-10-17: the house rules (`Table Construction for Manuscripts.docx`, 7/14/2026)
@@ -200,13 +219,12 @@ Three rows of the matrix cannot be met by a renderer alone:
   `hv_man_table_save(ft, file, ...)`. The flextable carries its style, so the saver writes
   that style's notes, caption and page without being told again.
   `hv_man_table_display()` follows the style too.
-- **D3. Deprecate the JTCVS functions.** `hv_man_table_jtcvs()`,
-  `hv_man_table_save_jtcvs()` and `hv_test_footnotes_jtcvs()` keep working for one release
-  with a deprecation message naming `hv_man_table(style = "manuscript")`, then go. No other
-  hvtiR package calls them (checked 2026-10-17 across hvtiRtemplates, hvtiRutilities and
-  hvtiPlotR). Their tests move to the `"manuscript"` style where a behavior carries over
-  (multiple trailing columns, letters only on the p-value column) and are retired where it
-  does not (lettered notes).
+- **D3. Rename the JTCVS functions.** Their layout becomes `"manuscript"`'s `"describe"`
+  layout. `hv_man_table_jtcvs()`, `hv_man_table_save_jtcvs()` and `hv_test_footnotes_jtcvs()`
+  keep working for one release with a deprecation message naming
+  `hv_man_table(style = "manuscript", layout = "describe")`, then go. No other hvtiR package
+  calls them (checked 2026-10-17 across hvtiRtemplates, hvtiRutilities and hvtiPlotR). Their
+  tests move to `"describe"`.
 - **D4. Section shading in every style.** In `"report"` the fill goes on every cell of the
   section row and nothing is merged, so rule 3 holds there. In `"manuscript"` the spanned
   cell is filled.
@@ -237,10 +255,10 @@ Three rows of the matrix cannot be met by a renderer alone:
 
 ## 10. Questions
 
-All answered on 2026-10-17. Question 9 reopens part of question 1 and is open.
+All answered on 2026-10-17 except question 10.
 
-1. **Names.** By role. The JTCVS renderer, whose look neither submission uses, is deprecated
-   in favor of `"manuscript"` (decision 6, D3).
+1. **Names.** By role. The JTCVS functions' names are deprecated; their layout survives as
+   `"manuscript"`'s `"describe"` layout (question 9).
 2. **Which house rules exist only for hand editing.** In general, all of them were built
    because of problems editing tables for submission (section 6). They become style
    properties; the content beneath them binds every style.
@@ -263,13 +281,12 @@ All answered on 2026-10-17. Question 9 reopens part of question 1 and is open.
    each median cell carries a mark, `102 [63, 170]‡`, and the notes gain `‡Median [15th, 85th
    percentiles].`, with the percentiles the table uses. The default statistic is named once,
    in a `Data:` note.
-9. **Open: two manuscript layouts, chosen by content?** ms.1333 (section 4) uses the layout
-   question 1 deprecated, for a table that describes separate cohorts rather than comparing
-   groups. Options: keep the deprecation and draw such tables in the grid layout with a
-   per-group count; or make the layout a property of `"manuscript"` chosen by the table's
-   content, `"compare"` (overall `n*`, Overall column, P) and `"describe"` (a count per group,
-   no Overall, no P), so the JTCVS renderer's layout survives as `"describe"` rather than as a
-   journal name.
+9. **Two manuscript layouts, chosen by content.** `"compare"` (overall `n*`, Overall, P) and
+   `"describe"` (a count per group, no Overall, no P); the JTCVS layout survives as
+   `"describe"` (decision 6, section 5.1).
+10. **Open: borders and note markers in `"describe"`.** ms.1333 uses horizontal rules and a
+    lettered note; `"compare"` uses a grid and `*`, `†`. Follow ms.1333, or match `"compare"`
+    so the two layouts of one style look alike?
 
 ## 11. Out of scope
 
