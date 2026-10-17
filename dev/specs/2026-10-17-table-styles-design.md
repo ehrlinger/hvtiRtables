@@ -1,8 +1,8 @@
 # Table styles: one renderer, styles named by role (design)
 
 Date: 2026-10-17
-Status: decided 2026-10-17, ready for an implementation plan. Decisions are in section 2;
-every question in section 10 is answered.
+Status: decided 2026-10-17 apart from question 11 (significant digits), which the
+implementation plan can carry. Decisions are in section 2.
 
 This note is self-contained. It assumes no memory of the session that produced it.
 
@@ -63,6 +63,9 @@ Measured on 2026-10-17 from the Word XML of four files:
 
 - **ms.1333**, `ms.1333.aqg_gts_development.jtcvs.current.docx`, a JTCVS submission
   describing two separate cohorts (lung resection, esophagectomy): Tables 2 to 4 and S1.
+- **ms.0939**, `rvn.0939.cpb_descriptive.ats.submitted.docx` and its current supplemental
+  table, to *Annals of Thoracic Surgery*: a single-cohort table, a repeated-measures table
+  (Pre-CPB, CPB and Post-CPB phases of the same patients), and a supplemental table.
 - **CAA proof**, `ViewPageProof_YMTC_20718.pdf`, the JTCVS page proof of the coronary artery
   aneurysm paper (Alshneikat et al., 16 October 2026): Tables 1 to 4 as the journal typeset
   them.
@@ -92,6 +95,16 @@ parentheses, so a journal does not repair hand-made tables either.
 values`, house rule 8's wording), and there are horizontal rules only. Its section rows are
 filled `#D9E2F3` on every cell, unmerged. It also carries editing debris in its current
 version: one table cell highlighted yellow and 36 highlights in the document.
+
+**ms.0939 adds two content cases and more hand-edit evidence.** Its Table 1 has no grouping
+at all (`Characteristic | N = 18,250¹`); its Table 2's columns are time phases of the same
+patients, each with its own `N¹` and statistic, which is the `"describe"` layout applied to
+repeated measures rather than separate cohorts. It shades the **header** row gray
+(`#D9D9D9`), not section headings. Its Table 2 header names `Median[15th,85th]` while some rows
+show `2.10±0.543`, a mean ± SD under a median label; Table 1 has vertical borders and the
+supplemental table, in the same submission, has none; and gtsummary's default `¹` footnote
+marks and `(70%)` percent signs were left in. It rounds to **3** significant digits
+(`1.20 [0.800, 1.80]`, `81.8±6.99`), where ms.1264 and BVR rv3 round to 2 (question 11).
 
 The difference looks driven by content rather than journal: ms.1264 and BVR rv3 **compare**
 groups (an Overall column, P values), where one overall `n*` column reads naturally; ms.1333
@@ -151,7 +164,7 @@ renderer, whose layout becomes `"describe"` (D3, section 5.1).
 | 18 | Variable column | on screen only; every saved `.docx` drops it (hvtiRtables#82) | never | never |
 | 19 | Merged cells | none (house rule 3) | header and section rows (section 6) | header and section rows |
 
-### 5.1 The `"describe"` layout
+### 5.1 The `"describe"` layout (and tables with no grouping)
 
 The matrix's `"manuscript"` column is the `"compare"` layout. `"describe"` shares its borders,
 note markers and wording, font, page, shading and digits, so one style looks alike, and
@@ -164,6 +177,11 @@ differs only where the content differs, as measured in ms.1333:
 | Header | `Characteristic` and `n*` merged down; the grouping spans its levels | each group spans its own (n, statistic) pair; row 2 names them |
 | Borders | full grid | full grid, as `"compare"` (ms.1333 used horizontal rules) |
 | Note markers | `*`, `†` | `*`, `†`, as `"compare"` (ms.1333 used a lettered `a`) |
+
+`"describe"` covers repeated measures too: ms.0939's phases (Pre-CPB, CPB, Post-CPB) are
+groups of the same patients, each with its own count. A table with **no grouping** (ms.0939
+Table 1) is `"describe"` with one group: `Characteristic | N = n`, the count in the header, no
+count column, no P.
 
 The layout is chosen by the table, not the journal: a study that compares groups in Table 1
 and describes cohorts in Table 2 uses both in one manuscript.
@@ -201,8 +219,8 @@ Three rows of the matrix cannot be met by a renderer alone:
 - **Overall non-missing count (row 5).** `hv_tbl_summary()` computes one count per group;
   `"manuscript"` shows one across all groups. Proposal: `hv_tbl_summary()` always carries
   both counts in its table body, and the style picks which to show.
-- **Significant-digit rounding (row 6).** Each median and percentile is shown to 2
-  significant digits (`0.31 [0.21, 0.39]`, `11 [9.3, 12]`, `8.6 [7.7, 9.3]`). The EHB paired
+- **Significant-digit rounding (row 6, question 11).** In ms.1264 and BVR rv3, each median
+  and percentile is shown to 2 significant digits (`0.31 [0.21, 0.39]`, `11 [9.3, 12]`, `8.6 [7.7, 9.3]`). The EHB paired
   rule covers mean ± SD only. Formatting happens in `hv_tbl_summary()` today, so a style
   property for digits means re-formatting from the raw statistics at render time. gtsummary
   keeps those in the table's cards, so that is possible. A design question for the plan.
@@ -255,7 +273,7 @@ Three rows of the matrix cannot be met by a renderer alone:
 
 ## 10. Questions
 
-All answered on 2026-10-17.
+All answered on 2026-10-17 except question 11.
 
 1. **Names.** By role. The JTCVS functions' names are deprecated; their layout survives as
    `"manuscript"`'s `"describe"` layout (question 9).
@@ -287,6 +305,11 @@ All answered on 2026-10-17.
 10. **Borders and note markers in `"describe"`.** Match `"compare"`: a full grid and `*`, `†`
     notes in both layouts, so one style looks alike. ms.1333's horizontal rules and lettered
     note are not carried over.
+11. **Open: how many significant digits.** ms.1264 and BVR rv3 round medians and percentiles
+    to 2 significant digits (`9.9 [8.5, 11]`); ms.0939 rounds to 3 (`1.20 [0.800, 1.80]`); the
+    CAA proof mixes the EHB paired rule for mean ± SD (`1.2 ± 0.70`) with 3 digits for medians
+    (`102 [63, 170]`). One rule for `"manuscript"`, or a property? This decides row 6 and the
+    rounding design in section 7.
 
 ## 11. Out of scope
 
