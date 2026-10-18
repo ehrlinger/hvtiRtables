@@ -114,7 +114,7 @@ test_that("CORR: the dagger marks the statistic columns, not the No. column", {
 
   notes <- wx_paragraphs_after_table(doc)
   expect_true(
-    "† No. (%) or Median (15th, 85th percentile)." %in% notes
+    "† No. (%) or Median [15th, 85th percentiles]." %in% notes
   )
 })
 
@@ -169,7 +169,7 @@ test_that("JTCVS: the statistic label follows the table's statistic", {
   on.exit(unlink(f), add = TRUE)
   sub <- cell_text(wx_rows(wx_doc(f))[[2]])
   expect_true(
-    "No. (%) or Median (15th, 85th percentile)" %in% sub
+    "No. (%) or Median [15th, 85th percentiles]" %in% sub
   )
   expect_false(any(grepl("Mean", sub, fixed = TRUE)))
 
@@ -187,10 +187,10 @@ test_that("JTCVS: under continuous_stat = 'both', the stats sit side by side", {
   age <- which(labels == "Age")
   # No sub-rows under the variable.
   expect_false(labels[age + 1] %in% c("Mean±SD",
-                                      "Median (15th, 85th percentile)"))
+                                      "Median [15th, 85th percentiles]"))
   sub <- cell_text(rows[[2]])
   expect_true("No. (%) or Mean±SD" %in% sub)
-  expect_true("Median (15th, 85th percentile)" %in% sub)
+  expect_true("Median [15th, 85th percentiles]" %in% sub)
 })
 
 test_that("JTCVS: no fill colour anywhere in the table", {
@@ -224,25 +224,37 @@ wx_mixed <- function(overall = TRUE) {
   )
 }
 
-test_that("both renderers print each mixed row's statistic in Word", {
+test_that("both renderers mark the minority statistic's cells in Word", {
+  # Age is the one mean row against one median row, so the median is the
+  # default and the mean cells carry the mark: a pilcrow in the CORR
+  # table, and the JTCVS table's own lettered superscript.
   f <- wx_save_corr(wx_mixed())
   on.exit(unlink(f), add = TRUE)
   doc <- wx_doc(f)
-  labels <- vapply(wx_rows(doc), function(r) r[[1]]$text, "")
-  expect_true("Age, Mean±SD" %in% labels)
-  expect_true(
-    "Marker Level (ng/mL), Median (15th, 85th percentile)" %in% labels
-  )
-  expect_true("† No. (%) or as labeled." %in%
-                wx_paragraphs_after_table(doc))
+  rows <- wx_rows(doc)
+  labels <- vapply(rows, function(r) r[[1]]$text, "")
+  expect_true("Age" %in% labels)
+  expect_true("Marker Level (ng/mL)" %in% labels)
+  expect_false(any(grepl("Mean±SD$|Median \\[", labels)))
+  age <- cell_text(rows[[which(labels == "Age")]])
+  expect_true(all(grepl("¶$", age[c(3, 5, 7)])))
+  marker <- cell_text(rows[[which(labels == "Marker Level (ng/mL)")]])
+  expect_false(any(grepl("¶", marker, fixed = TRUE)))
+  notes <- wx_paragraphs_after_table(doc)
+  expect_true("† No. (%) or Median [15th, 85th percentiles]." %in% notes)
+  expect_true("¶ Mean±SD." %in% notes)
 
   f2 <- wx_save_jtcvs(wx_mixed())
   on.exit(unlink(f2), add = TRUE)
-  rows <- wx_rows(wx_doc(f2))
-  expect_true("No. (%) or as labeled" %in%
-                cell_text(rows[[2]]))
-  expect_true("Age, Mean±SD" %in%
-                vapply(rows, function(r) r[[1]]$text, ""))
+  doc2 <- wx_doc(f2)
+  rows2 <- wx_rows(doc2)
+  labels2 <- vapply(rows2, function(r) r[[1]]$text, "")
+  expect_true("Age" %in% labels2)
+  expect_true("No. (%) or Median [15th, 85th percentiles]" %in%
+                cell_text(rows2[[2]]))
+  age2 <- cell_text(rows2[[which(labels2 == "Age")]])
+  expect_true(all(grepl("±[0-9.]+b$", age2[c(3, 5)])))
+  expect_true("b. Mean±SD." %in% wx_paragraphs_after_table(doc2))
 })
 
 # One orient value per section; a single section is expected.

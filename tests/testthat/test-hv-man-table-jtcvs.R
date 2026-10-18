@@ -256,11 +256,11 @@ test_that("hv_man_table_jtcvs accepts a custom stat_label", {
   ft <- hv_man_table_jtcvs(
     mk_jtcvs_tbl(),
     groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)"),
-    stat_label = "No. (%) or Median (15th, 85th percentile)"
+    stat_label = "No. (%) or Median [15th, 85th percentiles]"
   )
   xml <- docx_xml_jtcvs(ft)
   expect_true(
-    grepl("No. (%) or Median (15th, 85th percentile)", xml, fixed = TRUE)
+    grepl("No. (%) or Median [15th, 85th percentiles]", xml, fixed = TRUE)
   )
   expect_false(grepl("Mean", xml, fixed = TRUE))
 })
@@ -387,4 +387,54 @@ test_that("hv_man_table_jtcvs rejects a duplicated groups name", {
   )
   expect_false(grepl("col_keys", msg, fixed = TRUE))
   expect_match(msg, "must name each column at most once", fixed = TRUE)
+})
+
+test_that("the JTCVS comparison column has no leading zero", {
+  skip_if_not_installed("broom")
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "grade")),
+                        continuous = "age", categorical = "grade",
+                        compare = "pvalue", show_variable = FALSE)
+  ft <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
+                           trailing = attr(tbl, "hv_trailing"))
+  p <- stats::na.omit(ft$body$dataset$hv_compare_col)
+  expect_true(length(p) > 0L)
+  expect_false(any(grepl("^[<>]?0\\.", p)))
+})
+
+test_that("the JTCVS minority mark reaches every display column", {
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "marker")),
+                        continuous = c("age", "marker"), mean_sd = "age",
+                        compare = "none", show_variable = FALSE)
+  ft <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
+  ch <- flextable::information_data_chunk(ft)
+  age_row <- which(ft$body$dataset$variable == "age")
+  for (col in c("disp_stat_1", "disp_stat_2")) {
+    cell <- ch[ch$.part == "body" & ch$.row_id == age_row &
+                 ch$.col_id == col & ch$txt == "b", ]
+    expect_equal(nrow(cell), 1L, info = col)
+    expect_identical(cell$vertical.align, "superscript", info = col)
+  }
+})
+
+test_that("the JTCVS table letters the minority mark and its note", {
+  # One mean row and one median row: a tie, so the default stays median
+  # and the mean row is the one marked.
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "marker")),
+                        continuous = c("age", "marker"), mean_sd = "age",
+                        compare = "none", show_variable = FALSE)
+  ft <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
+  expect_identical(attr(ft, "hv_header_footnotes")$b, "Mean±SD.")
+  ch <- flextable::information_data_chunk(ft)
+  age_row <- which(ft$body$dataset$variable == "age")
+  marked <- ch$txt[ch$.part == "body" & ch$.row_id == age_row &
+                     ch$.col_id == "disp_stat_1"]
+  expect_true("b" %in% marked)
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save_jtcvs(ft, path, caption = "Table 1. Test")
+  text <- officer::docx_summary(officer::read_docx(path))$text
+  expect_true(any(grepl("Mean±SD.", text, fixed = TRUE)))
+  expect_false(any(grepl("Age, Mean", text, fixed = TRUE)))
 })

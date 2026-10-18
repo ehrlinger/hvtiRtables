@@ -125,8 +125,12 @@ does.
 Mean±SD cells follow Eugene H. Blackstone's (EHB's) paired rounding rule.
 The mean is rounded to the SD's first-significant-digit place and the SD one
 place finer; an SD beginning with 1 gives both one additional place. Exact
-ties round to even. Median and percentile precision is left unchanged because
-the rule does not define it.
+ties round to even, and so do those of medians and percentiles (62.5 shows as
+62, where gtsummary and SAS showed 63). Medians and percentiles follow the house notation instead:
+brackets, 2 significant digits, and a value of 10 or more to the units place
+(`102 [63, 170]`). P values print without a leading zero (`.013`, `<.001`). A
+table that mixes mean and median marks the cells of the statistic fewer rows use
+(`§` on medians, `¶` on means), with a note for each.
 
 Full parameter map, the four defaults that differ, and the `QNTLDEF`
 quantile trap: **[Porting a `%summarytable` program to R](https://ehrlinger.github.io/hvtiRtables/articles/sas-migration.html)**.

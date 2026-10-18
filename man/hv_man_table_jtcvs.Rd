@@ -38,7 +38,9 @@ as its \code{hv_trailing} attribute.}
 
 \item{stat_label}{Sub-header text under each group's statistic column.
 Default \code{NULL} takes it from the table: \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} records the
-statistic it used (e.g. \code{"No. (\%) or Median (15th, 85th percentile)"}), so the header cannot disagree with the cells. A
+statistic it used (e.g.
+\code{"No. (\%) or Median [15th, 85th percentiles]"}), so the header
+cannot disagree with the cells. A
 table without that record falls back to \code{"No. (\%) or Mean±SD"};
 pass the right text yourself for any other statistic.}
 
@@ -75,6 +77,10 @@ footnotes as "Patients with data available." This is
 a separate mode, not a replacement for \code{\link[=hv_man_table]{hv_man_table()}}'s flat-header
 CORR house style; the two exist because CORR reports and JTCVS
 submissions want different things from the same header row.
+
+On a table that mixes mean and median, the mark on the minority cells is
+a lettered superscript \code{b} with its own note, so the test footnotes letter
+from \code{c} rather than \code{b}.
 }
 \section{Common mistakes}{
 

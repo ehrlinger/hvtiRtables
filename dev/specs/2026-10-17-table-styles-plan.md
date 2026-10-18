@@ -167,8 +167,10 @@ Insert after `.format_to_place()` in `R/hv-tbl-summary.R`:
 Run: `Rscript -e 'devtools::test(filter = "hv-tbl-summary")'`
 Expected: the new test passes.
 
-- [ ] **Step 5: Prove it by mutation.** (a) Change `abs(r) >= 10` to `abs(r) >= 100`; the first
-  test fails on `102` and `18250`. (b) Change `format = "f", digits = 0` back to `format = "d"`;
+- [ ] **Step 5: Prove it by mutation.** (a) Change `abs(r) >= 10` to `abs(r) >= 1000`; the first
+  test fails on `102` and `18250`. (`>= 100` survives as an equivalent mutant: the dead
+  `sub("\\.$", ...)` strips the stray dot that `format = "fg", flag = "#"` leaves on a whole value, `9.96` giving
+  `"10."`.) (b) Change `format = "f", digits = 0` back to `format = "d"`;
   the second test fails. Restore both.
 
 - [ ] **Step 6: Commit**

@@ -34,7 +34,7 @@ Manuscripts" rules, not specific to any one study, so you don't have to
 re-type them at every \code{\link[=hv_man_table_save]{hv_man_table_save()}} call site: a \code{*} for the
 non-missing-value count (house rule 8, exact wording required) and a
 \verb{†} explaining the statistic in each group column, e.g.
-"No. (\%) or Median (15th, 85th percentile)." The categorical half is
+\code{"No. (\%) or Median [15th, 85th percentiles]."} The categorical half is
 part of it because the cells print \code{12 (39)} with no \verb{\%} sign (house
 rules 10/12), and the flat CORR header names only the group.
 
@@ -50,8 +50,10 @@ no special sentinel values needed:
 \item Change one: \code{modifyList(hv_man_footnotes(), list(...))} with
 \code{`†`} = "custom text"
 \item Add a study-specific one alongside: \code{c(hv_man_footnotes(), list(...))}
-with \code{`§`} = "extra note". Avoid \verb{‡} on a table from
-\code{\link[=hv_tbl_summary]{hv_tbl_summary()}}: it marks Fisher exact p-values there.
+with \code{`||`} = "extra note". Avoid \verb{‡}, \verb{§} and \verb{¶} on a table from
+\code{\link[=hv_tbl_summary]{hv_tbl_summary()}}: \verb{‡} marks Fisher exact p-values there, and \verb{§}
+and \verb{¶} mark the minority statistic when a table mixes mean and
+median.
 }
 }
 \section{Common mistakes}{

@@ -24,6 +24,7 @@
     label = tb$label,
     is_section = FALSE,
     row_type = tb$row_type,
+    variable = tb$variable,
     stringsAsFactors = FALSE
   )
 
@@ -96,6 +97,10 @@
 #' CORR house style; the two exist because CORR reports and JTCVS
 #' submissions want different things from the same header row.
 #'
+#' On a table that mixes mean and median, the mark on the minority cells is
+#' a lettered superscript `b` with its own note, so the test footnotes letter
+#' from `c` rather than `b`.
+#'
 #' @section Common mistakes:
 #' **"`tbl` was not built with the `{N_nonmiss} ||| {stat}` convention."**
 #' The table came from a plain [gtsummary::tbl_summary()] call. Build
@@ -132,8 +137,9 @@
 #'   as its `hv_trailing` attribute.
 #' @param stat_label Sub-header text under each group's statistic column.
 #'   Default `NULL` takes it from the table: [hv_tbl_summary()] records the
-#'   statistic it used (e.g. `"No. (%) or Median (15th, 85th
-#'   percentile)"`), so the header cannot disagree with the cells. A
+#'   statistic it used (e.g.
+#'   `"No. (%) or Median [15th, 85th percentiles]"`), so the header
+#'   cannot disagree with the cells. A
 #'   table without that record falls back to `"No. (%) or Mean±SD"`;
 #'   pass the right text yourself for any other statistic.
 #' @param font Font family. Default `"Times New Roman"` (house rule).
@@ -241,8 +247,8 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   # One "Characteristic", spanning both header rows, not one per row.
   ft <- flextable::merge_v(ft, j = "label", part = "header")
   # A real superscript: as plain header text the "a" printed as "na".
-  # The saver writes the matching footnote and letters the body
-  # footnotes from "b".
+  # The saver writes the matching footnote. The test footnotes letter from
+  # "b", or from "c" when a minority mark has taken "b".
   ft <- flextable::append_chunks(
     ft, i = 2, j = n_cols, part = "header", flextable::as_sup("a")
   )
@@ -260,9 +266,24 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   ft <- flextable::fontsize(ft, size = font_size, part = "all")
   ft <- flextable::valign(ft, valign = "center", part = "all")
 
-  attr(ft, "hv_header_footnotes") <- list(
-    a = "Patients with data available."
-  )
+  # The minority statistic's mark (hv_tbl_summary()'s hv_cell_marks). This
+  # renderer letters its notes, so the cells take the next free letter,
+  # "b", and the note joins the header notes, which the saver writes.
+  # Phase 3 moves this layout onto the standard's section sign and pilcrow.
+  header_notes <- list(a = "Patients with data available.")
+  marks <- attr(tbl, "hv_cell_marks", exact = TRUE)
+  mark_note <- if (!is.null(marks))
+    attr(tbl, "hv_footnotes", exact = TRUE)[[marks$symbol]]
+  if (!is.null(mark_note)) {
+    i <- which(reshaped$row_type == "label" &
+                 reshaped$variable %in% marks$variables)
+    if (length(i) > 0L) {
+      ft <- flextable::append_chunks(ft, i = i, j = disp_cols, part = "body",
+                                     flextable::as_sup("b"))
+      header_notes$b <- mark_note
+    }
+  }
+  attr(ft, "hv_header_footnotes") <- header_notes
 
   ft <- flextable::width(ft, j = "label", width = 2.5)
   ft <- flextable::width(ft, j = n_cols, width = 0.6)

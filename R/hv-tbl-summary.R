@@ -8,38 +8,51 @@
 #' gtsummary's own tidyselect-based interface. Returns a plain `gtsummary`
 #' object, ready for [hv_man_table()] or [hv_man_table_jtcvs()].
 #'
-#' Continuous variables are summarized as `median (P<low>, P<high>)` by
+#' Continuous variables are summarized as `median [P<low>, P<high>]` by
 #' default, or as mean +/- SD, or both (`continuous_stat`), and tested
 #' non-parametrically (Wilcoxon rank-sum for 2 groups, Kruskal-Wallis for
 #' 3+), the macro's `CON3=`. A variable you also list in `normal` is the
-#' macro's `CON1=` instead: mean +/- SD, tested with one-way ANOVA. When
-#' that leaves rows of one table showing different statistics, each
-#' continuous row names its own, `"Age, Mean±SD"`, as the macro's
-#' `DESCLABEL=1` did, and the header and dagger read "No. (%) or as
-#' labeled". `percentiles` defaults to the house convention documented in
+#' macro's `CON1=` instead: mean +/- SD, tested with one-way ANOVA.
+#' `percentiles` defaults to the house convention documented in
 #' [hv_man_footnotes()] (15th/85th), overridable per study
 #' (`%summarytable` equivalent: `PP=`).
+#'
+#' The house notation: each median and percentile is shown to 2 significant
+#' digits, and a value of 10 or more to the units place (`102 [63, 170]`,
+#' `0.31 [0.21, 0.39]`), and a P value has no leading zero (`.013`,
+#' `<.001`, `>.9`).
+#'
+#' When rows of one table show different statistics, the header and dagger
+#' name the statistic most rows use, and the cells of the other are marked
+#' instead of the row labels (the macro's `DESCLABEL=1` suffixes, such as
+#' `"Age, Mean±SD"`, are gone). When more rows show mean +/- SD than a
+#' median, the mean is the default and a section sign (`§`) marks the
+#' median cells; otherwise a pilcrow (`¶`) marks the mean cells. Each mark
+#' has its own footnote. A tie leaves the median as the default.
 #'
 #' Mean/SD output follows Eugene H. Blackstone's (EHB's) paired reporting
 #' rule: the mean is rounded to the first-significant-digit place of the SD,
 #' and the SD is rounded one place finer. When the SD begins with 1, both
 #' retain one additional place. Exact ties round to even; values beyond a tie
 #' round up. This applies to every group and Overall column when
-#' `continuous_stat = "mean"`, and to the mean row under `"both"`. Median and
-#' percentile precision is unchanged. When an SD is zero or unavailable, no
-#' paired precision can be inferred, so gtsummary's existing display is kept.
+#' `continuous_stat = "mean"`, and to the mean row under `"both"`. Medians and
+#' percentiles follow the house notation above instead, and their exact ties
+#' also round to even, as for mean +/- SD: 62.5 shows as 62, where gtsummary
+#' and SAS showed 63. When an SD is zero or unavailable, no paired precision
+#' can be inferred, so gtsummary's existing display is kept.
 #'
-#' The returned object carries three renderer attributes:
+#' The returned object carries these renderer attributes:
 #' `hv_stat_label`, the sub-header text naming the statistics shown
-#' (`"No. (%) or Median (<low>, <high> percentile)"` by default, with
-#' ordinal suffixes; it
-#' follows `continuous_stat`);
+#' (`"No. (%) or Median [<low>, <high> percentiles]"` by default, with
+#' ordinal suffixes; it follows `continuous_stat`);
 #' `hv_trailing`, a named character vector ready to pass as
 #' [hv_man_table_jtcvs()]'s `trailing` argument when `compare` produced a
 #' comparison column (`NULL` when `compare = "none"`); and `hv_footnotes`,
 #' the CORR footnote block that [hv_man_table()] carries into
 #' [hv_man_table_save()] so the default dagger follows `continuous_stat` and
-#' `percentiles` automatically.
+#' `percentiles` automatically. A mixed table also carries `hv_cell_marks`,
+#' the symbol and variables whose cells [hv_man_table()] marks, and a table
+#' built with `continuous_stat = "both"` carries `hv_median_label`.
 #'
 #' @section Common mistakes:
 #' **"`<var>` appears in more than one of `continuous`, `binary`, and
@@ -140,11 +153,11 @@
 #' @param continuous_stat One of `"median"` (default), `"mean"`, or
 #'   `"both"`: how continuous variables not listed in `normal` are
 #'   summarized. `"median"` gives
-#'   `median (P<low>, P<high>)`; `"mean"` gives mean +/- SD, with no
+#'   `median [P<low>, P<high>]`; `"mean"` gives mean +/- SD, with no
 #'   spaces around the plus-minus sign and EHB/Blackstone paired rounding;
 #'   `"both"` puts the two side by side: each group's statistic column
 #'   shows mean +/- SD (or `n (%)` for a categorical row), and a median
-#'   column beside it shows `median (P<low>, P<high>)`, blank on rows
+#'   column beside it shows `median [P<low>, P<high>]`, blank on rows
 #'   with no median. Both renderers lay it out the same way. Choosing
 #'   one for the manuscript is then a matter of dropping a column. The
 #'   test does not
@@ -165,8 +178,8 @@
 #'   nonparametric test (Wilcoxon rank-sum, or Kruskal-Wallis for 3+
 #'   groups). Use it for variables that are roughly symmetric in a
 #'   table whose every continuous test should stay nonparametric. The
-#'   display is the same as for `normal`, row label suffix included
-#'   when the table mixes statistics; only `normal` changes the test. A
+#'   display is the same as for `normal`, cell mark included when the
+#'   table mixes statistics; only `normal` changes the test. A
 #'   variable may appear in both, and is then tested with ANOVA.
 #'   Default none. Last in the signature so positional calls keep
 #'   working.
@@ -197,7 +210,10 @@
 #'
 #' @return A `gtsummary` object, ready for [hv_man_table()] or
 #'   [hv_man_table_jtcvs()]. See Details for the `hv_stat_label`,
-#'   `hv_trailing`, and `hv_footnotes` renderer attributes.
+#'   `hv_trailing`, and `hv_footnotes` renderer attributes. A table whose
+#'   rows mix mean and median also carries `hv_cell_marks`, a list with
+#'   `symbol` (`"§"` or `"¶"`) and `variables` (the names whose cells
+#'   carry it); the attribute is `NULL` otherwise.
 #'
 #' @seealso [hv_man_table()] or [hv_man_table_jtcvs()] to render the
 #'   result. [hv_man_footnotes()] for the percentile-footnote house
@@ -334,10 +350,13 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # 7947 of 7948), so {N_obs} silently overstated n for any variable
   # with missing data.
   median_label <- sprintf(
-    "Median (%s, %s percentile)", ordinal[1], ordinal[2]
+    "Median [%s, %s percentiles]", ordinal[1], ordinal[2]
   )
   mean_label <- "Mean\u00B1SD"
-  median_stat <- sprintf("{median} ({p%s}, {p%s})", p_lo, p_hi)
+  # Brackets, the house standard: they keep the percentiles apart from
+  # the n (%) parentheses in the same table. The numbers are re-formatted
+  # from gtsummary's cards by .format_standard_median() below.
+  median_stat <- sprintf("{median} [{p%s}, {p%s}]", p_lo, p_hi)
   # No spaces around the plus-minus: journals count table entries toward
   # word limits, and "64 +/- 12" is three words (house table rules).
   mean_stat <- "{mean}\u00B1{sd}"
@@ -367,17 +386,24 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   shown_mean <- union(normal, mean_sd)
   nonnormal <- setdiff(continuous, shown_mean)
   normal_stat <- paste("{N_nonmiss} |||", mean_stat)
-  # Mixed: rows of one table show different continuous statistics, so
-  # no one header or footnote can name them all. Each continuous row
-  # then names its own (the macro's DESCLABEL=1).
+  # Mixed: rows of one table show different continuous statistics. The
+  # house standard names the statistic most rows use once, in the dagger
+  # note, and marks the cells of the other: a section sign on medians, a
+  # pilcrow on means. It replaces the macro's DESCLABEL=1 row suffixes.
   # Under "both" every statistic column shows mean±SD, and the median
   # columns name themselves, so nothing is mixed.
   mixed <- length(shown_mean) > 0L && length(nonnormal) > 0L &&
     continuous_stat == "median"
+  mean_default <- mixed && length(shown_mean) > length(nonnormal)
+  cell_marks <- if (!mixed) NULL else if (mean_default) {
+    list(symbol = "\u00A7", variables = nonnormal)
+  } else {
+    list(symbol = "\u00B6", variables = shown_mean)
+  }
   label_stat <- if (length(continuous) > 0L && length(nonnormal) == 0L) {
     "mean"
-  } else if (mixed) {
-    "mixed"
+  } else if (mean_default) {
+    "mean"
   } else if (continuous_stat == "both") {
     "mean"
   } else {
@@ -449,28 +475,12 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # add_overall() must run before add_p()/add_difference() below --
   # gtsummary requires it ahead of comparison columns so the comparison
   # column stays rightmost.
-  # Applied at each return, not here: add_overall() matches rows on
-  # their labels, so suffixing them any earlier makes it fail.
-  # Every return goes through finish(): the relabel, then the variable
-  # column, added last so add_overall() and the comparison calls never
-  # see a column they do not know.
+  # Every return goes through finish(): the variable column is added
+  # last so add_overall() and the comparison calls never see a column
+  # they do not know.
   finish <- function(tbl) {
-    tbl <- relabel(tbl)
     if (show_variable) tbl <- .add_variable_column(tbl)
     tbl
-  }
-  relabel <- function(tbl) {
-    if (!mixed) return(tbl)
-    # "Age, Mean±SD", as the macro wrote it.
-    suffix <- c(
-      stats::setNames(rep(mean_label, length(shown_mean)), shown_mean),
-      stats::setNames(rep(median_label, length(nonnormal)), nonnormal)
-    )
-    gtsummary::modify_table_body(tbl, function(tb) {
-      i <- tb$row_type == "label" & tb$variable %in% names(suffix)
-      tb$label[i] <- paste0(tb$label[i], ", ", suffix[tb$variable[i]])
-      tb
-    })
   }
 
   if (overall && !is.null(by))
@@ -486,9 +496,18 @@ hv_tbl_summary <- function(data, by = NULL, groups,
          paste0(attr(tbl, "hv_stat_label"), ".")),
     c("*", "\u2020")
   )
+  if (!is.null(cell_marks)) {
+    attr(tbl, "hv_cell_marks") <- cell_marks
+    attr(tbl, "hv_footnotes")[[cell_marks$symbol]] <-
+      if (identical(cell_marks$symbol, "\u00A7")) paste0(median_label, ".")
+      else paste0(mean_label, ".")
+  }
   mean_vars <- if (continuous_stat %in% c("mean", "both"))
     continuous else shown_mean
   tbl <- .format_blackstone_mean_sd(tbl, mean_vars)
+  median_vars <- if (continuous_stat %in% c("median", "both"))
+    nonnormal else character(0)
+  tbl <- .format_standard_median(tbl, median_vars, percentiles)
 
   effective_compare <- if (is.null(by)) "none" else compare
   if (effective_compare == "none") {
@@ -570,26 +589,32 @@ hv_tbl_summary <- function(data, by = NULL, groups,
         gtsummary::all_of(normal) ~ list(var.equal = TRUE)
       )
     )
+    # hv_man_table() shows gtsummary's own p.value column, not
+    # hv_compare_col, so its format function has to follow the standard
+    # as well.
+    tbl <- gtsummary::modify_fmt_fun(tbl, p.value ~ .format_p)
     # The macro marked these p-values (ExactTest = "F"). hv_man_table()
     # puts the mark on each Fisher p-value; the JTCVS route letters them
     # through hv_test_footnotes_jtcvs().
     if (any(tbl$table_body$test_name %in% "fisher.test"))
-      attr(tbl, "hv_footnotes")[["\u2021"]] <- "Fisher exact test."
+      attr(tbl, "hv_footnotes") <- .order_notes(c(
+        attr(tbl, "hv_footnotes"), list("\u2021" = "Fisher exact test.")
+      ))
   }
 
   tb <- tbl$table_body
   compare_col <- switch(
     effective_compare,
-    pvalue = gtsummary::style_pvalue(tb$p.value, digits = 1),
+    pvalue = .format_p(tb$p.value),
     smd    = gtsummary::style_sigfig(tb$estimate),
     both   = ifelse(
       is.na(tb$p.value), NA_character_,
       ifelse(
         is.na(tb$estimate),
-        gtsummary::style_pvalue(tb$p.value, digits = 1),
+        .format_p(tb$p.value),
         sprintf(
           "%s (SMD %s)",
-          gtsummary::style_pvalue(tb$p.value, digits = 1),
+          .format_p(tb$p.value),
           gtsummary::style_sigfig(tb$estimate)
         )
       )
@@ -706,6 +731,43 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   )
 }
 
+# P values, the house standard: gtsummary's style_pvalue(digits = 1),
+# which hv_tbl_summary() has always used, with the leading zero dropped,
+# as AMA style and the typeset JTCVS tables print them (.013, <.001, >.9).
+.format_p <- function(p) {
+  sub("^([<>]?)0\\.", "\\1.", gtsummary::style_pvalue(p, digits = 1))
+}
+
+# Notes print in the canonical symbol order, * dagger double-dagger section
+# sign || pilcrow, whichever step added them.
+.order_notes <- function(notes) {
+  canon <- c("*", "\u2020", "\u2021", "\u00A7", "||", "\u00B6")
+  notes[order(match(names(notes), canon))]
+}
+
+# The house standard's precision for a median and its percentiles: 2
+# significant digits, and a value of 10 or more to the units place, never
+# coarser. Rounding 102 to 2 significant digits would print 100; a long
+# right tail is exactly where a reader needs the digits. No thousands
+# separator, as for the counts (house tables print plain digits).
+.format_sig2 <- function(x) {
+  out <- rep(NA_character_, length(x))
+  ok <- is.finite(x)
+  r <- signif(x[ok], 2)
+  shown <- character(length(r))
+  whole <- abs(r) >= 10
+  # format = "f" with no decimals, not "d": "d" coerces to R integers, and
+  # a finite value past 2^31 - 1 printed "NA".
+  shown[whole] <- formatC(round(x[ok][whole]), format = "f", digits = 0,
+                          big.mark = "")
+  shown[!whole] <- sub(
+    "\\.$", "", formatC(r[!whole], digits = 2, format = "fg", flag = "#")
+  )
+  shown[r == 0] <- "0"
+  out[ok] <- shown
+  out
+}
+
 # Apply EHB/Blackstone's paired reporting precision. The mean is rounded to
 # the first-significant-digit place of the SD and the SD one place finer. An
 # SD beginning with 1 shifts both one additional place finer.
@@ -759,6 +821,68 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     if (sum(target) != 1L) next
     prefix <- strsplit(cells[target], " ||| ", fixed = TRUE)[[1]][1]
     tbl$table_body[[column]][target] <- paste(prefix, formatted, sep = " ||| ")
+  }
+  tbl
+}
+
+# The house standard's medians: each number from gtsummary's cards, to
+# 2 significant digits (.format_sig2()), in brackets. Reads the raw
+# statistics rather than parsing gtsummary's rounded text, as
+# .format_blackstone_mean_sd() does. Under continuous_stat = "both" the
+# median sits in hv_median_<col>, which .split_median() made.
+.format_standard_median <- function(tbl, median_vars, percentiles) {
+  if (!length(median_vars)) return(tbl)
+  lo_name <- paste0("p", percentiles[1])
+  hi_name <- paste0("p", percentiles[2])
+  card_names <- intersect(c("tbl_summary", "add_overall"), names(tbl$cards))
+  raw <- do.call(rbind, lapply(card_names, function(card_name) {
+    card <- tbl$cards[[card_name]]
+    keep <- card$variable %in% median_vars &
+      card$stat_name %in% c("median", lo_name, hi_name)
+    data.frame(
+      variable = card$variable[keep], gts_column = card$gts_column[keep],
+      stat_name = card$stat_name[keep],
+      stat = as.numeric(unlist(card$stat[keep])), stringsAsFactors = FALSE
+    )
+  }))
+  if (is.null(raw) || !nrow(raw)) return(tbl)
+  keys <- unique(raw[c("variable", "gts_column")])
+  for (i in seq_len(nrow(keys))) {
+    v <- keys$variable[i]
+    col <- keys$gts_column[i]
+    s <- raw[raw$variable == v & raw$gts_column == col, ]
+    get <- function(name) s$stat[s$stat_name == name]
+    m <- get("median")
+    lo <- get(lo_name)
+    hi <- get(hi_name)
+    if (length(m) != 1L || length(lo) != 1L || length(hi) != 1L) next
+    # A group with no data: gtsummary already shows NA there, so no
+    # unrounded number is hidden. Leave the cell as it is.
+    if (!all(is.finite(c(m, lo, hi)))) next
+    text <- sprintf("%s [%s, %s]", .format_sig2(m), .format_sig2(lo),
+                    .format_sig2(hi))
+    # The column that carries the median: hv_median_<col> under "both",
+    # otherwise the statistic column itself.
+    median_col <- paste0("hv_median_", col)
+    target <- if (median_col %in% names(tbl$table_body)) median_col else col
+    hit <- if (target %in% names(tbl$table_body)) {
+      cells <- tbl$table_body[[target]]
+      tbl$table_body$variable == v & !is.na(cells) &
+        grepl("[", cells, fixed = TRUE)
+    } else {
+      FALSE
+    }
+    if (sum(hit) != 1L) {
+      # Failing loud: a median left in gtsummary's own digits would pass
+      # for the standard's.
+      warning("Could not apply the house median format to `", v,
+              "` in column `", target, "`; the cell keeps gtsummary's text.",
+              call. = FALSE)
+      next
+    }
+    parts <- strsplit(cells[hit], " ||| ", fixed = TRUE)[[1]]
+    tbl$table_body[[target]][hit] <- if (length(parts) == 2L)
+      paste(parts[1], text, sep = " ||| ") else text
   }
   tbl
 }

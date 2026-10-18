@@ -95,7 +95,7 @@ test_that("hv_man_table_save applies hv_man_footnotes() by default", {
   hv_man_table_save(ft, f)
   xml <- read_docx_text(f)
   expect_true(grepl("Number of non-missing values", xml, fixed = TRUE))
-  expect_true(grepl("Median (15th, 85th percentile)", xml, fixed = TRUE))
+  expect_true(grepl("Median [15th, 85th percentiles]", xml, fixed = TRUE))
 })
 
 test_that("default footnotes follow a mean table", {
@@ -110,7 +110,7 @@ test_that("default footnotes follow a mean table", {
   hv_man_table_save(ft, f)
   xml <- read_docx_text(f)
   expect_true(grepl("Mean±SD.", xml, fixed = TRUE))
-  expect_false(grepl("Median (15th, 85th percentile)", xml, fixed = TRUE))
+  expect_false(grepl("Median [15th, 85th percentiles]", xml, fixed = TRUE))
 })
 
 test_that("default footnotes follow a table with both statistics", {
@@ -127,7 +127,7 @@ test_that("default footnotes follow a table with both statistics", {
   # The statistic columns hold mean±SD; the median sits in its own
   # column, which names itself in its header.
   expect_true(grepl("No. (%) or Mean±SD.", xml, fixed = TRUE))
-  expect_true(grepl("Median (15th, 85th percentile)", xml, fixed = TRUE))
+  expect_true(grepl("Median [15th, 85th percentiles]", xml, fixed = TRUE))
 })
 
 test_that("default footnotes follow custom percentiles", {
@@ -141,8 +141,8 @@ test_that("default footnotes follow custom percentiles", {
   on.exit(unlink(f), add = TRUE)
   hv_man_table_save(ft, f)
   xml <- read_docx_text(f)
-  expect_true(grepl("Median (16th, 84th percentile).", xml, fixed = TRUE))
-  expect_false(grepl("Median (15th, 85th percentile).", xml, fixed = TRUE))
+  expect_true(grepl("Median [16th, 84th percentiles].", xml, fixed = TRUE))
+  expect_false(grepl("Median [15th, 85th percentiles].", xml, fixed = TRUE))
 })
 
 test_that("default footnotes survive grouped p-value processing", {
@@ -160,7 +160,7 @@ test_that("default footnotes survive grouped p-value processing", {
   hv_man_table_save(ft, f)
   xml <- read_docx_text(f)
   expect_true(grepl("Mean±SD.", xml, fixed = TRUE))
-  expect_false(grepl("Median (15th, 85th percentile)", xml, fixed = TRUE))
+  expect_false(grepl("Median [15th, 85th percentiles]", xml, fixed = TRUE))
 })
 
 test_that("footnotes NULL suppresses metadata-bearing defaults", {
@@ -185,7 +185,7 @@ test_that("footnotes = NULL suppresses both standard footnotes", {
   hv_man_table_save(ft, f, footnotes = NULL)
   xml <- read_docx_text(f)
   expect_false(grepl("Number of non-missing values", xml, fixed = TRUE))
-  expect_false(grepl("Median (15th, 85th percentile)", xml, fixed = TRUE))
+  expect_false(grepl("Median [15th, 85th percentiles]", xml, fixed = TRUE))
 })
 
 test_that("hv_man_table_save rejects fully unnamed footnotes", {
@@ -254,7 +254,7 @@ test_that("footnote text error names the offending symbol", {
            "string; it is missing. A marker whose text is missing ",
            "renders as a dangling reference with nothing after it. ",
            "Give the entry text, e.g. \"Values are median ",
-           "(P15, P85).\"")
+           "[P15, P85].\"")
   )
 })
 

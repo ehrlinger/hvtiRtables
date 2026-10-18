@@ -104,7 +104,7 @@ test_that("hv_man_table splits the ||| sentinel into flat N and stat columns", {
   # Row 1 is the section header "D"; age is row 2.
   # 91, not 98: Drug A has 98 rows, 7 of them with missing age.
   expect_identical(d$n_stat_1[2], "91")
-  expect_identical(d$stat_1[2], "46 (32, 63)")
+  expect_identical(d$stat_1[2], "46 [32, 63]")
   # The N column sits immediately before the statistic it counts.
   expect_identical(
     which(ft$col_keys == "n_stat_1") + 1L,
@@ -202,4 +202,67 @@ test_that("no sentinel survives into the rendered .docx", {
   # The house footnotes still describe both halves.
   expect_true(grepl("Number of non-missing values", txt, fixed = TRUE))
   expect_true(grepl("No.", txt, fixed = TRUE))
+})
+
+test_that("CORR's rendered P column has no leading zero", {
+  skip_if_not_installed("broom")
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "grade")),
+                        continuous = "age", categorical = "grade",
+                        compare = "pvalue", show_variable = FALSE)
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(tbl), path)
+  text <- officer::docx_summary(officer::read_docx(path))$text
+  p <- text[grepl("^[<>]?0?\\.[0-9]+$", text)]
+  expect_true(length(p) > 0L)
+  expect_false(any(grepl("^[<>]?0\\.", p)))
+})
+
+test_that("hv_man_table() superscripts the minority mark on its cells", {
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "marker", "ttdeath")),
+                        continuous = c("age", "marker", "ttdeath"),
+                        mean_sd = c("age", "ttdeath"), compare = "none",
+                        show_variable = FALSE)
+  ft <- hv_man_table(tbl)
+  expect_identical(attr(ft, "hv_body_marks")[["§"]],
+                   "Median [15th, 85th percentiles].")
+  path <- tempfile(fileext = ".docx")
+  hv_man_table_save(ft, path)
+  text <- officer::docx_summary(officer::read_docx(path))$text
+  expect_true(any(grepl("§", text, fixed = TRUE)))
+  # The footnote line also holds the symbol, so assert on the cells.
+  ch <- flextable::information_data_chunk(ft)
+  body <- ch[ch$.part == "body" & ch$.col_id == "stat_1", ]
+  lab <- ch[ch$.part == "body" & ch$.col_id == "label", ]
+  sup <- function(pattern) {
+    r <- lab$.row_id[grepl(pattern, lab$txt)]
+    body[body$.row_id %in% r & body$txt == "\u00a7", ]
+  }
+  expect_equal(sum(grepl("^Age", lab$txt)), 1L)
+  marked <- sup("^Marker")
+  expect_equal(nrow(marked), 1L)
+  expect_identical(marked$vertical.align, "superscript")
+  expect_equal(nrow(sup("^Age")), 0L)
+})
+
+test_that("a cell mark and Fisher's dagger both survive in hv_body_marks", {
+  skip_if_not_installed("broom")
+  d <- data.frame(
+    grp = rep(c("A", "B"), each = 40),
+    rare = c(rep(1, 3), rep(0, 37), rep(1, 1), rep(0, 39)),
+    x = seq_len(80),
+    y = rev(seq_len(80)) %% 7
+  )
+  tbl <- hv_tbl_summary(d, by = "grp", groups = list(D = c("rare", "x", "y")),
+                        binary = "rare", continuous = c("x", "y"),
+                        mean_sd = "x", compare = "pvalue", cutexact = 50,
+                        show_variable = FALSE)
+  # One mean row against one median row: a tie, so the mean row is marked.
+  expect_identical(attr(tbl, "hv_cell_marks")$symbol, "¶")
+  expect_true("‡" %in% names(attr(tbl, "hv_footnotes")))
+  ft <- hv_man_table(tbl)
+  expect_setequal(names(attr(ft, "hv_body_marks")), c("‡", "¶"))
+  path <- tempfile(fileext = ".docx")
+  expect_no_error(hv_man_table_save(ft, path))
 })
