@@ -254,7 +254,7 @@ test_that("footnote text error names the offending symbol", {
            "string; it is missing. A marker whose text is missing ",
            "renders as a dangling reference with nothing after it. ",
            "Give the entry text, e.g. \"Values are median ",
-           "(P15, P85).\"")
+           "[P15, P85].\"")
   )
 })
 

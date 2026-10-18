@@ -891,7 +891,7 @@ test_that("overall = TRUE adds exactly one column", {
   expect_true("stat_0" %in% names(with_total$table_body))
 })
 
-test_that("overall = FALSE reproduces the previous output exactly", {
+test_that("overall = FALSE matches gtsummary's layout, in house notation", {
   # A real comparison against a table built directly from gtsummary
   # primitives with the same statistic/type/digits arguments
   # hv_tbl_summary() itself uses -- not just the absence of stat_0, which
@@ -1755,6 +1755,32 @@ test_that(".format_sig2() gives 2 significant digits, whole from 10 up", {
     c("9.9", "0.31", "102", "0.80", "7.0", "10", "0", "-0.012", "18250", "2.1",
       "0.15", "0.0049", NA, NA)
   )
+})
+
+test_that(".format_sig2() rounds exact ties to even, like the EHB mean rule", {
+  expect_identical(.format_sig2(c(62.5, 63.5, 1.25)), c("62", "64", "1.2"))
+})
+
+test_that(".format_sig2() handles empty input and rounding boundaries", {
+  expect_identical(.format_sig2(numeric(0)), character(0))
+  expect_identical(.format_sig2(99.6), "100")
+  expect_identical(.format_sig2(9.95), "10")
+})
+
+test_that("a mixed table with a Fisher test orders its notes canonically", {
+  skip_if_not_installed("broom")
+  d <- data.frame(
+    grp = rep(c("A", "B"), each = 40),
+    rare = c(rep(1, 3), rep(0, 37), rep(1, 1), rep(0, 39)),
+    x = seq_len(80),
+    y = rev(seq_len(80)) %% 7
+  )
+  tbl <- hv_tbl_summary(d, by = "grp", groups = list(D = c("rare", "x", "y")),
+                        binary = "rare", continuous = c("x", "y"),
+                        mean_sd = "x", compare = "pvalue", cutexact = 50,
+                        show_variable = FALSE)
+  expect_identical(names(attr(tbl, "hv_footnotes")),
+                   c("*", "\u2020", "\u2021", "\u00B6"))
 })
 
 test_that(".format_sig2() keeps whole numbers past the integer range", {

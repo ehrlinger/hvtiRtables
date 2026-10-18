@@ -97,6 +97,10 @@
 #' CORR house style; the two exist because CORR reports and JTCVS
 #' submissions want different things from the same header row.
 #'
+#' On a table that mixes mean and median, the mark on the minority cells is
+#' a lettered superscript `b` with its own note, so the test footnotes letter
+#' from `c` rather than `b`.
+#'
 #' @section Common mistakes:
 #' **"`tbl` was not built with the `{N_nonmiss} ||| {stat}` convention."**
 #' The table came from a plain [gtsummary::tbl_summary()] call. Build
@@ -243,8 +247,8 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   # One "Characteristic", spanning both header rows, not one per row.
   ft <- flextable::merge_v(ft, j = "label", part = "header")
   # A real superscript: as plain header text the "a" printed as "na".
-  # The saver writes the matching footnote and letters the body
-  # footnotes from "b".
+  # The saver writes the matching footnote. The test footnotes letter from
+  # "b", or from "c" when a minority mark has taken "b".
   ft <- flextable::append_chunks(
     ft, i = 2, j = n_cols, part = "header", flextable::as_sup("a")
   )

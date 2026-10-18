@@ -77,6 +77,10 @@ footnotes as "Patients with data available." This is
 a separate mode, not a replacement for \code{\link[=hv_man_table]{hv_man_table()}}'s flat-header
 CORR house style; the two exist because CORR reports and JTCVS
 submissions want different things from the same header row.
+
+On a table that mixes mean and median, the mark on the minority cells is
+a lettered superscript \code{b} with its own note, so the test footnotes letter
+from \code{c} rather than \code{b}.
 }
 \section{Common mistakes}{
 

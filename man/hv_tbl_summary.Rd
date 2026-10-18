@@ -199,10 +199,12 @@ and the SD is rounded one place finer. When the SD begins with 1, both
 retain one additional place. Exact ties round to even; values beyond a tie
 round up. This applies to every group and Overall column when
 \code{continuous_stat = "mean"}, and to the mean row under \code{"both"}. Medians and
-percentiles follow the house notation above instead. When an SD is zero or unavailable, no
-paired precision can be inferred, so gtsummary's existing display is kept.
+percentiles follow the house notation above instead, and their exact ties
+also round to even, as for mean +/- SD: 62.5 shows as 62, where gtsummary
+and SAS showed 63. When an SD is zero or unavailable, no paired precision
+can be inferred, so gtsummary's existing display is kept.
 
-The returned object carries three renderer attributes:
+The returned object carries these renderer attributes:
 \code{hv_stat_label}, the sub-header text naming the statistics shown
 (\code{"No. (\%) or Median [<low>, <high> percentiles]"} by default, with
 ordinal suffixes; it follows \code{continuous_stat});
@@ -211,7 +213,9 @@ ordinal suffixes; it follows \code{continuous_stat});
 comparison column (\code{NULL} when \code{compare = "none"}); and \code{hv_footnotes},
 the CORR footnote block that \code{\link[=hv_man_table]{hv_man_table()}} carries into
 \code{\link[=hv_man_table_save]{hv_man_table_save()}} so the default dagger follows \code{continuous_stat} and
-\code{percentiles} automatically.
+\code{percentiles} automatically. A mixed table also carries \code{hv_cell_marks},
+the symbol and variables whose cells \code{\link[=hv_man_table]{hv_man_table()}} marks, and a table
+built with \code{continuous_stat = "both"} carries \code{hv_median_label}.
 }
 \section{Common mistakes}{
 

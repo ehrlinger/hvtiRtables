@@ -36,10 +36,12 @@
 #' retain one additional place. Exact ties round to even; values beyond a tie
 #' round up. This applies to every group and Overall column when
 #' `continuous_stat = "mean"`, and to the mean row under `"both"`. Medians and
-#' percentiles follow the house notation above instead. When an SD is zero or unavailable, no
-#' paired precision can be inferred, so gtsummary's existing display is kept.
+#' percentiles follow the house notation above instead, and their exact ties
+#' also round to even, as for mean +/- SD: 62.5 shows as 62, where gtsummary
+#' and SAS showed 63. When an SD is zero or unavailable, no paired precision
+#' can be inferred, so gtsummary's existing display is kept.
 #'
-#' The returned object carries three renderer attributes:
+#' The returned object carries these renderer attributes:
 #' `hv_stat_label`, the sub-header text naming the statistics shown
 #' (`"No. (%) or Median [<low>, <high> percentiles]"` by default, with
 #' ordinal suffixes; it follows `continuous_stat`);
@@ -48,7 +50,9 @@
 #' comparison column (`NULL` when `compare = "none"`); and `hv_footnotes`,
 #' the CORR footnote block that [hv_man_table()] carries into
 #' [hv_man_table_save()] so the default dagger follows `continuous_stat` and
-#' `percentiles` automatically.
+#' `percentiles` automatically. A mixed table also carries `hv_cell_marks`,
+#' the symbol and variables whose cells [hv_man_table()] marks, and a table
+#' built with `continuous_stat = "both"` carries `hv_median_label`.
 #'
 #' @section Common mistakes:
 #' **"`<var>` appears in more than one of `continuous`, `binary`, and
@@ -593,7 +597,9 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     # puts the mark on each Fisher p-value; the JTCVS route letters them
     # through hv_test_footnotes_jtcvs().
     if (any(tbl$table_body$test_name %in% "fisher.test"))
-      attr(tbl, "hv_footnotes")[["\u2021"]] <- "Fisher exact test."
+      attr(tbl, "hv_footnotes") <- .order_notes(c(
+        attr(tbl, "hv_footnotes"), list("\u2021" = "Fisher exact test.")
+      ))
   }
 
   tb <- tbl$table_body
@@ -730,6 +736,13 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 # as AMA style and the typeset JTCVS tables print them (.013, <.001, >.9).
 .format_p <- function(p) {
   sub("^([<>]?)0\\.", "\\1.", gtsummary::style_pvalue(p, digits = 1))
+}
+
+# Notes print in the canonical symbol order, * dagger double-dagger section
+# sign || pilcrow, whichever step added them.
+.order_notes <- function(notes) {
+  canon <- c("*", "\u2020", "\u2021", "\u00A7", "||", "\u00B6")
+  notes[order(match(names(notes), canon))]
 }
 
 # The house standard's precision for a median and its percentiles: 2

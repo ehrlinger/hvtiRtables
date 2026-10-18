@@ -8,3 +8,10 @@
     section sign on medians and a pilcrow on means, with a note for each; the row-label
     suffixes ("Age, Mean±SD") and the "No. (%) or as labeled" note are gone.
   - Mean ± SD is unchanged: `63±13`, unspaced, EHB paired rounding.
+  - Exact ties in a median or percentile round to even, as for mean +/- SD: 62.5 shows as 62,
+    where gtsummary and SAS showed 63.
+  - In `hv_man_table_jtcvs()` the mark is a lettered superscript `b` with its own note, so the
+    test footnotes letter from `c` (they were `b`, `c`).
+  - Passing `footnotes = hv_man_footnotes()` explicitly on a mixed table now errors unless the
+    footnotes carry the mark's note. `§` and `¶` are reserved on mixed tables; use `||` for a
+    study note.

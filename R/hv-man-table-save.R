@@ -255,7 +255,7 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
         footnotes[[k]], sprintf('footnotes[["%s"]]', fn_names[k]),
         paste0("A marker whose text is missing renders as a ",
                "dangling reference with nothing after it. Give the ",
-               "entry text, e.g. \"Values are median (P15, P85).\"")
+               "entry text, e.g. \"Values are median [P15, P85].\"")
       )
   }
   # hv_man_table() put these symbols on body cells, each meaning one

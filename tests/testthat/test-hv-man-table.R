@@ -239,6 +239,7 @@ test_that("hv_man_table() superscripts the minority mark on its cells", {
     r <- lab$.row_id[grepl(pattern, lab$txt)]
     body[body$.row_id %in% r & body$txt == "\u00a7", ]
   }
+  expect_equal(sum(grepl("^Age", lab$txt)), 1L)
   marked <- sup("^Marker")
   expect_equal(nrow(marked), 1L)
   expect_identical(marked$vertical.align, "superscript")
