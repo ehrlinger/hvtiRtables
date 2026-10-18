@@ -56,7 +56,7 @@ hv_man_table_jtcvs(
   takes it from the table:
   [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
   records the statistic it used (e.g.
-  `"No. (%) or Median (15th, 85th percentile)"`), so the header cannot
+  `"No. (%) or Median [15th, 85th percentiles]"`), so the header cannot
   disagree with the cells. A table without that record falls back to
   `"No. (%) or Mean±SD"`; pass the right text yourself for any other
   statistic.
@@ -102,6 +102,10 @@ not a replacement for
 [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)'s
 flat-header CORR house style; the two exist because CORR reports and
 JTCVS submissions want different things from the same header row.
+
+On a table that mixes mean and median, the mark on the minority cells is
+a lettered superscript `b` with its own note, so the test footnotes
+letter from `c` rather than `b`.
 
 ## Common mistakes
 

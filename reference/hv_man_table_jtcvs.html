@@ -105,7 +105,9 @@ as its <code>hv_trailing</code> attribute.</p></dd>
 <dt id="arg-stat-label">stat_label<a class="anchor" aria-label="anchor" href="#arg-stat-label"></a></dt>
 <dd><p>Sub-header text under each group's statistic column.
 Default <code>NULL</code> takes it from the table: <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> records the
-statistic it used (e.g. <code>"No. (%) or Median (15th, 85th percentile)"</code>), so the header cannot disagree with the cells. A
+statistic it used (e.g.
+<code>"No. (%) or Median [15th, 85th percentiles]"</code>), so the header
+cannot disagree with the cells. A
 table without that record falls back to <code>"No. (%) or Mean±SD"</code>;
 pass the right text yourself for any other statistic.</p></dd>
 
@@ -145,6 +147,9 @@ footnotes as "Patients with data available." This is
 a separate mode, not a replacement for <code><a href="hv_man_table.html">hv_man_table()</a></code>'s flat-header
 CORR house style; the two exist because CORR reports and JTCVS
 submissions want different things from the same header row.</p>
+<p>On a table that mixes mean and median, the mark on the minority cells is
+a lettered superscript <code>b</code> with its own note, so the test footnotes letter
+from <code>c</code> rather than <code>b</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="common-mistakes">Common mistakes<a class="anchor" aria-label="anchor" href="#common-mistakes"></a></h2>

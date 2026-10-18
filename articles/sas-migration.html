@@ -70,7 +70,7 @@
       <h1>Porting a %summarytable program to R</h1>
 
       <p class="author">John Ehrlinger</p>
-      <p class="date">2026-10-17</p>
+      <p class="date">2026-10-18</p>
 
       <small class="dont-index">Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/vignettes/sas-migration.qmd" class="external-link"><code>vignettes/sas-migration.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
@@ -358,7 +358,8 @@
 </tr>
 </tbody>
 </table>
-<p>When <code>continuous_stat = "mean"</code> or <code>"both"</code>, mean±SD cells follow Eugene H. Blackstone’s (EHB’s) paired rounding rule: the mean is rounded to the SD’s first-significant-digit place and the SD one place finer. An SD beginning with 1 gives both one additional place, and exact ties round to even. The rule does not define median/percentile precision, so those rows are unchanged.</p>
+<p>When <code>continuous_stat = "mean"</code> or <code>"both"</code>, mean±SD cells follow Eugene H. Blackstone’s (EHB’s) paired rounding rule: the mean is rounded to the SD’s first-significant-digit place and the SD one place finer. An SD beginning with 1 gives both one additional place, and exact ties round to even. The rule does not define median/percentile precision; those cells follow the house notation: brackets, 2 significant digits, and a value of 10 or more to the units place (<code>102 [63, 170]</code>). P values print without a leading zero (<code>.013</code>, <code>&lt;.001</code>).</p>
+<p><code>DESCLABEL=1</code> suffixed each row label with its statistic. A table that mixes mean and median here marks cells instead: a section sign on the medians when means are the default, a pilcrow on the means otherwise, each with its own note.</p>
 <p>The save stage is a sibling pair, and the two do not take the same arguments: only <code><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> has <code>caption</code>. For a flat-header CORR table the title goes in the document, not the call.</p>
 <p>Not supported: <code>WEIGHT=</code>, <code>PROPENMT=</code>, <code>MWOUTCOMES=</code>, <code>SUBSET=</code> (subset the data frame first), <code>SORTBY=</code> (order comes from <code>groups</code>), <code>COLPCT=0</code> (row percentages), <code>MISSCOL=</code>, <code>ADHOC=</code>, <code>ODDSRATIOS=</code>, <code>CUTEXACT=</code>, <code>STYLE=</code>, <code>PAGE=</code>, <code>CWIDTH1-3=</code>, <code>PAPERSIZE=</code>.</p>
 </section><section class="level2"><h2 id="why-my-p-value-moved">Why my p-value moved<a class="anchor" aria-label="anchor" href="#why-my-p-value-moved"></a>
@@ -392,7 +393,7 @@
 <span>  percentiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">16</span>, <span class="fl">84</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="st">"hv_stat_label"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "No. (%) or Median (16th, 84th percentile)"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "No. (%) or Median [16th, 84th percentiles]"</span></span></code></pre></div>
 </div>
 </section><section class="level2"><h2 id="reading-the-sas-data-in">Reading the SAS data in<a class="anchor" aria-label="anchor" href="#reading-the-sas-data-in"></a>
 </h2>

@@ -44,7 +44,7 @@ re-type them at every
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
 call site: a `*` for the non-missing-value count (house rule 8, exact
 wording required) and a `†` explaining the statistic in each group
-column, e.g. "No. (%) or Median (15th, 85th percentile)." The
+column, e.g. `"No. (%) or Median [15th, 85th percentiles]."` The
 categorical half is part of it because the cells print `12 (39)` with no
 `%` sign (house rules 10/12), and the flat CORR header names only the
 group.
@@ -67,9 +67,10 @@ values needed:
   = "custom text"
 
 - Add a study-specific one alongside: `c(hv_man_footnotes(), list(...))`
-  with `` `§` `` = "extra note". Avoid `‡` on a table from
+  with `` `||` `` = "extra note". Avoid `‡`, `§` and `¶` on a table from
   [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md):
-  it marks Fisher exact p-values there.
+  `‡` marks Fisher exact p-values there, and `§` and `¶` mark the
+  minority statistic when a table mixes mean and median.
 
 ## Common mistakes
 
@@ -104,7 +105,7 @@ hv_man_footnotes()
 #> [1] "Number of non-missing values."
 #> 
 #> $`†`
-#> [1] "No. (%) or Median (15th, 85th percentile)."
+#> [1] "No. (%) or Median [15th, 85th percentiles]."
 #> 
 hv_man_footnotes(continuous_stat = "mean")
 #> $`*`

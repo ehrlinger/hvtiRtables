@@ -130,8 +130,15 @@ When `continuous_stat = "mean"` or `"both"`, mean±SD cells follow Eugene
 H. Blackstone’s (EHB’s) paired rounding rule: the mean is rounded to the
 SD’s first-significant-digit place and the SD one place finer. An SD
 beginning with 1 gives both one additional place, and exact ties round
-to even. The rule does not define median/percentile precision, so those
-rows are unchanged.
+to even. The rule does not define median/percentile precision; those
+cells follow the house notation: brackets, 2 significant digits, and a
+value of 10 or more to the units place (`102 [63, 170]`). P values print
+without a leading zero (`.013`, `<.001`).
+
+`DESCLABEL=1` suffixed each row label with its statistic. A table that
+mixes mean and median here marks cells instead: a section sign on the
+medians when means are the default, a pilcrow on the means otherwise,
+each with its own note.
 
 The save stage is a sibling pair, and the two do not take the same
 arguments: only
@@ -194,7 +201,7 @@ tbl <- hv_tbl_summary(
   percentiles = c(16, 84)
 )
 attr(tbl, "hv_stat_label")
-#> [1] "No. (%) or Median (16th, 84th percentile)"
+#> [1] "No. (%) or Median [16th, 84th percentiles]"
 ```
 
 ## Reading the SAS data in

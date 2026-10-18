@@ -38,7 +38,7 @@ for the comparison column.
 ``` r
 
 attr(tbl, "hv_stat_label")
-#> [1] "No. (%) or Median (15th, 85th percentile)"
+#> [1] "No. (%) or Median [15th, 85th percentiles]"
 attr(tbl, "hv_trailing")
 #> hv_compare_col 
 #>            "P"

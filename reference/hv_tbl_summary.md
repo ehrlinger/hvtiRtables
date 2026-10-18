@@ -128,11 +128,11 @@ hv_tbl_summary(
 
   One of `"median"` (default), `"mean"`, or `"both"`: how continuous
   variables not listed in `normal` are summarized. `"median"` gives
-  `median (P<low>, P<high>)`; `"mean"` gives mean +/- SD, with no spaces
+  `median [P<low>, P<high>]`; `"mean"` gives mean +/- SD, with no spaces
   around the plus-minus sign and EHB/Blackstone paired rounding;
   `"both"` puts the two side by side: each group's statistic column
   shows mean +/- SD (or `n (%)` for a categorical row), and a median
-  column beside it shows `median (P<low>, P<high>)`, blank on rows with
+  column beside it shows `median [P<low>, P<high>]`, blank on rows with
   no median. Both renderers lay it out the same way. Choosing one for
   the manuscript is then a matter of dropping a column. The test does
   not change with the statistic: only `normal` selects ANOVA. The CORR
@@ -160,11 +160,10 @@ hv_tbl_summary(
   as mean +/- SD while keeping the nonparametric test (Wilcoxon
   rank-sum, or Kruskal-Wallis for 3+ groups). Use it for variables that
   are roughly symmetric in a table whose every continuous test should
-  stay nonparametric. The display is the same as for `normal`, row label
-  suffix included when the table mixes statistics; only `normal` changes
-  the test. A variable may appear in both, and is then tested with
-  ANOVA. Default none. Last in the signature so positional calls keep
-  working.
+  stay nonparametric. The display is the same as for `normal`, cell mark
+  included when the table mixes statistics; only `normal` changes the
+  test. A variable may appear in both, and is then tested with ANOVA.
+  Default none. Last in the signature so positional calls keep working.
 
 - show_variable:
 
@@ -213,21 +212,33 @@ A `gtsummary` object, ready for
 or
 [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md).
 See Details for the `hv_stat_label`, `hv_trailing`, and `hv_footnotes`
-renderer attributes.
+renderer attributes. A table whose rows mix mean and median also carries
+`hv_cell_marks`, a list with `symbol` (`"§"` or `"¶"`) and `variables`
+(the names whose cells carry it); the attribute is `NULL` otherwise.
 
 ## Details
 
-Continuous variables are summarized as `median (P<low>, P<high>)` by
+Continuous variables are summarized as `median [P<low>, P<high>]` by
 default, or as mean +/- SD, or both (`continuous_stat`), and tested
 non-parametrically (Wilcoxon rank-sum for 2 groups, Kruskal-Wallis for
 3+), the macro's `CON3=`. A variable you also list in `normal` is the
-macro's `CON1=` instead: mean +/- SD, tested with one-way ANOVA. When
-that leaves rows of one table showing different statistics, each
-continuous row names its own, `"Age, Mean±SD"`, as the macro's
-`DESCLABEL=1` did, and the header and dagger read "No. (%) or as
-labeled". `percentiles` defaults to the house convention documented in
+macro's `CON1=` instead: mean +/- SD, tested with one-way ANOVA.
+`percentiles` defaults to the house convention documented in
 [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
 (15th/85th), overridable per study (`%summarytable` equivalent: `PP=`).
+
+The house notation: each median and percentile is shown to 2 significant
+digits, and a value of 10 or more to the units place (`102 [63, 170]`,
+`0.31 [0.21, 0.39]`), and a P value has no leading zero (`.013`,
+`<.001`, `>.9`).
+
+When rows of one table show different statistics, the header and dagger
+name the statistic most rows use, and the cells of the other are marked
+instead of the row labels (the macro's `DESCLABEL=1` suffixes, such as
+`"Age, Mean±SD"`, are gone). When more rows show mean +/- SD than a
+median, the mean is the default and a section sign (`§`) marks the
+median cells; otherwise a pilcrow (`¶`) marks the mean cells. Each mark
+has its own footnote. A tie leaves the median as the default.
 
 Mean/SD output follows Eugene H. Blackstone's (EHB's) paired reporting
 rule: the mean is rounded to the first-significant-digit place of the
@@ -235,13 +246,15 @@ SD, and the SD is rounded one place finer. When the SD begins with 1,
 both retain one additional place. Exact ties round to even; values
 beyond a tie round up. This applies to every group and Overall column
 when `continuous_stat = "mean"`, and to the mean row under `"both"`.
-Median and percentile precision is unchanged. When an SD is zero or
+Medians and percentiles follow the house notation above instead, and
+their exact ties also round to even, as for mean +/- SD: 62.5 shows as
+62, where gtsummary and SAS showed 63. When an SD is zero or
 unavailable, no paired precision can be inferred, so gtsummary's
 existing display is kept.
 
-The returned object carries three renderer attributes: `hv_stat_label`,
+The returned object carries these renderer attributes: `hv_stat_label`,
 the sub-header text naming the statistics shown
-(`"No. (%) or Median (<low>, <high> percentile)"` by default, with
+(`"No. (%) or Median [<low>, <high> percentiles]"` by default, with
 ordinal suffixes; it follows `continuous_stat`); `hv_trailing`, a named
 character vector ready to pass as
 [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)'s
@@ -252,7 +265,11 @@ that
 carries into
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
 so the default dagger follows `continuous_stat` and `percentiles`
-automatically.
+automatically. A mixed table also carries `hv_cell_marks`, the symbol
+and variables whose cells
+[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+marks, and a table built with `continuous_stat = "both"` carries
+`hv_median_label`.
 
 ## Common mistakes
 
