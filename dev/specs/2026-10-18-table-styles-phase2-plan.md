@@ -53,6 +53,7 @@ From the roadmap in `2026-10-17-table-styles-plan.md`:
 | US Letter pages for every saver | question 4, row 17 |
 | the document's body font for `"manuscript"` (no font or size set on the table) | question 5, row 12 |
 | note wording and markers per style | rows 8, 9, 10 |
+| a merged-cell rule in `hv_check_docx()`, set per style; JTCVS section rows span the table | section 9, row 1, house rule 3 |
 
 **Left for later phases:** the `"describe"` layout, a `layout =` argument and the JTCVS
 rename (Phase 3); the "Table styles" article (Phase 4); hvtiRtemplates (Phase 5).
@@ -86,6 +87,11 @@ for John.
 8. **The overall count is computed from the data**, each variable's non-missing values among
    the rows `tbl_summary()` keeps (a missing `by` drops a row). A test checks it against the
    sum of the per-group counts gtsummary prints.
+9. **`hv_check_docx(style = NULL)` applies the rule every style shares.** A `.docx` does not
+   say which style wrote it. Left out, the check allows merges only in header rows and in
+   section rows that span the table; `style = "report"` allows none (house rule 3).
+   hvtiRtemplates' `dc-tables` calls it without a style on a report table, which merges
+   nothing, so it is unaffected.
 
 ## File structure
 
@@ -101,10 +107,12 @@ for John.
 | `R/hv-man-table-compare.R` (new) | Task 5: `.man_table_compare()` |
 | `R/hv-man-footnotes.R` | Task 5: `.stat_note()`; Task 6: `hv_man_footnotes(style =)` |
 | `R/hv-man-table-display.R` | Task 6: notes per style |
-| `tests/testthat/helper-word.R` (new) | Task 7: the Word XML readers, moved from `test-word-output.R` |
-| `tests/testthat/test-table-styles.R` (new) | Tasks 3 and 7 |
+| `R/hv-check-docx.R` | Task 7: the `merged_cell` detector and `style` argument |
+| `R/hv-man-table-jtcvs.R` | Task 7: section rows span the table |
+| `tests/testthat/helper-word.R` (new) | Task 8: the Word XML readers, moved from `test-word-output.R` |
+| `tests/testthat/test-table-styles.R` (new) | Tasks 3 and 8 |
 | tests named in each task | each task |
-| roxygen, `README.md`, `news/feat-style-manuscript-compare.md` | Task 8 |
+| roxygen, `README.md`, `news/feat-style-manuscript-compare.md` | Task 9 |
 
 ---
 
@@ -379,7 +387,7 @@ git commit -m "feat(savers): US Letter pages for every style"
   list of class `"hv_table_style"` with elements `name`, `fill`, `section`, `borders`,
   `header`, `count`, `marker`, `count_note`, `stat_lead`, `font`, `font_size`, `caption`,
   `header_bold`, `row_height`, `keep_rows`, `repeat_header`, `page`, `variable`, `merged`;
-  and `.as_style(style)`, which accepts a style name or an `hv_table_style`. Tasks 4 to 7
+  and `.as_style(style)`, which accepts a style name or an `hv_table_style`. Tasks 4 to 8
   read these names exactly.
 
 - [ ] **Step 1: Write the failing tests** (`tests/testthat/test-table-styles.R`):
@@ -1158,7 +1166,194 @@ git add R/hv-man-table-save.R R/hv-man-table-display.R R/hv-man-footnotes.R test
 git commit -m "feat(savers): notes, marks and caption follow the table's style"
 ```
 
-### Task 7: The matrix is the fixture: the saved .docx, row by row
+### Task 7: `hv_check_docx()` checks merged cells, per style; JTCVS section rows span the table
+
+**Files:**
+- Modify: `R/hv-check-docx.R` (a new `.detect_merged_cell()`, `hv_check_docx()`, its roxygen);
+  `R/hv-man-table-jtcvs.R` (the section-row `merge_h()` call)
+- Test: `tests/testthat/test-hv-check-docx.R`, `tests/testthat/test-hv-man-table-jtcvs.R`
+
+**Interfaces:**
+- Consumes: `.as_style()` and the style element `merged` (Task 3); the manuscript `.docx`
+  (Tasks 5, 6).
+- Produces: `hv_check_docx(path, style = NULL)`, which can report a fifth finding type,
+  `"merged_cell"`, located `"row <r>"` (the table row, header rows counted). Task 8 calls it
+  with each style.
+
+Design section 9 assumed `hv_check_docx()` had a merged-cell expectation to set per style; it
+has none. Measured on `main`, the JTCVS saver's section rows are only half merged: the label
+sits in a cell of its own beside one cell spanning the other five grid columns, because
+`merge_h()` merges equal neighbors, and the blank cells equal each other but not the label.
+Design matrix row 1 says the JTCVS section row spans the full width. A shared rule would flag
+that row, so the renderer is fixed in the same task.
+
+- [ ] **Step 1: Write the failing tests.** In `test-hv-check-docx.R`:
+
+```r
+# A saved flextable, for the merged-cell rule.
+mc_save <- function(ft) {
+  f <- tempfile(fileext = ".docx")
+  print(flextable::body_add_flextable(officer::read_docx(), ft), target = f)
+  f
+}
+mc_found <- function(f, style = NULL) {
+  res <- hv_check_docx(f, style = style)
+  res[res$type == "merged_cell", , drop = FALSE]
+}
+
+test_that("a body row merged short of the table's width is a finding", {
+  ft <- flextable::flextable(data.frame(a = c("x", "y"), b = c("1", "2"),
+                                        c = c("1", "3")))
+  ft <- flextable::merge_at(ft, i = 1, j = c("b", "c"), part = "body")
+  found <- mc_found(mc_save(ft))
+  expect_identical(found$location, "row 2") # row 1 is the header
+  expect_identical(found$table, 1L)
+})
+
+test_that("header merges and full-width section rows pass the shared rule", {
+  ft <- flextable::flextable(data.frame(a = c("Demo", "Age"),
+                                        b = c(NA, "1"), c = c(NA, "2")))
+  ft <- flextable::add_header_row(ft, values = c("", "Group"),
+                                  colwidths = c(1L, 2L))
+  ft <- flextable::merge_at(ft, i = 1, j = c("a", "b", "c"), part = "body")
+  f <- mc_save(ft)
+  expect_identical(nrow(mc_found(f)), 0L)
+  expect_identical(nrow(mc_found(f, style = "manuscript")), 0L)
+  # The report style merges nothing, so both rows are findings.
+  expect_identical(mc_found(f, style = "report")$location,
+                   c("row 1", "row 3"))
+})
+
+test_that("the package's own tables pass the rule for their style", {
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = c("age", "grade"), Disease = "stage"),
+    continuous = "age", categorical = c("grade", "stage")
+  )
+  f <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(tbl), f)
+  expect_identical(nrow(mc_found(f, style = "report")), 0L)
+  j <- tempfile(fileext = ".docx")
+  hv_man_table_save_jtcvs(
+    hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
+                       trailing = attr(tbl, "hv_trailing")),
+    j, caption = "Table 1. Test"
+  )
+  expect_identical(nrow(mc_found(j)), 0L)
+})
+```
+
+  In `test-hv-man-table-jtcvs.R`:
+
+```r
+test_that("a JTCVS section row spans the table in one cell", {
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(Demography = c("age", "grade")),
+                        continuous = "age", categorical = "grade",
+                        compare = "none")
+  ft <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
+  sec <- which(ft$body$dataset$is_section)
+  n <- length(ft$col_keys)
+  expect_identical(unname(ft$body$spans$rows[sec, ]), c(n, rep(0L, n - 1L)))
+})
+```
+
+- [ ] **Step 2: Run them; they fail.** `hv_check_docx()` has no `style` argument and no
+  `merged_cell` finding; the JTCVS section row spans `c(1, 5, 0, 0, 0, 0)`.
+
+- [ ] **Step 3: Implement.** In `R/hv-check-docx.R`, after `.detect_hidden_col()`:
+
+```r
+# House rule 3 asks for no merged cells; a style may merge its header
+# and its section rows, and a section row merged at all must span the
+# table in one cell. A label beside one wide blank cell reads as a row
+# that lost its contents. `strict` is the report style, which merges
+# nothing.
+.detect_merged_cell <- function(doc, strict = FALSE) {
+  out <- list()
+  tbls <- xml2::xml_find_all(doc, "//w:tbl")
+  for (i in seq_along(tbls)) {
+    ncol <- length(xml2::xml_find_all(tbls[[i]], "./w:tblGrid/w:gridCol"))
+    rows <- xml2::xml_find_all(tbls[[i]], "./w:tr")
+    for (r in seq_along(rows)) {
+      tcs <- xml2::xml_find_all(rows[[r]], "./w:tc")
+      spans <- vapply(tcs, .grid_span, integer(1))
+      vmerge <- length(xml2::xml_find_all(
+        rows[[r]], "./w:tc/w:tcPr/w:vMerge"
+      )) > 0L
+      if (all(spans == 1L) && !vmerge) next
+      header <- length(xml2::xml_find_all(
+        rows[[r]], "./w:trPr/w:tblHeader"
+      )) > 0L
+      full <- length(tcs) == 1L && spans[1] == ncol
+      if (!strict && (header || (full && !vmerge))) next
+      detail <- if (strict) {
+        paste0("Row ", r, " merges cells, and the report style merges ",
+               "none (house rule 3).")
+      } else {
+        paste0("Row ", r, " merges cells outside the header without ",
+               "spanning the table. A style merges only its header rows ",
+               "and section rows that span the table in one cell.")
+      }
+      out[[length(out) + 1]] <- .finding("merged_cell", i,
+                                         sprintf("row %d", r), detail)
+    }
+  }
+  if (length(out) == 0) return(.empty_report())
+  do.call(rbind, out)
+}
+```
+
+  and `hv_check_docx()` becomes:
+
+```r
+hv_check_docx <- function(path, style = NULL) {
+  .check_string(path, "path")
+  strict <- !is.null(style) && identical(.as_style(style)$merged, "none")
+  doc <- .docx_body_xml(path)
+  rbind(
+    .detect_layers(doc),
+    .detect_hidden_col(doc),
+    .detect_embedded_footnote(doc),
+    .detect_wide_table(doc),
+    .detect_merged_cell(doc, strict)
+  )
+}
+```
+
+  Its roxygen: "Five detectors run", with a `"merged_cell"` bullet (structural, high
+  confidence: a row whose cells are merged, `w:gridSpan` above 1 or `w:vMerge`, outside the
+  header rows, unless the row is one cell spanning the table; with `style = "report"`, any
+  merged cell), and `@param style` (`NULL`, the default, for the rule every style shares; a
+  style name or [hv_table_style()] for that style's rule).
+
+  In `hv_man_table_jtcvs()`, replace
+  `ft <- flextable::merge_h(ft, i = sec_i, part = "body")` with:
+
+```r
+  # Each section row spans the table in one cell (design matrix row 1).
+  # merge_h() merged only the blank cells beside the label, which left
+  # the label in a cell of its own beside one wide empty one.
+  for (i in sec_i)
+    ft <- flextable::merge_at(ft, i = i, j = col_keys, part = "body")
+```
+
+- [ ] **Step 4: Run the tests; they pass,** then the whole suite. A JTCVS test that pinned the
+  old half-merged spans changes on purpose; list it in the report.
+
+- [ ] **Step 5: Prove it by mutation.** (a) Drop the `full && !vmerge` exemption: the
+  shared-rule test fails on the section row. (b) Drop the `header` exemption: the same test
+  fails on row 1. (c) Make `strict` always `FALSE`: the report expectations fail.
+  (d) Restore `merge_h()` in the JTCVS renderer: both JTCVS tests fail. Restore all.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add R/hv-check-docx.R R/hv-man-table-jtcvs.R man/hv_check_docx.Rd tests/testthat/test-hv-check-docx.R tests/testthat/test-hv-man-table-jtcvs.R
+git commit -m "feat(hv_check_docx): a merged-cell rule per style; JTCVS section rows span the table"
+```
+
+### Task 8: The matrix is the fixture: the saved .docx, row by row
 
 **Files:**
 - Create: `tests/testthat/helper-word.R` (move `wx_ns`, `wx_doc()`, `wx_text()`, `wx_rows()`
@@ -1297,9 +1492,10 @@ test_that("rows 17-19: Letter, no Variable column, merges where allowed", {
   expect_true(all(ok))
 })
 
-test_that("hv_check_docx() passes on every style", {
+test_that("hv_check_docx() passes on every style, checked as that style", {
   for (name in c("report", "manuscript"))
-    expect_identical(nrow(hv_check_docx(st_save(name))), 0L, info = name)
+    expect_identical(nrow(hv_check_docx(st_save(name), style = name)), 0L,
+                     info = name)
 })
 
 test_that("replicas of the two submissions' Table 1 shapes", {
@@ -1336,7 +1532,7 @@ test_that("replicas of the two submissions' Table 1 shapes", {
   `xml_attr()` reads a `w:` attribute by its local name (`"w"`, `"val"`, `"fill"`), as
   `wx_rows()` already does.
 
-- [ ] **Step 3: Run them.** They exercise Tasks 1 to 6, so they pass on the branch; prove
+- [ ] **Step 3: Run them.** They exercise Tasks 1 to 7, so they pass on the branch; prove
   each is live by mutation instead: (a) the manuscript `row_height` set to 360: the rows
   14-16 test fails; (b) the report fill removed (Task 4's `bg()`): rows 1-2 fail;
   (c) `.page_section()` writing A4: rows 17-19 fail; (d) the manuscript `count_note`
@@ -1349,7 +1545,7 @@ git add tests/testthat/helper-word.R tests/testthat/test-word-output.R tests/tes
 git commit -m "test: the style matrix as the fixture, row by row, and the submission replicas"
 ```
 
-### Task 8: Documentation, news, gates, the dependent
+### Task 9: Documentation, news, gates, the dependent
 
 **Files:**
 - Modify: roxygen in `R/hv-man-table.R`, `R/hv-man-table-save.R`, `R/hv-man-table-display.R`,
@@ -1389,6 +1585,10 @@ git commit -m "test: the style matrix as the fixture, row by row, and the submis
     report style refuses.
   - `hv_tbl_summary()` carries each variable's overall non-missing count and the grouping's
     name for the manuscript header.
+  - `hv_check_docx()` checks merged cells: by default merges only in header rows and in
+    section rows that span the table, and none at all with `style = "report"`.
+  - `hv_man_table_jtcvs()` section rows now span the table in one cell; they were a label
+    beside one merged blank cell.
   - **Existing tables change:** the report shades its section rows (`#CAEDFB` by default,
     every cell, unmerged), and both savers write US Letter pages instead of A4, so a wide
     table now fits a 9.0 in landscape text block instead of 9.7 in.
@@ -1427,9 +1627,9 @@ git commit -m "docs: the styles in every page; news"
 |---|---|---|
 | 0 | haiku, low | two text edits |
 | 1, 3 | sonnet, medium | complete code in the plan |
-| 2, 4, 7 | sonnet, medium | complete code, plus re-deriving tests that move |
+| 2, 4, 7, 8 | sonnet, medium | complete code, plus re-deriving tests that move |
 | 5, 6 | sonnet, high | multi-file, flextable and Word XML behavior to verify |
-| 8 | sonnet, medium | docs and gates |
+| 9 | sonnet, medium | docs and gates |
 
 Task reviewers on haiku at low effort, escalating to sonnet on a flag; the whole-branch review
 on the most capable model.
@@ -1438,16 +1638,16 @@ on the most capable model.
 
 - **Spec coverage.** D1 (Task 3); D2, the renderer, saver and display carrying the style
   (Tasks 4 to 6); D4, shading in every style (Tasks 4, 5); D5, the overall count (Task 1);
-  section 9's structural test, replicas and `hv_check_docx()` (Task 7). Matrix rows: 1, 2
+  section 9's structural test, replicas and `hv_check_docx()` per style (Tasks 7, 8). Matrix rows: 1, 2
   (Tasks 4, 5); 3, 4, 5, 13, 14, 15, 16, 19 (Task 5); 8, 9, 10 (Tasks 5, 6); 12 (Task 5);
   17 (Task 2); 18 (Task 5 draws no Variable column; the saver already drops it); 6, 7, 11
   need nothing new (Phase 1's notation; the key is unchanged). Question 4 (Task 2); 5
   (Task 5); 6, 7 (Tasks 3 to 5); 3 (Task 3).
 - **Not covered, by design:** D3 and `"describe"` (Phase 3); D6 (Phase 4); D7 (Phase 5).
   **Not covered, and in no phase:** label superscripts (section 7), raised in the PR.
-- **`hv_check_docx()`** has no merged-cell rule to set per style (design section 9 assumed
-  one); it checks floating layers, hidden columns, embedded footnotes and width, and Task 7
-  asserts it passes on both styles.
+- **`hv_check_docx()`** had no merged-cell rule to set per style, though design section 9
+  assumed one. Task 7 adds it, and fixes the JTCVS section rows the shared rule would
+  otherwise flag (design matrix row 1).
 - **Names used across tasks:** `hv_n`, `hv_by_label`, `hv_style`, `disp_stat_<k>`,
   `.as_style()`, `.stat_note()`, `.page_section()`, `.note_runs(leading =)`, and the style
   elements of Task 3, spelled the same in every task.
