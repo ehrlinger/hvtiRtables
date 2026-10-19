@@ -34,7 +34,8 @@ hv_man_table_display(ft, footnotes = NULL, abbreviations = NULL)
   Optional named character vector, abbreviation -\> definition, exactly
   as for
   [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md):
-  shown as one "Key:" line, sorted by abbreviation.
+  shown as one "Key:" line, sorted by abbreviation. A table showing a
+  confidence interval adds `CI` unless you define it.
 
 ## Value
 

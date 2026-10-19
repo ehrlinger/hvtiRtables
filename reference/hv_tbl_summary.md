@@ -198,7 +198,12 @@ hv_tbl_summary(
   dagger, footnoted "Fisher exact test."; the JTCVS route letters it
   through
   [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md).
-  Used only when `compare` produces p-values.
+  Used only when `compare` produces p-values. The other tests that ran
+  are named in the dagger note instead, as "P values from the Wilcoxon
+  rank sum test and Pearson's chi-square test.", and the CORR table puts
+  the dagger on the p-value header too. `compare = "smd"` or `"both"`
+  names the difference column "Std. Diff." and the same note says what
+  it is.
 
 - ...:
 

@@ -244,7 +244,11 @@ exact and a value above 100 makes none exact. In the CORR table
 each Fisher p-value is marked with a superscript double dagger,
 footnoted "Fisher exact test."; the JTCVS
 route letters it through <code><a href="hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code>. Used only when
-<code>compare</code> produces p-values.</p></dd>
+<code>compare</code> produces p-values. The other tests that ran are named in
+the dagger note instead, as "P values from the Wilcoxon rank sum test
+and Pearson's chi-square test.", and the CORR table puts the dagger
+on the p-value header too. <code>compare = "smd"</code> or <code>"both"</code> names the
+difference column "Std. Diff." and the same note says what it is.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

@@ -46,8 +46,11 @@ hv_man_table_save(
   `c("*", "†", "‡", "§", "¶", "||")`. `†` describes the statistic, so it
   is appended as a superscript reference mark to every statistic-column
   header (`stat_<k>`), and to the count column only when the table has
-  no such column. Every other symbol goes on the table's count-column
-  header cell (a column named `n`, else the first `n_stat_<k>` column
+  no such column. On a table that compares its groups, `†` also marks
+  the p-value and standardized-difference headers, because the note
+  names the tests behind the p-values and says what the difference is.
+  Every other symbol goes on the table's count-column header cell (a
+  column named `n`, else the first `n_stat_<k>` column
   [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
   creates when it splits an
   [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
@@ -63,12 +66,13 @@ hv_man_table_save(
 
 - abbreviations:
 
-  Optional named character vector, `c(ABBR = "expansion", ...)`.
-  Rendered as one `Key:` paragraph below any footnotes, sorted
-  alphabetically by abbreviation, abbreviation italicized, pairs
-  separated by `"; "` (house rule 14). Every element must be named
-  (unnamed or blank-named entries raise an error); an empty or `NULL`
-  vector is a no-op.
+  Optional named character vector, `c(ABBR = "expansion", ...)`. A table
+  with a confidence-interval column (`compare = "both"`) adds `CI`
+  unless you define it yourself. Rendered as one `Key:` paragraph below
+  any footnotes, sorted alphabetically by abbreviation, abbreviation
+  italicized, pairs separated by `"; "` (house rule 14). Every element
+  must be named (unnamed or blank-named entries raise an error); an
+  empty or `NULL` vector is a no-op.
 
 - caption:
 

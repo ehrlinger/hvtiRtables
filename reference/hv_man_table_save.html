@@ -88,7 +88,10 @@ compose with <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>
 Symbols must be drawn from <code>c("*", "†", "‡", "§", "¶", "||")</code>. <code>†</code>
 describes the statistic, so it is appended as a superscript reference
 mark to every statistic-column header (<code>stat_&lt;k&gt;</code>), and to the
-count column only when the table has no such column. Every other
+count column only when the table has no such column. On a table
+that compares its groups, <code>†</code> also marks the p-value and
+standardized-difference headers, because the note names the tests
+behind the p-values and says what the difference is. Every other
 symbol goes on the table's count-column header cell (a column named
 <code>n</code>, else the first <code>n_stat_&lt;k&gt;</code> column <code><a href="hv_man_table.html">hv_man_table()</a></code> creates when
 it splits an <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> table, else the first column). In a
@@ -104,7 +107,9 @@ no-op, same as <code>NULL</code>. (<code>%summarytable</code> <code>ADDFN=</code
 
 
 <dt id="arg-abbreviations">abbreviations<a class="anchor" aria-label="anchor" href="#arg-abbreviations"></a></dt>
-<dd><p>Optional named character vector, <code>c(ABBR = "expansion", ...)</code>. Rendered as one <code>Key:</code> paragraph below any
+<dd><p>Optional named character vector, <code>c(ABBR = "expansion", ...)</code>. A table with a confidence-interval column
+(<code>compare = "both"</code>) adds <code>CI</code> unless you define it yourself.
+Rendered as one <code>Key:</code> paragraph below any
 footnotes, sorted alphabetically by abbreviation, abbreviation
 italicized, pairs separated by <code>"; "</code> (house rule 14). Every element
 must be named (unnamed or blank-named entries raise an error); an

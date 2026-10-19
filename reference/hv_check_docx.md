@@ -56,7 +56,8 @@ Five detectors run:
 - `"embedded_footnote"` (heuristic, lower confidence): a cell in a
   table's last row whose text starts with a footnote marker (`*`, a
   dagger or double dagger, a section or pilcrow sign, a lettered
-  `a.`/`b.` marker, or `Key:`), the pattern
+  `a.`/`b.` marker, `Key:` or `Abbreviation:`) or whose first run is a
+  superscript number, as `gtsummary` writes a footnote, the pattern
   [`flextable::footnote()`](https://davidgohel.github.io/flextable/reference/footnote.html)
   produces when misused. This detector is pattern-based rather than a
   guaranteed structural signature, so treat its findings as prompts to

@@ -145,6 +145,16 @@ and
 [`gtsummary::tbl_summary()`](https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html)
 table carries no such convention and passes through unchanged.
 
+None of `gtsummary`'s own footnotes reach the table:
+[`as_flex_table()`](https://www.danieldsjoberg.com/gtsummary/reference/as_flex_table.html)
+writes them as a footer row and a raised digit inside the table, and
+house rule 13 puts notes below it.
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+says what they said in the notes
+[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
+writes: the tests behind the p-values in the dagger note, and CI in the
+key.
+
 ## Common mistakes
 
 **Cells read `98 ||| 46 (32, 63)`.** You are on a version before the

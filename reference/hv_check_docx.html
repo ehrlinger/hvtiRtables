@@ -107,10 +107,11 @@ margin, so the rightmost columns are lost from the page.</p></li>
 <li><p><code>"embedded_footnote"</code> (heuristic, lower confidence): a cell in a
 table's last row whose text starts with a footnote marker (<code>*</code>, a
 dagger or double dagger, a section or pilcrow sign, a lettered
-<code>a.</code>/<code>b.</code> marker, or <code>Key:</code>), the pattern <code><a href="https://davidgohel.github.io/flextable/reference/footnote.html" class="external-link">flextable::footnote()</a></code>
-produces when misused. This detector is pattern-based rather than a
-guaranteed structural signature, so treat its findings as prompts to
-look, not proof.</p></li>
+<code>a.</code>/<code>b.</code> marker, <code>Key:</code> or <code>Abbreviation:</code>) or whose first run is a
+superscript number, as <code>gtsummary</code> writes a footnote, the pattern
+<code><a href="https://davidgohel.github.io/flextable/reference/footnote.html" class="external-link">flextable::footnote()</a></code> produces when misused. This detector is
+pattern-based rather than a guaranteed structural signature, so treat
+its findings as prompts to look, not proof.</p></li>
 <li><p><code>"merged_cell"</code> (structural, high confidence): a row whose cells are
 merged (<code>w:gridSpan</code> above 1, <code>w:vMerge</code>, or the legacy <code>w:hMerge</code>)
 outside the header rows, unless the row is one cell spanning the
