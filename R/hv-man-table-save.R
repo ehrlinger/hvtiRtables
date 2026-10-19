@@ -74,7 +74,8 @@
 #'   `PRINTFN=1`'s house block is [hv_man_footnotes()]).
 #' @param abbreviations Optional named character vector, `c(ABBR =
 #'   "expansion", ...)`. A table with a confidence-interval column
-#'   (`compare = "both"`) adds `CI` unless you define it yourself. Rendered as one `Key:` paragraph below any
+#'   (`compare = "both"`) adds `CI` unless you define it yourself.
+#'   Rendered as one `Key:` paragraph below any
 #'   footnotes, sorted alphabetically by abbreviation, abbreviation
 #'   italicized, pairs separated by `"; "` (house rule 14). Every element
 #'   must be named (unnamed or blank-named entries raise an error); an

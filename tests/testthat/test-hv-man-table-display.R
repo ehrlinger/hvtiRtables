@@ -198,9 +198,7 @@ test_that("the display names the tests, marks P and keys CI like the .docx", {
   ))
   expect_identical(unname(mine[length(mine)]),
                    "Key: CI, credible interval; SD, standard deviation")
-  expect_identical(
-    unname(dp_footer_lines(hv_man_table_display(ft, abbreviations = NULL))[
-      length(lines)]),
-    "Key: CI, confidence interval"
-  )
+  plain <- dp_footer_lines(hv_man_table_display(ft, abbreviations = NULL))
+  expect_identical(unname(plain[length(plain)]),
+                   "Key: CI, confidence interval")
 })

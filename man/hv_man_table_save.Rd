@@ -38,7 +38,8 @@ no-op, same as \code{NULL}. (\verb{\%summarytable} \verb{ADDFN=} equivalent;
 \code{PRINTFN=1}'s house block is \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}).}
 
 \item{abbreviations}{Optional named character vector, \code{c(ABBR = "expansion", ...)}. A table with a confidence-interval column
-(\code{compare = "both"}) adds \code{CI} unless you define it yourself. Rendered as one \verb{Key:} paragraph below any
+(\code{compare = "both"}) adds \code{CI} unless you define it yourself.
+Rendered as one \verb{Key:} paragraph below any
 footnotes, sorted alphabetically by abbreviation, abbreviation
 italicized, pairs separated by \code{"; "} (house rule 14). Every element
 must be named (unnamed or blank-named entries raise an error); an
