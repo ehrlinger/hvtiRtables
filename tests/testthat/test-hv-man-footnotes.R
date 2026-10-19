@@ -81,3 +81,12 @@ test_that("hv_man_footnotes can be extended with an extra symbol", {
   expect_length(sf, 3)
   expect_identical(sf[["‡"]], "extra note")
 })
+
+test_that("hv_man_footnotes() speaks each style's words", {
+  expect_identical(hv_man_footnotes(), hv_man_footnotes(style = "report"))
+  expect_identical(
+    hv_man_footnotes(continuous_stat = "mean", style = "manuscript"),
+    list(`*` = "Patients with non-missing data.",
+         `†` = "Values are No. (%) or mean±SD.")
+  )
+})

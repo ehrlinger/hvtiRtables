@@ -4,7 +4,14 @@
 \alias{hv_man_table_save}
 \title{Write an hv_man_table() table to a compliant .docx}
 \usage{
-hv_man_table_save(ft, file, footnotes = NULL, abbreviations = NULL, ...)
+hv_man_table_save(
+  ft,
+  file,
+  footnotes = NULL,
+  abbreviations = NULL,
+  caption = NULL,
+  ...
+)
 }
 \arguments{
 \item{ft}{A \code{flextable} object, typically from \code{\link[=hv_man_table]{hv_man_table()}}.}
@@ -25,9 +32,10 @@ mark to every statistic-column header (\verb{stat_<k>}), and to the
 count column only when the table has no such column. Every other
 symbol goes on the table's count-column header cell (a column named
 \code{n}, else the first \verb{n_stat_<k>} column \code{\link[=hv_man_table]{hv_man_table()}} creates when
-it splits an \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} table, else the first column). Each
-text is rendered as its own paragraph below the table, in the order
-given.
+it splits an \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} table, else the first column). In a
+manuscript table the dagger goes on the grouping's spanning cell and
+\code{*} on its \code{n} column. Each text is rendered as its own paragraph
+below the table, in the order given.
 Every element must be named (unnamed or blank-named
 entries raise an error) and every text must be a single non-empty
 string (\code{NULL}, \code{NA}, a number, or a multi-element vector raise an
@@ -41,21 +49,13 @@ italicized, pairs separated by \code{"; "} (house rule 14). Every element
 must be named (unnamed or blank-named entries raise an error); an
 empty or \code{NULL} vector is a no-op.}
 
+\item{caption}{The table's caption, written in bold on its own line
+above the table. A manuscript table requires one, so it is written
+with the table and not typed in later; a report table takes one when
+given and writes none otherwise.}
+
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
-produce an error naming the argument to use instead.
-
-A table with three or more statistic columns, such as an Overall
-column and two groups, is written on a landscape page: with a \code{No.}
-column beside each, it does not fit a portrait one. So is any table
-wider than a portrait page's text block (6.3 inches on A4). A table
-wider than landscape's (9.7 inches), as a \code{continuous_stat = "both"}
-table with an Overall column can be, has its columns narrowed in
-proportion to fit; the font size is not changed.
-
-The saved table is always a manuscript table: the "Variable" column
-\code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s \code{show_variable} adds for the report view is
-dropped before the page is fitted, so it never reaches Word and never
-widens the page. \code{\link[=hv_man_table_display]{hv_man_table_display()}} keeps it, for the report.}
+produce an error naming the argument to use instead.}
 }
 \value{
 Invisibly, the \code{file} path.
@@ -80,12 +80,29 @@ vertical cell alignment controllable if you later reformat the
 surrounding document to 1.5- or double-spacing. House rule 2 concerns
 the \emph{insertion point} in the destination document, not this function's
 output; see the package README for the paste-in workflow.
+
+Every style is written on a US Letter page. A report table with three
+or more statistic columns, such as an Overall column and two groups, is
+written on a landscape page: with a \code{No.} column beside each, it does
+not fit a portrait one. A manuscript table turns only on width, since
+it has one overall \code{n} column: Overall, two groups and a P value come
+to 6.5 inches and stay portrait. Any table wider than a portrait page's
+text block (6.53 inches on US Letter) is written landscape. A table
+wider than landscape's (9.0 inches), as a \code{continuous_stat = "both"}
+table with an Overall column can be, has its columns narrowed in
+proportion to fit; the font size is not changed.
+
+In every style the saver drops the "Variable" column
+\code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s \code{show_variable} adds for the report view before
+the page is fitted, so it never reaches Word and never widens the page.
+\code{\link[=hv_man_table_display]{hv_man_table_display()}} keeps it, for the report.
 }
 \section{Common mistakes}{
 
-\strong{"unused argument (caption)"} The CORR saver writes no caption.
-Only \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}} takes one; here the table title goes
-in the manuscript, above the pasted table.
+\strong{"A manuscript table needs \code{caption} ..."} The table is in the
+manuscript style, which requires a caption so the title is written with
+the table. Pass
+\code{caption = "Table 1. ..."}; a report table takes one optionally.
 
 \strong{"\code{footnotes} must be a named list (symbol -> footnote text) ..."}
 You passed the JTCVS shape. The two savers' \code{footnotes} arguments are

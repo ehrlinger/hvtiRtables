@@ -1147,8 +1147,9 @@ test_that("overall = TRUE does not break the two-group guard for both", {
   stat_cols <- grep("^stat_", names(tbl$table_body), value = TRUE)
   expect_identical(stat_cols[1], "stat_0")
   expect_setequal(stat_cols, c("stat_0", "stat_1", "stat_2"))
-  last_cols <- utils::tail(names(tbl$table_body), 1)
-  expect_identical(last_cols, "hv_compare_col")
+  # hv_n is hidden bookkeeping, not a column the reader sees.
+  shown <- setdiff(names(tbl$table_body), "hv_n")
+  expect_identical(utils::tail(shown, 1), "hv_compare_col")
 })
 
 test_that("three-level `by` + overall = TRUE + compare = smd still errors", {
@@ -1433,10 +1434,10 @@ test_that("the JTCVS saver drops the column from any flextable", {
 test_that("the saved width leaves the variable column out", {
   # Every width set by hand, in whole half-inches (exact twips), so the
   # result does not depend on a platform's font metrics: 10.0 in with the
-  # Variable column, past landscape's 9.73 in text block, and 9.0 in
+  # Variable column, past landscape's 9.03 in text block, and 9.0 in
   # without it, inside. Dropped first, the table fits unnarrowed and is
   # written at exactly 9.0 in. Fitted first, it would be narrowed to
-  # 9.72 in and then lose its 1.0 in column: an 8.748 in grid.
+  # 9.02 in and then lose its 1.0 in column: an 8.118 in grid.
   ft <- hv_man_table(hv_tbl_summary(
     gtsummary::trial, by = "trt", groups = list(D = c("age", "grade")),
     continuous = "age", categorical = "grade", continuous_stat = "both",
@@ -1462,12 +1463,12 @@ test_that("a table that fits portrait without its variable column stays so", {
     compare = "pvalue"
   ))
   # Widen the label so the table is 6.8 in with the column (past a
-  # portrait page's 6.3) and 5.9 in without it.
+  # portrait page's 6.53) and 5.9 in without it.
   extra <- 6.8 - sum(ft$body$colwidths)
   ft <- flextable::width(ft, j = "label",
                          width = ft$body$colwidths[["label"]] + extra)
-  expect_gt(sum(ft$body$colwidths), 6.3)
-  expect_lt(sum(ft$body$colwidths) - ft$body$colwidths[["hv_variable"]], 6.3)
+  expect_gt(sum(ft$body$colwidths), 6.53)
+  expect_lt(sum(ft$body$colwidths) - ft$body$colwidths[["hv_variable"]], 6.53)
   path <- tempfile(fileext = ".docx")
   hv_man_table_save(ft, path)
   expect_false(fit_geometry(path)$landscape)
@@ -1938,4 +1939,48 @@ test_that("a table showing one statistic carries no cell marks", {
                         continuous = c("age", "marker"), compare = "none",
                         show_variable = FALSE)
   expect_null(attr(tbl, "hv_cell_marks"))
+})
+
+test_that("each variable's overall non-missing count rides on its label row", {
+  d <- gtsummary::trial
+  d$trt[1:3] <- NA # outside every group, so tbl_summary() drops them
+  tbl <- hv_tbl_summary(
+    d, by = "trt", groups = list(A = c("age", "grade")),
+    continuous = "age", categorical = "grade", compare = "none",
+    show_variable = FALSE
+  )
+  tb <- tbl$table_body
+  kept <- d[!is.na(d$trt), ]
+  lab <- tb$row_type == "label"
+  expect_identical(
+    tb$hv_n[lab],
+    as.character(c(sum(!is.na(kept$age)), sum(!is.na(kept$grade))))
+  )
+  expect_true(all(is.na(tb$hv_n[!lab])))
+  # Independent of the data: the per-group counts gtsummary printed.
+  age <- unlist(tb[tb$variable == "age" & lab, c("stat_1", "stat_2")])
+  per_group <- as.integer(sub(" \\|\\|\\| .*", "", age))
+  expect_identical(tb$hv_n[tb$variable == "age" & lab],
+                   as.character(sum(per_group)))
+})
+
+test_that("the overall count is hidden from the report", {
+  tbl <- fx_hv_tbl()
+  hdr <- tbl$table_styling$header
+  expect_true(hdr$hide[hdr$column == "hv_n"])
+  expect_false("hv_n" %in% hv_man_table(tbl)$col_keys)
+})
+
+test_that("the grouping's name is its label, else its name, else NULL", {
+  expect_identical(attr(fx_hv_tbl(), "hv_by_label"), "Chemotherapy Treatment")
+  d <- gtsummary::trial
+  attr(d$trt, "label") <- NULL
+  tbl <- hv_tbl_summary(d, by = "trt", groups = list(A = "age"),
+                        continuous = "age", compare = "none")
+  expect_identical(attr(tbl, "hv_by_label"), "trt")
+  none <- hv_tbl_summary(gtsummary::trial, groups = list(A = "age"),
+                         continuous = "age")
+  expect_null(attr(none, "hv_by_label"))
+  expect_identical(none$table_body$hv_n,
+                   as.character(sum(!is.na(gtsummary::trial$age))))
 })

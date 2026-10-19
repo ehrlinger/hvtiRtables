@@ -36,9 +36,9 @@
 #' with `dir.create(dirname(file), recursive = TRUE)`.
 #'
 #' **A wide table on a landscape page.** Expected: a table wider than a
-#' portrait page's text block (6.3 inches on A4), as a `"both"` table or
+#' portrait page's text block (6.5 inches on US Letter), as a `"both"` table or
 #' several trailing columns make it, is saved on a
-#' landscape page. One wider than landscape's (9.7 inches) has its
+#' landscape page. One wider than landscape's (9.0 inches) has its
 #' columns narrowed in proportion to fit; the font size is not changed.
 #'
 #' @param ft A `flextable`, from [hv_man_table_jtcvs()].
@@ -134,7 +134,7 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
   ft <- fit$ft
 
   doc <- officer::read_docx()
-  if (fit$landscape) doc <- .landscape(doc)
+  doc <- .page_section(doc, fit$landscape)
   cap_par <- officer::fpar(
     officer::ftext(caption, prop = .note_prop(.table_font(ft), bold = TRUE))
   )

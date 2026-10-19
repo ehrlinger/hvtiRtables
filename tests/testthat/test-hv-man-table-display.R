@@ -175,3 +175,13 @@ test_that("the footer lines take the table's font and size", {
   expect_true(all(sty$font.size$data == 12))
   expect_true(all(sty$font.family$data == "Arial"))
 })
+
+test_that("a manuscript display writes its notes in the manuscript's words", {
+  ft <- hv_man_table_display(hv_man_table(fx_hv_tbl(), style = "manuscript"))
+  foot <- flextable::information_data_chunk(ft)
+  foot <- foot[foot$.part == "footer", ]
+  first <- foot[foot$.row_id == 1, ]
+  expect_identical(paste(first$txt, collapse = ""),
+                   "*Patients with non-missing data.")
+  expect_false(any(first$vertical.align == "superscript"))
+})

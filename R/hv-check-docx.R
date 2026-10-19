@@ -186,6 +186,81 @@
   do.call(rbind, out)
 }
 
+# The rows Word treats as the table's header: the leading run of rows
+# whose w:tblHeader is on. The flag is on when present without a value
+# or with "true", "on" or "1"; Word ignores a flag set off, and one on a
+# row after a body row, so neither row is a header.
+.header_rows <- function(rows) {
+  flag <- vapply(rows, function(tr) {
+    h <- xml2::xml_find_first(tr, "./w:trPr/w:tblHeader")
+    if (inherits(h, "xml_missing")) return(FALSE)
+    val <- xml2::xml_attr(h, "val")
+    is.na(val) || !tolower(val) %in% c("false", "off", "0")
+  }, logical(1))
+  cumsum(!flag) == 0L
+}
+
+# Grid columns covered by each horizontal merge group in a row. A cell with
+# w:hMerge of "continue", or with no value, joins the group before it; any
+# other cell starts a group. A cell's own w:gridSpan counts toward its
+# group, so the legacy hMerge and the modern gridSpan sum alike.
+.hmerge_spans <- function(tcs) {
+  spans <- integer(0)
+  for (tc in tcs) {
+    h <- xml2::xml_find_first(tc, "./w:tcPr/w:hMerge")
+    cont <- !inherits(h, "xml_missing") &&
+      (is.na(xml2::xml_attr(h, "val")) ||
+         tolower(xml2::xml_attr(h, "val")) != "restart")
+    if (cont && length(spans) > 0L) {
+      spans[length(spans)] <- spans[length(spans)] + .grid_span(tc)
+    } else {
+      spans <- c(spans, .grid_span(tc))
+    }
+  }
+  spans
+}
+
+# House rule 3 asks for no merged cells; a style may merge its header
+# and its section rows, and a section row merged at all must span the
+# table in one cell. A label beside one wide blank cell reads as a row
+# that lost its contents. `strict` is the report style, which merges
+# nothing.
+.detect_merged_cell <- function(doc, strict = FALSE) {
+  out <- list()
+  tbls <- xml2::xml_find_all(doc, "//w:tbl")
+  for (i in seq_along(tbls)) {
+    ncol <- length(xml2::xml_find_all(tbls[[i]], "./w:tblGrid/w:gridCol"))
+    rows <- xml2::xml_find_all(tbls[[i]], "./w:tr")
+    header <- .header_rows(rows)
+    for (r in seq_along(rows)) {
+      tcs <- xml2::xml_find_all(rows[[r]], "./w:tc")
+      spans <- vapply(tcs, .grid_span, integer(1))
+      vmerge <- length(xml2::xml_find_all(
+        rows[[r]], "./w:tc/w:tcPr/w:vMerge"
+      )) > 0L
+      hmerge <- length(xml2::xml_find_all(
+        rows[[r]], "./w:tc/w:tcPr/w:hMerge"
+      )) > 0L
+      if (all(spans == 1L) && !vmerge && !hmerge) next
+      groups <- .hmerge_spans(tcs)
+      full <- length(groups) == 1L && groups[1] == ncol
+      if (!strict && (header[r] || (full && !vmerge))) next
+      detail <- if (strict) {
+        paste0("Row ", r, " merges cells, and the report style merges ",
+               "none (house rule 3).")
+      } else {
+        paste0("Row ", r, " merges cells outside the header without ",
+               "spanning the table. A style merges only its header rows ",
+               "and section rows that span the table in one cell.")
+      }
+      out[[length(out) + 1]] <- .finding("merged_cell", i,
+                                         sprintf("row %d", r), detail)
+    }
+  }
+  if (length(out) == 0) return(.empty_report())
+  do.call(rbind, out)
+}
+
 #' Check a .docx for structural patterns the house rules forbid
 #'
 #' Read-only inspection of any Word document, whether written by this
@@ -195,7 +270,7 @@
 #' file.
 #'
 #' @details
-#' Four detectors run:
+#' Five detectors run:
 #'
 #' * `"layer"` (structural, high confidence): paragraphs positioned with
 #'   `w:framePr`, or floating text boxes (`w:txbxContent`). Table content
@@ -219,6 +294,12 @@
 #'   produces when misused. This detector is pattern-based rather than a
 #'   guaranteed structural signature, so treat its findings as prompts to
 #'   look, not proof.
+#' * `"merged_cell"` (structural, high confidence): a row whose cells are
+#'   merged (`w:gridSpan` above 1, `w:vMerge`, or the legacy `w:hMerge`)
+#'   outside the header rows, unless the row is one cell spanning the
+#'   table. The header rows are the leading run of rows whose
+#'   `w:tblHeader` flag is on, as Word
+#'   reads it. With `style = "report"`, any merged cell is a finding.
 #'
 #' @section Common mistakes:
 #' **"`path` must be a single non-empty string."** The argument is a
@@ -232,7 +313,7 @@
 #' JTCVS templates do not trip it. A finding here is a real spacer.
 #'
 #' **Treating `embedded_footnote` as proof.** It is the one heuristic
-#' detector of the four: it matches a marker character opening a cell
+#' detector of the five: it matches a marker character opening a cell
 #' in a table's last row, and a legitimate last row that happens to
 #' start that way matches it too. Read it as a prompt to look, not a
 #' verdict.
@@ -242,6 +323,9 @@
 #' [hv_man_table_save()] or [hv_man_table_save_jtcvs()].
 #'
 #' @param path Path to a `.docx` file.
+#' @param style `NULL`, the default, applies the rule every style shares.
+#'   A style name or [hv_table_style()] applies that style's rule: the
+#'   report style merges no cells at all.
 #'
 #' @return A `data.frame` with one row per finding and columns `type`,
 #'   `table` (1-indexed table number, `NA` when document-level),
@@ -272,13 +356,15 @@
 #' }
 #'
 #' @export
-hv_check_docx <- function(path) {
+hv_check_docx <- function(path, style = NULL) {
   .check_string(path, "path")
+  strict <- !is.null(style) && identical(.as_style(style)$merged, "none")
   doc <- .docx_body_xml(path)
   rbind(
     .detect_layers(doc),
     .detect_hidden_col(doc),
     .detect_embedded_footnote(doc),
-    .detect_wide_table(doc)
+    .detect_wide_table(doc),
+    .detect_merged_cell(doc, strict)
   )
 }

@@ -103,3 +103,12 @@ save_fit <- function(tbl, groups) {
   )
   fit_geometry(path)
 }
+
+# The section's page size, read from the saved document.
+pg_size <- function(f) {
+  s <- as.character(xml2::xml_find_first(
+    officer::read_docx(f)$doc_obj$get(), "//w:sectPr/w:pgSz"
+  ))
+  c(w = sub('.*w:w="([0-9]+)".*', "\\1", s),
+    h = sub('.*w:h="([0-9]+)".*', "\\1", s))
+}

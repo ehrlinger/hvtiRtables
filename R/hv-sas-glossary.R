@@ -9,9 +9,9 @@
 #
 # Entries store a STAGE, not a function name, because the shape and save
 # stages are CORR/JTCVS sibling pairs with different argument sets --
-# only hv_man_table_save_jtcvs() has `caption`. Storing one function per
+# only hv_man_table_jtcvs() lacks `style`. Storing one function per
 # parameter would send half the callers to the wrong sibling, and for
-# TBLTITLE= to an argument that does not exist. `only` marks a parameter
+# STYLE= to an argument that does not exist. `only` marks a parameter
 # that exists in one family alone; `note_other` is what the other family
 # is told instead. `note_corr`/`note_jtcvs` are for a parameter that is
 # valid in BOTH families but whose note text differs because the
@@ -98,10 +98,10 @@
 
   # Stage 3 -- write
   tbltitle = list(
-    arg = "caption", stage = "save", only = "jtcvs",
-    note_other = paste0(
-      "the CORR saver writes no caption; add the table title in the ",
-      "document, or use the JTCVS pair if the journal wants one"
+    arg = "caption", stage = "save",
+    note_corr = paste0(
+      "the manuscript style requires a caption and the report style ",
+      "takes an optional one; it is written in bold above the table"
     )
   ),
   addfn    = list(
@@ -153,10 +153,23 @@
                      "per-group Ns are always shown automatically; ",
                      "`NCOL=3`'s overall N needs `overall = TRUE`"
                    )),
-  style     = list(arg = NA_character_, stage = NA_character_,
-                   note = "house font and rounding are fixed"),
+  style     = list(
+    arg = "style", stage = "shape", only = "corr",
+    note_corr = paste0(
+      "pass a style name, \"report\" or \"manuscript\", or a style from ",
+      "hv_table_style(); the macro's other styles are not supported, and ",
+      "rounding is fixed"
+    ),
+    note_other = paste0(
+      "the JTCVS table has the journal's one layout; the CORR ",
+      "`style =` belongs to hv_man_table()"
+    )
+  ),
   page      = list(arg = NA_character_, stage = NA_character_,
-                   note = "page setup belongs to the Word document"),
+                   note = paste0(
+                     "pages are US Letter, turning landscape when the ",
+                     "table is wide; there is no choice to make"
+                   )),
   papersize = list(arg = NA_character_, stage = NA_character_,
                    note = "page setup belongs to the Word document")
 )

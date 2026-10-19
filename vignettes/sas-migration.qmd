@@ -32,7 +32,7 @@ the parameters you know are distributed across separate calls:
 | Stage | Function | Macro parameters that land here |
 |---|---|---|
 | Compute stats and tests | `hv_tbl_summary()` | `DATA=`, `CLASS=`, `CON*=`, `CAT*=`, `ORD1=`, `LIST=`, `PP=`, `PVALUES=`, `ASD=`, `TOTALCOL=`, `CUTEXACT=` |
-| Shape the table | `hv_man_table()`, `hv_man_table_jtcvs()` | *(none - house style is fixed)* |
+| Shape the table | `hv_man_table()`, `hv_man_table_jtcvs()` | `STYLE=` is `style =` in `hv_man_table()`; `PAGE=` has none (pages are US Letter) |
 | Write the file | `hv_man_table_save()`, `hv_man_table_save_jtcvs()` | `RTFFILE=`, `PDFFILE=`, `XMLFILE=`, `TBLTITLE=`, `ADDFN=`, `PRINTFN=` |
 | Verify the file | `hv_check_docx()` | *(no analogue)* |
 
@@ -128,7 +128,7 @@ tbl <- hv_tbl_summary(
 | `CUTEXACT=` | `cutexact` | **default differs** - see Defaults that differ |
 | `TOTALCOL=` | `overall` | defaults match (`overall = TRUE`); `totalcol=0` becomes `overall = FALSE` |
 | `NCOL=` | automatic | per-group Ns always shown, and the Overall column's N with the default `overall = TRUE` (`NCOL=3`) |
-| `TBLTITLE=` | `caption` | **JTCVS only** - `hv_man_table_save()` writes no caption |
+| `TBLTITLE=` | `caption` | required by `style = "manuscript"`, optional for the report |
 | `ADDFN=` | `footnotes` | on the save function |
 | `PRINTFN=` | omit `footnotes` (default) | **CORR only.** The house block is CORR-shaped and cannot be passed to `hv_man_table_save_jtcvs()`, which needs `list(row =, col =, text =)` entries; build those, or use `hv_test_footnotes_jtcvs()`. On the standard `hv_tbl_summary()` -> `hv_man_table()` path, the default dagger follows `continuous_stat` and `percentiles` automatically. Use `footnotes = NULL` for `PRINTFN=0`. |
 | `RTFFILE=`, `PDFFILE=`, `XMLFILE=` | `file` | output is always `.docx` |
@@ -147,13 +147,13 @@ mean and median here marks cells instead: a section sign on the medians when
 means are the default, a pilcrow on the means otherwise, each with its own note.
 
 The save stage is a sibling pair, and the two do not take the same
-arguments: only `hv_man_table_save_jtcvs()` has `caption`. For a flat-header
-CORR table the title goes in the document, not the call.
+arguments: `footnotes` has a different shape in each. Both take `caption`;
+the manuscript style requires it.
 
 Not supported: `WEIGHT=`, `PROPENMT=`, `MWOUTCOMES=`, `SUBSET=` (subset the
 data frame first), `SORTBY=` (order comes from `groups`), `COLPCT=0` (row
-percentages), `MISSCOL=`, `ADHOC=`, `ODDSRATIOS=`, `CUTEXACT=`, `STYLE=`,
-`PAGE=`, `CWIDTH1-3=`, `PAPERSIZE=`.
+percentages), `MISSCOL=`, `ADHOC=`, `ODDSRATIOS=`, `CUTEXACT=`,
+`PAGE=` (pages are US Letter), `CWIDTH1-3=`, `PAPERSIZE=`.
 
 ## Why my p-value moved
 

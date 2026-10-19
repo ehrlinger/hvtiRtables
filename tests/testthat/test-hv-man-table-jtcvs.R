@@ -438,3 +438,14 @@ test_that("the JTCVS table letters the minority mark and its note", {
   expect_true(any(grepl("Mean±SD.", text, fixed = TRUE)))
   expect_false(any(grepl("Age, Mean", text, fixed = TRUE)))
 })
+
+test_that("a JTCVS section row spans the table in one cell", {
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(Demography = c("age", "grade")),
+                        continuous = "age", categorical = "grade",
+                        compare = "none")
+  ft <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
+  sec <- which(ft$body$dataset$is_section)
+  n <- length(ft$col_keys)
+  expect_equal(unname(ft$body$spans$rows[sec, ]), c(n, rep(0L, n - 1L)))
+})

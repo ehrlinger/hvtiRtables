@@ -341,7 +341,7 @@ test_that("hv_man_table_save still renders the Key: block after refactor", {
 test_that("a two-group 'both' CORR table with Overall is fitted to landscape", {
   skip_if_not_installed("broom")
   # Measured 13.09 in before fitting: each median column autofits to its
-  # header, and landscape alone (9.7 in of text) clipped the labels and
+  # header, and landscape alone (9.03 in of text) clipped the labels and
   # the p-value column.
   tbl <- hv_tbl_summary(
     gtsummary::trial, by = "trt", groups = list(D = c("age", "grade")),
@@ -349,7 +349,7 @@ test_that("a two-group 'both' CORR table with Overall is fitted to landscape", {
     compare = "pvalue"
   )
   ft <- hv_man_table(tbl)
-  expect_gt(sum(ft$body$colwidths), 9.73)
+  expect_gt(sum(ft$body$colwidths), 9.03)
   path <- tempfile(fileext = ".docx")
   hv_man_table_save(ft, path)
   g <- fit_geometry(path)
@@ -366,7 +366,7 @@ test_that("a CORR table wider than portrait but under 3 groups turns", {
   )
   ft <- hv_man_table(tbl)
   ft <- flextable::width(ft, j = "label", width = 4)
-  expect_gt(sum(ft$body$colwidths), 6.3)
+  expect_gt(sum(ft$body$colwidths), 6.53)
   path <- tempfile(fileext = ".docx")
   hv_man_table_save(ft, path)
   g <- fit_geometry(path)
@@ -388,4 +388,107 @@ test_that("a table just inside the landscape text block is still narrowed", {
   fit <- .fit_page(ft)
   expect_lte(sum(fit$ft$body$colwidths), .text_width(landscape = TRUE) - 0.01)
   expect_true(fit$landscape)
+})
+
+test_that("a saved table is on a US Letter page, portrait or landscape", {
+  narrow <- hv_man_table(gtsummary::tbl_summary(gtsummary::trial,
+                                                include = age))
+  f1 <- tempfile(fileext = ".docx")
+  hv_man_table_save(narrow, f1)
+  expect_identical(pg_size(f1), c(w = "12240", h = "15840"))
+  # Four statistic columns (Overall and three grades) turn the page.
+  wide <- hv_man_table(hv_tbl_summary(
+    gtsummary::trial, by = "grade", groups = list(A = "age"),
+    continuous = "age", compare = "none", show_variable = FALSE
+  ))
+  f2 <- tempfile(fileext = ".docx")
+  hv_man_table_save(wide, f2)
+  expect_identical(pg_size(f2), c(w = "15840", h = "12240"))
+})
+
+# -- The manuscript style: caption, leading symbols, header marks ---------
+
+ms_ft <- function() {
+  hv_man_table(hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = c("age", "grade")),
+    continuous = "age", categorical = "grade", show_variable = FALSE
+  ), style = "manuscript")
+}
+ms_doc <- function(ft = ms_ft(), ...) {
+  f <- tempfile(fileext = ".docx")
+  hv_man_table_save(ft, f, ...)
+  officer::read_docx(f)$doc_obj$get()
+}
+
+test_that("a manuscript table is saved with its caption above it, in bold", {
+  x <- ms_doc(caption = "Table 1. Baseline characteristics")
+  first <- xml2::xml_find_first(x, "//w:body/*[1]")
+  expect_identical(xml2::xml_name(first), "p")
+  expect_identical(xml2::xml_text(first), "Table 1. Baseline characteristics")
+  expect_length(xml2::xml_find_all(first, ".//w:rPr/w:b[not(@w:val='false')]"),
+                1L)
+})
+
+test_that("a manuscript note begins with its plain symbol", {
+  x <- ms_doc(caption = "Table 1. Test")
+  ps <- xml2::xml_find_all(x, "//w:tbl/following-sibling::w:p")
+  text <- vapply(ps, xml2::xml_text, character(1))
+  expect_identical(text[1], "*Patients with non-missing data.")
+  expect_identical(
+    text[2], "†Values are No. (%) or median [15th, 85th percentiles]."
+  )
+  sup <- xml2::xml_find_all(ps[[1]], ".//w:vertAlign[@w:val='superscript']")
+  expect_length(sup, 0L)
+})
+
+test_that("manuscript header marks: * on n, the dagger on the grouping", {
+  x <- ms_doc(caption = "Table 1. Test")
+  top <- xml2::xml_find_first(x, "//w:tbl/w:tr[1]")
+  cells <- vapply(xml2::xml_find_all(top, "./w:tc"), xml2::xml_text,
+                  character(1))
+  expect_true("n*" %in% cells)
+  expect_true("Chemotherapy Treatment†" %in% cells)
+})
+
+test_that("the manuscript requires a caption; the report takes one if given", {
+  expect_error(ms_doc(), "caption")
+  first <- function(f) {
+    xml2::xml_find_first(officer::read_docx(f)$doc_obj$get(), "//w:body/*[1]")
+  }
+  with_cap <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(fx_hv_tbl()), with_cap,
+                    caption = "Table 2. Report")
+  expect_identical(xml2::xml_text(first(with_cap)), "Table 2. Report")
+  expect_length(xml2::xml_find_all(first(with_cap),
+                                   ".//w:rPr/w:b[not(@w:val='false')]"), 1L)
+  without <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(fx_hv_tbl()), without)
+  expect_identical(xml2::xml_name(first(without)), "tbl")
+  expect_error(hv_man_table_save(hv_man_table(fx_hv_tbl()), without,
+                                 caption = NA_character_), "caption")
+})
+
+test_that("an empty caption is refused before anything is written", {
+  f <- tempfile(fileext = ".docx")
+  expect_error(hv_man_table_save(hv_man_table(fx_hv_tbl()), f, caption = ""),
+               "non-empty string")
+  expect_false(file.exists(f))
+  f <- tempfile(fileext = ".docx")
+  expect_error(hv_man_table_save(ms_ft(), f, caption = ""),
+               "non-empty string")
+  expect_false(file.exists(f))
+})
+
+test_that("the caption takes the table's font", {
+  f <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(fx_hv_tbl()), f,
+                    caption = "Table 2. Report")
+  x <- officer::read_docx(f)$doc_obj$get()
+  xp <- "(//w:body/*[1]//w:r)[1]/w:rPr/w:rFonts/@w:ascii"
+  expect_identical(xml2::xml_text(xml2::xml_find_all(x, xp)),
+                   "Times New Roman")
+  x <- ms_doc(caption = "Table 1. Baseline characteristics")
+  expect_length(xml2::xml_find_all(x, "//w:body/*[1]//w:rFonts[@w:ascii]"),
+                0L)
 })

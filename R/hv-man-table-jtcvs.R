@@ -83,9 +83,9 @@
 #' Build a JTCVS-format manuscript table with merged spanning headers
 #'
 #' Stage 2 of the `%summarytable` split: shapes the table. The macro
-#' controlled this with `STYLE=` and `PAGE=`, which have no equivalent
-#' here -- house style is fixed, and the only choice is flat header
-#' versus JTCVS spanning header.
+#' controlled this with `STYLE=` and `PAGE=`. This renderer is the
+#' journal's one layout and takes neither; the CORR styles are chosen by
+#' `style =` in [hv_man_table()]. Pages are US Letter.
 #'
 #' Use this instead of [hv_man_table()] when you're building the shape
 #' editorial actually needs at JTCVS submission: a 2-row header (group name
@@ -254,7 +254,11 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
   )
 
   sec_i <- which(reshaped$is_section)
-  ft <- flextable::merge_h(ft, i = sec_i, part = "body")
+  # Each section row spans the table in one cell (design matrix row 1).
+  # merge_h() merged only the blank cells beside the label, which left
+  # the label in a cell of its own beside one wide empty one.
+  for (i in sec_i)
+    ft <- flextable::merge_at(ft, i = i, j = col_keys, part = "body")
   ft <- flextable::bold(ft, i = sec_i, part = "body", bold = TRUE)
   ft <- flextable::align(ft, j = "label", align = "left", part = "all")
 

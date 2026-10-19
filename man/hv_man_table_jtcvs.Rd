@@ -63,9 +63,9 @@ attribute, the text of the \code{n} superscript, which that saver writes.
 }
 \description{
 Stage 2 of the \verb{\%summarytable} split: shapes the table. The macro
-controlled this with \verb{STYLE=} and \verb{PAGE=}, which have no equivalent
-here -- house style is fixed, and the only choice is flat header
-versus JTCVS spanning header.
+controlled this with \verb{STYLE=} and \verb{PAGE=}. This renderer is the
+journal's one layout and takes neither; the CORR styles are chosen by
+\verb{style =} in \code{\link[=hv_man_table]{hv_man_table()}}. Pages are US Letter.
 }
 \details{
 Use this instead of \code{\link[=hv_man_table]{hv_man_table()}} when you're building the shape

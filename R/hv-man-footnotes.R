@@ -50,6 +50,11 @@
 #'   `continuous_stat = "median"` and `"both"`; validated but not printed for
 #'   `"mean"`, so the arguments share [hv_tbl_summary()]'s contract.
 #'
+#' @param style `"report"` (default) or `"manuscript"`, or a style from
+#'   [hv_table_style()]. The manuscript writes the notes in the words of
+#'   the submissions: `"Patients with non-missing data."` and
+#'   `"Values are No. (%) or median [15th, 85th percentiles]."`.
+#'
 #' @return A named list with elements `` `*` `` and `` `†` ``, in the format
 #'   [hv_man_table_save()]'s `footnotes` parameter expects.
 #'
@@ -64,12 +69,15 @@
 #' @export
 hv_man_footnotes <- function(
   continuous_stat = c("median", "mean", "both"),
-  percentiles = c(15, 85)
+  percentiles = c(15, 85),
+  style = "report"
 ) {
   continuous_stat <- match.arg(continuous_stat)
   .check_percentiles(percentiles)
-  out <- list(`*` = "Number of non-missing values.")
-  out[["\u2020"]] <- paste0(.stat_label(continuous_stat, percentiles), ".")
+  style <- .as_style(style)
+  out <- list(`*` = style$count_note)
+  out[["\u2020"]] <- .stat_note(.stat_label(continuous_stat, percentiles),
+                                style)
   out
 }
 
@@ -93,6 +101,15 @@ hv_man_footnotes <- function(
     # in their own column, which names itself in its header.
     both = paste("No. (%) or", mean_label)
   )
+}
+
+# The dagger note in a style's words. The manuscript style leads with
+# "Values are" and lowers the statistic's capital, as the submissions
+# wrote it: "Values are No. (%) or median [15th, 85th percentiles]."
+.stat_note <- function(stat_label, style) {
+  if (!nzchar(style$stat_lead)) return(paste0(stat_label, "."))
+  paste0(style$stat_lead,
+         sub(" or ([A-Z])", " or \\L\\1", stat_label, perl = TRUE), ".")
 }
 
 .format_ordinal <- function(x) {
