@@ -95,6 +95,15 @@ hv_man_footnotes <- function(
   )
 }
 
+# The dagger note in a style's words. The manuscript style leads with
+# "Values are" and lowers the statistic's capital, as the submissions
+# wrote it: "Values are No. (%) or median [15th, 85th percentiles]."
+.stat_note <- function(stat_label, style) {
+  if (!nzchar(style$stat_lead)) return(paste0(stat_label, "."))
+  paste0(style$stat_lead,
+         sub(" or ([A-Z])", " or \\L\\1", stat_label, perl = TRUE), ".")
+}
+
 .format_ordinal <- function(x) {
   suffix <- rep("th", length(x))
   is_exception <- x %% 100 %in% 11:13

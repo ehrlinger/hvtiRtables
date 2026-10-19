@@ -97,6 +97,13 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   .check_sas_args(list(...), "hv_man_table")
   .check_gtsummary(tbl)
   style <- .as_style(style)
+  if (identical(style$name, "manuscript")) {
+    if (!missing(font) || !missing(font_size))
+      stop("`font` and `font_size` set the report style. A manuscript ",
+           "table sets no font, so it takes the font of the document it ",
+           "is saved into.", call. = FALSE)
+    return(.man_table_compare(tbl, style))
+  }
   .check_string(font, "font")
   .check_font_size(font_size)
 
