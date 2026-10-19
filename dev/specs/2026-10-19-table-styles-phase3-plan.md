@@ -130,7 +130,11 @@ either way.
 6. **Marks in describe:** `*` on every group's `n` (each is a count), `†` on every statistic
    sub-header, and `†` on the comparison header when the note names its tests or the
    standardized difference. Any other note symbol goes on the first `n`. Row 2 carries the
-   marks; the comparison header, merged down, carries its `†` in row 1.
+   marks; the comparison header, merged down, carries its `†` in row 1. **The targets come
+   from the groups the table was built with**, recorded on the flextable as `hv_pairs`
+   (`n_<g>` and `disp_<g>` for each name in `groups`), not from a `stat_<k>` pattern: the
+   deprecated wrapper accepts any convention-bearing column as a group (an external review
+   found a `custom_a`/`custom_b` call that got no `*` and no `†` from the pattern).
 7. **Two header rows and no grouping-name row:** `hv_by_label` is not shown in describe, since
    its groups are often separate cohorts. Comparison headers are merged down both rows, as in
    compare, where the JTCVS renderer left a blank cell above each.
@@ -151,9 +155,14 @@ either way.
     by both); `abbreviations` the key; the `n` header's `a. Patients with data available.`
     becomes describe's `*Patients with non-missing data.`; a test note
     `hv_test_footnotes_jtcvs()` wrote (one of its test texts on `hv_compare_col`) is dropped
-    from a describe table, whose `†` note names those tests and whose `‡` marks Fisher's exact
-    test, so it is not said twice; a caller's own positional notes keep lettered superscripts
-    on their cells for this release, lettered from `a`, written after the table's own notes.
+    **only when the table already names that test**: a non-Fisher test when the table
+    carries `hv_tbl_summary()`'s test sentence (`hv_test_note`, which #87 added to the
+    `†` note), Fisher's exact test when the table marks it with `‡`. Otherwise, as on a
+    plain gtsummary table, which carries neither, the entry is kept and written like a
+    caller's note. A caller's own positional notes keep lettered superscripts on their cells
+    for this release, lettered from `a`, written after the table's own notes. (An external
+    review found that dropping every recognized test note left a plain table's Wilcoxon test
+    unnamed.)
 14. **`hv_test_footnotes_jtcvs()` returns what it returns today**, and warns.
 15. **`hv_man_table_display()` shows a describe table, the deprecated wrapper's included.** Its
     refusal of a JTCVS table read `hv_header_footnotes`, which nothing sets once Task 5 lands,
@@ -223,6 +232,16 @@ The code in Tasks 1 to 5 was built in a scratch copy of `main` (62ab8fe) and run
   unwrapped deprecation warnings left (130). Before the rewrites in Task 5, the delegation
   failed exactly 17 tests: the 15 listed in Task 5, and the two SAS-position tests Task 2 updates.
 - **Lint** on that build: clean but for the two lessons recorded in Global Constraints.
+- **After the external review of 12273ae**, two fixes were probed on the same build. Group
+  columns named `custom_a`/`custom_b`: before `hv_pairs`, the saved row 2 carried no `n*` and
+  no `†`; after it, two of each, through `.man_table_describe()` and through the wrapper. A
+  plain gtsummary table with `add_p()` and an `hv_compare_col`: before the fix the saver
+  dropped both `Wilcoxon rank-sum test.` and `Pearson chi-square test.`, leaving no test
+  named; after it they print as `a.` and `b.`, while the `hv_tbl_summary()` round trip still
+  drops its own. Mutations: test-sentence check removed (drop always) and `named` emptied
+  (drop never) each go red; `*` targets taken from the `^n_stat_` pattern, and the
+  `hv_pairs` attribute removed, each go red. Full suite FAIL 0; `dc-tables` again 38 tests,
+  FAIL 0, SKIP 0, 153 expectations.
 - **hvtiRtemplates `origin/main` `dc-tables`** against that build, `NOT_CRAN=true`: 38 tests,
   FAIL 0, WARN 0, **SKIP 0**, 153 expectations.
 
@@ -479,7 +498,9 @@ git commit -m "refactor(manuscript): the dressing, labels and notes both layouts
   `.man_table_describe(tbl, style, groups, trailing, stat_label)`, a flextable with keys
   `label`, then per group `n_<g>`, `disp_<g>` and, under `"both"`, `med_<g>`, then the
   comparison columns; attributes `hv_footnotes`, `hv_body_marks`, `hv_style`, `hv_test_note`,
-  `hv_smd` (from `.mark_compare()`) and `hv_layout = "describe"`. Tasks 3 and 5 rely on these.
+  `hv_smd` (from `.mark_compare()`), `hv_layout = "describe"`, and `hv_pairs`, a list with
+  `n` (the `n_<g>` keys) and `stat` (the `disp_<g>` keys) in `groups` order. Tasks 3 and 5
+  rely on these.
 
 - [ ] **Step 1: Write the failing tests** (`tests/testthat/test-hv-man-table-describe.R`):
 
@@ -796,6 +817,9 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
 
   ft <- .mark_compare(ft, tbl, body, disp, style, stat_label)
   attr(ft, "hv_layout") <- "describe"
+  # The saver and the display mark these columns, named for the groups
+  # the table was built with, whatever those columns are called.
+  attr(ft, "hv_pairs") <- list(n = n_cols, stat = disp)
   ft
 }
 ```
@@ -827,8 +851,8 @@ git commit -m "feat(hv_man_table): the manuscript style's describe layout"
 - Test: `tests/testthat/test-table-styles.R`
 
 **Interfaces:**
-- Consumes: `attr(ft, "hv_layout")` and the `n_stat_<k>`/`disp_stat_<k>` keys (Task 2);
-  `.compare_noted(ft)`.
+- Consumes: `attr(ft, "hv_pairs")` (Task 2), the describe layout's mark targets whatever
+  the group columns are called; `.compare_noted(ft)`.
 - Produces: `.footnote_cells(ft, sym)`, a `data.frame(i, j)` of header rows and column indices;
   `.mark_header(ft, footnotes)` marking by row. Both the saver and `hv_man_table_display()`
   call `.mark_header()`, so both follow.
@@ -926,10 +950,28 @@ test_that("a describe table displays with its marks where Word has them", {
   expect_identical(paste(foot$txt, collapse = ""),
                    "*Patients with non-missing data.")
 })
+
+test_that("describe marks the groups it was built with, whatever their names", {
+  tbl <- fx_jtcvs_tbl()
+  tbl$table_body$custom_a <- tbl$table_body$stat_1
+  tbl$table_body$custom_b <- tbl$table_body$stat_2
+  ft <- .man_table_describe(tbl, hv_table_style("manuscript"),
+                            groups = c(custom_a = "A", custom_b = "B"),
+                            trailing = NULL, stat_label = NULL)
+  expect_identical(attr(ft, "hv_pairs"),
+                   list(n = c("n_custom_a", "n_custom_b"),
+                        stat = c("disp_custom_a", "disp_custom_b")))
+  f <- tempfile(fileext = ".docx")
+  hv_man_table_save(ft, f, caption = "Table 2. Cohorts")
+  sub <- vapply(xq(wx_doc(f), "//w:tr[2]/w:tc"), wx_text, character(1))
+  expect_identical(sum(sub == "n*"), 2L)
+  expect_identical(sum(endsWith(sub, "\u2020")), 2L)
+})
 ```
 
 - [ ] **Step 2: Run them; they fail.** Rows 4-5 read `Overall (N = 200)*` in row 1 and no
-  `†` on any statistic; the display test finds one `*`, in row 1.
+  `†` on any statistic; the display test finds one `*`, in row 1; the custom-column test
+  finds no `n*` and no dagger in row 2.
   Run: `NOT_CRAN=true Rscript -e 'devtools::test(filter = "table-styles")'`
 
 - [ ] **Step 3: Implement.** In `R/hv-man-table-save.R`, replace `.mark_header()` with:
@@ -956,8 +998,8 @@ test_that("a describe table displays with its marks where Word has them", {
 .footnote_cells <- function(ft, sym) {
   j <- which(ft$col_keys %in% .footnote_cols(ft, sym))
   i <- rep(1L, length(j))
-  if (identical(attr(ft, "hv_layout", exact = TRUE), "describe"))
-    i[grepl("^(n|disp)_", ft$col_keys[j])] <- 2L
+  pairs <- attr(ft, "hv_pairs", exact = TRUE)
+  i[ft$col_keys[j] %in% unlist(pairs)] <- 2L
   data.frame(i = i, j = j)
 }
 ```
@@ -966,12 +1008,14 @@ test_that("a describe table displays with its marks where Word has them", {
 
 ```r
   # Each group in the describe layout has its own count, so every count
-  # carries the count's mark and every statistic the dagger.
-  if (identical(attr(ft, "hv_layout", exact = TRUE), "describe")) {
-    n <- grep("^n_stat_[0-9]+$", ft$col_keys, value = TRUE)
-    if (identical(sym, "*")) return(n)
-    if (!identical(sym, "\u2020")) return(n[1])
-    cols <- grep("^disp_stat_[0-9]+$", ft$col_keys, value = TRUE)
+  # carries the count's mark and every statistic the dagger. The columns
+  # are the groups the table was built with (hv_pairs), not a stat_<k>
+  # pattern: the deprecated wrapper takes any column as a group.
+  pairs <- attr(ft, "hv_pairs", exact = TRUE)
+  if (!is.null(pairs)) {
+    if (identical(sym, "*")) return(pairs$n)
+    if (!identical(sym, "\u2020")) return(pairs$n[1])
+    cols <- pairs$stat
     if (.compare_noted(ft))
       cols <- c(cols, intersect("hv_compare_col", ft$col_keys))
     return(cols)
@@ -983,7 +1027,10 @@ test_that("a describe table displays with its marks where Word has them", {
 
 - [ ] **Step 5: Prove it by mutation.** (a) In `.footnote_cells()`, leave every row at 1: the
   rows 4-5 and display tests fail. (b) Return `n[1]` for `*`: rows 4-5 fail (one `n*`).
-  (c) Drop the `.compare_noted()` line: rows 4-5 fail on `P†`. Restore all.
+  (c) Drop the `.compare_noted()` line: rows 4-5 fail on `P†`. (d) Take the `*` targets
+  from `grep("^n_stat_[0-9]+$", ft$col_keys, value = TRUE)` instead of `pairs$n`: the
+  custom-column test fails. (e) Delete the `hv_pairs` line in `.man_table_describe()`: every
+  describe mark test fails. Restore all.
 
 - [ ] **Step 6: Commit**
 
@@ -1336,6 +1383,48 @@ test_that("the deprecated call marks the minority statistic with a pilcrow", {
   expect_true("\u00B6Mean\u00B1SD." %in% text)
   expect_false(any(grepl("Age, Mean", text, fixed = TRUE)))
 })
+
+test_that("the wrapper's marks follow custom group columns", {
+  tbl <- fx_jtcvs_tbl()
+  tbl$table_body$custom_a <- tbl$table_body$stat_1
+  tbl$table_body$custom_b <- tbl$table_body$stat_2
+  ft <- jtcvs_quiet(hv_man_table_jtcvs(
+    tbl, groups = c(custom_a = "A", custom_b = "B")
+  ))
+  f <- tempfile(fileext = ".docx")
+  jtcvs_quiet(hv_man_table_save_jtcvs(ft, f, caption = "Table 1. X"))
+  x <- officer::read_docx(f)$doc_obj$get()
+  sub <- vapply(xml2::xml_find_all(x, "//w:tbl/w:tr[2]/w:tc"),
+                xml2::xml_text, character(1))
+  expect_identical(sum(sub == "n*"), 2L)
+  expect_identical(sum(endsWith(sub, "\u2020")), 2L)
+})
+
+test_that("a test note the table does not name itself is kept, lettered", {
+  # A plain gtsummary table carries no test sentence in its dagger note,
+  # so the note hv_test_footnotes_jtcvs() wrote is the only place the
+  # test is named.
+  skip_if_not_installed("broom")
+  tbl <- gtsummary::add_p(fx_jtcvs_tbl())
+  tbl <- gtsummary::modify_table_body(tbl, function(tb) {
+    tb$hv_compare_col <- ifelse(is.na(tb$p.value), NA_character_,
+                                sprintf("%.2f", tb$p.value))
+    tb
+  })
+  ft <- jtcvs_quiet(hv_man_table_jtcvs(
+    tbl, groups = c(stat_1 = "A", stat_2 = "B"),
+    trailing = c(hv_compare_col = "P")
+  ))
+  notes <- jtcvs_quiet(hv_test_footnotes_jtcvs(tbl))
+  expect_identical(vapply(notes, `[[`, "", "text"),
+                   c("Wilcoxon rank-sum test.", "Pearson chi-square test."))
+  f <- tempfile(fileext = ".docx")
+  jtcvs_quiet(hv_man_table_save_jtcvs(ft, f, caption = "Table 1. X",
+                                      footnotes = notes))
+  text <- officer::docx_summary(officer::read_docx(f))$text
+  expect_true("a. Wilcoxon rank-sum test." %in% text)
+  expect_true("b. Pearson chi-square test." %in% text)
+})
 ```
 
   In `test-hv-man-table-save-jtcvs.R`, replace "hv_man_table_save_jtcvs attaches lettered
@@ -1548,7 +1637,10 @@ test_that("describe: caption, notes and Key set no font of their own", {
 
 - [ ] **Step 2: Run them; they fail** against Task 4's old bodies: the lettered notes read
   `a. Patients with data available.`, the round trip writes lettered test lines, describe has
-  no `hv_layout` from the wrapper, and so on.
+  no `hv_layout` from the wrapper, the custom-columns test finds lettered `a`s rather than
+  `n*`, the plain-table test reads `b.` and `c.` (the old saver keeps `a` for the `n`
+  header), and so on. Mutation (e) below shows the plain-table test also catches the
+  drop-everything rule the external review found.
   Run: `NOT_CRAN=true Rscript -e 'devtools::test()'`
 
 - [ ] **Step 3: `hv_man_table_jtcvs()` delegates.** Replace everything in its body from the
@@ -1647,9 +1739,9 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
   .assert_footnote_entries(footnotes, ft)
 
   # The caller's own notes keep their letters on their cells for this
-  # release. A test note hv_test_footnotes_jtcvs() wrote is dropped
-  # from a describe table, whose dagger note names its tests and whose
-  # double dagger marks Fisher's exact test, so it would say it twice.
+  # release. A test note hv_test_footnotes_jtcvs() wrote is dropped only
+  # where the table already names that test; otherwise it is lettered
+  # like the caller's own.
   footnotes <- .drop_named_tests(ft, footnotes)
   lettered <- list()
   for (k in seq_along(footnotes)) {
@@ -1666,12 +1758,23 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
 }
 
 # The entries hv_test_footnotes_jtcvs() writes: a test named on the
-# comparison column. A describe table already names each one.
+# comparison column. A describe table from hv_tbl_summary() names those
+# tests itself, the others in its dagger note (its hv_test_note) and
+# Fisher's under its double dagger, so such an entry would say it twice.
+# A test the table does not name, as on a plain gtsummary table, keeps
+# its entry, which the saver letters.
 .drop_named_tests <- function(ft, footnotes) {
   if (!identical(attr(ft, "hv_layout", exact = TRUE), "describe"))
     return(footnotes)
+  fisher <- .hv_test_labels[["fisher.test"]]
+  named <- c(
+    if (!is.null(attr(ft, "hv_test_note", exact = TRUE)))
+      setdiff(.hv_test_labels, fisher),
+    if ("\u2021" %in% names(attr(ft, "hv_body_marks", exact = TRUE)))
+      fisher
+  )
   Filter(function(fn) {
-    !(identical(fn$col, "hv_compare_col") && fn$text %in% .hv_test_labels)
+    !(identical(fn$col, "hv_compare_col") && fn$text %in% named)
   }, footnotes)
 }
 ```
@@ -1705,11 +1808,12 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
 
 ```r
 #' Until it goes, it writes the table as [hv_man_table_save()] does, with
-#' `caption` above it and the table's own notes below. Test footnotes from
-#' [hv_test_footnotes_jtcvs()] are dropped from a describe table, which
-#' names its tests in its dagger note; any other `footnotes` entry keeps a
-#' lettered superscript on its cells, lettered from `a`, and its line
-#' after the table's own notes.
+#' `caption` above it and the table's own notes below. A test footnote
+#' from [hv_test_footnotes_jtcvs()] is dropped when the table already
+#' names that test, as a table from [hv_tbl_summary()] does in its dagger
+#' note; every other `footnotes` entry, a plain gtsummary table's test
+#' notes included, keeps a lettered superscript on its cells, lettered
+#' from `a`, and its line after the table's own notes.
 ```
 
   and, in `@param footnotes`, "A table from [hv_man_table_jtcvs()] already uses `a` for its
@@ -1722,7 +1826,11 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
 - [ ] **Step 8: Prove it by mutation.** (a) Pass `trailing = NULL` in the delegation: the
   Task 4 column test fails. (b) Make `.drop_named_tests()` return `footnotes`: the round trip
   fails on lettered test lines. (c) Leave `lettered` empty: the caller-notes test fails.
-  (d) Pass `stat_label = NULL` in the delegation: the pass-through test fails. Restore all.
+  (d) Pass `stat_label = NULL` in the delegation: the pass-through test fails. (e) Set
+  `named <- .hv_test_labels` before the `Filter()` (drop every recognized test note): the
+  plain-table test fails. (f) Set `named <- character(0)` (drop none): the round trip fails.
+  (g) Take the `*` targets from the `^n_stat_` pattern: the custom-columns wrapper test fails.
+  Restore all.
 
 - [ ] **Step 9: Commit**
 
@@ -1985,10 +2093,11 @@ hv_man_table(
   arguments keep their meaning: `groups` and `trailing` choose the same columns.
   - **Their output changes:** the table is drawn in the describe layout, with the
     manuscript's grid, shading and notes (`*Patients with non-missing data.` for
-    `a. Patients with data available.`) and the document's font. The saver drops the test
-    footnotes `hv_test_footnotes_jtcvs()` wrote, since the table's dagger note names its tests
-    and Fisher's exact test is marked on its P values; a caller's own positional notes keep
-    their letters, from `a`.
+    `a. Patients with data available.`) and the document's font. The saver drops a test
+    footnote `hv_test_footnotes_jtcvs()` wrote when the table already names that test, as an
+    `hv_tbl_summary()` table does in its dagger note and with Fisher's mark on its P values;
+    any other positional note, a plain gtsummary table's test notes included, keeps its
+    letter, from `a`.
   - `hv_man_table_display()` shows such a table; it refused one before.
 ```
 
@@ -2060,6 +2169,7 @@ on the most capable model.
   carry the pattern, the site list on `main` and `WARN 0` as their completeness check.
 - **Names used across tasks:** `.check_manuscript_tbl()`, `.group_labels()`,
   `.dress_manuscript()`, `.mark_compare(stat_label =)`, `hv_layout` (Task 1);
-  `.check_layout()`, `.man_table_describe(tbl, style, groups, trailing, stat_label)` (Task 2);
+  `.check_layout()`, `.man_table_describe(tbl, style, groups, trailing, stat_label)`,
+  `hv_pairs` (Task 2);
   `.footnote_cells()` (Task 3); `.jtcvs_deprecated()`, `jtcvs_quiet()` (Task 4);
   `.write_man_docx()`, `.drop_named_tests()` (Task 5), spelled the same in every task.
