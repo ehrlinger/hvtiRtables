@@ -426,3 +426,38 @@ test_that("only Word's own header rows may merge", {
   late <- mc_doc(mc_tr(""), mc_tr(), mc_tr("", span = TRUE))
   expect_identical(.detect_merged_cell(late)$location, "row 3")
 })
+
+# A row of hand-written cells carrying the legacy w:hMerge. Each element
+# of `h` is one cell: NA for no hMerge, "" for a valueless one, else its
+# w:val.
+mc_tr_h <- function(h, header = FALSE) {
+  pr <- if (header) "<w:trPr><w:tblHeader/></w:trPr>" else ""
+  cells <- vapply(h, function(v) {
+    m <- if (is.na(v)) {
+      ""
+    } else if (nzchar(v)) {
+      paste0("<w:hMerge w:val=\"", v, "\"/>")
+    } else {
+      "<w:hMerge/>"
+    }
+    paste0("<w:tc><w:tcPr>", m, "</w:tcPr><w:p/></w:tc>")
+  }, character(1))
+  paste0("<w:tr>", pr, paste(cells, collapse = ""), "</w:tr>")
+}
+
+test_that("legacy w:hMerge groups count as merged cells", {
+  part <- mc_doc(mc_tr(), mc_tr_h(c("restart", "continue", NA)))
+  expect_identical(.detect_merged_cell(part)$location, "row 2")
+  # A valueless hMerge continues the group, too.
+  expect_identical(
+    .detect_merged_cell(mc_doc(mc_tr_h(c("restart", "", NA))))$location,
+    "row 1"
+  )
+  full <- mc_doc(mc_tr(), mc_tr_h(c("restart", "continue", "")))
+  expect_identical(nrow(.detect_merged_cell(full)), 0L)
+  expect_identical(.detect_merged_cell(full, strict = TRUE)$location,
+                   "row 2")
+  hdr <- mc_doc(mc_tr_h(c("restart", "continue", NA), header = TRUE),
+                mc_tr())
+  expect_identical(nrow(.detect_merged_cell(hdr)), 0L)
+})

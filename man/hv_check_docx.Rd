@@ -52,9 +52,10 @@ produces when misused. This detector is pattern-based rather than a
 guaranteed structural signature, so treat its findings as prompts to
 look, not proof.
 \item \code{"merged_cell"} (structural, high confidence): a row whose cells are
-merged (\code{w:gridSpan} above 1, or \code{w:vMerge}) outside the header
-rows, unless the row is one cell spanning the table. The header rows
-are the leading run of rows whose \code{w:tblHeader} flag is on, as Word
+merged (\code{w:gridSpan} above 1, \code{w:vMerge}, or the legacy \code{w:hMerge})
+outside the header rows, unless the row is one cell spanning the
+table. The header rows are the leading run of rows whose
+\code{w:tblHeader} flag is on, as Word
 reads it. With \code{style = "report"}, any merged cell is a finding.
 }
 }

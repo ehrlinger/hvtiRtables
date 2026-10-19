@@ -200,6 +200,26 @@
   cumsum(!flag) == 0L
 }
 
+# Grid columns covered by each horizontal merge group in a row. A cell with
+# w:hMerge of "continue", or with no value, joins the group before it; any
+# other cell starts a group. A cell's own w:gridSpan counts toward its
+# group, so the legacy hMerge and the modern gridSpan sum alike.
+.hmerge_spans <- function(tcs) {
+  spans <- integer(0)
+  for (tc in tcs) {
+    h <- xml2::xml_find_first(tc, "./w:tcPr/w:hMerge")
+    cont <- !inherits(h, "xml_missing") &&
+      (is.na(xml2::xml_attr(h, "val")) ||
+         tolower(xml2::xml_attr(h, "val")) != "restart")
+    if (cont && length(spans) > 0L) {
+      spans[length(spans)] <- spans[length(spans)] + .grid_span(tc)
+    } else {
+      spans <- c(spans, .grid_span(tc))
+    }
+  }
+  spans
+}
+
 # House rule 3 asks for no merged cells; a style may merge its header
 # and its section rows, and a section row merged at all must span the
 # table in one cell. A label beside one wide blank cell reads as a row
@@ -218,8 +238,12 @@
       vmerge <- length(xml2::xml_find_all(
         rows[[r]], "./w:tc/w:tcPr/w:vMerge"
       )) > 0L
-      if (all(spans == 1L) && !vmerge) next
-      full <- length(tcs) == 1L && spans[1] == ncol
+      hmerge <- length(xml2::xml_find_all(
+        rows[[r]], "./w:tc/w:tcPr/w:hMerge"
+      )) > 0L
+      if (all(spans == 1L) && !vmerge && !hmerge) next
+      groups <- .hmerge_spans(tcs)
+      full <- length(groups) == 1L && groups[1] == ncol
       if (!strict && (header[r] || (full && !vmerge))) next
       detail <- if (strict) {
         paste0("Row ", r, " merges cells, and the report style merges ",
@@ -271,9 +295,10 @@
 #'   guaranteed structural signature, so treat its findings as prompts to
 #'   look, not proof.
 #' * `"merged_cell"` (structural, high confidence): a row whose cells are
-#'   merged (`w:gridSpan` above 1, or `w:vMerge`) outside the header
-#'   rows, unless the row is one cell spanning the table. The header rows
-#'   are the leading run of rows whose `w:tblHeader` flag is on, as Word
+#'   merged (`w:gridSpan` above 1, `w:vMerge`, or the legacy `w:hMerge`)
+#'   outside the header rows, unless the row is one cell spanning the
+#'   table. The header rows are the leading run of rows whose
+#'   `w:tblHeader` flag is on, as Word
 #'   reads it. With `style = "report"`, any merged cell is a finding.
 #'
 #' @section Common mistakes:
