@@ -97,10 +97,11 @@ mention them.
 ## Decisions this plan takes
 
 Each is a reading of the design where it is silent or disagrees with itself. The PR lists them
-for John. **Decision 1 must be confirmed before Task 5 runs**; Tasks 0 to 4 are the same
-either way.
+for John. **Decision 1 is confirmed** (John, 2026-10-19: deprecated calls draw the describe
+layout during the deprecation release), so Task 5 runs.
 
 1. **A deprecated call draws describe's look, not the JTCVS look ("same columns, new look").**
+   Confirmed by John, 2026-10-19.
    D3 says the wrappers keep existing calls "working", which reads either as "same output" or
    as "same columns, new look". This plan takes the second, because D3's own wording
    presupposes it: each wrapper "passes its arguments through", the columns stay the same
@@ -1297,10 +1298,10 @@ git add R/hv-man-table-jtcvs.R R/hv-man-table-save-jtcvs.R R/hv-test-footnotes-j
 git commit -m "feat: deprecate the JTCVS functions; tests run them through jtcvs_quiet()"
 ```
 
-### Task 5: The wrappers draw the describe layout (decision 1, confirmed first)
+### Task 5: The wrappers draw the describe layout (decision 1, confirmed)
 
-**Do not start until John has confirmed decision 1.** If he chooses the old output instead,
-skip this task; Task 4 already carries the warnings and the column test.
+John confirmed decision 1 on 2026-10-19: during the deprecation release the wrappers draw the
+describe layout.
 
 **Files:**
 - Modify: `R/hv-man-table-jtcvs.R` (`hv_man_table_jtcvs()`'s body and roxygen),
