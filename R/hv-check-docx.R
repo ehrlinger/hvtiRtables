@@ -144,7 +144,8 @@
     cells <- xml2::xml_find_all(rows[[length(rows)]], "./w:tc")
     for (k in seq_along(cells)) {
       txt <- trimws(xml2::xml_text(cells[[k]]))
-      if (!grepl(.footnote_marker, txt) && !.opens_with_digit_marker(cells[[k]]))
+      if (!grepl(.footnote_marker, txt) &&
+            !.opens_with_digit_marker(cells[[k]]))
         next
       out[[length(out) + 1]] <- .finding(
         "embedded_footnote", i,
@@ -235,9 +236,9 @@
 #'   dagger or double dagger, a section or pilcrow sign, a lettered
 #'   `a.`/`b.` marker, `Key:` or `Abbreviation:`) or whose first run is a
 #'   superscript number, as `gtsummary` writes a footnote, the pattern
-#'   `flextable::footnote()` produces when misused. This detector is pattern-based rather than a
-#'   guaranteed structural signature, so treat its findings as prompts to
-#'   look, not proof.
+#'   `flextable::footnote()` produces when misused. This detector is
+#'   pattern-based rather than a guaranteed structural signature, so treat
+#'   its findings as prompts to look, not proof.
 #'
 #' @section Common mistakes:
 #' **"`path` must be a single non-empty string."** The argument is a
