@@ -89,7 +89,9 @@ test_that("compare: manuscript notes, and the marks the cells carry", {
   expect_identical(names(notes), c("*", "†", "‡", "¶"))
   expect_identical(notes[["*"]], "Patients with non-missing data.")
   expect_identical(notes[["†"]],
-                   "Values are No. (%) or median [15th, 85th percentiles].")
+                   paste0("Values are No. (%) or median [15th, 85th ",
+                          "percentiles]; P values from the Wilcoxon rank ",
+                          "sum test."))
   expect_identical(names(attr(ft, "hv_body_marks")), c("‡", "¶"))
   ch <- flextable::information_data_chunk(ft)
   body <- ft$body$dataset

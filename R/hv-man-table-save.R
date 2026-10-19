@@ -75,7 +75,10 @@
 #'   Symbols must be drawn from `c("*", "†", "‡", "§", "¶", "||")`. `†`
 #'   describes the statistic, so it is appended as a superscript reference
 #'   mark to every statistic-column header (`stat_<k>`), and to the
-#'   count column only when the table has no such column. Every other
+#'   count column only when the table has no such column. On a table
+#'   that compares its groups, `†` also marks the p-value and
+#'   standardized-difference headers, because the note names the tests
+#'   behind the p-values and says what the difference is. Every other
 #'   symbol goes on the table's count-column header cell (a column named
 #'   `n`, else the first `n_stat_<k>` column [hv_man_table()] creates when
 #'   it splits an [hv_tbl_summary()] table, else the first column). In a
@@ -89,7 +92,9 @@
 #'   no-op, same as `NULL`. (`%summarytable` `ADDFN=` equivalent;
 #'   `PRINTFN=1`'s house block is [hv_man_footnotes()]).
 #' @param abbreviations Optional named character vector, `c(ABBR =
-#'   "expansion", ...)`. Rendered as one `Key:` paragraph below any
+#'   "expansion", ...)`. A table with a confidence-interval column
+#'   (`compare = "both"`) adds `CI` unless you define it yourself.
+#'   Rendered as one `Key:` paragraph below any
 #'   footnotes, sorted alphabetically by abbreviation, abbreviation
 #'   italicized, pairs separated by `"; "` (house rule 14). Every element
 #'   must be named (unnamed or blank-named entries raise an error); an
@@ -128,6 +133,7 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   # Hoisted out of .add_abbreviations_key() so it fires at entry
   # rather than mid-render: no partial .docx on a bad argument.
   .check_abbreviations(abbreviations)
+  abbreviations <- .with_table_abbreviations(ft, abbreviations)
 
   footnotes <- .resolve_footnotes(ft, footnotes)
   ft <- .mark_header(ft, footnotes)
@@ -211,6 +217,14 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
       header = 708 * twip, footer = 708 * twip, gutter = 0
     )
   ))
+}
+
+# The caller's key plus the table's own: CI, once a confidence-interval
+# column is shown, because the table cannot be read without it. The
+# caller's definition wins when they give one.
+.with_table_abbreviations <- function(ft, abbreviations) {
+  own <- attr(ft, "hv_abbreviations", exact = TRUE)
+  c(abbreviations, own[setdiff(names(own), names(abbreviations))])
 }
 
 .default_footnotes <- function(ft) {
@@ -413,6 +427,13 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   ft$col_keys[1]
 }
 
+# TRUE when the dagger note also explains the comparison column: it names
+# the tests behind the p-values, or defines the standardized difference.
+.compare_noted <- function(ft) {
+  !is.null(attr(ft, "hv_test_note", exact = TRUE)) ||
+    !is.null(attr(ft, "hv_smd", exact = TRUE))
+}
+
 # Header cells one footnote symbol attaches to. The dagger describes the
 # statistic, so it marks every column that holds one: on the count
 # column it claimed the "No." header was a median.
@@ -423,9 +444,20 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
     if (identical(attr(ft, "hv_style", exact = TRUE)$header, "spanned")) {
       disp <- grep("^disp_stat_[0-9]+$", ft$col_keys, value = TRUE)
       group <- setdiff(disp, "disp_stat_0")
-      return(if (length(group) > 0L) group[1] else disp[1])
+      cols <- if (length(group) > 0L) group[1] else disp[1]
+      # The note also names the tests behind the p-values, so the
+      # comparison header carries the dagger too.
+      if (.compare_noted(ft))
+        cols <- c(cols, intersect("hv_compare_col", ft$col_keys))
+      return(cols)
     }
     stat <- grep("^stat_[0-9]+$", ft$col_keys, value = TRUE)
+    # The dagger note also names the tests behind the p-values, so the
+    # p-value header carries it too.
+    if (!is.null(attr(ft, "hv_test_note", exact = TRUE)))
+      stat <- c(stat, intersect("p.value", ft$col_keys))
+    if (!is.null(attr(ft, "hv_smd", exact = TRUE)))
+      stat <- c(stat, intersect("estimate", ft$col_keys))
     if (length(stat) > 0L) return(stat)
   }
   .footnote_col(ft)

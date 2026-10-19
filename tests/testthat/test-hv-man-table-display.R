@@ -63,10 +63,10 @@ test_that("display and .docx carry the same marks, notes and key", {
   expect_true("hv_variable" %in% names(shown_header))
   expect_identical(unname(shown_header[names(shown_header) != "hv_variable"]),
                    saved$header)
-  # The lines the helper adds, after any footer gtsummary already put on
-  # the table (its test note), which the saver keeps in the table too.
-  added <- dp_footer_lines(shown)[-seq_len(flextable::nrow_part(ft, "footer"))]
-  expect_identical(unname(added), saved$notes)
+  # The lines the helper adds. The table arrives with no footer of its
+  # own: gtsummary's test note no longer rides in the table.
+  expect_identical(flextable::nrow_part(ft, "footer"), 0L)
+  expect_identical(unname(dp_footer_lines(shown)), saved$notes)
   # And the content is the expected content, not merely equal.
   expect_true(any(grepl("\\*$", saved$header)))
   expect_true(any(grepl("†$", saved$header)))
@@ -174,6 +174,36 @@ test_that("the footer lines take the table's font and size", {
   sty <- shown$footer$styles$text
   expect_true(all(sty$font.size$data == 12))
   expect_true(all(sty$font.family$data == "Arial"))
+})
+
+test_that("the display names the tests, marks P and keys CI like the .docx", {
+  skip_if_not_installed("broom")
+  ft <- hv_man_table(hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = c("age", "stage")),
+    continuous = "age", categorical = "stage", compare = "both"
+  ))
+  shown <- hv_man_table_display(ft)
+  header <- dp_row_text(shown, "header", 1)
+  expect_identical(unname(header["p.value"]), "p-value†")
+  lines <- dp_footer_lines(shown)
+  expect_true(any(grepl(
+    paste0("P values from the Wilcoxon rank sum test and Pearson's ",
+           "chi-square test; Std. Diff. is the standardized mean ",
+           "difference, with its 95% CI."),
+    lines, fixed = TRUE
+  )))
+  expect_identical(unname(header["estimate"]), "Std. Diff.†")
+  expect_identical(unname(lines[length(lines)]),
+                   "Key: CI, confidence interval")
+  # The caller's entries join the table's own; their CI wins.
+  mine <- dp_footer_lines(hv_man_table_display(
+    ft, abbreviations = c(SD = "standard deviation", CI = "credible interval")
+  ))
+  expect_identical(unname(mine[length(mine)]),
+                   "Key: CI, credible interval; SD, standard deviation")
+  plain <- dp_footer_lines(hv_man_table_display(ft, abbreviations = NULL))
+  expect_identical(unname(plain[length(plain)]),
+                   "Key: CI, confidence interval")
 })
 
 test_that("a manuscript display writes its notes in the manuscript's words", {

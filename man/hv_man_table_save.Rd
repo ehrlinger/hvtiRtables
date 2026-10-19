@@ -29,7 +29,10 @@ compose with \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} to override or 
 Symbols must be drawn from \code{c("*", "†", "‡", "§", "¶", "||")}. \verb{†}
 describes the statistic, so it is appended as a superscript reference
 mark to every statistic-column header (\verb{stat_<k>}), and to the
-count column only when the table has no such column. Every other
+count column only when the table has no such column. On a table
+that compares its groups, \verb{†} also marks the p-value and
+standardized-difference headers, because the note names the tests
+behind the p-values and says what the difference is. Every other
 symbol goes on the table's count-column header cell (a column named
 \code{n}, else the first \verb{n_stat_<k>} column \code{\link[=hv_man_table]{hv_man_table()}} creates when
 it splits an \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} table, else the first column). In a
@@ -43,7 +46,9 @@ error, since each writes a dangling marker); an empty list is a
 no-op, same as \code{NULL}. (\verb{\%summarytable} \verb{ADDFN=} equivalent;
 \code{PRINTFN=1}'s house block is \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}).}
 
-\item{abbreviations}{Optional named character vector, \code{c(ABBR = "expansion", ...)}. Rendered as one \verb{Key:} paragraph below any
+\item{abbreviations}{Optional named character vector, \code{c(ABBR = "expansion", ...)}. A table with a confidence-interval column
+(\code{compare = "both"}) adds \code{CI} unless you define it yourself.
+Rendered as one \verb{Key:} paragraph below any
 footnotes, sorted alphabetically by abbreviation, abbreviation
 italicized, pairs separated by \code{"; "} (house rule 14). Every element
 must be named (unnamed or blank-named entries raise an error); an

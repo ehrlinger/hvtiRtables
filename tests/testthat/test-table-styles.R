@@ -122,7 +122,9 @@ test_that("rows 8-10: note markers and wording", {
   m <- wx_doc(st_save("manuscript"))
   expect_identical(after(m)[1:2], c(
     "*Patients with non-missing data.",
-    "\u2020Values are No. (%) or median [15th, 85th percentiles]."
+    paste0("\u2020Values are No. (%) or median [15th, 85th percentiles]; ",
+           "P values from the Wilcoxon rank sum test and Pearson's ",
+           "chi-square test.")
   ))
 })
 
@@ -250,5 +252,59 @@ test_that("replicas of the two submissions' Table 1 shapes", {
     notes <- vapply(xq(x, "//w:tbl/following-sibling::w:p"), wx_text,
                     character(1))
     expect_true(any(grepl("15th, 85th percentiles", notes, fixed = TRUE)))
+  }
+})
+
+test_that("the manuscript names the tests in its dagger note and marks P", {
+  skip_if_not_installed("broom")
+  after <- function(x) {
+    vapply(xq(x, "//w:tbl/following-sibling::w:p"), wx_text, character(1))
+  }
+  for (cmp in c("pvalue", "both", "smd")) {
+    f <- st_save("manuscript", tbl = hv_tbl_summary(
+      gtsummary::trial, by = "trt",
+      groups = list(Demography = c("age", "marker"),
+                    Disease = c("stage", "grade")),
+      continuous = c("age", "marker"), categorical = c("stage", "grade"),
+      compare = cmp
+    ))
+    m <- wx_doc(f)
+    rows <- wx_rows(m)
+    p_head <- rows[[1]][[length(rows[[1]])]]
+    note <- after(m)[2]
+    if (cmp == "smd") {
+      expect_identical(
+        note,
+        paste0("\u2020Values are No. (%) or median [15th, 85th ",
+               "percentiles]; Std. Diff. is the standardized mean ",
+               "difference."),
+        info = cmp
+      )
+      expect_identical(p_head$sup, "\u2020", info = cmp)
+    } else if (cmp == "both") {
+      expect_identical(
+        note,
+        paste0("\u2020Values are No. (%) or median [15th, 85th ",
+               "percentiles]; P values from the Wilcoxon rank sum test ",
+               "and Pearson's chi-square test; SMD is the standardized ",
+               "mean difference."),
+        info = cmp
+      )
+      expect_identical(p_head$sup, "\u2020", info = cmp)
+    } else {
+      expect_identical(
+        note,
+        paste0("†Values are No. (%) or median [15th, 85th ",
+               "percentiles]; P values from the Wilcoxon rank sum test and ",
+               "Pearson's chi-square test."),
+        info = cmp
+      )
+      expect_identical(p_head$sup, "†", info = cmp)
+    }
+    # gtsummary's own footnotes never reach the manuscript table either.
+    expect_false(grepl("Wilcoxon", wx_text(xq(m, "//w:tbl")[[1]]),
+                       fixed = TRUE), info = cmp)
+    expect_identical(nrow(hv_check_docx(f, style = "manuscript")), 0L,
+                     info = cmp)
   }
 })

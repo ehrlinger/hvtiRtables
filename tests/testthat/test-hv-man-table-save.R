@@ -159,7 +159,10 @@ test_that("default footnotes survive grouped p-value processing", {
   on.exit(unlink(f), add = TRUE)
   hv_man_table_save(ft, f)
   xml <- read_docx_text(f)
-  expect_true(grepl("Mean±SD.", xml, fixed = TRUE))
+  # The table compares its groups, so the dagger note also names the test.
+  expect_true(grepl(
+    "Mean±SD; P values from the Wilcoxon rank sum test.", xml, fixed = TRUE
+  ))
   expect_false(grepl("Median [15th, 85th percentiles]", xml, fixed = TRUE))
 })
 
@@ -435,9 +438,10 @@ test_that("a manuscript note begins with its plain symbol", {
   ps <- xml2::xml_find_all(x, "//w:tbl/following-sibling::w:p")
   text <- vapply(ps, xml2::xml_text, character(1))
   expect_identical(text[1], "*Patients with non-missing data.")
-  expect_identical(
-    text[2], "†Values are No. (%) or median [15th, 85th percentiles]."
-  )
+  expect_match(text[2], paste0(
+    "^†Values are No. \\(%\\) or median \\[15th, 85th percentiles\\]; ",
+    "P values from the "
+  ))
   sup <- xml2::xml_find_all(ps[[1]], ".//w:vertAlign[@w:val='superscript']")
   expect_length(sup, 0L)
 })

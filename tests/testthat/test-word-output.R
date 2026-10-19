@@ -94,6 +94,79 @@ test_that("CORR: no % sign in any body cell", {
   expect_false(any(grepl("%", body, fixed = TRUE)))
 })
 
+test_that("CORR: gtsummary's own footnotes never reach the table", {
+  # add_p() footnotes the test names on the p-value header, and
+  # add_difference() footnotes the SMD and defines CI; as_flex_table()
+  # writes all of them as rows and superscripts inside the w:tbl. House
+  # rule 13 puts notes below the table, as paragraphs.
+  for (cmp in c("pvalue", "smd", "both")) {
+    tbl <- hv_tbl_summary(
+      gtsummary::trial, by = "trt",
+      groups = list(Demography = c("age", "marker"),
+                    Disease = c("stage", "response")),
+      continuous = c("age", "marker"), binary = "response",
+      categorical = "stage", compare = cmp
+    )
+    f <- wx_save_corr(tbl)
+    doc <- wx_doc(f)
+    rows <- wx_rows(doc)
+    last <- cell_text(rows[[length(rows)]])
+    expect_identical(last[1], "Tumor Response", info = cmp)
+    expect_true(any(nzchar(last[-1])), info = cmp)
+    sup <- unlist(lapply(rows, function(r) vapply(r, `[[`, "", "sup")))
+    expect_false(any(grepl("[0-9]", sup)), info = cmp)
+    expect_false(
+      grepl("Wilcoxon|Abbreviation", wx_text(xml2::xml_find_first(
+        doc, "//w:tbl", wx_ns
+      ))),
+      info = cmp
+    )
+    expect_identical(nrow(hv_check_docx(f)), 0L, info = cmp)
+
+    # What gtsummary said inside the table is said below it instead: the
+    # tests in the dagger note, with the dagger on the p-value header; CI
+    # in the key.
+    header <- rows[[1]]
+    head_text <- cell_text(header)
+    head_sup <- vapply(header, `[[`, "", "sup")
+    notes <- wx_paragraphs_after_table(doc)
+    dagger <- grep("^†", notes, value = TRUE)
+    stat_note <- "† No. (%) or Median [15th, 85th percentiles]"
+    tests <- paste0("P values from the Wilcoxon rank sum test and ",
+                    "Pearson's chi-square test")
+    smd <- paste0("Std. Diff. is the standardized mean difference, ",
+                  "with its 95% CI.")
+    expected <- switch(
+      cmp,
+      pvalue = paste0(stat_note, "; ", tests, "."),
+      smd = paste0(stat_note, "; ", smd),
+      both = paste0(stat_note, "; ", tests, "; ", smd)
+    )
+    expect_identical(dagger, expected, info = cmp)
+    # The dagger sits on each header the note explains. gtsummary's
+    # "Difference" is replaced by the name the other renderers use.
+    expect_false("Difference" %in% sub("[†*]+$", "", head_text), info = cmp)
+    marked <- function(prefix) {
+      head_sup[startsWith(head_text, prefix)]
+    }
+    if (cmp == "pvalue") {
+      expect_identical(marked("p-value"), "†", info = cmp)
+    } else {
+      expect_identical(marked("Std. Diff."), "†", info = cmp)
+      expect_identical(marked("95% CI"), "", info = cmp)
+      expect_identical(marked("p-value"),
+                       if (cmp == "both") "†" else character(0), info = cmp)
+    }
+    key <- grep("^Key:", notes, value = TRUE)
+    if (cmp == "pvalue") {
+      expect_length(key, 0L)
+    } else {
+      expect_identical(key, "Key: CI, confidence interval", info = cmp)
+    }
+    unlink(f)
+  }
+})
+
 # -- JTCVS renderer ----------------------------------------------------
 
 test_that("JTCVS: Characteristic appears once, spanning both header rows", {

@@ -50,7 +50,8 @@
 #'   `NULL` shows none.
 #' @param abbreviations Optional named character vector, abbreviation ->
 #'   definition, exactly as for [hv_man_table_save()]: shown as one
-#'   "Key:" line, sorted by abbreviation.
+#'   "Key:" line, sorted by abbreviation. A table showing a confidence
+#'   interval adds `CI` unless you define it.
 #'
 #' @return `ft` with the header marks and the footer lines added, for
 #'   display.
@@ -82,6 +83,7 @@ hv_man_table_display <- function(ft, footnotes = NULL,
          call. = FALSE)
   if (use_default_footnotes) footnotes <- .default_footnotes(ft)
   .check_abbreviations(abbreviations)
+  abbreviations <- .with_table_abbreviations(ft, abbreviations)
   footnotes <- .resolve_footnotes(ft, footnotes)
 
   ft <- .mark_header(ft, footnotes)

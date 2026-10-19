@@ -47,10 +47,11 @@ margin, so the rightmost columns are lost from the page.
 \item \code{"embedded_footnote"} (heuristic, lower confidence): a cell in a
 table's last row whose text starts with a footnote marker (\code{*}, a
 dagger or double dagger, a section or pilcrow sign, a lettered
-\code{a.}/\code{b.} marker, or \verb{Key:}), the pattern \code{flextable::footnote()}
-produces when misused. This detector is pattern-based rather than a
-guaranteed structural signature, so treat its findings as prompts to
-look, not proof.
+\code{a.}/\code{b.} marker, \verb{Key:} or \verb{Abbreviation:}) or whose first run is a
+superscript number, as \code{gtsummary} writes a footnote, the pattern
+\code{flextable::footnote()} produces when misused. This detector is
+pattern-based rather than a guaranteed structural signature, so treat
+its findings as prompts to look, not proof.
 \item \code{"merged_cell"} (structural, high confidence): a row whose cells are
 merged (\code{w:gridSpan} above 1, \code{w:vMerge}, or the legacy \code{w:hMerge})
 outside the header rows, unless the row is one cell spanning the

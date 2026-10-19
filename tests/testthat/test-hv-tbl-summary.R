@@ -1941,6 +1941,53 @@ test_that("a table showing one statistic carries no cell marks", {
   expect_null(attr(tbl, "hv_cell_marks"))
 })
 
+# -- The tests behind the p-values are named in the dagger note ----------
+
+tn_note <- function(...) {
+  attr(hv_tbl_summary(...), "hv_footnotes")[["†"]]
+}
+
+test_that("the dagger note names the tests that ran, Fisher left to its mark", {
+  skip_if_not_installed("broom")
+  tbl <- ce_tbl()
+  expect_true(any(tbl$table_body$test_name %in% "fisher.test"))
+  note <- attr(tbl, "hv_footnotes")[["†"]]
+  expect_match(note, "; P values from the ", fixed = TRUE)
+  expect_false(grepl("Fisher", note, fixed = TRUE))
+  expect_match(attr(tbl, "hv_test_note"), "^P values from the ")
+  expect_identical(attr(tbl, "hv_footnotes")[["‡"]], "Fisher exact test.")
+})
+
+test_that("three groups name Kruskal-Wallis, and `normal` names ANOVA", {
+  skip_if_not_installed("broom")
+  trial3 <- gtsummary::trial
+  trial3$grp <- factor(rep(c("a", "b", "c"), length.out = nrow(trial3)))
+  note <- tn_note(trial3, by = "grp", groups = list(D = "age"),
+                  continuous = "age")
+  expect_match(note, "P values from the Kruskal-Wallis test.", fixed = TRUE)
+  note <- tn_note(gtsummary::trial, by = "trt",
+                  groups = list(D = c("age", "marker")),
+                  continuous = c("age", "marker"), normal = "age")
+  expect_match(
+    note,
+    paste0("P values from the one-way analysis of variance and Wilcoxon ",
+           "rank sum test."),
+    fixed = TRUE
+  )
+})
+
+test_that("no comparison test, no test sentence and no p-value mark", {
+  skip_if_not_installed("broom")
+  for (cmp in c("none", "smd")) {
+    tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                          groups = list(D = "age"), continuous = "age",
+                          compare = cmp)
+    expect_false(grepl("P values", attr(tbl, "hv_footnotes")[["†"]]),
+                 info = cmp)
+    expect_null(attr(tbl, "hv_test_note"), info = cmp)
+  }
+})
+
 test_that("each variable's overall non-missing count rides on its label row", {
   d <- gtsummary::trial
   d$trt[1:3] <- NA # outside every group, so tbl_summary() drops them
@@ -1983,4 +2030,27 @@ test_that("the grouping's name is its label, else its name, else NULL", {
   expect_null(attr(none, "hv_by_label"))
   expect_identical(none$table_body$hv_n,
                    as.character(sum(!is.na(gtsummary::trial$age))))
+})
+
+test_that("a standardized difference is named and defined, not 'Difference'", {
+  skip_if_not_installed("broom")
+  for (cmp in c("smd", "both")) {
+    tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                          groups = list(D = c("age", "stage")),
+                          continuous = "age", categorical = "stage",
+                          compare = cmp)
+    hdr <- tbl$table_styling$header
+    expect_identical(hdr$label[hdr$column == "estimate"], "**Std. Diff.**",
+                     info = cmp)
+    expect_identical(attr(tbl, "hv_smd"), cmp)
+    expect_match(
+      attr(tbl, "hv_footnotes")[["†"]],
+      "Std. Diff. is the standardized mean difference, with its 95% CI.$",
+      info = cmp
+    )
+  }
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(D = "age"), continuous = "age",
+                        compare = "pvalue")
+  expect_null(attr(tbl, "hv_smd"))
 })
