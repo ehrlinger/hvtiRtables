@@ -187,9 +187,12 @@ test_that("the display names the tests, marks P and keys CI like the .docx", {
   expect_identical(unname(header["p.value"]), "p-value†")
   lines <- dp_footer_lines(shown)
   expect_true(any(grepl(
-    "P values from the Wilcoxon rank sum test and Pearson's chi-square test.",
+    paste0("P values from the Wilcoxon rank sum test and Pearson's ",
+           "chi-square test; Std. Diff. is the standardized mean ",
+           "difference, with its 95% CI."),
     lines, fixed = TRUE
   )))
+  expect_identical(unname(header["estimate"]), "Std. Diff.†")
   expect_identical(unname(lines[length(lines)]),
                    "Key: CI, confidence interval")
   # The caller's entries join the table's own; their CI wins.
