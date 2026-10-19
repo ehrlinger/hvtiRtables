@@ -67,14 +67,17 @@ where it goes.
 Each is a reading of the design where it is silent or disagrees with itself. The PR lists them
 for John.
 
-1. **The manuscript header is not bold.** Row 14 names a bold header for `"report"` only.
+1. **The header is bold in both styles.** John's decision, 2026-10-19; design row 14 is
+   amended to match.
 2. **`continuous_stat = "both"` is refused in `"manuscript"`.** A manuscript table shows one
    statistic per group; `hv_tbl_summary()`'s own documentation says choosing one is a matter
    of dropping a column. The error says so. `"describe"` (Phase 3) inherits the JTCVS
    renderer's support for it.
-3. **A manuscript save requires `caption`.** Row 13 puts the caption in the style; a table
-   saved without one would need it typed in, which is the hand edit this work removes. A
-   report save with a caption is refused, as today.
+3. **A manuscript save requires `caption`; a report save takes one when given.** Row 13
+   puts the caption in the manuscript style; a table saved without one would need it typed
+   in, which is the hand edit this work removes. A report's caption is optional and is
+   written the same way, bold above the table (John's decision, 2026-10-19; design row 13
+   amended).
 4. **The JTCVS saver moves to Letter too.** Both savers share the page helpers, and
    question 4 says US Letter for every style.
 5. **Row 10's wording governs question 8's.** The matrix is "the specification", so the
@@ -404,7 +407,7 @@ test_that("each style holds the matrix's properties", {
     list(section = "label", borders = "rules", header = "flat",
          count = "per_group", marker = "superscript",
          count_note = "Number of non-missing values.", stat_lead = "",
-         font = "Times New Roman", font_size = 12, caption = FALSE,
+         font = "Times New Roman", font_size = 12, caption = "optional",
          header_bold = TRUE, keep_rows = FALSE, repeat_header = TRUE,
          page = "letter", variable = TRUE, merged = "none")
   )
@@ -418,7 +421,7 @@ test_that("each style holds the matrix's properties", {
          count = "overall", marker = "leading",
          count_note = "Patients with non-missing data.",
          stat_lead = "Values are ", font = NA_character_,
-         font_size = NA_real_, caption = TRUE, header_bold = FALSE,
+         font_size = NA_real_, caption = "required", header_bold = TRUE,
          row_height = 300, keep_rows = TRUE, repeat_header = TRUE,
          page = "letter", variable = FALSE,
          merged = "header and section rows")
@@ -493,7 +496,7 @@ hv_table_style <- function(name = c("report", "manuscript"),
       section = "label", borders = "rules", header = "flat",
       count = "per_group", marker = "superscript",
       count_note = "Number of non-missing values.", stat_lead = "",
-      font = "Times New Roman", font_size = 12, caption = FALSE,
+      font = "Times New Roman", font_size = 12, caption = "optional",
       header_bold = TRUE, row_height = NULL, keep_rows = FALSE,
       repeat_header = TRUE, page = "letter", variable = TRUE,
       merged = "none"
@@ -503,7 +506,7 @@ hv_table_style <- function(name = c("report", "manuscript"),
       count = "overall", marker = "leading",
       count_note = "Patients with non-missing data.",
       stat_lead = "Values are ", font = NA_character_,
-      font_size = NA_real_, caption = TRUE, header_bold = FALSE,
+      font_size = NA_real_, caption = "required", header_bold = TRUE,
       row_height = 300, keep_rows = TRUE, repeat_header = TRUE,
       page = "letter", variable = FALSE,
       merged = "header and section rows"
@@ -713,7 +716,7 @@ test_that("compare: a full grid, no font set, rows of 300 twips kept whole", {
   expect_true(all(is.na(ft$body$styles$text$font.size$data)))
   expect_true(all(ft$body$styles$text$bold$data[!ft$body$dataset$is_section, ]
                   == FALSE))
-  expect_true(all(ft$header$styles$text$bold$data == FALSE))
+  expect_true(all(ft$header$styles$text$bold$data == TRUE))
   expect_true(all(abs(ft$body$rowheights - 300 / 1440) < 1e-9))
   expect_false(ft$properties$opts_word$split)
   expect_true(ft$properties$opts_word$repeat_headers)
@@ -1053,12 +1056,22 @@ test_that("manuscript header marks: * on n, the dagger on the grouping", {
   expect_true("Chemotherapy Treatment\u2020" %in% cells)
 })
 
-test_that("the caption follows the style", {
+test_that("the manuscript requires a caption; the report takes one if given", {
   expect_error(ms_doc(), "caption")
-  f <- tempfile(fileext = ".docx")
-  expect_error(hv_man_table_save(hv_man_table(fx_hv_tbl()), f,
-                                 caption = "Table 1. Test"),
-               "report style writes no caption")
+  first <- function(f) {
+    xml2::xml_find_first(officer::read_docx(f)$doc_obj$get(), "//w:body/*[1]")
+  }
+  with_cap <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(fx_hv_tbl()), with_cap,
+                    caption = "Table 2. Report")
+  expect_identical(xml2::xml_text(first(with_cap)), "Table 2. Report")
+  expect_length(xml2::xml_find_all(first(with_cap),
+                                   ".//w:rPr/w:b[not(@w:val='false')]"), 1L)
+  without <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(fx_hv_tbl()), without)
+  expect_identical(xml2::xml_name(first(without)), "tbl")
+  expect_error(hv_man_table_save(hv_man_table(fx_hv_tbl()), without,
+                                 caption = NA_character_), "caption")
 })
 ```
 
@@ -1119,21 +1132,17 @@ test_that("hv_man_footnotes() speaks each style's words", {
              italic = FALSE, stringsAsFactors = FALSE)
 }
 
-# The style decides whether the table has a caption: the manuscript's
-# is part of the table, so it is written with it rather than typed in.
+# The manuscript's caption is part of the table, so it is written with
+# it rather than typed in later; a report's is optional.
 .check_caption <- function(caption, style) {
-  if (isTRUE(style$caption)) {
-    if (is.null(caption))
+  if (is.null(caption)) {
+    if (identical(style$caption, "required"))
       stop("A manuscript table needs `caption`, such as \"Table 1. ",
            "Baseline characteristics\": it is written with the table, ",
            "not typed in later.", call. = FALSE)
-    .check_string(caption, "caption")
-  } else if (!is.null(caption)) {
-    stop("The report style writes no caption; a report titles its table ",
-         "in the text around it. Use style = \"manuscript\" for a ",
-         "captioned table.", call. = FALSE)
+    return(invisible(NULL))
   }
-  invisible(NULL)
+  .check_string(caption, "caption")
 }
 ```
 
@@ -1550,9 +1559,10 @@ test_that("rows 12-13: the font and the caption", {
 test_that("rows 14-16: weight, row height, rows kept whole, header repeated", {
   m <- st_xml(st_save("manuscript"))
   head_runs <- xq(m, "//w:tr[w:trPr/w:tblHeader]//w:rPr")
-  expect_length(xq(m, paste0("//w:tr[w:trPr/w:tblHeader]//w:rPr/",
-                             "w:b[not(@w:val='false')]")), 0L)
+  bold <- xq(m, paste0("//w:tr[w:trPr/w:tblHeader]//w:rPr/",
+                       "w:b[not(@w:val='false')]"))
   expect_gt(length(head_runs), 0L)
+  expect_length(bold, length(head_runs)) # every header run is bold
   n_tr <- length(xq(m, "//w:tr"))
   expect_length(xq(m, "//w:trHeight[@w:val='300' and @w:hRule='atLeast']"),
                 n_tr)
@@ -1648,9 +1658,10 @@ git commit -m "test: the style matrix as the fixture, row by row, and the submis
   `@param style` (a name or [hv_table_style()]; `"manuscript"` needs an [hv_tbl_summary()]
   table, refuses `continuous_stat = "both"`, `font` and `font_size`); add a Common mistakes
   entry for each refusal; `@return` names the `hv_style` attribute.
-  `hv_man_table_save()`: `@param caption` (required by `"manuscript"`, refused by
-  `"report"`); rewrite the "unused argument (caption)" Common mistakes entry into the
-  report-style refusal; the page paragraph says US Letter for every style. `hv_man_footnotes()`:
+  `hv_man_table_save()`: `@param caption` (required by `"manuscript"`, optional for
+  `"report"`, written bold above the table); remove the "unused argument (caption)" Common
+  mistakes entry, since the saver now takes one; the page paragraph says US Letter for every
+  style. `hv_man_footnotes()`:
   `@param style`. `hv_man_table_display()`: the notes follow the style. `hv_tbl_summary()`:
   `@details` names `hv_by_label` and the hidden `hv_n` column. `DESCRIPTION`: one sentence,
   "Tables are drawn in a style named by its role: a report style and a manuscript style."
@@ -1668,12 +1679,12 @@ git commit -m "test: the style matrix as the fixture, row by row, and the submis
   (the default, today's table) or `"manuscript"`.
   - The manuscript style lays out a comparison table as the submissions did: a full grid, a
     two-row header with the grouping spanning its levels, one overall `n` column, shaded
-    section rows spanning the table, a bold caption, 300-twip rows kept whole, and no font
+    section rows spanning the table, a bold header and caption, 300-twip rows kept whole, and no font
     of its own, so it takes the document's body font. Its notes begin with the plain symbol:
     `*Patients with non-missing data.`, `†Values are No. (%) or median [15th, 85th
     percentiles].`
-  - `hv_man_table_save()` takes `caption`, which the manuscript style requires and the
-    report style refuses.
+  - `hv_man_table_save()` takes `caption`, written bold above the table: the manuscript
+    style requires it, and a report may give one.
   - `hv_tbl_summary()` carries each variable's overall non-missing count and the grouping's
     name for the manuscript header.
   - `hv_check_docx()` checks merged cells: by default merges only in header rows and in

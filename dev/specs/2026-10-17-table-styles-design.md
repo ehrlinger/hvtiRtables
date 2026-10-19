@@ -175,8 +175,8 @@ renderer, whose layout becomes `"describe"` (D3, section 5.1).
 | 10 | Statistic note | `No. (%) or Median [15th, 85th percentiles].` | `Values are No. (%) or median [15th, 85th percentiles].` | named in the header row |
 | 11 | Abbreviations | `Key: A=…; B=…` (house rule 14) | `Key: A=…; B=…` | its own key |
 | 12 | Font | Times New Roman 12 pt (house rule 5) | none set: the document's body font (11 pt in the submissions) | Times New Roman 12 pt |
-| 13 | Caption | none | `Table 1. …`, bold, above the table | above the table, plain |
-| 14 | Alignment and weight | header bold; first column left, others centered | first column left, others centered | everything left; header plain |
+| 13 | Caption | optional: `Table 1. …`, bold, above the table, when given | `Table 1. …`, bold, above the table | above the table, plain |
+| 14 | Alignment and weight | header bold; first column left, others centered | header bold; first column left, others centered | everything left; header plain |
 | 15 | Row height | auto, about 600 twips | 300 twips, rows kept on one page | 360 twips |
 | 16 | Header repeated on a new page | yes | yes (neither submission has it; the generated style adds it) | yes |
 | 17 | Page | **US Letter** †, landscape when wide, else portrait | **US Letter**, landscape when wide, else portrait | A4 landscape |
