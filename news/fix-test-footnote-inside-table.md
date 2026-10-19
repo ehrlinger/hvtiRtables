@@ -9,6 +9,11 @@
     test keeps its own double dagger and is not repeated. A table with no p-values has no test
     sentence. The manuscript style says it in its own words, "Values are ... median [15th, 85th
     percentiles]; P values from the ...", and marks its comparison header the same way.
+  - `compare = "smd"` and `"both"` head the difference column "Std. Diff." (gtsummary's
+    "Difference" was explained only by the footnote now gone), and the dagger note says "Std.
+    Diff. is the standardized mean difference, with its 95% CI." (the manuscript style: "Std.
+    Diff." or, under `"both"`, "SMD", without the CI it does not show). The dagger marks that
+    header.
   - A table showing a confidence interval (`compare = "both"`) defines `CI` in the key, beside any `abbreviations` you pass (your own
     definition of `CI` wins).
 * `hv_check_docx()` flags a last-row cell that opens with a superscript number, the form

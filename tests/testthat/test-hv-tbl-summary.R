@@ -2031,3 +2031,26 @@ test_that("the grouping's name is its label, else its name, else NULL", {
   expect_identical(none$table_body$hv_n,
                    as.character(sum(!is.na(gtsummary::trial$age))))
 })
+
+test_that("a standardized difference is named and defined, not 'Difference'", {
+  skip_if_not_installed("broom")
+  for (cmp in c("smd", "both")) {
+    tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                          groups = list(D = c("age", "stage")),
+                          continuous = "age", categorical = "stage",
+                          compare = cmp)
+    hdr <- tbl$table_styling$header
+    expect_identical(hdr$label[hdr$column == "estimate"], "**Std. Diff.**",
+                     info = cmp)
+    expect_identical(attr(tbl, "hv_smd"), cmp)
+    expect_match(
+      attr(tbl, "hv_footnotes")[["†"]],
+      "Std. Diff. is the standardized mean difference, with its 95% CI.$",
+      info = cmp
+    )
+  }
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(D = "age"), continuous = "age",
+                        compare = "pvalue")
+  expect_null(attr(tbl, "hv_smd"))
+})

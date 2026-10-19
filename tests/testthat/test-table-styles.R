@@ -273,8 +273,24 @@ test_that("the manuscript names the tests in its dagger note and marks P", {
     p_head <- rows[[1]][[length(rows[[1]])]]
     note <- after(m)[2]
     if (cmp == "smd") {
-      expect_false(grepl("P values", note, fixed = TRUE), info = cmp)
-      expect_identical(p_head$sup, "", info = cmp)
+      expect_identical(
+        note,
+        paste0("\u2020Values are No. (%) or median [15th, 85th ",
+               "percentiles]; Std. Diff. is the standardized mean ",
+               "difference."),
+        info = cmp
+      )
+      expect_identical(p_head$sup, "\u2020", info = cmp)
+    } else if (cmp == "both") {
+      expect_identical(
+        note,
+        paste0("\u2020Values are No. (%) or median [15th, 85th ",
+               "percentiles]; P values from the Wilcoxon rank sum test ",
+               "and Pearson's chi-square test; SMD is the standardized ",
+               "mean difference."),
+        info = cmp
+      )
+      expect_identical(p_head$sup, "\u2020", info = cmp)
     } else {
       expect_identical(
         note,

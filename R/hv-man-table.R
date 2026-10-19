@@ -172,6 +172,7 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   ft <- .mark_cells(ft, tbl$table_body, cell_marks, footnotes)
   attr(ft, "hv_footnotes") <- footnotes
   attr(ft, "hv_test_note") <- attr(tbl, "hv_test_note", exact = TRUE)
+  attr(ft, "hv_smd") <- attr(tbl, "hv_smd", exact = TRUE)
   # gtsummary defined CI in a row of its own under the table; the saver
   # writes the definition into the key instead.
   if ("conf.low" %in% ft$col_keys)

@@ -151,7 +151,8 @@ route letters it through \code{\link[=hv_test_footnotes_jtcvs]{hv_test_footnotes
 \code{compare} produces p-values. The other tests that ran are named in
 the dagger note instead, as "P values from the Wilcoxon rank sum test
 and Pearson's chi-square test.", and the CORR table puts the dagger
-on the p-value header too.}
+on the p-value header too. \code{compare = "smd"} or \code{"both"} names the
+difference column "Std. Diff." and the same note says what it is.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.}

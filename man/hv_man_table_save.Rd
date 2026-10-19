@@ -30,8 +30,9 @@ Symbols must be drawn from \code{c("*", "†", "‡", "§", "¶", "||")}. \verb{
 describes the statistic, so it is appended as a superscript reference
 mark to every statistic-column header (\verb{stat_<k>}), and to the
 count column only when the table has no such column. On a table
-that compares its groups, \verb{†} also marks the p-value header, because
-the note names the tests behind the p-values. Every other
+that compares its groups, \verb{†} also marks the p-value and
+standardized-difference headers, because the note names the tests
+behind the p-values and says what the difference is. Every other
 symbol goes on the table's count-column header cell (a column named
 \code{n}, else the first \verb{n_stat_<k>} column \code{\link[=hv_man_table]{hv_man_table()}} creates when
 it splits an \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} table, else the first column). In a

@@ -98,9 +98,18 @@
   notes <- attr(tbl, "hv_footnotes", exact = TRUE)
   notes[["*"]] <- style$count_note
   tests <- attr(tbl, "hv_test_note", exact = TRUE)
-  notes[["\u2020"]] <- .with_tests(
-    .stat_note(attr(tbl, "hv_stat_label", exact = TRUE), style), tests
-  )
+  smd <- attr(tbl, "hv_smd", exact = TRUE)
+  notes[["\u2020"]] <- .stat_note(attr(tbl, "hv_stat_label", exact = TRUE),
+                                  style)
+  notes[["\u2020"]] <- .append_note(notes[["\u2020"]], tests)
+  # Under "both" the cells read "(SMD 0.1)"; under "smd" the header says
+  # "Std. Diff.".
+  if (!is.null(smd))
+    notes[["\u2020"]] <- .append_note(
+      notes[["\u2020"]],
+      .smd_sentence(if (identical(smd, "both")) "SMD" else "Std. Diff.",
+                    ci = FALSE)
+    )
   rows <- function(vars) {
     which(body$row_type == "label" & body$variable %in% vars)
   }
@@ -142,5 +151,6 @@
   attr(ft, "hv_body_marks") <- if (length(marks) > 0L) marks
   attr(ft, "hv_style") <- style
   attr(ft, "hv_test_note") <- tests
+  attr(ft, "hv_smd") <- smd
   ft
 }

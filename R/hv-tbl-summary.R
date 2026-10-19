@@ -207,7 +207,8 @@
 #'   `compare` produces p-values. The other tests that ran are named in
 #'   the dagger note instead, as "P values from the Wilcoxon rank sum test
 #'   and Pearson's chi-square test.", and the CORR table puts the dagger
-#'   on the p-value header too.
+#'   on the p-value header too. `compare = "smd"` or `"both"` names the
+#'   difference column "Std. Diff." and the same note says what it is.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
@@ -616,11 +617,23 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     # the same, but inside the table.
     tests <- .test_sentence(tbl$table_body)
     if (nzchar(tests)) {
-      attr(tbl, "hv_footnotes")[["\u2020"]] <- .with_tests(
+      attr(tbl, "hv_footnotes")[["\u2020"]] <- .append_note(
         attr(tbl, "hv_footnotes")[["\u2020"]], tests
       )
       attr(tbl, "hv_test_note") <- tests
     }
+  }
+  if (effective_compare %in% c("smd", "both")) {
+    # gtsummary footnoted "Standardized Mean Difference" on these
+    # columns, inside the table. hv_man_table() drops that, so the column
+    # carries the name the other renderers use and the dagger note says
+    # what it is.
+    tbl <- gtsummary::modify_header(tbl, estimate = "**Std. Diff.**")
+    attr(tbl, "hv_smd") <- effective_compare
+    attr(tbl, "hv_footnotes")[["\u2020"]] <- .append_note(
+      attr(tbl, "hv_footnotes")[["\u2020"]],
+      .smd_sentence("Std. Diff.", ci = TRUE)
+    )
   }
 
   tb <- tbl$table_body
@@ -782,12 +795,19 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   paste0("P values from the ", joined, ".")
 }
 
-# The dagger note with the tests after the statistic, in either style's
-# words: "<statistic>; P values from the ...". `tests` is NULL for a table
-# that names none.
-.with_tests <- function(note, tests) {
-  if (is.null(tests)) return(note)
-  paste0(sub("\\.$", "", note), "; ", tests)
+# The dagger note with a sentence after the statistic, in either style's
+# words: "<statistic>; P values from the ...". `x` is NULL when there is
+# nothing to add.
+.append_note <- function(note, x) {
+  if (is.null(x)) return(note)
+  paste0(sub("\\.$", "", note), "; ", x)
+}
+
+# What the standardized-difference column is, for the dagger note. The
+# report shows its 95% CI beside it; the manuscript does not.
+.smd_sentence <- function(label, ci) {
+  paste0(label, " is the standardized mean difference",
+         if (ci) ", with its 95% CI", ".")
 }
 
 # Notes print in the canonical symbol order, * dagger double-dagger section

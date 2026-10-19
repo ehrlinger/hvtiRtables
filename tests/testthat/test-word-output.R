@@ -127,21 +127,35 @@ test_that("CORR: gtsummary's own footnotes never reach the table", {
     # tests in the dagger note, with the dagger on the p-value header; CI
     # in the key.
     header <- rows[[1]]
-    p_header <- header[[length(header)]]
+    head_text <- cell_text(header)
+    head_sup <- vapply(header, `[[`, "", "sup")
     notes <- wx_paragraphs_after_table(doc)
     dagger <- grep("^†", notes, value = TRUE)
-    if (cmp == "smd") {
-      expect_identical(p_header$sup, "", info = cmp)
-      expect_false(any(grepl("P values", notes)), info = cmp)
+    stat_note <- "† No. (%) or Median [15th, 85th percentiles]"
+    tests <- paste0("P values from the Wilcoxon rank sum test and ",
+                    "Pearson's chi-square test")
+    smd <- paste0("Std. Diff. is the standardized mean difference, ",
+                  "with its 95% CI.")
+    expected <- switch(
+      cmp,
+      pvalue = paste0(stat_note, "; ", tests, "."),
+      smd = paste0(stat_note, "; ", smd),
+      both = paste0(stat_note, "; ", tests, "; ", smd)
+    )
+    expect_identical(dagger, expected, info = cmp)
+    # The dagger sits on each header the note explains. gtsummary's
+    # "Difference" is replaced by the name the other renderers use.
+    expect_false("Difference" %in% sub("[†*]+$", "", head_text), info = cmp)
+    marked <- function(prefix) {
+      head_sup[startsWith(head_text, prefix)]
+    }
+    if (cmp == "pvalue") {
+      expect_identical(marked("p-value"), "†", info = cmp)
     } else {
-      expect_identical(p_header$sup, "†", info = cmp)
-      expect_identical(
-        dagger,
-        paste0("† No. (%) or Median [15th, 85th percentiles]; P values ",
-               "from the Wilcoxon rank sum test and Pearson's chi-square ",
-               "test."),
-        info = cmp
-      )
+      expect_identical(marked("Std. Diff."), "†", info = cmp)
+      expect_identical(marked("95% CI"), "", info = cmp)
+      expect_identical(marked("p-value"),
+                       if (cmp == "both") "†" else character(0), info = cmp)
     }
     key <- grep("^Key:", notes, value = TRUE)
     if (cmp == "pvalue") {

@@ -76,8 +76,9 @@
 #'   describes the statistic, so it is appended as a superscript reference
 #'   mark to every statistic-column header (`stat_<k>`), and to the
 #'   count column only when the table has no such column. On a table
-#'   that compares its groups, `†` also marks the p-value header, because
-#'   the note names the tests behind the p-values. Every other
+#'   that compares its groups, `†` also marks the p-value and
+#'   standardized-difference headers, because the note names the tests
+#'   behind the p-values and says what the difference is. Every other
 #'   symbol goes on the table's count-column header cell (a column named
 #'   `n`, else the first `n_stat_<k>` column [hv_man_table()] creates when
 #'   it splits an [hv_tbl_summary()] table, else the first column). In a
@@ -426,6 +427,13 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   ft$col_keys[1]
 }
 
+# TRUE when the dagger note also explains the comparison column: it names
+# the tests behind the p-values, or defines the standardized difference.
+.compare_noted <- function(ft) {
+  !is.null(attr(ft, "hv_test_note", exact = TRUE)) ||
+    !is.null(attr(ft, "hv_smd", exact = TRUE))
+}
+
 # Header cells one footnote symbol attaches to. The dagger describes the
 # statistic, so it marks every column that holds one: on the count
 # column it claimed the "No." header was a median.
@@ -439,7 +447,7 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
       cols <- if (length(group) > 0L) group[1] else disp[1]
       # The note also names the tests behind the p-values, so the
       # comparison header carries the dagger too.
-      if (!is.null(attr(ft, "hv_test_note", exact = TRUE)))
+      if (.compare_noted(ft))
         cols <- c(cols, intersect("hv_compare_col", ft$col_keys))
       return(cols)
     }
@@ -448,6 +456,8 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
     # p-value header carries it too.
     if (!is.null(attr(ft, "hv_test_note", exact = TRUE)))
       stat <- c(stat, intersect("p.value", ft$col_keys))
+    if (!is.null(attr(ft, "hv_smd", exact = TRUE)))
+      stat <- c(stat, intersect("estimate", ft$col_keys))
     if (length(stat) > 0L) return(stat)
   }
   .footnote_col(ft)
