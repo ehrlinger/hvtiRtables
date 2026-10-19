@@ -7,7 +7,8 @@ The house footnote block the macro emitted under `PRINTFN=1`.
 ``` r
 hv_man_footnotes(
   continuous_stat = c("median", "mean", "both"),
-  percentiles = c(15, 85)
+  percentiles = c(15, 85),
+  style = "report"
 )
 ```
 
@@ -29,6 +30,14 @@ hv_man_footnotes(
   for `"mean"`, so the arguments share
   [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)'s
   contract.
+
+- style:
+
+  `"report"` (default) or `"manuscript"`, or a style from
+  [`hv_table_style()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_table_style.md).
+  The manuscript writes the notes in the words of the submissions:
+  `"Patients with non-missing data."` and
+  `"Values are No. (%) or median [15th, 85th percentiles]."`.
 
 ## Value
 

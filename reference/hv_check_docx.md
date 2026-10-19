@@ -8,7 +8,7 @@ and a table too wide for its page, and never modifies the file.
 ## Usage
 
 ``` r
-hv_check_docx(path)
+hv_check_docx(path, style = NULL)
 ```
 
 ## Arguments
@@ -16,6 +16,13 @@ hv_check_docx(path)
 - path:
 
   Path to a `.docx` file.
+
+- style:
+
+  `NULL`, the default, applies the rule every style shares. A style name
+  or
+  [`hv_table_style()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_table_style.md)
+  applies that style's rule: the report style merges no cells at all.
 
 ## Value
 
@@ -26,7 +33,7 @@ A `data.frame` with one row per finding and columns `type`, `table`
 
 ## Details
 
-Four detectors run:
+Five detectors run:
 
 - `"layer"` (structural, high confidence): paragraphs positioned with
   `w:framePr`, or floating text boxes (`w:txbxContent`). Table content
@@ -55,6 +62,13 @@ Four detectors run:
   guaranteed structural signature, so treat its findings as prompts to
   look, not proof.
 
+- `"merged_cell"` (structural, high confidence): a row whose cells are
+  merged (`w:gridSpan` above 1, `w:vMerge`, or the legacy `w:hMerge`)
+  outside the header rows, unless the row is one cell spanning the
+  table. The header rows are the leading run of rows whose `w:tblHeader`
+  flag is on, as Word reads it. With `style = "report"`, any merged cell
+  is a finding.
+
 ## Common mistakes
 
 **"`path` must be a single non-empty string."** The argument is a file
@@ -67,7 +81,7 @@ the deliberate half-inch gutter columns in the house JTCVS templates do
 not trip it. A finding here is a real spacer.
 
 **Treating `embedded_footnote` as proof.** It is the one heuristic
-detector of the four: it matches a marker character opening a cell in a
+detector of the five: it matches a marker character opening a cell in a
 table's last row, and a legitimate last row that happens to start that
 way matches it too. Read it as a prompt to look, not a verdict.
 

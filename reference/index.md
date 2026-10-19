@@ -16,12 +16,13 @@ Where the macro’s `CON*=`, `CAT*=`, `LIST=`, `PP=`, `PVALUES=` and
 
 ## 
 
-Shape the table - house style is fixed
+Shape the table: a style by role
 
-House style is fixed, so the only choice here is the header shape. Flat
-single-row headers for CORR reports and manuscripts; merged spanning
-headers for a JTCVS submission.
+A style is named by its role, report or manuscript; hv_table_style()
+holds its properties.
 
+- [`hv_table_style()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_table_style.md)
+  : A table style, named by its role
 - [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
   : Convert a gtsummary table into a flextable matching HVTI CORR's
   table rules

@@ -259,7 +259,10 @@ produce an error naming the argument to use instead.</p></dd>
 <code>hv_trailing</code>, and <code>hv_footnotes</code> renderer attributes. A table whose
 rows mix mean and median also carries <code>hv_cell_marks</code>, a list with
 <code>symbol</code> (<code>"§"</code> or <code>"¶"</code>) and <code>variables</code> (the names whose cells
-carry it); the attribute is <code>NULL</code> otherwise.</p>
+carry it); the attribute is <code>NULL</code> otherwise. The manuscript style
+also reads <code>hv_by_label</code>, the grouping's name (the variable's label
+when the data carry one), and the hidden <code>hv_n</code> column of
+<code>table_body</code>, each variable's overall non-missing count.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

@@ -61,6 +61,22 @@ ft <- hv_man_table(tbl)
 hv_man_table_save(ft, "table1.docx")
 ```
 
+For a manuscript submission, build the table with
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md),
+which the manuscript style needs, name the style when shaping it, and
+give the saver the caption, which that style requires:
+
+``` r
+
+tbl <- hv_tbl_summary(
+  trial, by = "trt",
+  groups = list(Demography = "age", Disease = c("stage", "grade")),
+  continuous = "age", categorical = c("stage", "grade")
+)
+ft <- hv_man_table(tbl, style = "manuscript")
+hv_man_table_save(ft, "table1.docx", caption = "Table 1. Baseline Characteristics")
+```
+
 ## JTCVS submission format
 
 When you’re submitting to JTCVS, use
@@ -107,8 +123,8 @@ spread across separate calls:
 | Stage | Function | Macro parameters |
 |----|----|----|
 | Compute | [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md) | `CLASS=`, `CON*=`, `CAT*=`, `LIST=`, `PP=`, `PVALUES=`, `TOTALCOL=` |
-| Shape | [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md) / [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md) | *(none - house style is fixed)* |
-| Write | `hv_man_table_save*()` | `RTFFILE=`, `ADDFN=`, `TBLTITLE=` (JTCVS only) |
+| Shape | [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md) / [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md) | `STYLE=` is `style =`; `PAGE=` has none (pages are US Letter) |
+| Write | `hv_man_table_save*()` | `RTFFILE=`, `ADDFN=`, `TBLTITLE=` (`caption`) |
 | Verify | [`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md) | *(no analogue)* |
 
 The one thing worth knowing before you start: `CON1=` variables change

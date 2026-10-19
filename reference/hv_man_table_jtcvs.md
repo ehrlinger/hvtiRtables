@@ -1,9 +1,11 @@
 # Build a JTCVS-format manuscript table with merged spanning headers
 
 Stage 2 of the `%summarytable` split: shapes the table. The macro
-controlled this with `STYLE=` and `PAGE=`, which have no equivalent here
-– house style is fixed, and the only choice is flat header versus JTCVS
-spanning header.
+controlled this with `STYLE=` and `PAGE=`. This renderer is the
+journal's one layout and takes neither; the CORR styles are chosen by
+`style =` in
+[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md).
+Pages are US Letter.
 
 ## Usage
 

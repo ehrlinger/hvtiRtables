@@ -1,14 +1,22 @@
 # Convert a gtsummary table into a flextable matching HVTI CORR's table rules
 
 Stage 2 of the `%summarytable` split: shapes the table. The macro
-controlled this with `STYLE=` and `PAGE=`, which have no equivalent here
-– house style is fixed, and the only choice is flat header versus JTCVS
-spanning header.
+controlled this with `STYLE=` and `PAGE=`. `style =` is the equivalent
+of `STYLE=`: tables are drawn in a style named by its role, `"report"`
+(the default, described below) or `"manuscript"`. `PAGE=` has none;
+pages are US Letter, turning landscape when the table is wide.
 
 ## Usage
 
 ``` r
-hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2, ...)
+hv_man_table(
+  tbl,
+  font = "Times New Roman",
+  font_size = 12,
+  digits = 2,
+  style = "report",
+  ...
+)
 ```
 
 ## Arguments
@@ -41,6 +49,15 @@ hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2, ...)
   Reserved so a future version can enforce sig-fig rounding centrally
   without a breaking signature change.
 
+- style:
+
+  A style name, `"report"` (default) or `"manuscript"`, or a style from
+  [`hv_table_style()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_table_style.md).
+  `"manuscript"` needs an
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  table, refuses `continuous_stat = "both"`, and refuses `font` and
+  `font_size`.
+
 - ...:
 
   Not used. Present so that `%summarytable` parameter names produce an
@@ -48,15 +65,33 @@ hv_man_table(tbl, font = "Times New Roman", font_size = 12, digits = 2, ...)
 
 ## Value
 
-A `flextable` object with a single header row and no merged cells, ready
-for
+A `flextable` object, ready for
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md).
-Input from
+In the report style it has a single header row and no merged cells; in
+the manuscript style a two-row header. Its `hv_style` attribute holds
+the style, which the saver and
+[`hv_man_table_display()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_display.md)
+read. Input from
 [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
 retains its `hv_footnotes` attribute so the saver's default dagger
 follows the table's continuous statistic.
 
 ## Details
+
+The `"manuscript"` style lays out a comparison table as the journal
+submissions did: a full grid, a two-row header with the grouping's name
+spanning its levels, one overall `n` column, shaded section rows that
+span the table, a bold header, and no font of its own, so the table
+takes the body font of the document it is saved into. It needs a table
+from
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md),
+and
+[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
+requires a `caption` for it. See
+[`hv_table_style()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_table_style.md)
+for the properties of each style.
+
+The rest of this page describes the `"report"` style.
 
 You give this a
 [`gtsummary::tbl_summary()`](https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html)
@@ -66,7 +101,9 @@ and you get back a `flextable` that already complies with HVTI CORR's
 "Table Construction for Manuscripts" rules: a single, non-merged header
 row (no spanning parent cells over grouped columns), no merged row-group
 section-header cells, a left-justified label column, and Times New Roman
-at the house font size.
+at the house font size. Section rows are shaded across every cell,
+unmerged, in the style's fill (`#CAEDFB` by default), and the header is
+bold.
 
 [`gtsummary::as_flex_table()`](https://www.danieldsjoberg.com/gtsummary/reference/as_flex_table.html)
 already emits one header row per group with self-contained labels (e.g.
@@ -125,6 +162,21 @@ does the former for you.
 
 **"`font_size` must be 11 or 12."** House rule 5. Use `11` only for wide
 tables.
+
+**"`font` and `font_size` set the report style."** You passed one with
+`style = "manuscript"`. That style sets no font, so the table takes the
+font of the document it is saved into. Drop the argument, or use
+`style = "report"`.
+
+**The manuscript style refuses a `continuous_stat = "both"` table.**
+That table has a column for the median and another for the mean and SD,
+which the manuscript's one statistic column per group cannot lay out.
+Build the table with `"median"` or `"mean"`, or use the report style.
+
+**The manuscript style refuses a table not built by
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md).**
+The layout reads the overall count and the grouping's name that function
+records. Build the table with it.
 
 ## See also
 

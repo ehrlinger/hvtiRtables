@@ -63,7 +63,7 @@ file.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hv_check_docx</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hv_check_docx</span><span class="op">(</span><span class="va">path</span>, style <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -72,6 +72,12 @@ file.</p>
 
 <dl><dt id="arg-path">path<a class="anchor" aria-label="anchor" href="#arg-path"></a></dt>
 <dd><p>Path to a <code>.docx</code> file.</p></dd>
+
+
+<dt id="arg-style">style<a class="anchor" aria-label="anchor" href="#arg-style"></a></dt>
+<dd><p><code>NULL</code>, the default, applies the rule every style shares.
+A style name or <code><a href="hv_table_style.html">hv_table_style()</a></code> applies that style's rule: the
+report style merges no cells at all.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -83,7 +89,7 @@ file.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Four detectors run:</p><ul><li><p><code>"layer"</code> (structural, high confidence): paragraphs positioned with
+    <p>Five detectors run:</p><ul><li><p><code>"layer"</code> (structural, high confidence): paragraphs positioned with
 <code>w:framePr</code>, or floating text boxes (<code>w:txbxContent</code>). Table content
 belongs in the table, not in a floating layer over it.</p></li>
 <li><p><code>"hidden_column"</code> (structural, high confidence): a table column that
@@ -105,6 +111,12 @@ dagger or double dagger, a section or pilcrow sign, a lettered
 produces when misused. This detector is pattern-based rather than a
 guaranteed structural signature, so treat its findings as prompts to
 look, not proof.</p></li>
+<li><p><code>"merged_cell"</code> (structural, high confidence): a row whose cells are
+merged (<code>w:gridSpan</code> above 1, <code>w:vMerge</code>, or the legacy <code>w:hMerge</code>)
+outside the header rows, unless the row is one cell spanning the
+table. The header rows are the leading run of rows whose
+<code>w:tblHeader</code> flag is on, as Word
+reads it. With <code>style = "report"</code>, any merged cell is a finding.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="common-mistakes">Common mistakes<a class="anchor" aria-label="anchor" href="#common-mistakes"></a></h2>
@@ -119,7 +131,7 @@ one. The detector requires empty <strong>and</strong> narrower than 0.1 inch,
 precisely so the deliberate half-inch gutter columns in the house
 JTCVS templates do not trip it. A finding here is a real spacer.</p>
 <p><strong>Treating <code>embedded_footnote</code> as proof.</strong> It is the one heuristic
-detector of the four: it matches a marker character opening a cell
+detector of the five: it matches a marker character opening a cell
 in a table's last row, and a legitimate last row that happens to
 start that way matches it too. Read it as a prompt to look, not a
 verdict.</p>

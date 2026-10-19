@@ -20,7 +20,7 @@ so the parameters you know are distributed across separate calls:
 | Stage | Function | Macro parameters that land here |
 |----|----|----|
 | Compute stats and tests | [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md) | `DATA=`, `CLASS=`, `CON*=`, `CAT*=`, `ORD1=`, `LIST=`, `PP=`, `PVALUES=`, `ASD=`, `TOTALCOL=`, `CUTEXACT=` |
-| Shape the table | [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md), [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md) | *(none - house style is fixed)* |
+| Shape the table | [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md), [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md) | `STYLE=` is `style =` in [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md); `PAGE=` has none (pages are US Letter) |
 | Write the file | [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md), [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md) | `RTFFILE=`, `PDFFILE=`, `XMLFILE=`, `TBLTITLE=`, `ADDFN=`, `PRINTFN=` |
 | Verify the file | [`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md) | *(no analogue)* |
 
@@ -35,7 +35,7 @@ hv_tbl_summary(
   tbltitle = "Table 1"
 )
 #> Error:
-#> ! `tbltitle` is a `%summarytable` parameter this package handles at a different stage: pass `caption =` to `hv_man_table_save_jtcvs()`.
+#> ! `tbltitle` is a `%summarytable` parameter this package handles at a different stage: pass `caption =` to `hv_man_table_save()`. Note: the manuscript style requires a caption and the report style takes an optional one; it is written in bold above the table.
 ```
 
 ## Defaults that differ
@@ -121,7 +121,7 @@ tbl <- hv_tbl_summary(
 | `CUTEXACT=` | `cutexact` | **default differs** - see Defaults that differ |
 | `TOTALCOL=` | `overall` | defaults match (`overall = TRUE`); `totalcol=0` becomes `overall = FALSE` |
 | `NCOL=` | automatic | per-group Ns always shown, and the Overall column’s N with the default `overall = TRUE` (`NCOL=3`) |
-| `TBLTITLE=` | `caption` | **JTCVS only** - [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md) writes no caption |
+| `TBLTITLE=` | `caption` | required by `style = "manuscript"`, optional for the report |
 | `ADDFN=` | `footnotes` | on the save function |
 | `PRINTFN=` | omit `footnotes` (default) | **CORR only.** The house block is CORR-shaped and cannot be passed to [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md), which needs `list(row =, col =, text =)` entries; build those, or use [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md). On the standard [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md) -\> [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md) path, the default dagger follows `continuous_stat` and `percentiles` automatically. Use `footnotes = NULL` for `PRINTFN=0`. |
 | `RTFFILE=`, `PDFFILE=`, `XMLFILE=` | `file` | output is always `.docx` |
@@ -141,15 +141,13 @@ medians when means are the default, a pilcrow on the means otherwise,
 each with its own note.
 
 The save stage is a sibling pair, and the two do not take the same
-arguments: only
-[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
-has `caption`. For a flat-header CORR table the title goes in the
-document, not the call.
+arguments: `footnotes` has a different shape in each. Both take
+`caption`; the manuscript style requires it.
 
 Not supported: `WEIGHT=`, `PROPENMT=`, `MWOUTCOMES=`, `SUBSET=` (subset
 the data frame first), `SORTBY=` (order comes from `groups`), `COLPCT=0`
 (row percentages), `MISSCOL=`, `ADHOC=`, `ODDSRATIOS=`, `CUTEXACT=`,
-`STYLE=`, `PAGE=`, `CWIDTH1-3=`, `PAPERSIZE=`.
+`PAGE=` (pages are US Letter), `CWIDTH1-3=`, `PAPERSIZE=`.
 
 ## Why my p-value moved
 

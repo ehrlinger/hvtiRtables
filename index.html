@@ -14,8 +14,8 @@
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
 <meta property="og:title" content="Manuscript-Compliant Table Construction for HVTI CORR Group">
-<meta name="description" content='Turns gtsummary table objects into MS Word tables complying with HVTI CORRs "Table Construction for Manuscripts" rules: flat (non-merged) headers, no hidden spacer columns, footnotes and abbreviation keys as text below the table, house font and rounding conventions. A JTCVS submission mode is also available, with merged spanning headers and lettered cell-targeted footnotes matching that journals own template.'>
-<meta property="og:description" content='Turns gtsummary table objects into MS Word tables complying with HVTI CORRs "Table Construction for Manuscripts" rules: flat (non-merged) headers, no hidden spacer columns, footnotes and abbreviation keys as text below the table, house font and rounding conventions. A JTCVS submission mode is also available, with merged spanning headers and lettered cell-targeted footnotes matching that journals own template.'>
+<meta name="description" content='Turns gtsummary table objects into MS Word tables complying with HVTI CORRs "Table Construction for Manuscripts" rules: flat (non-merged) headers, no hidden spacer columns, footnotes and abbreviation keys as text below the table, house font and rounding conventions. A JTCVS submission mode is also available, with merged spanning headers and lettered cell-targeted footnotes matching that journals own template. Tables are drawn in a style named by its role: a report style and a manuscript style.'>
+<meta property="og:description" content='Turns gtsummary table objects into MS Word tables complying with HVTI CORRs "Table Construction for Manuscripts" rules: flat (non-merged) headers, no hidden spacer columns, footnotes and abbreviation keys as text below the table, house font and rounding conventions. A JTCVS submission mode is also available, with merged spanning headers and lettered cell-targeted footnotes matching that journals own template. Tables are drawn in a style named by its role: a report style and a manuscript style.'>
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -98,12 +98,21 @@
 <span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html" class="external-link">tbl_summary</a></span><span class="op">(</span><span class="va">trial</span>, by <span class="op">=</span> <span class="va">trt</span>, include <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">grade</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">ft</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hv_man_table.html">hv_man_table</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/hv_man_table_save.html">hv_man_table_save</a></span><span class="op">(</span><span class="va">ft</span>, <span class="st">"table1.docx"</span><span class="op">)</span></span></code></pre></div>
+<p>For a manuscript submission, build the table with <code><a href="reference/hv_tbl_summary.html">hv_tbl_summary()</a></code>, which the manuscript style needs, name the style when shaping it, and give the saver the caption, which that style requires:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hv_tbl_summary.html">hv_tbl_summary</a></span><span class="op">(</span></span>
+<span>  <span class="va">trial</span>, by <span class="op">=</span> <span class="st">"trt"</span>,</span>
+<span>  groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Demography <span class="op">=</span> <span class="st">"age"</span>, Disease <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"stage"</span>, <span class="st">"grade"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  continuous <span class="op">=</span> <span class="st">"age"</span>, categorical <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"stage"</span>, <span class="st">"grade"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">ft</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hv_man_table.html">hv_man_table</a></span><span class="op">(</span><span class="va">tbl</span>, style <span class="op">=</span> <span class="st">"manuscript"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/hv_man_table_save.html">hv_man_table_save</a></span><span class="op">(</span><span class="va">ft</span>, <span class="st">"table1.docx"</span>, caption <span class="op">=</span> <span class="st">"Table 1. Baseline Characteristics"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="jtcvs-submission-format">JTCVS submission format<a class="anchor" aria-label="anchor" href="#jtcvs-submission-format"></a>
 </h2>
 <p>When you’re submitting to JTCVS, use <code><a href="reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> / <code><a href="reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> instead of <code><a href="reference/hv_man_table.html">hv_man_table()</a></code> / <code><a href="reference/hv_man_table_save.html">hv_man_table_save()</a></code>. This is not a drop-in swap: the JTCVS pair requires a <code>groups</code> argument naming each <code>stat_&lt;k&gt;</code> column (no default), requires the table’s statistic to follow the <code>{N_nonmiss} ||| {stat}</code> convention, and requires a <code>caption</code> string at save time. The merged spanning header and lettered footnotes match the journal’s own submission template, so once those three things are supplied you’re not hand-reformatting the table a second time after the flat-header version is already done:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ddsjoberg/gtsummary" class="external-link">gtsummary</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ehrlinger/hvtiRtables" class="external-link">hvtiRtables</a></span><span class="op">)</span></span>
 <span></span>
@@ -148,13 +157,14 @@
 <td>
 <code><a href="reference/hv_man_table.html">hv_man_table()</a></code> / <code><a href="reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>
 </td>
-<td><em>(none - house style is fixed)</em></td>
+<td>
+<code>STYLE=</code> is <code>style =</code>; <code>PAGE=</code> has none (pages are US Letter)</td>
 </tr>
 <tr>
 <td>Write</td>
 <td><code>hv_man_table_save*()</code></td>
 <td>
-<code>RTFFILE=</code>, <code>ADDFN=</code>, <code>TBLTITLE=</code> (JTCVS only)</td>
+<code>RTFFILE=</code>, <code>ADDFN=</code>, <code>TBLTITLE=</code> (<code>caption</code>)</td>
 </tr>
 <tr>
 <td>Verify</td>

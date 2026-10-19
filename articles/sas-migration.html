@@ -113,7 +113,8 @@
 <td>
 <code><a href="../reference/hv_man_table.html">hv_man_table()</a></code>, <code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>
 </td>
-<td><em>(none - house style is fixed)</em></td>
+<td>
+<code>STYLE=</code> is <code>style =</code> in <code><a href="../reference/hv_man_table.html">hv_man_table()</a></code>; <code>PAGE=</code> has none (pages are US Letter)</td>
 </tr>
 <tr class="odd">
 <td>Write the file</td>
@@ -140,7 +141,7 @@
 <span>  tbltitle <span class="op">=</span> <span class="st">"Table 1"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Error:</span></span>
-<span><span class="co">#&gt; ! `tbltitle` is a `%summarytable` parameter this package handles at a different stage: pass `caption =` to `hv_man_table_save_jtcvs()`.</span></span></code></pre></div>
+<span><span class="co">#&gt; ! `tbltitle` is a `%summarytable` parameter this package handles at a different stage: pass `caption =` to `hv_man_table_save()`. Note: the manuscript style requires a caption and the report style takes an optional one; it is written in bold above the table.</span></span></code></pre></div>
 </div>
 </section><section class="level2"><h2 id="defaults-that-differ">Defaults that differ<a class="anchor" aria-label="anchor" href="#defaults-that-differ"></a>
 </h2>
@@ -334,8 +335,7 @@
 <tr class="even">
 <td><code>TBLTITLE=</code></td>
 <td><code>caption</code></td>
-<td>
-<strong>JTCVS only</strong> - <code><a href="../reference/hv_man_table_save.html">hv_man_table_save()</a></code> writes no caption</td>
+<td>required by <code>style = "manuscript"</code>, optional for the report</td>
 </tr>
 <tr class="odd">
 <td><code>ADDFN=</code></td>
@@ -360,8 +360,8 @@
 </table>
 <p>When <code>continuous_stat = "mean"</code> or <code>"both"</code>, mean±SD cells follow Eugene H. Blackstone’s (EHB’s) paired rounding rule: the mean is rounded to the SD’s first-significant-digit place and the SD one place finer. An SD beginning with 1 gives both one additional place, and exact ties round to even. The rule does not define median/percentile precision; those cells follow the house notation: brackets, 2 significant digits, and a value of 10 or more to the units place (<code>102 [63, 170]</code>). P values print without a leading zero (<code>.013</code>, <code>&lt;.001</code>).</p>
 <p><code>DESCLABEL=1</code> suffixed each row label with its statistic. A table that mixes mean and median here marks cells instead: a section sign on the medians when means are the default, a pilcrow on the means otherwise, each with its own note.</p>
-<p>The save stage is a sibling pair, and the two do not take the same arguments: only <code><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> has <code>caption</code>. For a flat-header CORR table the title goes in the document, not the call.</p>
-<p>Not supported: <code>WEIGHT=</code>, <code>PROPENMT=</code>, <code>MWOUTCOMES=</code>, <code>SUBSET=</code> (subset the data frame first), <code>SORTBY=</code> (order comes from <code>groups</code>), <code>COLPCT=0</code> (row percentages), <code>MISSCOL=</code>, <code>ADHOC=</code>, <code>ODDSRATIOS=</code>, <code>CUTEXACT=</code>, <code>STYLE=</code>, <code>PAGE=</code>, <code>CWIDTH1-3=</code>, <code>PAPERSIZE=</code>.</p>
+<p>The save stage is a sibling pair, and the two do not take the same arguments: <code>footnotes</code> has a different shape in each. Both take <code>caption</code>; the manuscript style requires it.</p>
+<p>Not supported: <code>WEIGHT=</code>, <code>PROPENMT=</code>, <code>MWOUTCOMES=</code>, <code>SUBSET=</code> (subset the data frame first), <code>SORTBY=</code> (order comes from <code>groups</code>), <code>COLPCT=0</code> (row percentages), <code>MISSCOL=</code>, <code>ADHOC=</code>, <code>ODDSRATIOS=</code>, <code>CUTEXACT=</code>, <code>PAGE=</code> (pages are US Letter), <code>CWIDTH1-3=</code>, <code>PAPERSIZE=</code>.</p>
 </section><section class="level2"><h2 id="why-my-p-value-moved">Why my p-value moved<a class="anchor" aria-label="anchor" href="#why-my-p-value-moved"></a>
 </h2>
 <p>Three causes, in order of how often they explain it.</p>

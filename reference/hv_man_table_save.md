@@ -6,7 +6,14 @@ macro's `RTFFILE=`/`PDFFILE=` output block.
 ## Usage
 
 ``` r
-hv_man_table_save(ft, file, footnotes = NULL, abbreviations = NULL, ...)
+hv_man_table_save(
+  ft,
+  file,
+  footnotes = NULL,
+  abbreviations = NULL,
+  caption = NULL,
+  ...
+)
 ```
 
 ## Arguments
@@ -44,13 +51,14 @@ hv_man_table_save(ft, file, footnotes = NULL, abbreviations = NULL, ...)
   [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
   creates when it splits an
   [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
-  table, else the first column). Each text is rendered as its own
-  paragraph below the table, in the order given. Every element must be
-  named (unnamed or blank-named entries raise an error) and every text
-  must be a single non-empty string (`NULL`, `NA`, a number, or a
-  multi-element vector raise an error, since each writes a dangling
-  marker); an empty list is a no-op, same as `NULL`. (`%summarytable`
-  `ADDFN=` equivalent; `PRINTFN=1`'s house block is
+  table, else the first column). In a manuscript table the dagger goes
+  on the grouping's spanning cell and `*` on its `n` column. Each text
+  is rendered as its own paragraph below the table, in the order given.
+  Every element must be named (unnamed or blank-named entries raise an
+  error) and every text must be a single non-empty string (`NULL`, `NA`,
+  a number, or a multi-element vector raise an error, since each writes
+  a dangling marker); an empty list is a no-op, same as `NULL`.
+  (`%summarytable` `ADDFN=` equivalent; `PRINTFN=1`'s house block is
   [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)).
 
 - abbreviations:
@@ -62,25 +70,17 @@ hv_man_table_save(ft, file, footnotes = NULL, abbreviations = NULL, ...)
   (unnamed or blank-named entries raise an error); an empty or `NULL`
   vector is a no-op.
 
+- caption:
+
+  The table's caption, written in bold on its own line above the table.
+  A manuscript table requires one, so it is written with the table and
+  not typed in later; a report table takes one when given and writes
+  none otherwise.
+
 - ...:
 
   Not used. Present so that `%summarytable` parameter names produce an
   error naming the argument to use instead.
-
-  A table with three or more statistic columns, such as an Overall
-  column and two groups, is written on a landscape page: with a `No.`
-  column beside each, it does not fit a portrait one. So is any table
-  wider than a portrait page's text block (6.3 inches on A4). A table
-  wider than landscape's (9.7 inches), as a `continuous_stat = "both"`
-  table with an Overall column can be, has its columns narrowed in
-  proportion to fit; the font size is not changed.
-
-  The saved table is always a manuscript table: the "Variable" column
-  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)'s
-  `show_variable` adds for the report view is dropped before the page is
-  fitted, so it never reaches Word and never widens the page.
-  [`hv_man_table_display()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_display.md)
-  keeps it, for the report.
 
 ## Value
 
@@ -107,12 +107,30 @@ the surrounding document to 1.5- or double-spacing. House rule 2
 concerns the *insertion point* in the destination document, not this
 function's output; see the package README for the paste-in workflow.
 
+Every style is written on a US Letter page. A report table with three or
+more statistic columns, such as an Overall column and two groups, is
+written on a landscape page: with a `No.` column beside each, it does
+not fit a portrait one. A manuscript table turns only on width, since it
+has one overall `n` column: Overall, two groups and a P value come to
+6.5 inches and stay portrait. Any table wider than a portrait page's
+text block (6.53 inches on US Letter) is written landscape. A table
+wider than landscape's (9.0 inches), as a `continuous_stat = "both"`
+table with an Overall column can be, has its columns narrowed in
+proportion to fit; the font size is not changed.
+
+In every style the saver drops the "Variable" column
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)'s
+`show_variable` adds for the report view before the page is fitted, so
+it never reaches Word and never widens the page.
+[`hv_man_table_display()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_display.md)
+keeps it, for the report.
+
 ## Common mistakes
 
-**"unused argument (caption)"** The CORR saver writes no caption. Only
-[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
-takes one; here the table title goes in the manuscript, above the pasted
-table.
+**"A manuscript table needs `caption` ..."** The table is in the
+manuscript style, which requires a caption so the title is written with
+the table. Pass `caption = "Table 1. ..."`; a report table takes one
+optionally.
 
 **"`footnotes` must be a named list (symbol -\> footnote text) ..."**
 You passed the JTCVS shape. The two savers' `footnotes` arguments are

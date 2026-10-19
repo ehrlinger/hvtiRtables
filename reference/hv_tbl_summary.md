@@ -214,7 +214,10 @@ or
 See Details for the `hv_stat_label`, `hv_trailing`, and `hv_footnotes`
 renderer attributes. A table whose rows mix mean and median also carries
 `hv_cell_marks`, a list with `symbol` (`"§"` or `"¶"`) and `variables`
-(the names whose cells carry it); the attribute is `NULL` otherwise.
+(the names whose cells carry it); the attribute is `NULL` otherwise. The
+manuscript style also reads `hv_by_label`, the grouping's name (the
+variable's label when the data carry one), and the hidden `hv_n` column
+of `table_body`, each variable's overall non-missing count.
 
 ## Details
 
