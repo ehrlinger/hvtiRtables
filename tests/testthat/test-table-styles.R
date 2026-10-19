@@ -63,7 +63,6 @@ st_save <- function(name, fill = "#CAEDFB", tbl = st_tbl()) {
   hv_man_table_save(ft, f, caption = caption)
   f
 }
-st_xml <- function(f) wx_doc(f)
 xq <- function(x, path) xml2::xml_find_all(x, path, wx_ns)
 ncols <- function(x) length(xq(x, "//w:tblGrid/w:gridCol"))
 sec_row <- function(x) {
@@ -71,12 +70,12 @@ sec_row <- function(x) {
 }
 
 test_that("rows 1-2: shaded section rows, unmerged or spanned", {
-  r <- st_xml(st_save("report"))
+  r <- wx_doc(st_save("report"))
   tcs <- xq(sec_row(r), "./w:tc")
   expect_length(tcs, ncols(r))
   fills <- xml2::xml_attr(xml2::xml_find_first(tcs, ".//w:shd", wx_ns), "fill")
   expect_true(all(fills == "CAEDFB"))
-  m <- st_xml(st_save("manuscript", fill = "#A5C9EB"))
+  m <- wx_doc(st_save("manuscript", fill = "#A5C9EB"))
   tc <- xq(sec_row(m), "./w:tc")
   expect_length(tc, 1L)
   expect_identical(xml2::xml_attr(xq(tc, ".//w:gridSpan"), "val"),
@@ -85,9 +84,12 @@ test_that("rows 1-2: shaded section rows, unmerged or spanned", {
 })
 
 test_that("row 3: rules in the report, a full grid in the manuscript", {
-  r <- st_xml(st_save("report"))
+  r <- wx_doc(st_save("report"))
   expect_length(xq(r, "//w:tcBorders/w:left[@w:val='single']"), 0L)
-  m <- st_xml(st_save("manuscript"))
+  rules <- xq(r, paste0("//w:tcBorders/w:top[@w:val='single'] | ",
+                        "//w:tcBorders/w:bottom[@w:val='single']"))
+  expect_gt(length(rules), 0L) # the report carries its horizontal rules
+  m <- wx_doc(st_save("manuscript"))
   n_tc <- length(xq(m, "//w:tc"))
   for (side in c("top", "bottom", "left", "right")) {
     path <- sprintf("//w:tcBorders/w:%s[@w:val='single' and @w:sz='4']", side)
@@ -96,11 +98,11 @@ test_that("row 3: rules in the report, a full grid in the manuscript", {
 })
 
 test_that("rows 4-5: the header and the count column", {
-  r <- st_xml(st_save("report"))
+  r <- wx_doc(st_save("report"))
   expect_length(xq(r, "//w:tr[w:trPr/w:tblHeader]"), 1L)
   r_head <- vapply(xq(r, "//w:tr[1]/w:tc"), wx_text, character(1))
   expect_identical(sum(startsWith(r_head, "No.")), 3L) # Overall + 2 groups
-  m <- st_xml(st_save("manuscript"))
+  m <- wx_doc(st_save("manuscript"))
   expect_length(xq(m, "//w:tr[w:trPr/w:tblHeader]"), 2L)
   m_head <- vapply(xq(m, "//w:tr[1]/w:tc"), wx_text, character(1))
   expect_identical(sum(m_head == "n*"), 1L)
@@ -113,11 +115,11 @@ test_that("rows 8-10: note markers and wording", {
   after <- function(x) {
     vapply(xq(x, "//w:tbl/following-sibling::w:p"), wx_text, character(1))
   }
-  r <- st_xml(st_save("report"))
+  r <- wx_doc(st_save("report"))
   expect_identical(after(r)[1], "* Number of non-missing values.")
   first <- xq(r, "//w:tbl/following-sibling::w:p[1]/w:r[1]")
   expect_length(xq(first[[1]], ".//w:vertAlign[@w:val='superscript']"), 1L)
-  m <- st_xml(st_save("manuscript"))
+  m <- wx_doc(st_save("manuscript"))
   expect_identical(after(m)[1:2], c(
     "*Patients with non-missing data.",
     "\u2020Values are No. (%) or median [15th, 85th percentiles]."
@@ -125,11 +127,11 @@ test_that("rows 8-10: note markers and wording", {
 })
 
 test_that("rows 12-13: the font and the caption", {
-  r <- st_xml(st_save("report"))
+  r <- wx_doc(st_save("report"))
   expect_gt(length(xq(r, "//w:tbl//w:rFonts[@w:ascii='Times New Roman']")),
             0L)
   expect_identical(xml2::xml_name(xq(r, "//w:body/*[1]")[[1]]), "tbl")
-  m <- st_xml(st_save("manuscript"))
+  m <- wx_doc(st_save("manuscript"))
   expect_length(xq(m, "//w:tbl//w:rFonts[@w:ascii]"), 0L)
   expect_length(xq(m, "//w:tbl//w:sz"), 0L)
   cap <- xq(m, "//w:body/*[1]")[[1]]
@@ -137,9 +139,9 @@ test_that("rows 12-13: the font and the caption", {
 })
 
 test_that("rows 14-16: weight, row height, rows kept whole, header repeated", {
-  m <- st_xml(st_save("manuscript"))
-  head_runs <- xq(m, "//w:tr[w:trPr/w:tblHeader]//w:rPr")
-  bold <- xq(m, paste0("//w:tr[w:trPr/w:tblHeader]//w:rPr/",
+  m <- wx_doc(st_save("manuscript"))
+  head_runs <- xq(m, "//w:tr[w:trPr/w:tblHeader]//w:r[w:t]/w:rPr")
+  bold <- xq(m, paste0("//w:tr[w:trPr/w:tblHeader]//w:r[w:t]/w:rPr/",
                        "w:b[not(@w:val='false')]"))
   expect_gt(length(head_runs), 0L)
   expect_length(bold, length(head_runs)) # every header run is bold
@@ -147,13 +149,13 @@ test_that("rows 14-16: weight, row height, rows kept whole, header repeated", {
   expect_length(xq(m, "//w:trHeight[@w:val='300' and @w:hRule='atLeast']"),
                 n_tr)
   expect_length(xq(m, "//w:trPr/w:cantSplit"), n_tr)
-  r <- st_xml(st_save("report"))
+  r <- wx_doc(st_save("report"))
   expect_length(xq(r, "//w:trPr/w:cantSplit"), 0L)
 })
 
 test_that("rows 17-19: Letter, no Variable column, merges where allowed", {
   for (name in c("report", "manuscript")) {
-    x <- st_xml(st_save(name))
+    x <- wx_doc(st_save(name))
     sz <- xq(x, "//w:sectPr/w:pgSz")[[1]]
     expect_setequal(
       c(xml2::xml_attr(sz, "w"), xml2::xml_attr(sz, "h")),
@@ -162,9 +164,9 @@ test_that("rows 17-19: Letter, no Variable column, merges where allowed", {
     cells <- vapply(xq(x, "//w:tc"), wx_text, character(1))
     expect_false("Variable" %in% cells, info = name)
   }
-  r <- st_xml(st_save("report"))
+  r <- wx_doc(st_save("report"))
   expect_length(xq(r, "//w:gridSpan | //w:vMerge"), 0L)
-  m <- st_xml(st_save("manuscript"))
+  m <- wx_doc(st_save("manuscript"))
   merged_rows <- xq(m, "//w:tr[.//w:gridSpan or .//w:vMerge]")
   ok <- vapply(merged_rows, function(tr) {
     length(xq(tr, "./w:trPr/w:tblHeader")) > 0L ||
@@ -189,7 +191,7 @@ test_that("replicas of the two submissions' Table 1 shapes", {
       continuous = c("age", "marker"), categorical = "stage",
       overall = FALSE, show_variable = FALSE
     )
-    x <- st_xml(st_save("manuscript", fill = case$fill, tbl = tbl))
+    x <- wx_doc(st_save("manuscript", fill = case$fill, tbl = tbl))
     expect_length(xq(x, sprintf("//w:tr[1]/w:tc[.//w:gridSpan[@w:val='%s']]",
                                 case$span)), 1L)
     body_spans <- paste0("//w:tr[not(w:trPr/w:tblHeader)]",
