@@ -19,19 +19,21 @@
 #' the *insertion point* in the destination document, not this function's
 #' output; see the package README for the paste-in workflow.
 #'
-#' Every style is written on a US Letter page. A table with three or more
-#' statistic columns, such as an Overall column and two groups, is written
-#' on a landscape page: with a `No.`
-#' column beside each, it does not fit a portrait one. So is any table
-#' wider than a portrait page's text block (6.5 inches on US Letter). A table
+#' Every style is written on a US Letter page. A report table with three
+#' or more statistic columns, such as an Overall column and two groups, is
+#' written on a landscape page: with a `No.` column beside each, it does
+#' not fit a portrait one. A manuscript table turns only on width, since
+#' it has one overall `n` column: Overall, two groups and a P value come
+#' to 6.5 inches and stay portrait. Any table wider than a portrait page's
+#' text block (6.53 inches on US Letter) is written landscape. A table
 #' wider than landscape's (9.0 inches), as a `continuous_stat = "both"`
 #' table with an Overall column can be, has its columns narrowed in
 #' proportion to fit; the font size is not changed.
 #'
-#' The saved table is always a manuscript table: the "Variable" column
-#' [hv_tbl_summary()]'s `show_variable` adds for the report view is
-#' dropped before the page is fitted, so it never reaches Word and never
-#' widens the page. [hv_man_table_display()] keeps it, for the report.
+#' In every style the saver drops the "Variable" column
+#' [hv_tbl_summary()]'s `show_variable` adds for the report view before
+#' the page is fitted, so it never reaches Word and never widens the page.
+#' [hv_man_table_display()] keeps it, for the report.
 #'
 #' @section Common mistakes:
 #' **"A manuscript table needs `caption` ..."** The table is in the
@@ -76,9 +78,10 @@
 #'   count column only when the table has no such column. Every other
 #'   symbol goes on the table's count-column header cell (a column named
 #'   `n`, else the first `n_stat_<k>` column [hv_man_table()] creates when
-#'   it splits an [hv_tbl_summary()] table, else the first column). Each
-#'   text is rendered as its own paragraph below the table, in the order
-#'   given.
+#'   it splits an [hv_tbl_summary()] table, else the first column). In a
+#'   manuscript table the dagger goes on the grouping's spanning cell and
+#'   `*` on its `n` column. Each text is rendered as its own paragraph
+#'   below the table, in the order given.
 #'   Every element must be named (unnamed or blank-named
 #'   entries raise an error) and every text must be a single non-empty
 #'   string (`NULL`, `NA`, a number, or a multi-element vector raise an

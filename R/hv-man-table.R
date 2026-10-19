@@ -145,6 +145,10 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   sec_i <- which(tbl$table_body$row_type == "section")
   ft <- gtsummary::as_flex_table(tbl)
   ft <- flextable::merge_none(ft)
+  # The report applies its own header weight (design row 14), so every
+  # header line is bold, the "N = n" lines included, whatever
+  # as_flex_table() left on them.
+  ft <- flextable::bold(ft, bold = style$header_bold, part = "header")
   # gtsummary centres its label column in the .docx; house rule and the
   # SAS macro both left-justify it.
   ft <- flextable::align(ft, j = 1, align = "left", part = "all")

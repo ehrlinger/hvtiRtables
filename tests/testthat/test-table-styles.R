@@ -139,18 +139,60 @@ test_that("rows 12-13: the font and the caption", {
 })
 
 test_that("rows 14-16: weight, row height, rows kept whole, header repeated", {
+  # Every header text run is bold in both styles, the "N = n" lines and
+  # the marks the saver appends included (design row 14, "header bold").
+  for (name in c("report", "manuscript")) {
+    x <- wx_doc(st_save(name))
+    head_runs <- xq(x, "//w:tr[w:trPr/w:tblHeader]//w:r[w:t]/w:rPr")
+    bold <- xq(x, paste0("//w:tr[w:trPr/w:tblHeader]//w:r[w:t]/w:rPr/",
+                         "w:b[not(@w:val='false')]"))
+    expect_gt(length(head_runs), 0L)
+    expect_length(bold, length(head_runs)) # every header run is bold
+  }
   m <- wx_doc(st_save("manuscript"))
-  head_runs <- xq(m, "//w:tr[w:trPr/w:tblHeader]//w:r[w:t]/w:rPr")
-  bold <- xq(m, paste0("//w:tr[w:trPr/w:tblHeader]//w:r[w:t]/w:rPr/",
-                       "w:b[not(@w:val='false')]"))
-  expect_gt(length(head_runs), 0L)
-  expect_length(bold, length(head_runs)) # every header run is bold
   n_tr <- length(xq(m, "//w:tr"))
   expect_length(xq(m, "//w:trHeight[@w:val='300' and @w:hRule='atLeast']"),
                 n_tr)
   expect_length(xq(m, "//w:trPr/w:cantSplit"), n_tr)
   r <- wx_doc(st_save("report"))
   expect_length(xq(r, "//w:trPr/w:cantSplit"), 0L)
+})
+
+test_that("row 14: labels are left-justified and statistics centered", {
+  for (name in c("report", "manuscript")) {
+    rows <- wx_rows(wx_doc(st_save(name)))
+    # Rows that carry a statistic, past the header: the section rows and
+    # the footer line gtsummary adds to a report table hold none.
+    body <- Filter(function(r) {
+      any(nzchar(vapply(r[-1], function(cell) cell$text, character(1))))
+    }, rows[-seq_len(if (name == "manuscript") 2L else 1L)])
+    expect_gt(length(body), 0L)
+    label <- vapply(body, function(r) r[[1]]$jc, character(1))
+    expect_true(all(label == "left"), info = name)
+    stats <- unlist(lapply(body, function(r) {
+      vapply(r[-1], function(cell) cell$jc, character(1))
+    }))
+    expect_true(all(stats == "center"), info = name)
+  }
+})
+
+test_that("the manuscript's default Table 1 is on a portrait Letter page", {
+  # Overall, two groups and P: 2.0 + 0.6 + 1.1 * 3 + 0.6 = 6.5 inches,
+  # inside Letter's 6.53-inch text block. At a 2.5-inch label it turned
+  # landscape.
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = c("age", "marker"),
+                  Disease = c("stage", "grade")),
+    continuous = c("age", "marker"), categorical = c("stage", "grade"),
+    overall = TRUE, compare = "pvalue"
+  )
+  f <- tempfile(fileext = ".docx")
+  hv_man_table_save(
+    hv_man_table(tbl, style = "manuscript"), f,
+    caption = "Table 1. Baseline characteristics"
+  )
+  expect_identical(pg_size(f), c(w = "12240", h = "15840"))
 })
 
 test_that("rows 17-19: Letter, no Variable column, merges where allowed", {

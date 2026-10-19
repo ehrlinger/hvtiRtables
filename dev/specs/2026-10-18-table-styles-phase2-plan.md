@@ -95,6 +95,13 @@ for John.
    section rows that span the table; `style = "report"` allows none (house rule 3).
    hvtiRtemplates' `dc-tables` calls it without a style on a report table, which merges
    nothing, so it is unaffected.
+10. **The report applies its header weight: every header line bold.** John's decision,
+    2026-10-19; design row 14 ("header bold") is read to cover the `N = n` lines and the
+    marks. `hv_man_table()` bolds the report's header after `merge_none()` rather than
+    trusting what `as_flex_table()` leaves on those lines.
+11. **The manuscript label column is 2.0 in, so a Table 1 with Overall, two groups and P
+    fits portrait.** John's decision, 2026-10-19. The columns come to 2.0 + 0.6 + 3 x 1.1 +
+    0.6 = 6.5 in, inside Letter's 6.53 in text block; at 2.5 in the table turned landscape.
 
 ## File structure
 
@@ -915,7 +922,7 @@ test_that("the statistic note in each style's words", {
   ft <- flextable::set_table_properties(ft, opts_word = list(
     split = !style$keep_rows, repeat_headers = style$repeat_header
   ))
-  ft <- flextable::width(ft, j = "label", width = 2.5)
+  ft <- flextable::width(ft, j = "label", width = 2.0)
   ft <- flextable::width(ft, j = c("hv_n", names(compare)), width = 0.6)
   ft <- flextable::width(ft, j = disp, width = 1.1)
 

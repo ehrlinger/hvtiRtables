@@ -83,7 +83,7 @@
   ft <- flextable::set_table_properties(ft, opts_word = list(
     split = !style$keep_rows, repeat_headers = style$repeat_header
   ))
-  ft <- flextable::width(ft, j = "label", width = 2.5)
+  ft <- flextable::width(ft, j = "label", width = 2.0)
   ft <- flextable::width(ft, j = c("hv_n", names(compare)), width = 0.6)
   ft <- flextable::width(ft, j = disp, width = 1.1)
 

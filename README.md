@@ -62,11 +62,16 @@ ft <- hv_man_table(tbl)
 hv_man_table_save(ft, "table1.docx")
 ```
 
-For a manuscript submission, name the manuscript style when shaping the
-table (it needs a table from `hv_tbl_summary()`) and give the saver the
-caption, which that style requires:
+For a manuscript submission, build the table with `hv_tbl_summary()`,
+which the manuscript style needs, name the style when shaping it, and give
+the saver the caption, which that style requires:
 
 ``` r
+tbl <- hv_tbl_summary(
+  trial, by = "trt",
+  groups = list(Demography = "age", Disease = c("stage", "grade")),
+  continuous = "age", categorical = c("stage", "grade")
+)
 ft <- hv_man_table(tbl, style = "manuscript")
 hv_man_table_save(ft, "table1.docx", caption = "Table 1. Baseline Characteristics")
 ```
