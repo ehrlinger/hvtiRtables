@@ -339,3 +339,90 @@ test_that("wide_table leaves a document with no section properties alone", {
   doc <- wt_doc(wt_tbl("<w:gridCol w:w=\"20000\"/>"))
   expect_identical(nrow(.detect_wide_table(doc)), 0L)
 })
+
+# A saved flextable, for the merged-cell rule.
+mc_save <- function(ft) {
+  f <- tempfile(fileext = ".docx")
+  print(flextable::body_add_flextable(officer::read_docx(), ft), target = f)
+  f
+}
+mc_found <- function(f, style = NULL) {
+  res <- hv_check_docx(f, style = style)
+  res[res$type == "merged_cell", , drop = FALSE]
+}
+
+test_that("a body row merged short of the table's width is a finding", {
+  ft <- flextable::flextable(data.frame(a = c("x", "y"), b = c("1", "2"),
+                                        c = c("1", "3")))
+  ft <- flextable::merge_at(ft, i = 1, j = c("b", "c"), part = "body")
+  found <- mc_found(mc_save(ft))
+  expect_identical(found$location, "row 2") # row 1 is the header
+  expect_identical(found$table, 1L)
+})
+
+test_that("header merges and full-width section rows pass the shared rule", {
+  ft <- flextable::flextable(data.frame(a = c("Demo", "Age"),
+                                        b = c(NA, "1"), c = c(NA, "2")))
+  ft <- flextable::add_header_row(ft, values = c("", "Group"),
+                                  colwidths = c(1L, 2L))
+  ft <- flextable::merge_at(ft, i = 1, j = c("a", "b", "c"), part = "body")
+  f <- mc_save(ft)
+  expect_identical(nrow(mc_found(f)), 0L)
+  expect_identical(nrow(mc_found(f, style = "manuscript")), 0L)
+  # The report style merges nothing, so both rows are findings.
+  expect_identical(mc_found(f, style = "report")$location,
+                   c("row 1", "row 3"))
+})
+
+test_that("the package's own tables pass the rule for their style", {
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = c("age", "grade"), Disease = "stage"),
+    continuous = "age", categorical = c("grade", "stage")
+  )
+  f <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(tbl), f)
+  expect_identical(nrow(mc_found(f, style = "report")), 0L)
+  j <- tempfile(fileext = ".docx")
+  hv_man_table_save_jtcvs(
+    hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
+                       trailing = attr(tbl, "hv_trailing")),
+    j, caption = "Table 1. Test"
+  )
+  expect_identical(nrow(mc_found(j)), 0L)
+})
+
+# A three-column table from rows of hand-written XML. `header` is NULL
+# for no flag, "" for a bare flag, or an attribute such as
+# ' w:val="false"'; `span` merges the first two cells.
+mc_tr <- function(header = NULL, span = FALSE) {
+  pr <- if (!is.null(header)) {
+    paste0("<w:trPr><w:tblHeader", header, "/></w:trPr>")
+  } else {
+    ""
+  }
+  cells <- if (span) {
+    paste0("<w:tc><w:tcPr><w:gridSpan w:val=\"2\"/></w:tcPr><w:p/></w:tc>",
+           "<w:tc><w:p/></w:tc>")
+  } else {
+    strrep("<w:tc><w:p/></w:tc>", 3)
+  }
+  paste0("<w:tr>", pr, cells, "</w:tr>")
+}
+mc_doc <- function(...) {
+  wt_doc(paste0("<w:tbl><w:tblGrid>", strrep("<w:gridCol/>", 3),
+                "</w:tblGrid>", ..., "</w:tbl>"))
+}
+
+test_that("only Word's own header rows may merge", {
+  # A leading run of flags that are on: exempt.
+  ok <- mc_doc(mc_tr("", span = TRUE), mc_tr(" w:val=\"1\"", span = TRUE),
+               mc_tr())
+  expect_identical(nrow(.detect_merged_cell(ok)), 0L)
+  # A flag switched off is no header.
+  off <- mc_doc(mc_tr(" w:val=\"false\"", span = TRUE), mc_tr())
+  expect_identical(.detect_merged_cell(off)$location, "row 1")
+  # A flag after a body row is ignored by Word, so the row is a body row.
+  late <- mc_doc(mc_tr(""), mc_tr(), mc_tr("", span = TRUE))
+  expect_identical(.detect_merged_cell(late)$location, "row 3")
+})

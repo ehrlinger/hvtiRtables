@@ -4,10 +4,14 @@
 \alias{hv_check_docx}
 \title{Check a .docx for structural patterns the house rules forbid}
 \usage{
-hv_check_docx(path)
+hv_check_docx(path, style = NULL)
 }
 \arguments{
 \item{path}{Path to a \code{.docx} file.}
+
+\item{style}{\code{NULL}, the default, applies the rule every style shares.
+A style name or \code{\link[=hv_table_style]{hv_table_style()}} applies that style's rule: the
+report style merges no cells at all.}
 }
 \value{
 A \code{data.frame} with one row per finding and columns \code{type},
@@ -23,7 +27,7 @@ memo names, and a table too wide for its page, and never modifies the
 file.
 }
 \details{
-Four detectors run:
+Five detectors run:
 \itemize{
 \item \code{"layer"} (structural, high confidence): paragraphs positioned with
 \code{w:framePr}, or floating text boxes (\code{w:txbxContent}). Table content
@@ -47,6 +51,11 @@ dagger or double dagger, a section or pilcrow sign, a lettered
 produces when misused. This detector is pattern-based rather than a
 guaranteed structural signature, so treat its findings as prompts to
 look, not proof.
+\item \code{"merged_cell"} (structural, high confidence): a row whose cells are
+merged (\code{w:gridSpan} above 1, or \code{w:vMerge}) outside the header
+rows, unless the row is one cell spanning the table. The header rows
+are the leading run of rows whose \code{w:tblHeader} flag is on, as Word
+reads it. With \code{style = "report"}, any merged cell is a finding.
 }
 }
 \section{Common mistakes}{
@@ -62,7 +71,7 @@ precisely so the deliberate half-inch gutter columns in the house
 JTCVS templates do not trip it. A finding here is a real spacer.
 
 \strong{Treating \code{embedded_footnote} as proof.} It is the one heuristic
-detector of the four: it matches a marker character opening a cell
+detector of the five: it matches a marker character opening a cell
 in a table's last row, and a legitimate last row that happens to
 start that way matches it too. Read it as a prompt to look, not a
 verdict.
