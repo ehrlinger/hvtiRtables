@@ -172,7 +172,7 @@ renderer, whose layout becomes `"describe"` (D3, section 5.1).
 | 7 | Categorical values | `3 (6.8)`, the standard | `30 (42)`, the standard | `3 (6.8)` |
 | 8 | Note markers | the standard's symbols by meaning (section 5.2), superscript | the standard's symbols by meaning (section 5.2), at the start of the note, not superscript | lettered `a.`, `b.` |
 | 9 | Count note | `Number of non-missing values.` (house rule 8) | `Patients with non-missing data.` | `Patients with data available.` |
-| 10 | Statistic note | `No. (%) or Median (15th, 85th percentile).` | `Values are No. (%) or median [15th, 85th percentiles].` | named in the header row |
+| 10 | Statistic note | `No. (%) or Median [15th, 85th percentiles].` | `Values are No. (%) or median [15th, 85th percentiles].` | named in the header row |
 | 11 | Abbreviations | `Key: A=…; B=…` (house rule 14) | `Key: A=…; B=…` | its own key |
 | 12 | Font | Times New Roman 12 pt (house rule 5) | none set: the document's body font (11 pt in the submissions) | Times New Roman 12 pt |
 | 13 | Caption | none | `Table 1. …`, bold, above the table | above the table, plain |
@@ -351,7 +351,8 @@ All answered on 2026-10-17.
    shows mean ± SD by default and some variables as medians (`hv_tbl_summary(mean_sd =)`),
    each median cell carries a mark, `102 [63, 170]§`, and the notes gain `§Median [15th, 85th
    percentiles].`, with the percentiles the table uses. The default statistic is named once,
-   in a `Data:` note.
+   in the † note (row 10: `Values are No. (%) or
+   mean±SD.`).
 9. **Two manuscript layouts, chosen by content.** `"compare"` (one overall `n*` column) and
    `"describe"` (a count beside each group); either shows an Overall column and comparison
    columns when the table carries them. The JTCVS layout survives as `"describe"` (decision 6,
