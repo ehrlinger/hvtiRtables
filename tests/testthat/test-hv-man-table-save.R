@@ -468,3 +468,27 @@ test_that("the manuscript requires a caption; the report takes one if given", {
   expect_error(hv_man_table_save(hv_man_table(fx_hv_tbl()), without,
                                  caption = NA_character_), "caption")
 })
+
+test_that("an empty caption is refused before anything is written", {
+  f <- tempfile(fileext = ".docx")
+  expect_error(hv_man_table_save(hv_man_table(fx_hv_tbl()), f, caption = ""),
+               "non-empty string")
+  expect_false(file.exists(f))
+  f <- tempfile(fileext = ".docx")
+  expect_error(hv_man_table_save(ms_ft(), f, caption = ""),
+               "non-empty string")
+  expect_false(file.exists(f))
+})
+
+test_that("the caption takes the table's font", {
+  f <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(fx_hv_tbl()), f,
+                    caption = "Table 2. Report")
+  x <- officer::read_docx(f)$doc_obj$get()
+  xp <- "(//w:body/*[1]//w:r)[1]/w:rPr/w:rFonts/@w:ascii"
+  expect_identical(xml2::xml_text(xml2::xml_find_all(x, xp)),
+                   "Times New Roman")
+  x <- ms_doc(caption = "Table 1. Baseline characteristics")
+  expect_length(xml2::xml_find_all(x, "//w:body/*[1]//w:rFonts[@w:ascii]"),
+                0L)
+})
