@@ -1969,7 +1969,8 @@ test_that("three groups name Kruskal-Wallis, and `normal` names ANOVA", {
                   continuous = c("age", "marker"), normal = "age")
   expect_match(
     note,
-    "P values from the one-way analysis of variance and Wilcoxon rank sum test.",
+    paste0("P values from the one-way analysis of variance and Wilcoxon ",
+           "rank sum test."),
     fixed = TRUE
   )
 })
