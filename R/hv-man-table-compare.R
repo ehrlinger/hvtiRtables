@@ -97,8 +97,10 @@
   tb <- tbl$table_body
   notes <- attr(tbl, "hv_footnotes", exact = TRUE)
   notes[["*"]] <- style$count_note
-  notes[["\u2020"]] <- .stat_note(attr(tbl, "hv_stat_label", exact = TRUE),
-                                  style)
+  tests <- attr(tbl, "hv_test_note", exact = TRUE)
+  notes[["\u2020"]] <- .with_tests(
+    .stat_note(attr(tbl, "hv_stat_label", exact = TRUE), style), tests
+  )
   rows <- function(vars) {
     which(body$row_type == "label" & body$variable %in% vars)
   }
@@ -139,5 +141,6 @@
   attr(ft, "hv_footnotes") <- .order_notes(notes)
   attr(ft, "hv_body_marks") <- if (length(marks) > 0L) marks
   attr(ft, "hv_style") <- style
+  attr(ft, "hv_test_note") <- tests
   ft
 }

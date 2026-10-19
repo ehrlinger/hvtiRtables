@@ -7,7 +7,8 @@
     percentiles]; P values from the Wilcoxon rank sum test and Pearson's chi-square test."),
     and the dagger marks the p-value header as well as the statistic headers. Fisher's exact
     test keeps its own double dagger and is not repeated. A table with no p-values has no test
-    sentence.
+    sentence. The manuscript style says it in its own words, "Values are ... median [15th, 85th
+    percentiles]; P values from the ...", and marks its comparison header the same way.
   - A table showing a confidence interval (`compare = "both"`) defines `CI` in the key, beside any `abbreviations` you pass (your own
     definition of `CI` wins).
 * `hv_check_docx()` flags a last-row cell that opens with a superscript number, the form

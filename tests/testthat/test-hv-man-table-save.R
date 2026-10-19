@@ -438,9 +438,10 @@ test_that("a manuscript note begins with its plain symbol", {
   ps <- xml2::xml_find_all(x, "//w:tbl/following-sibling::w:p")
   text <- vapply(ps, xml2::xml_text, character(1))
   expect_identical(text[1], "*Patients with non-missing data.")
-  expect_identical(
-    text[2], "†Values are No. (%) or median [15th, 85th percentiles]."
-  )
+  expect_match(text[2], paste0(
+    "^†Values are No. \\(%\\) or median \\[15th, 85th percentiles\\]; ",
+    "P values from the "
+  ))
   sup <- xml2::xml_find_all(ps[[1]], ".//w:vertAlign[@w:val='superscript']")
   expect_length(sup, 0L)
 })

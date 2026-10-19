@@ -1954,7 +1954,7 @@ test_that("the dagger note names the tests that ran, Fisher left to its mark", {
   note <- attr(tbl, "hv_footnotes")[["†"]]
   expect_match(note, "; P values from the ", fixed = TRUE)
   expect_false(grepl("Fisher", note, fixed = TRUE))
-  expect_true(isTRUE(attr(tbl, "hv_test_note")))
+  expect_match(attr(tbl, "hv_test_note"), "^P values from the ")
   expect_identical(attr(tbl, "hv_footnotes")[["‡"]], "Fisher exact test.")
 })
 

@@ -616,11 +616,10 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     # the same, but inside the table.
     tests <- .test_sentence(tbl$table_body)
     if (nzchar(tests)) {
-      dagger <- attr(tbl, "hv_footnotes")[["\u2020"]]
-      attr(tbl, "hv_footnotes")[["\u2020"]] <- paste0(
-        sub("\\.$", "", dagger), "; ", tests
+      attr(tbl, "hv_footnotes")[["\u2020"]] <- .with_tests(
+        attr(tbl, "hv_footnotes")[["\u2020"]], tests
       )
-      attr(tbl, "hv_test_note") <- TRUE
+      attr(tbl, "hv_test_note") <- tests
     }
   }
 
@@ -781,6 +780,14 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   else if (n == 2L) paste(items, collapse = " and ")
   else paste0(paste(items[-n], collapse = ", "), ", and ", items[n])
   paste0("P values from the ", joined, ".")
+}
+
+# The dagger note with the tests after the statistic, in either style's
+# words: "<statistic>; P values from the ...". `tests` is NULL for a table
+# that names none.
+.with_tests <- function(note, tests) {
+  if (is.null(tests)) return(note)
+  paste0(sub("\\.$", "", note), "; ", tests)
 }
 
 # Notes print in the canonical symbol order, * dagger double-dagger section

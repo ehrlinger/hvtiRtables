@@ -436,12 +436,17 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
     if (identical(attr(ft, "hv_style", exact = TRUE)$header, "spanned")) {
       disp <- grep("^disp_stat_[0-9]+$", ft$col_keys, value = TRUE)
       group <- setdiff(disp, "disp_stat_0")
-      return(if (length(group) > 0L) group[1] else disp[1])
+      cols <- if (length(group) > 0L) group[1] else disp[1]
+      # The note also names the tests behind the p-values, so the
+      # comparison header carries the dagger too.
+      if (!is.null(attr(ft, "hv_test_note", exact = TRUE)))
+        cols <- c(cols, intersect("hv_compare_col", ft$col_keys))
+      return(cols)
     }
     stat <- grep("^stat_[0-9]+$", ft$col_keys, value = TRUE)
     # The dagger note also names the tests behind the p-values, so the
     # p-value header carries it too.
-    if (isTRUE(attr(ft, "hv_test_note", exact = TRUE)))
+    if (!is.null(attr(ft, "hv_test_note", exact = TRUE)))
       stat <- c(stat, intersect("p.value", ft$col_keys))
     if (length(stat) > 0L) return(stat)
   }
