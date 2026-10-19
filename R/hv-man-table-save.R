@@ -19,10 +19,27 @@
 #' the *insertion point* in the destination document, not this function's
 #' output; see the package README for the paste-in workflow.
 #'
+#' Every style is written on a US Letter page. A report table with three
+#' or more statistic columns, such as an Overall column and two groups, is
+#' written on a landscape page: with a `No.` column beside each, it does
+#' not fit a portrait one. A manuscript table turns only on width, since
+#' it has one overall `n` column: Overall, two groups and a P value come
+#' to 6.5 inches and stay portrait. Any table wider than a portrait page's
+#' text block (6.53 inches on US Letter) is written landscape. A table
+#' wider than landscape's (9.0 inches), as a `continuous_stat = "both"`
+#' table with an Overall column can be, has its columns narrowed in
+#' proportion to fit; the font size is not changed.
+#'
+#' In every style the saver drops the "Variable" column
+#' [hv_tbl_summary()]'s `show_variable` adds for the report view before
+#' the page is fitted, so it never reaches Word and never widens the page.
+#' [hv_man_table_display()] keeps it, for the report.
+#'
 #' @section Common mistakes:
-#' **"unused argument (caption)"** The CORR saver writes no caption.
-#' Only [hv_man_table_save_jtcvs()] takes one; here the table title goes
-#' in the manuscript, above the pasted table.
+#' **"A manuscript table needs `caption` ..."** The table is in the
+#' manuscript style, which requires a caption so the title is written with
+#' the table. Pass
+#' `caption = "Table 1. ..."`; a report table takes one optionally.
 #'
 #' **"`footnotes` must be a named list (symbol -> footnote text) ..."**
 #' You passed the JTCVS shape. The two savers' `footnotes` arguments are
@@ -63,9 +80,10 @@
 #'   the note names the tests behind the p-values. Every other
 #'   symbol goes on the table's count-column header cell (a column named
 #'   `n`, else the first `n_stat_<k>` column [hv_man_table()] creates when
-#'   it splits an [hv_tbl_summary()] table, else the first column). Each
-#'   text is rendered as its own paragraph below the table, in the order
-#'   given.
+#'   it splits an [hv_tbl_summary()] table, else the first column). In a
+#'   manuscript table the dagger goes on the grouping's spanning cell and
+#'   `*` on its `n` column. Each text is rendered as its own paragraph
+#'   below the table, in the order given.
 #'   Every element must be named (unnamed or blank-named
 #'   entries raise an error) and every text must be a single non-empty
 #'   string (`NULL`, `NA`, a number, or a multi-element vector raise an
@@ -80,21 +98,12 @@
 #'   italicized, pairs separated by `"; "` (house rule 14). Every element
 #'   must be named (unnamed or blank-named entries raise an error); an
 #'   empty or `NULL` vector is a no-op.
+#' @param caption The table's caption, written in bold on its own line
+#'   above the table. A manuscript table requires one, so it is written
+#'   with the table and not typed in later; a report table takes one when
+#'   given and writes none otherwise.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
-#'
-#' A table with three or more statistic columns, such as an Overall
-#' column and two groups, is written on a landscape page: with a `No.`
-#' column beside each, it does not fit a portrait one. So is any table
-#' wider than a portrait page's text block (6.3 inches on A4). A table
-#' wider than landscape's (9.7 inches), as a `continuous_stat = "both"`
-#' table with an Overall column can be, has its columns narrowed in
-#' proportion to fit; the font size is not changed.
-#'
-#' The saved table is always a manuscript table: the "Variable" column
-#' [hv_tbl_summary()]'s `show_variable` adds for the report view is
-#' dropped before the page is fitted, so it never reaches Word and never
-#' widens the page. [hv_man_table_display()] keeps it, for the report.
 #'
 #' @return Invisibly, the `file` path.
 #'
@@ -110,12 +119,14 @@
 #'
 #' @export
 hv_man_table_save <- function(ft, file, footnotes = NULL,
-                              abbreviations = NULL, ...) {
+                              abbreviations = NULL, caption = NULL, ...) {
   use_default_footnotes <- missing(footnotes)
   .check_sas_args(list(...), "hv_man_table_save")
   .check_flextable(ft)
   .check_not_display(ft)
   .check_file(file)
+  style <- .table_style(ft)
+  .check_caption(caption, style)
   ft <- .drop_variable_column(ft)
   if (use_default_footnotes) footnotes <- .default_footnotes(ft)
   # Hoisted out of .add_abbreviations_key() so it fires at entry
@@ -130,18 +141,23 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   ft <- fit$ft
 
   doc <- officer::read_docx()
+  font <- .table_font(ft)
+  if (!is.null(caption))
+    doc <- officer::body_add_fpar(doc, officer::fpar(officer::ftext(
+      caption, prop = .note_prop(font, bold = TRUE)
+    )), style = "Normal")
   doc <- flextable::body_add_flextable(doc, ft)
 
-  font <- .table_font(ft)
+  leading <- identical(style$marker, "leading")
   for (sym in names(footnotes)) {
     doc <- officer::body_add_fpar(
-      doc, .runs_fpar(.note_runs(sym, footnotes[[sym]]), font),
+      doc, .runs_fpar(.note_runs(sym, footnotes[[sym]], leading), font),
       style = "Normal"
     )
   }
 
   doc <- .add_abbreviations_key(doc, abbreviations, font)
-  if (fit$landscape) doc <- .landscape(doc)
+  doc <- .page_section(doc, fit$landscape)
 
   print(doc, target = file)
   invisible(file)
@@ -154,12 +170,15 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   sum(grepl("^(hv_median_)?stat_[0-9]+$", ft$col_keys)) >= 3L
 }
 
-# The template's own page (A4, 1417-twip margins) turned on its side,
-# so only the orientation changes.
-# Inches between the margins .landscape() sets, which are also the
-# default template's: A4, 1417 twips each side.
+# US Letter for every style (design question 4), with the margins the
+# A4 template had, 1417 twips (about 1 in) each side. The template's own
+# page is A4, so the section is set whatever the orientation.
+.letter <- c(width = 12240, height = 15840, margin = 1417)
+
+# Inches between the margins.
 .text_width <- function(landscape) {
-  ((if (landscape) 16840 else 11900) - 2 * 1417) / 1440
+  side <- if (landscape) .letter[["height"]] else .letter[["width"]]
+  (side - 2 * .letter[["margin"]]) / 1440
 }
 
 # Fit a table to the page. Column widths add up past a portrait page once
@@ -182,16 +201,19 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   list(ft = ft, landscape = landscape || wide > .text_width(landscape = FALSE))
 }
 
-.landscape <- function(doc) {
+# officer swaps width and height itself for a landscape orientation.
+.page_section <- function(doc, landscape) {
   twip <- 1 / 1440
+  mar <- .letter[["margin"]] * twip
   officer::body_set_default_section(doc, officer::prop_section(
     page_size = officer::page_size(
-      width = 11900 * twip, height = 16840 * twip, orient = "landscape"
+      width = .letter[["width"]] * twip,
+      height = .letter[["height"]] * twip,
+      orient = if (landscape) "landscape" else "portrait"
     ),
     page_margins = officer::page_mar(
-      bottom = 1417 * twip, top = 1417 * twip, right = 1417 * twip,
-      left = 1417 * twip, header = 708 * twip, footer = 708 * twip,
-      gutter = 0
+      bottom = mar, top = mar, right = mar, left = mar,
+      header = 708 * twip, footer = 708 * twip, gutter = 0
     )
   ))
 }
@@ -297,8 +319,32 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   ft
 }
 
-# One note line as runs: the superscript symbol, then " " and the text.
-.note_runs <- function(sym, text) {
+# The style a table was drawn in. A flextable that did not come from
+# hv_man_table() carries none and is a report table.
+.table_style <- function(ft) {
+  attr(ft, "hv_style", exact = TRUE) %||% hv_table_style("report")
+}
+
+# The manuscript's caption is part of the table, so it is written with
+# it rather than typed in later; a report's is optional.
+.check_caption <- function(caption, style) {
+  if (is.null(caption)) {
+    if (identical(style$caption, "required"))
+      stop("A manuscript table needs `caption`, such as \"Table 1. ",
+           "Baseline characteristics\": it is written with the table, ",
+           "not typed in later.", call. = FALSE)
+    return(invisible(NULL))
+  }
+  .check_string(caption, "caption")
+}
+
+# One note line as runs. The report superscripts the symbol and spaces
+# it from the text; the manuscript begins the line with the plain
+# symbol, as the submissions did: "*Patients with non-missing data."
+.note_runs <- function(sym, text, leading = FALSE) {
+  if (leading)
+    return(data.frame(text = paste0(sym, text), sup = FALSE, italic = FALSE,
+                      stringsAsFactors = FALSE))
   data.frame(text = c(sym, paste0(" ", text)), sup = c(TRUE, FALSE),
              italic = FALSE, stringsAsFactors = FALSE)
 }
@@ -373,6 +419,7 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 # label column. The bare "n" case is kept for a hand-built
 # flextable that names its count column that way.
 .footnote_col <- function(ft) {
+  if ("hv_n" %in% ft$col_keys) return("hv_n")
   if ("n" %in% ft$col_keys) return("n")
   n_stat <- grep("^n_stat_[0-9]+$", ft$col_keys, value = TRUE)
   if (length(n_stat) > 0L) return(n_stat[1])
@@ -384,6 +431,13 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 # column it claimed the "No." header was a median.
 .footnote_cols <- function(ft, sym) {
   if (identical(sym, "\u2020")) {
+    # A spanned header names the grouping once, above its levels, and
+    # the statistic note belongs on that name.
+    if (identical(attr(ft, "hv_style", exact = TRUE)$header, "spanned")) {
+      disp <- grep("^disp_stat_[0-9]+$", ft$col_keys, value = TRUE)
+      group <- setdiff(disp, "disp_stat_0")
+      return(if (length(group) > 0L) group[1] else disp[1])
+    }
     stat <- grep("^stat_[0-9]+$", ft$col_keys, value = TRUE)
     # The dagger note also names the tests behind the p-values, so the
     # p-value header carries it too.

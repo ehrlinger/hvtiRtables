@@ -202,3 +202,13 @@ test_that("the display names the tests, marks P and keys CI like the .docx", {
   expect_identical(unname(plain[length(plain)]),
                    "Key: CI, confidence interval")
 })
+
+test_that("a manuscript display writes its notes in the manuscript's words", {
+  ft <- hv_man_table_display(hv_man_table(fx_hv_tbl(), style = "manuscript"))
+  foot <- flextable::information_data_chunk(ft)
+  foot <- foot[foot$.part == "footer", ]
+  first <- foot[foot$.row_id == 1, ]
+  expect_identical(paste(first$txt, collapse = ""),
+                   "*Patients with non-missing data.")
+  expect_false(any(first$vertical.align == "superscript"))
+})

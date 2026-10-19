@@ -266,3 +266,29 @@ test_that("a cell mark and Fisher's dagger both survive in hv_body_marks", {
   path <- tempfile(fileext = ".docx")
   expect_no_error(hv_man_table_save(ft, path))
 })
+
+test_that("the report shades every cell of a section row, unmerged", {
+  ft <- hv_man_table(fx_hv_tbl())
+  sec <- which(ft$body$dataset$label == "Demography")
+  expect_length(sec, 1L)
+  fills <- ft$body$styles$cells$background.color$data[sec, ]
+  expect_true(all(fills == "#CAEDFB"))
+  expect_true(all(ft$body$spans$rows[sec, ] == 1L))
+  other <- ft$body$styles$cells$background.color$data[-sec, ]
+  expect_false(any(other == "#CAEDFB"))
+})
+
+test_that("a report style can carry a journal's fill", {
+  ft <- hv_man_table(fx_hv_tbl(),
+                     style = hv_table_style("report", fill = "#A5C9EB"))
+  sec <- which(ft$body$dataset$label == "Demography")
+  expect_true(all(ft$body$styles$cells$background.color$data[sec, ] ==
+                    "#A5C9EB"))
+  expect_identical(attr(ft, "hv_style")$fill, "#A5C9EB")
+})
+
+test_that("the report style is the default, and an unknown style errors", {
+  expect_identical(attr(hv_man_table(fx_hv_tbl()), "hv_style"),
+                   hv_table_style("report"))
+  expect_error(hv_man_table(fx_hv_tbl(), style = "jtcvs"), "hv_table_style")
+})

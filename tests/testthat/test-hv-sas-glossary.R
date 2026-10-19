@@ -30,13 +30,16 @@ test_that("the message names the sibling matching the caller's family", {
   )
 })
 
-test_that("TBLTITLE= is honest that the CORR saver has no caption", {
-  # hv_man_table_save() genuinely has no `caption` argument; naming one
-  # would send the reader to an argument that does not exist.
+test_that("TBLTITLE= points both savers at `caption =`", {
+  # Both savers take `caption` (the manuscript style requires it), so the
+  # CORR saver is told to use it and says what the style requires.
   expect_error(
     .check_sas_args(list(tbltitle = "Table 1"), "hv_man_table_save"),
-    "the CORR saver writes no caption",
-    fixed = TRUE
+    "Use `caption =`", fixed = TRUE
+  )
+  expect_error(
+    .check_sas_args(list(tbltitle = "Table 1"), "hv_man_table_save"),
+    "the manuscript style requires a caption", fixed = TRUE
   )
   expect_error(
     .check_sas_args(list(tbltitle = "Table 1"), "hv_man_table_save_jtcvs"),
@@ -45,7 +48,7 @@ test_that("TBLTITLE= is honest that the CORR saver has no caption", {
   # A family-neutral caller is routed to the family that has the argument.
   expect_error(
     .check_sas_args(list(tbltitle = "Table 1"), "hv_tbl_summary"),
-    "pass `caption =` to `hv_man_table_save_jtcvs()`", fixed = TRUE
+    "pass `caption =` to `hv_man_table_save()`", fixed = TRUE
   )
 })
 
@@ -130,16 +133,16 @@ test_that("each public function routes SAS names through the glossary", {
                    continuous = "age", class = "trt"),
     "Use `by =`", fixed = TRUE
   )
-  expect_error(hv_man_table(tbl, style = "journal"),
-               "house font and rounding are fixed", fixed = TRUE)
+  expect_error(hv_man_table(tbl, STYLE = "journal"),
+               "Use `style =`", fixed = TRUE)
   expect_error(
     hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
                        style = "journal"),
-    "house font and rounding are fixed", fixed = TRUE
+    "the journal's one layout", fixed = TRUE
   )
   expect_error(
     hv_man_table_save(ft, tempfile(fileext = ".docx"), tbltitle = "T1"),
-    "the CORR saver writes no caption", fixed = TRUE
+    "Use `caption =`", fixed = TRUE
   )
   expect_error(
     hv_man_table_save_jtcvs(ft, tempfile(fileext = ".docx"),
@@ -150,27 +153,21 @@ test_that("each public function routes SAS names through the glossary", {
 
 test_that("TBLTITLE= to the JTCVS saver does not leak the CORR-only note", {
   # `$` partial-matches on a list: the `tbltitle` entry has only
-  # `note_other` (no plain `note`), so `entry$note` silently resolved to
-  # `note_other` -- text that says the CORR saver has no caption -- even
-  # for a JTCVS caller, which DOES have `caption`. Confirmed to fail
-  # against the pre-fix code (quoted in the session log): the message
-  # read "...Use `caption =`. Note: the CORR saver writes no caption;
-  # add the table title in the document, or use the JTCVS pair if the
-  # journal wants one." for a caller that already IS the JTCVS pair.
+  # `note_corr` (no plain `note`), so `entry$note` would silently resolve
+  # to it -- text about the CORR styles -- even for a JTCVS caller.
+  # Reading with `[[` keeps the JTCVS caller's message free of it.
   msg <- tryCatch(
     .check_sas_args(list(tbltitle = "T"), "hv_man_table_save_jtcvs"),
     error = conditionMessage
   )
-  expect_false(grepl("the CORR saver writes no caption", msg, fixed = TRUE))
+  expect_false(grepl("manuscript style requires", msg, fixed = TRUE))
   expect_false(grepl("Note:", msg, fixed = TRUE))
 
   msg_neutral <- tryCatch(
     .check_sas_args(list(tbltitle = "T"), "hv_tbl_summary"),
     error = conditionMessage
   )
-  expect_false(
-    grepl("the CORR saver writes no caption", msg_neutral, fixed = TRUE)
-  )
+  expect_true(grepl("hv_man_table_save()", msg_neutral, fixed = TRUE))
 })
 
 test_that("an entry with only note_corr yields no note for a JTCVS caller", {
@@ -238,12 +235,12 @@ test_that("all-positional extra arguments error instead of being swallowed", {
   # extras" and returned silently.
   expect_error(
     .check_sas_args(list("JUNK"), "hv_man_table"),
-    "unused argument (position 5)", fixed = TRUE
+    "unused argument (position 6)", fixed = TRUE
   )
   expect_error(
     hv_man_table(gtsummary::tbl_summary(gtsummary::trial, include = "age"),
-                 "Times New Roman", 12, 2, "JUNK"),
-    "unused argument (position 5)", fixed = TRUE
+                 "Times New Roman", 12, 2, "report", "JUNK"),
+    "unused argument (position 6)", fixed = TRUE
   )
 })
 
@@ -252,7 +249,7 @@ test_that("a mixed named-and-positional dots list is handled sensibly", {
   # by position, not the old nonsense "unused argument ()".
   expect_error(
     .check_sas_args(list("JUNK", colour = "red"), "hv_man_table"),
-    "unused argument (position 5)", fixed = TRUE
+    "unused argument (position 6)", fixed = TRUE
   )
   # A positional extra followed by a *recognized* macro name: the
   # helpful macro-specific message wins over the positional one.

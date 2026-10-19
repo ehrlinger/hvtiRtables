@@ -7,6 +7,10 @@
 #' the notes are paragraphs below the table; here they are footer lines,
 #' since HTML has no page to put them on.
 #'
+#' The notes follow the table's style: a manuscript table's notes begin
+#' with the plain symbol and use the submissions' wording, as they do in
+#' the saved file.
+#'
 #' The one deliberate difference is the "Variable" column
 #' [hv_tbl_summary()]'s `show_variable` adds: the display keeps it, as the
 #' report view, while the saved table never has it.
@@ -69,6 +73,7 @@ hv_man_table_display <- function(ft, footnotes = NULL,
   use_default_footnotes <- missing(footnotes)
   .check_flextable(ft)
   .check_not_display(ft)
+  style <- .table_style(ft)
   # A JTCVS table letters its notes and has no stat_ columns for the
   # dagger, which would land on the first n column instead.
   if (!is.null(attr(ft, "hv_header_footnotes", exact = TRUE)))
@@ -82,9 +87,10 @@ hv_man_table_display <- function(ft, footnotes = NULL,
   footnotes <- .resolve_footnotes(ft, footnotes)
 
   ft <- .mark_header(ft, footnotes)
+  leading <- identical(style$marker, "leading")
   lines <- c(
     lapply(names(footnotes), function(sym) {
-      .note_runs(sym, footnotes[[sym]])
+      .note_runs(sym, footnotes[[sym]], leading)
     }),
     list(.key_runs(abbreviations))
   )
