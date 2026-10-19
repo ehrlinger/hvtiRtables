@@ -8,8 +8,8 @@
     and the dagger marks the p-value header as well as the statistic headers. Fisher's exact
     test keeps its own double dagger and is not repeated. A table with no p-values has no test
     sentence.
-  - A table showing a confidence interval (`compare = "both"`) defines `CI` in the key. Passing
-    `abbreviations` to `hv_man_table_save()` or `hv_man_table_display()` replaces that key.
+  - A table showing a confidence interval (`compare = "both"`) defines `CI` in the key, beside any `abbreviations` you pass (your own
+    definition of `CI` wins).
 * `hv_check_docx()` flags a last-row cell that opens with a superscript number, the form
   gtsummary writes a footnote in, and one that starts "Abbreviation:". It returned no findings
   for the tables above.

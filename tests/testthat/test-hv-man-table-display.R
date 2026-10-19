@@ -192,8 +192,15 @@ test_that("the display names the tests, marks P and keys CI like the .docx", {
   )))
   expect_identical(unname(lines[length(lines)]),
                    "Key: CI, confidence interval")
-  # Naming the key, or NULL, replaces the table's own.
-  expect_false(any(grepl("^Key:", dp_footer_lines(
-    hv_man_table_display(ft, abbreviations = NULL)
-  ))))
+  # The caller's entries join the table's own; their CI wins.
+  mine <- dp_footer_lines(hv_man_table_display(
+    ft, abbreviations = c(SD = "standard deviation", CI = "credible interval")
+  ))
+  expect_identical(unname(mine[length(mine)]),
+                   "Key: CI, credible interval; SD, standard deviation")
+  expect_identical(
+    unname(dp_footer_lines(hv_man_table_display(ft, abbreviations = NULL))[
+      length(lines)]),
+    "Key: CI, confidence interval"
+  )
 })

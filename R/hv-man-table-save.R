@@ -73,9 +73,8 @@
 #'   no-op, same as `NULL`. (`%summarytable` `ADDFN=` equivalent;
 #'   `PRINTFN=1`'s house block is [hv_man_footnotes()]).
 #' @param abbreviations Optional named character vector, `c(ABBR =
-#'   "expansion", ...)`. When omitted, a table with a confidence-interval
-#'   column (`compare = "both"`) defines `CI`; pass your own, or `NULL`
-#'   for none, to replace that. Rendered as one `Key:` paragraph below any
+#'   "expansion", ...)`. A table with a confidence-interval column
+#'   (`compare = "both"`) adds `CI` unless you define it yourself. Rendered as one `Key:` paragraph below any
 #'   footnotes, sorted alphabetically by abbreviation, abbreviation
 #'   italicized, pairs separated by `"; "` (house rule 14). Every element
 #'   must be named (unnamed or blank-named entries raise an error); an
@@ -112,7 +111,6 @@
 hv_man_table_save <- function(ft, file, footnotes = NULL,
                               abbreviations = NULL, ...) {
   use_default_footnotes <- missing(footnotes)
-  if (missing(abbreviations)) abbreviations <- .default_abbreviations(ft)
   .check_sas_args(list(...), "hv_man_table_save")
   .check_flextable(ft)
   .check_not_display(ft)
@@ -122,6 +120,7 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   # Hoisted out of .add_abbreviations_key() so it fires at entry
   # rather than mid-render: no partial .docx on a bad argument.
   .check_abbreviations(abbreviations)
+  abbreviations <- .with_table_abbreviations(ft, abbreviations)
 
   footnotes <- .resolve_footnotes(ft, footnotes)
   ft <- .mark_header(ft, footnotes)
@@ -196,10 +195,12 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   ))
 }
 
-# The key a table carries, when the caller names none: CI, once a
-# confidence-interval column is shown. Passing `abbreviations` replaces it.
-.default_abbreviations <- function(ft) {
-  attr(ft, "hv_abbreviations", exact = TRUE)
+# The caller's key plus the table's own: CI, once a confidence-interval
+# column is shown, because the table cannot be read without it. The
+# caller's definition wins when they give one.
+.with_table_abbreviations <- function(ft, abbreviations) {
+  own <- attr(ft, "hv_abbreviations", exact = TRUE)
+  c(abbreviations, own[setdiff(names(own), names(abbreviations))])
 }
 
 .default_footnotes <- function(ft) {
