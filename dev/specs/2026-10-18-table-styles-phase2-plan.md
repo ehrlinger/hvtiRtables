@@ -729,21 +729,41 @@ test_that("compare: manuscript notes, and the marks the cells carry", {
   )
   ft <- cmp(tbl)
   notes <- attr(ft, "hv_footnotes")
-  expect_identical(names(notes), c("*", "†", "‡", "¶"))
+  expect_identical(names(notes), c("*", "\u2020", "\u2021", "\u00B6"))
   expect_identical(notes[["*"]], "Patients with non-missing data.")
-  expect_identical(notes[["†"]],
+  expect_identical(notes[["\u2020"]],
                    "Values are No. (%) or median [15th, 85th percentiles].")
-  expect_identical(names(attr(ft, "hv_body_marks")), c("‡", "¶"))
+  expect_identical(names(attr(ft, "hv_body_marks")), c("\u2021", "\u00B6"))
   ch <- flextable::information_data_chunk(ft)
   body <- ft$body$dataset
   row_of <- function(v) which(body$row_type == "label" & body$variable == v)
   sup <- ch$.part == "body" & ch$vertical.align == "superscript"
   expect_true(any(sup & ch$.row_id == row_of("rare") &
-                    ch$.col_id == "hv_compare_col" & ch$txt == "‡"))
+                    ch$.col_id == "hv_compare_col" & ch$txt == "\u2021"))
   for (k in c("disp_stat_0", "disp_stat_1", "disp_stat_2"))
     expect_true(any(sup & ch$.row_id == row_of("age") & ch$.col_id == k &
-                      ch$txt == "¶"), info = k)
+                      ch$txt == "\u00B6"), info = k)
   expect_false(any(sup & ch$.row_id == row_of("marker")))
+})
+
+test_that("compare: a Fisher test that returned no P leaves no mark", {
+  d <- gtsummary::trial
+  d$rare <- factor(ifelse(seq_len(nrow(d)) <= 3, "yes", "no"))
+  tbl <- hv_tbl_summary(d, by = "trt", groups = list(A = c("age", "rare")),
+                        continuous = "age", categorical = "rare",
+                        show_variable = FALSE)
+  expect_true("fisher.test" %in% tbl$table_body$test_name)
+  # A real FEXACT failure also raises a warning, which the suite must not;
+  # the state it leaves, test named and P missing, is set directly.
+  tbl <- gtsummary::modify_table_body(tbl, function(tb) {
+    tb$p.value[tb$variable == "rare"] <- NA_real_
+    tb$hv_compare_col[tb$variable == "rare"] <- NA_character_
+    tb
+  })
+  ft <- cmp(tbl)
+  expect_false(any(flextable::information_data_chunk(ft)$txt == "\u2021"))
+  expect_null(attr(ft, "hv_body_marks"))
+  expect_false("\u2021" %in% names(attr(ft, "hv_footnotes")))
 })
 
 test_that("compare: an ungrouped table keeps its count column", {
@@ -769,10 +789,10 @@ test_that("compare refuses what it cannot draw", {
 test_that("the statistic note in each style's words", {
   m <- hv_table_style("manuscript")
   r <- hv_table_style("report")
-  expect_identical(.stat_note("No. (%) or Mean±SD", m),
-                   "Values are No. (%) or mean±SD.")
-  expect_identical(.stat_note("No. (%) or Mean±SD", r),
-                   "No. (%) or Mean±SD.")
+  expect_identical(.stat_note("No. (%) or Mean\u00B1SD", m),
+                   "Values are No. (%) or mean\u00B1SD.")
+  expect_identical(.stat_note("No. (%) or Mean\u00B1SD", r),
+                   "No. (%) or Mean\u00B1SD.")
 })
 ```
 
@@ -906,22 +926,34 @@ test_that("the statistic note in each style's words", {
   tb <- tbl$table_body
   notes <- attr(tbl, "hv_footnotes", exact = TRUE)
   notes[["*"]] <- style$count_note
-  notes[["†"]] <- .stat_note(attr(tbl, "hv_stat_label", exact = TRUE),
+  notes[["\u2020"]] <- .stat_note(attr(tbl, "hv_stat_label", exact = TRUE),
                                   style)
   rows <- function(vars) {
     which(body$row_type == "label" & body$variable %in% vars)
   }
   marks <- character(0)
-  ddag <- "‡"
-  if (!is.null(notes[[ddag]]) && "hv_compare_col" %in% ft$col_keys &&
-        "test_name" %in% names(tb)) {
-    fisher <- tb$variable[!is.na(tb$test_name) &
-                            tb$test_name == "fisher.test"]
+  ddag <- "\u2021"
+  if (!is.null(notes[[ddag]])) {
+    # A Fisher test that failed (FEXACT can run out of workspace) keeps
+    # its test name and returns no P; a mark there would sit alone in an
+    # empty cell, so only a P that exists is marked, as .mark_fisher()
+    # does for the report.
+    ok <- "hv_compare_col" %in% ft$col_keys &&
+      all(c("test_name", "p.value") %in% names(tb))
+    fisher <- if (ok) {
+      tb$variable[!is.na(tb$test_name) & tb$test_name == "fisher.test" &
+                    !is.na(tb$p.value)]
+    }
     i <- rows(fisher)
     if (length(i) > 0L) {
       ft <- flextable::append_chunks(ft, i = i, j = "hv_compare_col",
                                      part = "body", flextable::as_sup(ddag))
       marks[[ddag]] <- notes[[ddag]]
+    } else {
+      # No cell carries the mark, so the note would have nothing to
+      # explain, and the saver would put it on the header, where it
+      # would claim every P.
+      notes[[ddag]] <- NULL
     }
   }
   cm <- attr(tbl, "hv_cell_marks", exact = TRUE)
@@ -949,7 +981,8 @@ test_that("the statistic note in each style's words", {
 - [ ] **Step 5: Prove it by mutation.** (a) Drop `merge_v()`: the header test fails.
   (b) Use `sum(stat_cols != "stat_0") - 1L` in `widths`: `add_header_row()` errors, so the
   header test fails. (c) Drop the `bg()` call: the section test fails. (d) Drop the Fisher
-  `append_chunks()`: the marks test fails. (e) Delete the manuscript dispatch in
+  `append_chunks()`: the marks test fails. (d2) Drop `!is.na(tb$p.value)`: the failed-Fisher
+  test fails. (e) Delete the manuscript dispatch in
   `hv_man_table()`: every test but the last fails. Restore all.
 
 - [ ] **Step 6: Commit**
@@ -1005,7 +1038,7 @@ test_that("a manuscript note begins with its plain symbol", {
   text <- vapply(ps, xml2::xml_text, character(1))
   expect_identical(text[1], "*Patients with non-missing data.")
   expect_identical(
-    text[2], "†Values are No. (%) or median [15th, 85th percentiles]."
+    text[2], "\u2020Values are No. (%) or median [15th, 85th percentiles]."
   )
   sup <- xml2::xml_find_all(ps[[1]], ".//w:vertAlign[@w:val='superscript']")
   expect_length(sup, 0L)
@@ -1017,7 +1050,7 @@ test_that("manuscript header marks: * on n, the dagger on the grouping", {
   cells <- vapply(xml2::xml_find_all(top, "./w:tc"), xml2::xml_text,
                   character(1))
   expect_true("n*" %in% cells)
-  expect_true("Chemotherapy Treatment†" %in% cells)
+  expect_true("Chemotherapy Treatment\u2020" %in% cells)
 })
 
 test_that("the caption follows the style", {
@@ -1051,7 +1084,7 @@ test_that("hv_man_footnotes() speaks each style's words", {
   expect_identical(
     hv_man_footnotes(continuous_stat = "mean", style = "manuscript"),
     list(`*` = "Patients with non-missing data.",
-         `†` = "Values are No. (%) or mean±SD.")
+         `†` = "Values are No. (%) or mean\u00B1SD.")
   )
 })
 ```
@@ -1064,7 +1097,7 @@ test_that("hv_man_footnotes() speaks each style's words", {
 ```r
   style <- .as_style(style)
   out <- list(`*` = style$count_note)
-  out[["†"]] <- .stat_note(.stat_label(continuous_stat, percentiles),
+  out[["\u2020"]] <- .stat_note(.stat_label(continuous_stat, percentiles),
                                 style)
   out
 ```
@@ -1109,7 +1142,7 @@ test_that("hv_man_footnotes() speaks each style's words", {
 
 ```r
 .footnote_cols <- function(ft, sym) {
-  if (identical(sym, "†")) {
+  if (identical(sym, "\u2020")) {
     # A spanned header names the grouping once, above its levels, and
     # the statistic note belongs on that name.
     if (identical(attr(ft, "hv_style", exact = TRUE)$header, "spanned")) {
@@ -1243,6 +1276,46 @@ test_that("the package's own tables pass the rule for their style", {
 })
 ```
 
+  At the end of `test-hv-check-docx.R`, after `wt_doc()` is defined, the header rule on
+  hand-written XML, where a flag can be set off or misplaced as no renderer here writes it:
+
+```r
+# A three-column table from rows of hand-written XML. `header` is NULL
+# for no flag, "" for a bare flag, or an attribute such as
+# ' w:val="false"'; `span` merges the first two cells.
+mc_tr <- function(header = NULL, span = FALSE) {
+  pr <- if (!is.null(header)) {
+    paste0("<w:trPr><w:tblHeader", header, "/></w:trPr>")
+  } else {
+    ""
+  }
+  cells <- if (span) {
+    paste0("<w:tc><w:tcPr><w:gridSpan w:val=\"2\"/></w:tcPr><w:p/></w:tc>",
+           "<w:tc><w:p/></w:tc>")
+  } else {
+    strrep("<w:tc><w:p/></w:tc>", 3)
+  }
+  paste0("<w:tr>", pr, cells, "</w:tr>")
+}
+mc_doc <- function(...) {
+  wt_doc(paste0("<w:tbl><w:tblGrid>", strrep("<w:gridCol/>", 3),
+                "</w:tblGrid>", ..., "</w:tbl>"))
+}
+
+test_that("only Word's own header rows may merge", {
+  # A leading run of flags that are on: exempt.
+  ok <- mc_doc(mc_tr("", span = TRUE), mc_tr(" w:val=\"1\"", span = TRUE),
+               mc_tr())
+  expect_identical(nrow(.detect_merged_cell(ok)), 0L)
+  # A flag switched off is no header.
+  off <- mc_doc(mc_tr(" w:val=\"false\"", span = TRUE), mc_tr())
+  expect_identical(.detect_merged_cell(off)$location, "row 1")
+  # A flag after a body row is ignored by Word, so the row is a body row.
+  late <- mc_doc(mc_tr(""), mc_tr(), mc_tr("", span = TRUE))
+  expect_identical(.detect_merged_cell(late)$location, "row 3")
+})
+```
+
   In `test-hv-man-table-jtcvs.R`:
 
 ```r
@@ -1275,6 +1348,7 @@ test_that("a JTCVS section row spans the table in one cell", {
   for (i in seq_along(tbls)) {
     ncol <- length(xml2::xml_find_all(tbls[[i]], "./w:tblGrid/w:gridCol"))
     rows <- xml2::xml_find_all(tbls[[i]], "./w:tr")
+    header <- .header_rows(rows)
     for (r in seq_along(rows)) {
       tcs <- xml2::xml_find_all(rows[[r]], "./w:tc")
       spans <- vapply(tcs, .grid_span, integer(1))
@@ -1282,11 +1356,8 @@ test_that("a JTCVS section row spans the table in one cell", {
         rows[[r]], "./w:tc/w:tcPr/w:vMerge"
       )) > 0L
       if (all(spans == 1L) && !vmerge) next
-      header <- length(xml2::xml_find_all(
-        rows[[r]], "./w:trPr/w:tblHeader"
-      )) > 0L
       full <- length(tcs) == 1L && spans[1] == ncol
-      if (!strict && (header || (full && !vmerge))) next
+      if (!strict && (header[r] || (full && !vmerge))) next
       detail <- if (strict) {
         paste0("Row ", r, " merges cells, and the report style merges ",
                "none (house rule 3).")
@@ -1301,6 +1372,24 @@ test_that("a JTCVS section row spans the table in one cell", {
   }
   if (length(out) == 0) return(.empty_report())
   do.call(rbind, out)
+}
+```
+
+  and before it:
+
+```r
+# The rows Word treats as the table's header: the leading run of rows
+# whose w:tblHeader is on. The flag is on when present without a value
+# or with "true", "on" or "1"; Word ignores a flag set off, and one on a
+# row after a body row, so neither row is a header.
+.header_rows <- function(rows) {
+  flag <- vapply(rows, function(tr) {
+    h <- xml2::xml_find_first(tr, "./w:trPr/w:tblHeader")
+    if (inherits(h, "xml_missing")) return(FALSE)
+    val <- xml2::xml_attr(h, "val")
+    is.na(val) || !tolower(val) %in% c("false", "off", "0")
+  }, logical(1))
+  cumsum(!flag) == 0L
 }
 ```
 
@@ -1344,6 +1433,8 @@ hv_check_docx <- function(path, style = NULL) {
 - [ ] **Step 5: Prove it by mutation.** (a) Drop the `full && !vmerge` exemption: the
   shared-rule test fails on the section row. (b) Drop the `header` exemption: the same test
   fails on row 1. (c) Make `strict` always `FALSE`: the report expectations fail.
+  (c2) Make `.header_rows()` return each row's flag by presence alone: the switched-off and
+  late-flag expectations fail.
   (d) Restore `merge_h()` in the JTCVS renderer: both JTCVS tests fail. Restore all.
 
 - [ ] **Step 6: Commit**
@@ -1426,7 +1517,7 @@ test_that("rows 4-5: the header and the count column", {
   m_head <- vapply(xq(m, "//w:tr[1]/w:tc"), wx_text, character(1))
   expect_identical(sum(m_head == "n*"), 1L)
   grouping <- xq(m, "//w:tr[1]/w:tc[.//w:gridSpan[@w:val='2']]")
-  expect_identical(wx_text(grouping[[1]]), "Chemotherapy Treatment†")
+  expect_identical(wx_text(grouping[[1]]), "Chemotherapy Treatment\u2020")
   expect_length(xq(m, "//w:tr[1]/w:tc[1]//w:vMerge[@w:val='restart']"), 1L)
 })
 
@@ -1440,7 +1531,7 @@ test_that("rows 8-10: note markers and wording", {
   m <- st_xml(st_save("manuscript"))
   expect_identical(after(m)[1:2], c(
     "*Patients with non-missing data.",
-    "†Values are No. (%) or median [15th, 85th percentiles]."
+    "\u2020Values are No. (%) or median [15th, 85th percentiles]."
   ))
 })
 
