@@ -72,6 +72,8 @@
 #'   unused (rounding is controlled upstream via `tbl_summary(digits = ...)`).
 #'   Reserved so a future version can enforce sig-fig rounding centrally
 #'   without a breaking signature change.
+#' @param style A style name, `"report"` (default) or `"manuscript"`, or a
+#'   style from [hv_table_style()].
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
@@ -91,9 +93,10 @@
 #'
 #' @export
 hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
-                         digits = 2, ...) {
+                         digits = 2, style = "report", ...) {
   .check_sas_args(list(...), "hv_man_table")
   .check_gtsummary(tbl)
+  style <- .as_style(style)
   .check_string(font, "font")
   .check_font_size(font_size)
 
@@ -107,14 +110,19 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   # gtsummary centres its label column in the .docx; house rule and the
   # SAS macro both left-justify it.
   ft <- flextable::align(ft, j = 1, align = "left", part = "all")
-  if (length(sec_i) > 0L)
+  if (length(sec_i) > 0L) {
     ft <- flextable::bold(ft, i = sec_i, part = "body", bold = TRUE)
+    # Design D4: every cell of the row is filled and nothing is merged,
+    # so the report keeps house rule 3.
+    ft <- flextable::bg(ft, i = sec_i, bg = style$fill, part = "body")
+  }
   ft <- flextable::font(ft, fontname = font, part = "all")
   ft <- flextable::fontsize(ft, size = font_size, part = "all")
   ft <- flextable::valign(ft, valign = "center", part = "all")
   ft <- .mark_fisher(ft, tbl$table_body, footnotes)
   ft <- .mark_cells(ft, tbl$table_body, cell_marks, footnotes)
   attr(ft, "hv_footnotes") <- footnotes
+  attr(ft, "hv_style") <- style
   ft
 }
 

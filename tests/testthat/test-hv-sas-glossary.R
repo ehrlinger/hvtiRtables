@@ -130,7 +130,7 @@ test_that("each public function routes SAS names through the glossary", {
                    continuous = "age", class = "trt"),
     "Use `by =`", fixed = TRUE
   )
-  expect_error(hv_man_table(tbl, style = "journal"),
+  expect_error(hv_man_table(tbl, STYLE = "journal"),
                "house font and rounding are fixed", fixed = TRUE)
   expect_error(
     hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
@@ -238,12 +238,12 @@ test_that("all-positional extra arguments error instead of being swallowed", {
   # extras" and returned silently.
   expect_error(
     .check_sas_args(list("JUNK"), "hv_man_table"),
-    "unused argument (position 5)", fixed = TRUE
+    "unused argument (position 6)", fixed = TRUE
   )
   expect_error(
     hv_man_table(gtsummary::tbl_summary(gtsummary::trial, include = "age"),
-                 "Times New Roman", 12, 2, "JUNK"),
-    "unused argument (position 5)", fixed = TRUE
+                 "Times New Roman", 12, 2, "report", "JUNK"),
+    "unused argument (position 6)", fixed = TRUE
   )
 })
 
@@ -252,7 +252,7 @@ test_that("a mixed named-and-positional dots list is handled sensibly", {
   # by position, not the old nonsense "unused argument ()".
   expect_error(
     .check_sas_args(list("JUNK", colour = "red"), "hv_man_table"),
-    "unused argument (position 5)", fixed = TRUE
+    "unused argument (position 6)", fixed = TRUE
   )
   # A positional extra followed by a *recognized* macro name: the
   # helpful macro-specific message wins over the positional one.
