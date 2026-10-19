@@ -58,7 +58,9 @@
 #'   Symbols must be drawn from `c("*", "†", "‡", "§", "¶", "||")`. `†`
 #'   describes the statistic, so it is appended as a superscript reference
 #'   mark to every statistic-column header (`stat_<k>`), and to the
-#'   count column only when the table has no such column. Every other
+#'   count column only when the table has no such column. On a table
+#'   that compares its groups, `†` also marks the p-value header, because
+#'   the note names the tests behind the p-values. Every other
 #'   symbol goes on the table's count-column header cell (a column named
 #'   `n`, else the first `n_stat_<k>` column [hv_man_table()] creates when
 #'   it splits an [hv_tbl_summary()] table, else the first column). Each
@@ -71,7 +73,9 @@
 #'   no-op, same as `NULL`. (`%summarytable` `ADDFN=` equivalent;
 #'   `PRINTFN=1`'s house block is [hv_man_footnotes()]).
 #' @param abbreviations Optional named character vector, `c(ABBR =
-#'   "expansion", ...)`. Rendered as one `Key:` paragraph below any
+#'   "expansion", ...)`. When omitted, a table with a confidence-interval
+#'   column (`compare = "both"`) defines `CI`; pass your own, or `NULL`
+#'   for none, to replace that. Rendered as one `Key:` paragraph below any
 #'   footnotes, sorted alphabetically by abbreviation, abbreviation
 #'   italicized, pairs separated by `"; "` (house rule 14). Every element
 #'   must be named (unnamed or blank-named entries raise an error); an
@@ -108,6 +112,7 @@
 hv_man_table_save <- function(ft, file, footnotes = NULL,
                               abbreviations = NULL, ...) {
   use_default_footnotes <- missing(footnotes)
+  if (missing(abbreviations)) abbreviations <- .default_abbreviations(ft)
   .check_sas_args(list(...), "hv_man_table_save")
   .check_flextable(ft)
   .check_not_display(ft)
@@ -189,6 +194,12 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
       gutter = 0
     )
   ))
+}
+
+# The key a table carries, when the caller names none: CI, once a
+# confidence-interval column is shown. Passing `abbreviations` replaces it.
+.default_abbreviations <- function(ft) {
+  attr(ft, "hv_abbreviations", exact = TRUE)
 }
 
 .default_footnotes <- function(ft) {
@@ -372,6 +383,10 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 .footnote_cols <- function(ft, sym) {
   if (identical(sym, "\u2020")) {
     stat <- grep("^stat_[0-9]+$", ft$col_keys, value = TRUE)
+    # The dagger note also names the tests behind the p-values, so the
+    # p-value header carries it too.
+    if (isTRUE(attr(ft, "hv_test_note", exact = TRUE)))
+      stat <- c(stat, intersect("p.value", ft$col_keys))
     if (length(stat) > 0L) return(stat)
   }
   .footnote_col(ft)

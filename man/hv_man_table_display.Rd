@@ -15,7 +15,8 @@ as for \code{\link[=hv_man_table_save]{hv_man_table_save()}}. Omit it for the ta
 
 \item{abbreviations}{Optional named character vector, abbreviation ->
 definition, exactly as for \code{\link[=hv_man_table_save]{hv_man_table_save()}}: shown as one
-"Key:" line, sorted by abbreviation.}
+"Key:" line, sorted by abbreviation. Omit it for the table's own
+(\code{CI} when it shows a confidence interval); \code{NULL} shows none.}
 }
 \value{
 \code{ft} with the header marks and the footer lines added, for

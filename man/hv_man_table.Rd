@@ -78,6 +78,12 @@ rule 8 wants that non-missing count, and \code{\link[=hv_man_footnotes]{hv_man_f
 footnote describes it, so it is kept rather than discarded. A plain
 \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} table carries no such convention and passes
 through unchanged.
+
+None of \code{gtsummary}'s own footnotes reach the table: \code{as_flex_table()}
+writes them as a footer row and a raised digit inside the table, and
+house rule 13 puts notes below it. \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} says what they
+said in the notes \code{\link[=hv_man_table_save]{hv_man_table_save()}} writes: the tests behind the
+p-values in the dagger note, and CI in the key.
 }
 \section{Common mistakes}{
 

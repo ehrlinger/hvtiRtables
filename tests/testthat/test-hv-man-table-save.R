@@ -159,7 +159,10 @@ test_that("default footnotes survive grouped p-value processing", {
   on.exit(unlink(f), add = TRUE)
   hv_man_table_save(ft, f)
   xml <- read_docx_text(f)
-  expect_true(grepl("Mean±SD.", xml, fixed = TRUE))
+  # The table compares its groups, so the dagger note also names the test.
+  expect_true(grepl(
+    "Mean±SD; P values from the Wilcoxon rank sum test.", xml, fixed = TRUE
+  ))
   expect_false(grepl("Median [15th, 85th percentiles]", xml, fixed = TRUE))
 })
 

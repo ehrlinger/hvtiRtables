@@ -175,3 +175,25 @@ test_that("the footer lines take the table's font and size", {
   expect_true(all(sty$font.size$data == 12))
   expect_true(all(sty$font.family$data == "Arial"))
 })
+
+test_that("the display names the tests, marks P and keys CI like the .docx", {
+  skip_if_not_installed("broom")
+  ft <- hv_man_table(hv_tbl_summary(
+    gtsummary::trial, by = "trt", groups = list(D = c("age", "stage")),
+    continuous = "age", categorical = "stage", compare = "both"
+  ))
+  shown <- hv_man_table_display(ft)
+  header <- dp_row_text(shown, "header", 1)
+  expect_identical(unname(header["p.value"]), "p-value†")
+  lines <- dp_footer_lines(shown)
+  expect_true(any(grepl(
+    "P values from the Wilcoxon rank sum test and Pearson's chi-square test.",
+    lines, fixed = TRUE
+  )))
+  expect_identical(unname(lines[length(lines)]),
+                   "Key: CI, confidence interval")
+  # Naming the key, or NULL, replaces the table's own.
+  expect_false(any(grepl("^Key:", dp_footer_lines(
+    hv_man_table_display(ft, abbreviations = NULL)
+  ))))
+})

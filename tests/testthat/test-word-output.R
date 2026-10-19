@@ -154,6 +154,33 @@ test_that("CORR: gtsummary's own footnotes never reach the table", {
       info = cmp
     )
     expect_identical(nrow(hv_check_docx(f)), 0L, info = cmp)
+
+    # What gtsummary said inside the table is said below it instead: the
+    # tests in the dagger note, with the dagger on the p-value header; CI
+    # in the key.
+    header <- rows[[1]]
+    p_header <- header[[length(header)]]
+    notes <- wx_paragraphs_after_table(doc)
+    dagger <- grep("^†", notes, value = TRUE)
+    if (cmp == "smd") {
+      expect_identical(p_header$sup, "", info = cmp)
+      expect_false(any(grepl("P values", notes)), info = cmp)
+    } else {
+      expect_identical(p_header$sup, "†", info = cmp)
+      expect_identical(
+        dagger,
+        paste0("† No. (%) or Median [15th, 85th percentiles]; P values ",
+               "from the Wilcoxon rank sum test and Pearson's chi-square ",
+               "test."),
+        info = cmp
+      )
+    }
+    key <- grep("^Key:", notes, value = TRUE)
+    if (cmp == "pvalue") {
+      expect_length(key, 0L)
+    } else {
+      expect_identical(key, "Key: CI, confidence interval", info = cmp)
+    }
     unlink(f)
   }
 })

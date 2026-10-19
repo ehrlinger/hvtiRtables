@@ -46,7 +46,8 @@
 #'   `NULL` shows none.
 #' @param abbreviations Optional named character vector, abbreviation ->
 #'   definition, exactly as for [hv_man_table_save()]: shown as one
-#'   "Key:" line, sorted by abbreviation.
+#'   "Key:" line, sorted by abbreviation. Omit it for the table's own
+#'   (`CI` when it shows a confidence interval); `NULL` shows none.
 #'
 #' @return `ft` with the header marks and the footer lines added, for
 #'   display.
@@ -67,6 +68,7 @@ hv_man_table_display <- function(ft, footnotes = NULL,
                                  abbreviations = NULL) {
   use_default_footnotes <- missing(footnotes)
   .check_flextable(ft)
+  if (missing(abbreviations)) abbreviations <- .default_abbreviations(ft)
   .check_not_display(ft)
   # A JTCVS table letters its notes and has no stat_ columns for the
   # dagger, which would land on the first n column instead.

@@ -44,6 +44,12 @@
 #' [gtsummary::tbl_summary()] table carries no such convention and passes
 #' through unchanged.
 #'
+#' None of `gtsummary`'s own footnotes reach the table: `as_flex_table()`
+#' writes them as a footer row and a raised digit inside the table, and
+#' house rule 13 puts notes below it. [hv_tbl_summary()] says what they
+#' said in the notes [hv_man_table_save()] writes: the tests behind the
+#' p-values in the dagger note, and CI in the key.
+#'
 #' @section Common mistakes:
 #' **Cells read `98 ||| 46 (32, 63)`.** You are on a version before the
 #' split; upgrade. `|||` is the internal separator [hv_tbl_summary()]
@@ -116,6 +122,11 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   ft <- .mark_fisher(ft, tbl$table_body, footnotes)
   ft <- .mark_cells(ft, tbl$table_body, cell_marks, footnotes)
   attr(ft, "hv_footnotes") <- footnotes
+  attr(ft, "hv_test_note") <- attr(tbl, "hv_test_note", exact = TRUE)
+  # gtsummary defined CI in a row of its own under the table; the saver
+  # writes the definition into the key instead.
+  if ("conf.low" %in% ft$col_keys)
+    attr(ft, "hv_abbreviations") <- c(CI = "confidence interval")
   ft
 }
 

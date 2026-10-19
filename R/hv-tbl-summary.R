@@ -204,7 +204,10 @@
 #'   each Fisher p-value is marked with a superscript double dagger,
 #'   footnoted "Fisher exact test."; the JTCVS
 #'   route letters it through [hv_test_footnotes_jtcvs()]. Used only when
-#'   `compare` produces p-values.
+#'   `compare` produces p-values. The other tests that ran are named in
+#'   the dagger note instead, as "P values from the Wilcoxon rank sum test
+#'   and Pearson's chi-square test.", and the CORR table puts the dagger
+#'   on the p-value header too.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
@@ -600,6 +603,17 @@ hv_tbl_summary <- function(data, by = NULL, groups,
       attr(tbl, "hv_footnotes") <- .order_notes(c(
         attr(tbl, "hv_footnotes"), list("\u2021" = "Fisher exact test.")
       ))
+    # The other tests are named once, in the dagger note, and the
+    # p-value header carries the dagger. gtsummary's own footnote said
+    # the same, but inside the table.
+    tests <- .test_sentence(tbl$table_body)
+    if (nzchar(tests)) {
+      dagger <- attr(tbl, "hv_footnotes")[["\u2020"]]
+      attr(tbl, "hv_footnotes")[["\u2020"]] <- paste0(
+        sub("\\.$", "", dagger), "; ", tests
+      )
+      attr(tbl, "hv_test_note") <- TRUE
+    }
   }
 
   tb <- tbl$table_body
@@ -736,6 +750,29 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 # as AMA style and the typeset JTCVS tables print them (.013, <.001, >.9).
 .format_p <- function(p) {
   sub("^([<>]?)0\\.", "\\1.", gtsummary::style_pvalue(p, digits = 1))
+}
+
+# The tests behind the p-values a table shows, in the house wording, as
+# one sentence for the dagger note: "P values from the Wilcoxon rank sum
+# test and Pearson's chi-square test." Fisher's exact test is left out,
+# since it has a mark and a note of its own, and so is the standardized
+# difference, which is no test. "" when no other test ran.
+.test_sentence <- function(tb) {
+  names_by_test <- c(
+    oneway.test           = "one-way analysis of variance",
+    wilcox.test           = "Wilcoxon rank sum test",
+    kruskal.test          = "Kruskal-Wallis test",
+    chisq.test.no.correct = "Pearson's chi-square test"
+  )
+  shown <- unique(tb$test_name[!is.na(tb$p.value)])
+  used <- names_by_test[names(names_by_test) %in% shown]
+  if (length(used) == 0L) return("")
+  items <- unname(used)
+  n <- length(items)
+  joined <- if (n == 1L) items
+  else if (n == 2L) paste(items, collapse = " and ")
+  else paste0(paste(items[-n], collapse = ", "), ", and ", items[n])
+  paste0("P values from the ", joined, ".")
 }
 
 # Notes print in the canonical symbol order, * dagger double-dagger section
