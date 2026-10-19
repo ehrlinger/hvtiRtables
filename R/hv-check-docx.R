@@ -113,10 +113,27 @@
 }
 
 # Footnote markers: asterisk, dagger, double dagger, section, pilcrow, a
-# lettered "a." / "b)" marker, or the literal "Key:". The four symbols are
+# lettered "a." / "b)" marker, or the literal "Key:" or "Abbreviation:"
+# (gtsummary's definition of CI, written as a row). The four symbols are
 # \u escapes so the source file stays ASCII; single-backslash, since R has
 # to resolve them into characters before the regex engine sees them.
-.footnote_marker <- "^(\\*|\u2020|\u2021|\u00a7|\u00b6|[a-z][.)](\\s|$)|Key:)"
+.footnote_marker <- paste0(
+  "^(\\*|\u2020|\u2021|\u00a7|\u00b6|[a-z][.)](\\s|$)|Key:|Abbreviations?:)"
+)
+
+# TRUE when a cell opens with a superscript run of digits, the form
+# gtsummary writes a footnote in ("1" raised, then the text). Read from
+# the run's formatting rather than the text, so a body cell that starts
+# with a plain digit ("30-day mortality") is not mistaken for one.
+.opens_with_digit_marker <- function(tc) {
+  run <- xml2::xml_find_first(tc, ".//w:r[w:t][1]")
+  if (inherits(run, "xml_missing")) return(FALSE)
+  raised <- xml2::xml_find_first(
+    run, "./w:rPr/w:vertAlign[@w:val='superscript']"
+  )
+  !inherits(raised, "xml_missing") &&
+    grepl("^[0-9]+$", trimws(xml2::xml_text(run)))
+}
 
 .detect_embedded_footnote <- function(doc) {
   out <- list()
@@ -127,7 +144,8 @@
     cells <- xml2::xml_find_all(rows[[length(rows)]], "./w:tc")
     for (k in seq_along(cells)) {
       txt <- trimws(xml2::xml_text(cells[[k]]))
-      if (!grepl(.footnote_marker, txt)) next
+      if (!grepl(.footnote_marker, txt) && !.opens_with_digit_marker(cells[[k]]))
+        next
       out[[length(out) + 1]] <- .finding(
         "embedded_footnote", i,
         sprintf("row %d (last row), cell %d", length(rows), k),
@@ -215,8 +233,9 @@
 #' * `"embedded_footnote"` (heuristic, lower confidence): a cell in a
 #'   table's last row whose text starts with a footnote marker (`*`, a
 #'   dagger or double dagger, a section or pilcrow sign, a lettered
-#'   `a.`/`b.` marker, or `Key:`), the pattern `flextable::footnote()`
-#'   produces when misused. This detector is pattern-based rather than a
+#'   `a.`/`b.` marker, `Key:` or `Abbreviation:`) or whose first run is a
+#'   superscript number, as `gtsummary` writes a footnote, the pattern
+#'   `flextable::footnote()` produces when misused. This detector is pattern-based rather than a
 #'   guaranteed structural signature, so treat its findings as prompts to
 #'   look, not proof.
 #'

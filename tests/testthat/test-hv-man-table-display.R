@@ -63,10 +63,10 @@ test_that("display and .docx carry the same marks, notes and key", {
   expect_true("hv_variable" %in% names(shown_header))
   expect_identical(unname(shown_header[names(shown_header) != "hv_variable"]),
                    saved$header)
-  # The lines the helper adds, after any footer gtsummary already put on
-  # the table (its test note), which the saver keeps in the table too.
-  added <- dp_footer_lines(shown)[-seq_len(flextable::nrow_part(ft, "footer"))]
-  expect_identical(unname(added), saved$notes)
+  # The lines the helper adds. The table arrives with no footer of its
+  # own: gtsummary's test note no longer rides in the table.
+  expect_identical(flextable::nrow_part(ft, "footer"), 0L)
+  expect_identical(unname(dp_footer_lines(shown)), saved$notes)
   # And the content is the expected content, not merely equal.
   expect_true(any(grepl("\\*$", saved$header)))
   expect_true(any(grepl("†$", saved$header)))

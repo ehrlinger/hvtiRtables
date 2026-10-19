@@ -100,6 +100,7 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   footnotes <- attr(tbl, "hv_footnotes", exact = TRUE)
   cell_marks <- attr(tbl, "hv_cell_marks", exact = TRUE)
   tbl <- .split_stat_sentinel(tbl)
+  tbl <- .drop_gtsummary_notes(tbl)
   tbl <- .flatten_sections(tbl)
   sec_i <- which(tbl$table_body$row_type == "section")
   ft <- gtsummary::as_flex_table(tbl)
@@ -116,6 +117,21 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   ft <- .mark_cells(ft, tbl$table_body, cell_marks, footnotes)
   attr(ft, "hv_footnotes") <- footnotes
   ft
+}
+
+# as_flex_table() writes every gtsummary footnote as a footer row inside
+# the table and a raised digit on the header it belongs to: add_p() names
+# its tests on the p-value header, add_difference() footnotes the
+# standardized difference and defines CI. House rule 13 puts notes below
+# the table as paragraphs, and hv_man_table_save() writes them there, so
+# none of gtsummary's own may reach the table. hv_check_docx() flags the
+# footer row.
+.drop_gtsummary_notes <- function(tbl) {
+  tbl <- gtsummary::remove_footnote_header(tbl)
+  tbl <- gtsummary::remove_footnote_body(tbl)
+  tbl <- gtsummary::remove_footnote_spanning_header(tbl)
+  tbl <- gtsummary::remove_abbreviation(tbl)
+  gtsummary::remove_source_note(tbl)
 }
 
 # hv_tbl_summary() footnotes Fisher's exact test with a double dagger

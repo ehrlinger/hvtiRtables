@@ -126,6 +126,38 @@ test_that("CORR: no % sign in any body cell", {
   expect_false(any(grepl("%", body, fixed = TRUE)))
 })
 
+test_that("CORR: gtsummary's own footnotes never reach the table", {
+  # add_p() footnotes the test names on the p-value header, and
+  # add_difference() footnotes the SMD and defines CI; as_flex_table()
+  # writes all of them as rows and superscripts inside the w:tbl. House
+  # rule 13 puts notes below the table, as paragraphs.
+  for (cmp in c("pvalue", "smd", "both")) {
+    tbl <- hv_tbl_summary(
+      gtsummary::trial, by = "trt",
+      groups = list(Demography = c("age", "marker"),
+                    Disease = c("stage", "response")),
+      continuous = c("age", "marker"), binary = "response",
+      categorical = "stage", compare = cmp
+    )
+    f <- wx_save_corr(tbl)
+    doc <- wx_doc(f)
+    rows <- wx_rows(doc)
+    last <- cell_text(rows[[length(rows)]])
+    expect_identical(last[1], "Tumor Response", info = cmp)
+    expect_true(any(nzchar(last[-1])), info = cmp)
+    sup <- unlist(lapply(rows, function(r) vapply(r, `[[`, "", "sup")))
+    expect_false(any(grepl("[0-9]", sup)), info = cmp)
+    expect_false(
+      grepl("Wilcoxon|Abbreviation", wx_text(xml2::xml_find_first(
+        doc, "//w:tbl", wx_ns
+      ))),
+      info = cmp
+    )
+    expect_identical(nrow(hv_check_docx(f)), 0L, info = cmp)
+    unlink(f)
+  }
+})
+
 # -- JTCVS renderer ----------------------------------------------------
 
 test_that("JTCVS: Characteristic appears once, spanning both header rows", {

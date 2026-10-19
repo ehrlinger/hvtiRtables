@@ -223,6 +223,83 @@ test_that("hv_check_docx detects a dagger-marked last row", {
   expect_identical(report$location, "row 2 (last row), cell 1")
 })
 
+# gtsummary's footnote, as as_flex_table() writes it: a superscript digit
+# opening a footer row, then the text. flextable::footnote() produces the
+# same shape.
+mk_digit_footnote_docx <- function(path, symbol = "1") {
+  set.seed(1)
+  n <- 40
+  dta <- data.frame(
+    grp = factor(rep(c("A", "B"), each = n / 2)),
+    age = rnorm(n, 60, 10)
+  )
+  tbl <- hv_tbl_summary(
+    dta, by = "grp", groups = list(Vitals = "age"), continuous = "age"
+  )
+  ft <- hv_man_table_jtcvs(
+    tbl, groups = c(stat_1 = "A", stat_2 = "B"),
+    stat_label = attr(tbl, "hv_stat_label")
+  )
+  ft <- flextable::footnote(
+    ft, i = 1, j = 1,
+    value = flextable::as_paragraph("Wilcoxon rank sum test"),
+    ref_symbols = symbol, part = "header"
+  )
+  hv_man_table_save_jtcvs(ft, path, caption = "Table 1. X")
+  path
+}
+
+test_that("hv_check_docx detects a gtsummary digit footnote row", {
+  out <- tempfile(fileext = ".docx")
+  on.exit(unlink(out), add = TRUE)
+  report <- hv_check_docx(mk_digit_footnote_docx(out))
+  hits <- report[report$type == "embedded_footnote", ]
+  expect_identical(nrow(hits), 1L)
+  expect_match(hits$location, "^row 5 \\(last row\\), cell 1$")
+  expect_match(hits$detail, "Wilcoxon rank sum test")
+})
+
+test_that("hv_check_docx detects a multi-digit footnote marker", {
+  out <- tempfile(fileext = ".docx")
+  on.exit(unlink(out), add = TRUE)
+  report <- hv_check_docx(mk_digit_footnote_docx(out, symbol = "12"))
+  expect_identical(report$type, "embedded_footnote")
+})
+
+test_that("hv_check_docx detects gtsummary's abbreviation row", {
+  clean <- tempfile(fileext = ".docx")
+  dirty <- tempfile(fileext = ".docx")
+  on.exit(unlink(c(clean, dirty)), add = TRUE)
+  mk_clean_docx(clean)
+  splice_docx_xml(clean, dirty, function(xml) {
+    sub(
+      "<w:body>",
+      paste0("<w:body>", raw_table_xml(
+        2880, last = "Abbreviation: CI = Confidence Interval"
+      )),
+      xml, fixed = TRUE
+    )
+  })
+  report <- hv_check_docx(dirty)
+  expect_identical(report$type, "embedded_footnote")
+})
+
+test_that("hv_check_docx spares a last row that starts with a plain digit", {
+  clean <- tempfile(fileext = ".docx")
+  dirty <- tempfile(fileext = ".docx")
+  on.exit(unlink(c(clean, dirty)), add = TRUE)
+  mk_clean_docx(clean)
+  splice_docx_xml(clean, dirty, function(xml) {
+    sub(
+      "<w:body>",
+      # Data, not a marker: the digit is body text, not a superscript.
+      paste0("<w:body>", raw_table_xml(2880, last = "30-day mortality")),
+      xml, fixed = TRUE
+    )
+  })
+  expect_identical(nrow(hv_check_docx(dirty)), 0L)
+})
+
 test_that("hv_check_docx spares a last row that merely starts a word", {
   clean <- tempfile(fileext = ".docx")
   dirty <- tempfile(fileext = ".docx")
