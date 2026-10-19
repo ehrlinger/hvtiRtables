@@ -341,7 +341,7 @@ test_that("hv_man_table_save still renders the Key: block after refactor", {
 test_that("a two-group 'both' CORR table with Overall is fitted to landscape", {
   skip_if_not_installed("broom")
   # Measured 13.09 in before fitting: each median column autofits to its
-  # header, and landscape alone (9.7 in of text) clipped the labels and
+  # header, and landscape alone (9.03 in of text) clipped the labels and
   # the p-value column.
   tbl <- hv_tbl_summary(
     gtsummary::trial, by = "trt", groups = list(D = c("age", "grade")),
@@ -349,7 +349,7 @@ test_that("a two-group 'both' CORR table with Overall is fitted to landscape", {
     compare = "pvalue"
   )
   ft <- hv_man_table(tbl)
-  expect_gt(sum(ft$body$colwidths), 9.73)
+  expect_gt(sum(ft$body$colwidths), 9.03)
   path <- tempfile(fileext = ".docx")
   hv_man_table_save(ft, path)
   g <- fit_geometry(path)
@@ -366,7 +366,7 @@ test_that("a CORR table wider than portrait but under 3 groups turns", {
   )
   ft <- hv_man_table(tbl)
   ft <- flextable::width(ft, j = "label", width = 4)
-  expect_gt(sum(ft$body$colwidths), 6.3)
+  expect_gt(sum(ft$body$colwidths), 6.53)
   path <- tempfile(fileext = ".docx")
   hv_man_table_save(ft, path)
   g <- fit_geometry(path)
@@ -388,4 +388,20 @@ test_that("a table just inside the landscape text block is still narrowed", {
   fit <- .fit_page(ft)
   expect_lte(sum(fit$ft$body$colwidths), .text_width(landscape = TRUE) - 0.01)
   expect_true(fit$landscape)
+})
+
+test_that("a saved table is on a US Letter page, portrait or landscape", {
+  narrow <- hv_man_table(gtsummary::tbl_summary(gtsummary::trial,
+                                                include = age))
+  f1 <- tempfile(fileext = ".docx")
+  hv_man_table_save(narrow, f1)
+  expect_identical(pg_size(f1), c(w = "12240", h = "15840"))
+  # Four statistic columns (Overall and three grades) turn the page.
+  wide <- hv_man_table(hv_tbl_summary(
+    gtsummary::trial, by = "grade", groups = list(A = "age"),
+    continuous = "age", compare = "none", show_variable = FALSE
+  ))
+  f2 <- tempfile(fileext = ".docx")
+  hv_man_table_save(wide, f2)
+  expect_identical(pg_size(f2), c(w = "15840", h = "12240"))
 })

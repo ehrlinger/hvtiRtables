@@ -82,8 +82,8 @@
 #' A table with three or more statistic columns, such as an Overall
 #' column and two groups, is written on a landscape page: with a `No.`
 #' column beside each, it does not fit a portrait one. So is any table
-#' wider than a portrait page's text block (6.3 inches on A4). A table
-#' wider than landscape's (9.7 inches), as a `continuous_stat = "both"`
+#' wider than a portrait page's text block (6.5 inches on US Letter). A table
+#' wider than landscape's (9.0 inches), as a `continuous_stat = "both"`
 #' table with an Overall column can be, has its columns narrowed in
 #' proportion to fit; the font size is not changed.
 #'
@@ -136,7 +136,7 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   }
 
   doc <- .add_abbreviations_key(doc, abbreviations, font)
-  if (fit$landscape) doc <- .landscape(doc)
+  doc <- .page_section(doc, fit$landscape)
 
   print(doc, target = file)
   invisible(file)
@@ -149,12 +149,15 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   sum(grepl("^(hv_median_)?stat_[0-9]+$", ft$col_keys)) >= 3L
 }
 
-# The template's own page (A4, 1417-twip margins) turned on its side,
-# so only the orientation changes.
-# Inches between the margins .landscape() sets, which are also the
-# default template's: A4, 1417 twips each side.
+# US Letter for every style (design question 4), with the margins the
+# A4 template had, 1417 twips (about 1 in) each side. The template's own
+# page is A4, so the section is set whatever the orientation.
+.letter <- c(width = 12240, height = 15840, margin = 1417)
+
+# Inches between the margins.
 .text_width <- function(landscape) {
-  ((if (landscape) 16840 else 11900) - 2 * 1417) / 1440
+  side <- if (landscape) .letter[["height"]] else .letter[["width"]]
+  (side - 2 * .letter[["margin"]]) / 1440
 }
 
 # Fit a table to the page. Column widths add up past a portrait page once
@@ -177,16 +180,19 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   list(ft = ft, landscape = landscape || wide > .text_width(landscape = FALSE))
 }
 
-.landscape <- function(doc) {
+# officer swaps width and height itself for a landscape orientation.
+.page_section <- function(doc, landscape) {
   twip <- 1 / 1440
+  mar <- .letter[["margin"]] * twip
   officer::body_set_default_section(doc, officer::prop_section(
     page_size = officer::page_size(
-      width = 11900 * twip, height = 16840 * twip, orient = "landscape"
+      width = .letter[["width"]] * twip,
+      height = .letter[["height"]] * twip,
+      orient = if (landscape) "landscape" else "portrait"
     ),
     page_margins = officer::page_mar(
-      bottom = 1417 * twip, top = 1417 * twip, right = 1417 * twip,
-      left = 1417 * twip, header = 708 * twip, footer = 708 * twip,
-      gutter = 0
+      bottom = mar, top = mar, right = mar, left = mar,
+      header = 708 * twip, footer = 708 * twip, gutter = 0
     )
   ))
 }

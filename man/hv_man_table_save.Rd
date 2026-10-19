@@ -47,8 +47,8 @@ produce an error naming the argument to use instead.
 A table with three or more statistic columns, such as an Overall
 column and two groups, is written on a landscape page: with a \code{No.}
 column beside each, it does not fit a portrait one. So is any table
-wider than a portrait page's text block (6.3 inches on A4). A table
-wider than landscape's (9.7 inches), as a \code{continuous_stat = "both"}
+wider than a portrait page's text block (6.5 inches on US Letter). A table
+wider than landscape's (9.0 inches), as a \code{continuous_stat = "both"}
 table with an Overall column can be, has its columns narrowed in
 proportion to fit; the font size is not changed.
 

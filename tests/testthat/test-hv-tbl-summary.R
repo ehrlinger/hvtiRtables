@@ -1434,10 +1434,10 @@ test_that("the JTCVS saver drops the column from any flextable", {
 test_that("the saved width leaves the variable column out", {
   # Every width set by hand, in whole half-inches (exact twips), so the
   # result does not depend on a platform's font metrics: 10.0 in with the
-  # Variable column, past landscape's 9.73 in text block, and 9.0 in
+  # Variable column, past landscape's 9.03 in text block, and 9.0 in
   # without it, inside. Dropped first, the table fits unnarrowed and is
   # written at exactly 9.0 in. Fitted first, it would be narrowed to
-  # 9.72 in and then lose its 1.0 in column: an 8.748 in grid.
+  # 9.02 in and then lose its 1.0 in column: an 8.118 in grid.
   ft <- hv_man_table(hv_tbl_summary(
     gtsummary::trial, by = "trt", groups = list(D = c("age", "grade")),
     continuous = "age", categorical = "grade", continuous_stat = "both",
@@ -1463,12 +1463,12 @@ test_that("a table that fits portrait without its variable column stays so", {
     compare = "pvalue"
   ))
   # Widen the label so the table is 6.8 in with the column (past a
-  # portrait page's 6.3) and 5.9 in without it.
+  # portrait page's 6.53) and 5.9 in without it.
   extra <- 6.8 - sum(ft$body$colwidths)
   ft <- flextable::width(ft, j = "label",
                          width = ft$body$colwidths[["label"]] + extra)
-  expect_gt(sum(ft$body$colwidths), 6.3)
-  expect_lt(sum(ft$body$colwidths) - ft$body$colwidths[["hv_variable"]], 6.3)
+  expect_gt(sum(ft$body$colwidths), 6.53)
+  expect_lt(sum(ft$body$colwidths) - ft$body$colwidths[["hv_variable"]], 6.53)
   path <- tempfile(fileext = ".docx")
   hv_man_table_save(ft, path)
   expect_false(fit_geometry(path)$landscape)

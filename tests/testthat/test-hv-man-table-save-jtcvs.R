@@ -313,3 +313,9 @@ test_that("a narrow JTCVS table stays portrait at its own widths", {
   # 2.5 + 2 x (0.6 + 0.9) inches, untouched.
   expect_equal(g$table, 5.5 * 1440, tolerance = 2)
 })
+
+test_that("the JTCVS saver writes a US Letter page", {
+  f <- tempfile(fileext = ".docx")
+  hv_man_table_save_jtcvs(fx_jtcvs_ft(), f, caption = "Table 1. Test")
+  expect_setequal(unname(pg_size(f)), c("12240", "15840"))
+})
