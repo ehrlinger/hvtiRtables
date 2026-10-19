@@ -405,3 +405,66 @@ test_that("a saved table is on a US Letter page, portrait or landscape", {
   hv_man_table_save(wide, f2)
   expect_identical(pg_size(f2), c(w = "15840", h = "12240"))
 })
+
+# -- The manuscript style: caption, leading symbols, header marks ---------
+
+ms_ft <- function() {
+  hv_man_table(hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = c("age", "grade")),
+    continuous = "age", categorical = "grade", show_variable = FALSE
+  ), style = "manuscript")
+}
+ms_doc <- function(ft = ms_ft(), ...) {
+  f <- tempfile(fileext = ".docx")
+  hv_man_table_save(ft, f, ...)
+  officer::read_docx(f)$doc_obj$get()
+}
+
+test_that("a manuscript table is saved with its caption above it, in bold", {
+  x <- ms_doc(caption = "Table 1. Baseline characteristics")
+  first <- xml2::xml_find_first(x, "//w:body/*[1]")
+  expect_identical(xml2::xml_name(first), "p")
+  expect_identical(xml2::xml_text(first), "Table 1. Baseline characteristics")
+  expect_length(xml2::xml_find_all(first, ".//w:rPr/w:b[not(@w:val='false')]"),
+                1L)
+})
+
+test_that("a manuscript note begins with its plain symbol", {
+  x <- ms_doc(caption = "Table 1. Test")
+  ps <- xml2::xml_find_all(x, "//w:tbl/following-sibling::w:p")
+  text <- vapply(ps, xml2::xml_text, character(1))
+  expect_identical(text[1], "*Patients with non-missing data.")
+  expect_identical(
+    text[2], "†Values are No. (%) or median [15th, 85th percentiles]."
+  )
+  sup <- xml2::xml_find_all(ps[[1]], ".//w:vertAlign[@w:val='superscript']")
+  expect_length(sup, 0L)
+})
+
+test_that("manuscript header marks: * on n, the dagger on the grouping", {
+  x <- ms_doc(caption = "Table 1. Test")
+  top <- xml2::xml_find_first(x, "//w:tbl/w:tr[1]")
+  cells <- vapply(xml2::xml_find_all(top, "./w:tc"), xml2::xml_text,
+                  character(1))
+  expect_true("n*" %in% cells)
+  expect_true("Chemotherapy Treatment†" %in% cells)
+})
+
+test_that("the manuscript requires a caption; the report takes one if given", {
+  expect_error(ms_doc(), "caption")
+  first <- function(f) {
+    xml2::xml_find_first(officer::read_docx(f)$doc_obj$get(), "//w:body/*[1]")
+  }
+  with_cap <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(fx_hv_tbl()), with_cap,
+                    caption = "Table 2. Report")
+  expect_identical(xml2::xml_text(first(with_cap)), "Table 2. Report")
+  expect_length(xml2::xml_find_all(first(with_cap),
+                                   ".//w:rPr/w:b[not(@w:val='false')]"), 1L)
+  without <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(fx_hv_tbl()), without)
+  expect_identical(xml2::xml_name(first(without)), "tbl")
+  expect_error(hv_man_table_save(hv_man_table(fx_hv_tbl()), without,
+                                 caption = NA_character_), "caption")
+})

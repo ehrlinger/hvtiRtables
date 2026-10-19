@@ -4,7 +4,14 @@
 \alias{hv_man_table_save}
 \title{Write an hv_man_table() table to a compliant .docx}
 \usage{
-hv_man_table_save(ft, file, footnotes = NULL, abbreviations = NULL, ...)
+hv_man_table_save(
+  ft,
+  file,
+  footnotes = NULL,
+  abbreviations = NULL,
+  caption = NULL,
+  ...
+)
 }
 \arguments{
 \item{ft}{A \code{flextable} object, typically from \code{\link[=hv_man_table]{hv_man_table()}}.}
@@ -40,6 +47,11 @@ footnotes, sorted alphabetically by abbreviation, abbreviation
 italicized, pairs separated by \code{"; "} (house rule 14). Every element
 must be named (unnamed or blank-named entries raise an error); an
 empty or \code{NULL} vector is a no-op.}
+
+\item{caption}{The table's caption, written in bold on its own line
+above the table. A manuscript table requires one, so it is written
+with the table and not typed in later; a report table takes one when
+given and writes none otherwise.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.

@@ -68,6 +68,7 @@ hv_man_table_display <- function(ft, footnotes = NULL,
   use_default_footnotes <- missing(footnotes)
   .check_flextable(ft)
   .check_not_display(ft)
+  style <- .table_style(ft)
   # A JTCVS table letters its notes and has no stat_ columns for the
   # dagger, which would land on the first n column instead.
   if (!is.null(attr(ft, "hv_header_footnotes", exact = TRUE)))
@@ -80,9 +81,10 @@ hv_man_table_display <- function(ft, footnotes = NULL,
   footnotes <- .resolve_footnotes(ft, footnotes)
 
   ft <- .mark_header(ft, footnotes)
+  leading <- identical(style$marker, "leading")
   lines <- c(
     lapply(names(footnotes), function(sym) {
-      .note_runs(sym, footnotes[[sym]])
+      .note_runs(sym, footnotes[[sym]], leading)
     }),
     list(.key_runs(abbreviations))
   )

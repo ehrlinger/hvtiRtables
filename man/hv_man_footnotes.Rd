@@ -6,7 +6,8 @@
 \usage{
 hv_man_footnotes(
   continuous_stat = c("median", "mean", "both"),
-  percentiles = c(15, 85)
+  percentiles = c(15, 85),
+  style = "report"
 )
 }
 \arguments{
@@ -20,6 +21,11 @@ of their own whose headers name them.}
 percentile pair named by the dagger. Default \code{c(15, 85)}. Used for
 \code{continuous_stat = "median"} and \code{"both"}; validated but not printed for
 \code{"mean"}, so the arguments share \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s contract.}
+
+\item{style}{\code{"report"} (default) or \code{"manuscript"}, or a style from
+\code{\link[=hv_table_style]{hv_table_style()}}. The manuscript writes the notes in the words of
+the submissions: \code{"Patients with non-missing data."} and
+\code{"Values are No. (\%) or median [15th, 85th percentiles]."}.}
 }
 \value{
 A named list with elements \code{`*`} and \code{`†`}, in the format

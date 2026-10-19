@@ -76,6 +76,10 @@
 #'   italicized, pairs separated by `"; "` (house rule 14). Every element
 #'   must be named (unnamed or blank-named entries raise an error); an
 #'   empty or `NULL` vector is a no-op.
+#' @param caption The table's caption, written in bold on its own line
+#'   above the table. A manuscript table requires one, so it is written
+#'   with the table and not typed in later; a report table takes one when
+#'   given and writes none otherwise.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
@@ -106,12 +110,14 @@
 #'
 #' @export
 hv_man_table_save <- function(ft, file, footnotes = NULL,
-                              abbreviations = NULL, ...) {
+                              abbreviations = NULL, caption = NULL, ...) {
   use_default_footnotes <- missing(footnotes)
   .check_sas_args(list(...), "hv_man_table_save")
   .check_flextable(ft)
   .check_not_display(ft)
   .check_file(file)
+  style <- .table_style(ft)
+  .check_caption(caption, style)
   ft <- .drop_variable_column(ft)
   if (use_default_footnotes) footnotes <- .default_footnotes(ft)
   # Hoisted out of .add_abbreviations_key() so it fires at entry
@@ -125,12 +131,17 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   ft <- fit$ft
 
   doc <- officer::read_docx()
+  font <- .table_font(ft)
+  if (!is.null(caption))
+    doc <- officer::body_add_fpar(doc, officer::fpar(officer::ftext(
+      caption, prop = .note_prop(font, bold = TRUE)
+    )), style = "Normal")
   doc <- flextable::body_add_flextable(doc, ft)
 
-  font <- .table_font(ft)
+  leading <- identical(style$marker, "leading")
   for (sym in names(footnotes)) {
     doc <- officer::body_add_fpar(
-      doc, .runs_fpar(.note_runs(sym, footnotes[[sym]]), font),
+      doc, .runs_fpar(.note_runs(sym, footnotes[[sym]], leading), font),
       style = "Normal"
     )
   }
@@ -290,8 +301,32 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   ft
 }
 
-# One note line as runs: the superscript symbol, then " " and the text.
-.note_runs <- function(sym, text) {
+# The style a table was drawn in. A flextable that did not come from
+# hv_man_table() carries none and is a report table.
+.table_style <- function(ft) {
+  attr(ft, "hv_style", exact = TRUE) %||% hv_table_style("report")
+}
+
+# The manuscript's caption is part of the table, so it is written with
+# it rather than typed in later; a report's is optional.
+.check_caption <- function(caption, style) {
+  if (is.null(caption)) {
+    if (identical(style$caption, "required"))
+      stop("A manuscript table needs `caption`, such as \"Table 1. ",
+           "Baseline characteristics\": it is written with the table, ",
+           "not typed in later.", call. = FALSE)
+    return(invisible(NULL))
+  }
+  .check_string(caption, "caption")
+}
+
+# One note line as runs. The report superscripts the symbol and spaces
+# it from the text; the manuscript begins the line with the plain
+# symbol, as the submissions did: "*Patients with non-missing data."
+.note_runs <- function(sym, text, leading = FALSE) {
+  if (leading)
+    return(data.frame(text = paste0(sym, text), sup = FALSE, italic = FALSE,
+                      stringsAsFactors = FALSE))
   data.frame(text = c(sym, paste0(" ", text)), sup = c(TRUE, FALSE),
              italic = FALSE, stringsAsFactors = FALSE)
 }
@@ -366,6 +401,7 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 # label column. The bare "n" case is kept for a hand-built
 # flextable that names its count column that way.
 .footnote_col <- function(ft) {
+  if ("hv_n" %in% ft$col_keys) return("hv_n")
   if ("n" %in% ft$col_keys) return("n")
   n_stat <- grep("^n_stat_[0-9]+$", ft$col_keys, value = TRUE)
   if (length(n_stat) > 0L) return(n_stat[1])
@@ -377,6 +413,13 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 # column it claimed the "No." header was a median.
 .footnote_cols <- function(ft, sym) {
   if (identical(sym, "\u2020")) {
+    # A spanned header names the grouping once, above its levels, and
+    # the statistic note belongs on that name.
+    if (identical(attr(ft, "hv_style", exact = TRUE)$header, "spanned")) {
+      disp <- grep("^disp_stat_[0-9]+$", ft$col_keys, value = TRUE)
+      group <- setdiff(disp, "disp_stat_0")
+      return(if (length(group) > 0L) group[1] else disp[1])
+    }
     stat <- grep("^stat_[0-9]+$", ft$col_keys, value = TRUE)
     if (length(stat) > 0L) return(stat)
   }
