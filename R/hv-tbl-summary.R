@@ -213,7 +213,10 @@
 #'   `hv_trailing`, and `hv_footnotes` renderer attributes. A table whose
 #'   rows mix mean and median also carries `hv_cell_marks`, a list with
 #'   `symbol` (`"§"` or `"¶"`) and `variables` (the names whose cells
-#'   carry it); the attribute is `NULL` otherwise.
+#'   carry it); the attribute is `NULL` otherwise. The manuscript style
+#'   also reads `hv_by_label`, the grouping's name (the variable's label
+#'   when the data carry one), and the hidden `hv_n` column of
+#'   `table_body`, each variable's overall non-missing count.
 #'
 #' @seealso [hv_man_table()] or [hv_man_table_jtcvs()] to render the
 #'   result. [hv_man_footnotes()] for the percentile-footnote house

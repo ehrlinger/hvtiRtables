@@ -159,7 +159,10 @@ A \code{gtsummary} object, ready for \code{\link[=hv_man_table]{hv_man_table()}}
 \code{hv_trailing}, and \code{hv_footnotes} renderer attributes. A table whose
 rows mix mean and median also carries \code{hv_cell_marks}, a list with
 \code{symbol} (\code{"§"} or \code{"¶"}) and \code{variables} (the names whose cells
-carry it); the attribute is \code{NULL} otherwise.
+carry it); the attribute is \code{NULL} otherwise. The manuscript style
+also reads \code{hv_by_label}, the grouping's name (the variable's label
+when the data carry one), and the hidden \code{hv_n} column of
+\code{table_body}, each variable's overall non-missing count.
 }
 \description{
 Thin wrapper over \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} modeled on the interface

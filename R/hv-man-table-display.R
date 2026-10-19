@@ -7,6 +7,10 @@
 #' the notes are paragraphs below the table; here they are footer lines,
 #' since HTML has no page to put them on.
 #'
+#' The notes follow the table's style: a manuscript table's notes begin
+#' with the plain symbol and use the submissions' wording, as they do in
+#' the saved file.
+#'
 #' The one deliberate difference is the "Variable" column
 #' [hv_tbl_summary()]'s `show_variable` adds: the display keeps it, as the
 #' report view, while the saved table never has it.

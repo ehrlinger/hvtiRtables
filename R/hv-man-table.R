@@ -1,9 +1,20 @@
 #' Convert a gtsummary table into a flextable matching HVTI CORR's table rules
 #'
 #' Stage 2 of the `%summarytable` split: shapes the table. The macro
-#' controlled this with `STYLE=` and `PAGE=`, which have no equivalent
-#' here -- house style is fixed, and the only choice is flat header
-#' versus JTCVS spanning header.
+#' controlled this with `STYLE=` and `PAGE=`. `style =` is the equivalent
+#' of `STYLE=`: tables are drawn in a style named by its role, `"report"`
+#' (the default, described below) or `"manuscript"`. `PAGE=` has none;
+#' pages are US Letter, turning landscape when the table is wide.
+#'
+#' The `"manuscript"` style lays out a comparison table as the journal
+#' submissions did: a full grid, a two-row header with the grouping's name
+#' spanning its levels, one overall `n` column, shaded section rows that
+#' span the table, a bold header, and no font of its own, so the table
+#' takes the body font of the document it is saved into. It needs a table
+#' from [hv_tbl_summary()], and [hv_man_table_save()] requires a `caption`
+#' for it. See [hv_table_style()] for the properties of each style.
+#'
+#' The rest of this page describes the `"report"` style.
 #'
 #' You give this a [gtsummary::tbl_summary()] (or any gtsummary table object
 #' supporting [gtsummary::as_flex_table()]), and you get back a `flextable`
@@ -11,7 +22,8 @@
 #' Manuscripts" rules: a single, non-merged header row (no spanning parent
 #' cells over grouped columns), no merged row-group section-header cells,
 #' a left-justified label column, and Times New Roman at the house font
-#' size.
+#' size. Section rows are shaded across every cell, unmerged, in the
+#' style's fill (`#CAEDFB` by default), and the header is bold.
 #'
 #' `gtsummary::as_flex_table()` already emits one header row per group with
 #' self-contained labels (e.g. `"B\nN = 45"`), not a merged spanning header.
@@ -59,6 +71,21 @@
 #' **"`font_size` must be 11 or 12."** House rule 5. Use `11` only for
 #' wide tables.
 #'
+#' **"`font` and `font_size` set the report style."** You passed one with
+#' `style = "manuscript"`. That style sets no font, so the table takes the
+#' font of the document it is saved into. Drop the argument, or use
+#' `style = "report"`.
+#'
+#' **The manuscript style refuses a `continuous_stat = "both"` table.**
+#' That table has a column for the median and another for the mean and
+#' SD, which the manuscript's one statistic column per group cannot
+#' lay out. Build the table with `"median"` or `"mean"`, or use the report
+#' style.
+#'
+#' **The manuscript style refuses a table not built by
+#' [hv_tbl_summary()].** The layout reads the overall count and the
+#' grouping's name that function records. Build the table with it.
+#'
 #' @param tbl A `gtsummary` table object (must support `as_flex_table()`).
 #'   A table from [hv_tbl_summary()] is split as described above; any
 #'   other `gtsummary` object renders as-is.
@@ -73,14 +100,18 @@
 #'   Reserved so a future version can enforce sig-fig rounding centrally
 #'   without a breaking signature change.
 #' @param style A style name, `"report"` (default) or `"manuscript"`, or a
-#'   style from [hv_table_style()].
+#'   style from [hv_table_style()]. `"manuscript"` needs an
+#'   [hv_tbl_summary()] table, refuses `continuous_stat = "both"`, and
+#'   refuses `font` and `font_size`.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
-#' @return A `flextable` object with a single header row and no merged
-#'   cells, ready for [hv_man_table_save()]. Input from [hv_tbl_summary()]
-#'   retains its `hv_footnotes` attribute so the saver's default dagger
-#'   follows the table's continuous statistic.
+#' @return A `flextable` object, ready for [hv_man_table_save()]. In the
+#'   report style it has a single header row and no merged cells; in the
+#'   manuscript style a two-row header. Its `hv_style` attribute holds the
+#'   style, which the saver and [hv_man_table_display()] read. Input from
+#'   [hv_tbl_summary()] retains its `hv_footnotes` attribute so the
+#'   saver's default dagger follows the table's continuous statistic.
 #'
 #' @seealso [hv_man_table_save()] to write the result to a compliant
 #'   `.docx` with footnotes and an abbreviation key. [hv_man_table_jtcvs()]

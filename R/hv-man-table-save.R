@@ -19,10 +19,25 @@
 #' the *insertion point* in the destination document, not this function's
 #' output; see the package README for the paste-in workflow.
 #'
+#' Every style is written on a US Letter page. A table with three or more
+#' statistic columns, such as an Overall column and two groups, is written
+#' on a landscape page: with a `No.`
+#' column beside each, it does not fit a portrait one. So is any table
+#' wider than a portrait page's text block (6.5 inches on US Letter). A table
+#' wider than landscape's (9.0 inches), as a `continuous_stat = "both"`
+#' table with an Overall column can be, has its columns narrowed in
+#' proportion to fit; the font size is not changed.
+#'
+#' The saved table is always a manuscript table: the "Variable" column
+#' [hv_tbl_summary()]'s `show_variable` adds for the report view is
+#' dropped before the page is fitted, so it never reaches Word and never
+#' widens the page. [hv_man_table_display()] keeps it, for the report.
+#'
 #' @section Common mistakes:
-#' **"unused argument (caption)"** The CORR saver writes no caption.
-#' Only [hv_man_table_save_jtcvs()] takes one; here the table title goes
-#' in the manuscript, above the pasted table.
+#' **"A manuscript table needs `caption` ..."** The table is in the
+#' manuscript style, which requires a caption so the title is written with
+#' the table. Pass
+#' `caption = "Table 1. ..."`; a report table takes one optionally.
 #'
 #' **"`footnotes` must be a named list (symbol -> footnote text) ..."**
 #' You passed the JTCVS shape. The two savers' `footnotes` arguments are
@@ -82,19 +97,6 @@
 #'   given and writes none otherwise.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
-#'
-#' A table with three or more statistic columns, such as an Overall
-#' column and two groups, is written on a landscape page: with a `No.`
-#' column beside each, it does not fit a portrait one. So is any table
-#' wider than a portrait page's text block (6.5 inches on US Letter). A table
-#' wider than landscape's (9.0 inches), as a `continuous_stat = "both"`
-#' table with an Overall column can be, has its columns narrowed in
-#' proportion to fit; the font size is not changed.
-#'
-#' The saved table is always a manuscript table: the "Variable" column
-#' [hv_tbl_summary()]'s `show_variable` adds for the report view is
-#' dropped before the page is fitted, so it never reaches Word and never
-#' widens the page. [hv_man_table_display()] keeps it, for the report.
 #'
 #' @return Invisibly, the `file` path.
 #'

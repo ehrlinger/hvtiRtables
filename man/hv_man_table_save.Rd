@@ -54,20 +54,7 @@ with the table and not typed in later; a report table takes one when
 given and writes none otherwise.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
-produce an error naming the argument to use instead.
-
-A table with three or more statistic columns, such as an Overall
-column and two groups, is written on a landscape page: with a \code{No.}
-column beside each, it does not fit a portrait one. So is any table
-wider than a portrait page's text block (6.5 inches on US Letter). A table
-wider than landscape's (9.0 inches), as a \code{continuous_stat = "both"}
-table with an Overall column can be, has its columns narrowed in
-proportion to fit; the font size is not changed.
-
-The saved table is always a manuscript table: the "Variable" column
-\code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s \code{show_variable} adds for the report view is
-dropped before the page is fitted, so it never reaches Word and never
-widens the page. \code{\link[=hv_man_table_display]{hv_man_table_display()}} keeps it, for the report.}
+produce an error naming the argument to use instead.}
 }
 \value{
 Invisibly, the \code{file} path.
@@ -92,12 +79,27 @@ vertical cell alignment controllable if you later reformat the
 surrounding document to 1.5- or double-spacing. House rule 2 concerns
 the \emph{insertion point} in the destination document, not this function's
 output; see the package README for the paste-in workflow.
+
+Every style is written on a US Letter page. A table with three or more
+statistic columns, such as an Overall column and two groups, is written
+on a landscape page: with a \code{No.}
+column beside each, it does not fit a portrait one. So is any table
+wider than a portrait page's text block (6.5 inches on US Letter). A table
+wider than landscape's (9.0 inches), as a \code{continuous_stat = "both"}
+table with an Overall column can be, has its columns narrowed in
+proportion to fit; the font size is not changed.
+
+The saved table is always a manuscript table: the "Variable" column
+\code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s \code{show_variable} adds for the report view is
+dropped before the page is fitted, so it never reaches Word and never
+widens the page. \code{\link[=hv_man_table_display]{hv_man_table_display()}} keeps it, for the report.
 }
 \section{Common mistakes}{
 
-\strong{"unused argument (caption)"} The CORR saver writes no caption.
-Only \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}} takes one; here the table title goes
-in the manuscript, above the pasted table.
+\strong{"A manuscript table needs \code{caption} ..."} The table is in the
+manuscript style, which requires a caption so the title is written with
+the table. Pass
+\code{caption = "Table 1. ..."}; a report table takes one optionally.
 
 \strong{"\code{footnotes} must be a named list (symbol -> footnote text) ..."}
 You passed the JTCVS shape. The two savers' \code{footnotes} arguments are

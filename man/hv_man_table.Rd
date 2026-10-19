@@ -32,31 +32,47 @@ Reserved so a future version can enforce sig-fig rounding centrally
 without a breaking signature change.}
 
 \item{style}{A style name, \code{"report"} (default) or \code{"manuscript"}, or a
-style from \code{\link[=hv_table_style]{hv_table_style()}}.}
+style from \code{\link[=hv_table_style]{hv_table_style()}}. \code{"manuscript"} needs an
+\code{\link[=hv_tbl_summary]{hv_tbl_summary()}} table, refuses \code{continuous_stat = "both"}, and
+refuses \code{font} and \code{font_size}.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.}
 }
 \value{
-A \code{flextable} object with a single header row and no merged
-cells, ready for \code{\link[=hv_man_table_save]{hv_man_table_save()}}. Input from \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}
-retains its \code{hv_footnotes} attribute so the saver's default dagger
-follows the table's continuous statistic.
+A \code{flextable} object, ready for \code{\link[=hv_man_table_save]{hv_man_table_save()}}. In the
+report style it has a single header row and no merged cells; in the
+manuscript style a two-row header. Its \code{hv_style} attribute holds the
+style, which the saver and \code{\link[=hv_man_table_display]{hv_man_table_display()}} read. Input from
+\code{\link[=hv_tbl_summary]{hv_tbl_summary()}} retains its \code{hv_footnotes} attribute so the
+saver's default dagger follows the table's continuous statistic.
 }
 \description{
 Stage 2 of the \verb{\%summarytable} split: shapes the table. The macro
-controlled this with \verb{STYLE=} and \verb{PAGE=}, which have no equivalent
-here -- house style is fixed, and the only choice is flat header
-versus JTCVS spanning header.
+controlled this with \verb{STYLE=} and \verb{PAGE=}. \verb{style =} is the equivalent
+of \verb{STYLE=}: tables are drawn in a style named by its role, \code{"report"}
+(the default, described below) or \code{"manuscript"}. \verb{PAGE=} has none;
+pages are US Letter, turning landscape when the table is wide.
 }
 \details{
+The \code{"manuscript"} style lays out a comparison table as the journal
+submissions did: a full grid, a two-row header with the grouping's name
+spanning its levels, one overall \code{n} column, shaded section rows that
+span the table, a bold header, and no font of its own, so the table
+takes the body font of the document it is saved into. It needs a table
+from \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}, and \code{\link[=hv_man_table_save]{hv_man_table_save()}} requires a \code{caption}
+for it. See \code{\link[=hv_table_style]{hv_table_style()}} for the properties of each style.
+
+The rest of this page describes the \code{"report"} style.
+
 You give this a \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} (or any gtsummary table object
 supporting \code{\link[gtsummary:as_flex_table]{gtsummary::as_flex_table()}}), and you get back a \code{flextable}
 that already complies with HVTI CORR's "Table Construction for
 Manuscripts" rules: a single, non-merged header row (no spanning parent
 cells over grouped columns), no merged row-group section-header cells,
 a left-justified label column, and Times New Roman at the house font
-size.
+size. Section rows are shaded across every cell, unmerged, in the
+style's fill (\verb{#CAEDFB} by default), and the header is bold.
 
 \code{gtsummary::as_flex_table()} already emits one header row per group with
 self-contained labels (e.g. \code{"B\\nN = 45"}), not a merged spanning header.
@@ -104,6 +120,21 @@ rejected. Either apply the convention to every variable or to none;
 
 \strong{"\code{font_size} must be 11 or 12."} House rule 5. Use \code{11} only for
 wide tables.
+
+\strong{"\code{font} and \code{font_size} set the report style."} You passed one with
+\code{style = "manuscript"}. That style sets no font, so the table takes the
+font of the document it is saved into. Drop the argument, or use
+\code{style = "report"}.
+
+\strong{The manuscript style refuses a \code{continuous_stat = "both"} table.}
+That table has a column for the median and another for the mean and
+SD, which the manuscript's one statistic column per group cannot
+lay out. Build the table with \code{"median"} or \code{"mean"}, or use the report
+style.
+
+\strong{The manuscript style refuses a table not built by
+\code{\link[=hv_tbl_summary]{hv_tbl_summary()}}.} The layout reads the overall count and the
+grouping's name that function records. Build the table with it.
 }
 
 \examples{
