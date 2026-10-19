@@ -39,12 +39,12 @@ reference:
   - hv_tbl_summary
   - hv_tbl_compare
 
-- title: "2. Shape the table - house style is fixed"
+- title: "2. Shape the table: a style by role"
   desc: >
-    House style is fixed, so the only choice here is the header shape.
-    Flat single-row headers for CORR reports and manuscripts; merged
-    spanning headers for a JTCVS submission.
+    A style is named by its role, report or manuscript; hv_table_style()
+    holds its properties.
   contents:
+  - hv_table_style
   - hv_man_table
   - hv_man_table_jtcvs
 
