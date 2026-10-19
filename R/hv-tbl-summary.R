@@ -478,8 +478,13 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # Every return goes through finish(): the variable column is added
   # last so add_overall() and the comparison calls never see a column
   # they do not know.
+  # The grouping's name, for the manuscript header's spanning cell: the
+  # variable's label when the data carry one, else its name.
+  by_label <- if (!is.null(by)) attr(data[[by]], "label", exact = TRUE) %||% by
   finish <- function(tbl) {
+    tbl <- .add_overall_n(tbl, data, by)
     if (show_variable) tbl <- .add_variable_column(tbl)
+    attr(tbl, "hv_by_label") <- by_label
     tbl
   }
 
@@ -743,6 +748,21 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 .order_notes <- function(notes) {
   canon <- c("*", "\u2020", "\u2021", "\u00A7", "||", "\u00B6")
   notes[order(match(names(notes), canon))]
+}
+
+# The manuscript style's one n column (design section 7): each
+# variable's non-missing count across every group, on its label row.
+# A row whose `by` is missing is in no group and tbl_summary() drops it,
+# so it is not counted here either. A column modify_table_body() adds is
+# hidden from gtsummary's header, so the report never shows it.
+.add_overall_n <- function(tbl, data, by) {
+  if (!is.null(by)) data <- data[!is.na(data[[by]]), , drop = FALSE]
+  n <- vapply(data, function(x) sum(!is.na(x)), integer(1))
+  gtsummary::modify_table_body(tbl, function(tb) {
+    tb$hv_n <- ifelse(tb$row_type == "label",
+                      as.character(n[tb$variable]), NA_character_)
+    tb
+  })
 }
 
 # The house standard's precision for a median and its percentiles: 2

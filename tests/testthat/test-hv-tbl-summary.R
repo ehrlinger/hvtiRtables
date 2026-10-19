@@ -1147,8 +1147,9 @@ test_that("overall = TRUE does not break the two-group guard for both", {
   stat_cols <- grep("^stat_", names(tbl$table_body), value = TRUE)
   expect_identical(stat_cols[1], "stat_0")
   expect_setequal(stat_cols, c("stat_0", "stat_1", "stat_2"))
-  last_cols <- utils::tail(names(tbl$table_body), 1)
-  expect_identical(last_cols, "hv_compare_col")
+  # hv_n is hidden bookkeeping, not a column the reader sees.
+  shown <- setdiff(names(tbl$table_body), "hv_n")
+  expect_identical(utils::tail(shown, 1), "hv_compare_col")
 })
 
 test_that("three-level `by` + overall = TRUE + compare = smd still errors", {
@@ -1938,4 +1939,48 @@ test_that("a table showing one statistic carries no cell marks", {
                         continuous = c("age", "marker"), compare = "none",
                         show_variable = FALSE)
   expect_null(attr(tbl, "hv_cell_marks"))
+})
+
+test_that("each variable's overall non-missing count rides on its label row", {
+  d <- gtsummary::trial
+  d$trt[1:3] <- NA # outside every group, so tbl_summary() drops them
+  tbl <- hv_tbl_summary(
+    d, by = "trt", groups = list(A = c("age", "grade")),
+    continuous = "age", categorical = "grade", compare = "none",
+    show_variable = FALSE
+  )
+  tb <- tbl$table_body
+  kept <- d[!is.na(d$trt), ]
+  lab <- tb$row_type == "label"
+  expect_identical(
+    tb$hv_n[lab],
+    as.character(c(sum(!is.na(kept$age)), sum(!is.na(kept$grade))))
+  )
+  expect_true(all(is.na(tb$hv_n[!lab])))
+  # Independent of the data: the per-group counts gtsummary printed.
+  age <- unlist(tb[tb$variable == "age" & lab, c("stat_1", "stat_2")])
+  per_group <- as.integer(sub(" \\|\\|\\| .*", "", age))
+  expect_identical(tb$hv_n[tb$variable == "age" & lab],
+                   as.character(sum(per_group)))
+})
+
+test_that("the overall count is hidden from the report", {
+  tbl <- fx_hv_tbl()
+  hdr <- tbl$table_styling$header
+  expect_true(hdr$hide[hdr$column == "hv_n"])
+  expect_false("hv_n" %in% hv_man_table(tbl)$col_keys)
+})
+
+test_that("the grouping's name is its label, else its name, else NULL", {
+  expect_identical(attr(fx_hv_tbl(), "hv_by_label"), "Chemotherapy Treatment")
+  d <- gtsummary::trial
+  attr(d$trt, "label") <- NULL
+  tbl <- hv_tbl_summary(d, by = "trt", groups = list(A = "age"),
+                        continuous = "age", compare = "none")
+  expect_identical(attr(tbl, "hv_by_label"), "trt")
+  none <- hv_tbl_summary(gtsummary::trial, groups = list(A = "age"),
+                         continuous = "age")
+  expect_null(attr(none, "hv_by_label"))
+  expect_identical(none$table_body$hv_n,
+                   as.character(sum(!is.na(gtsummary::trial$age))))
 })
