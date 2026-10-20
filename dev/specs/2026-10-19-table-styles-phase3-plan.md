@@ -129,7 +129,9 @@ layout during the deprecation release), so Task 5 runs.
    and the note repeat each other; that keeps "row 2 names them" (5.1) and the note identical
    across layouts (question 10).
 6. **Marks in describe:** `*` on every group's `n` (each is a count), `†` on every statistic
-   sub-header, and `†` on the comparison header when the note names its tests or the
+   sub-header the `†` note describes (under `continuous_stat = "both"` that is the mean±SD
+   sub-headers; the median sub-header names its own statistic and carries no mark, John's
+   decision, 2026-10-20), and `†` on the comparison header when the note names its tests or the
    standardized difference. Any other note symbol goes on the first `n`. Row 2 carries the
    marks; the comparison header, merged down, carries its `†` in row 1. **The targets come
    from the groups the table was built with**, recorded on the flextable as `hv_pairs`
