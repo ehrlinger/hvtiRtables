@@ -2,7 +2,7 @@
 % Please edit documentation in R/hv-man-table-jtcvs.R
 \name{hv_man_table_jtcvs}
 \alias{hv_man_table_jtcvs}
-\title{Build a JTCVS-format manuscript table with merged spanning headers}
+\title{Deprecated: Build a JTCVS-Format Manuscript Table with Merged Headers}
 \usage{
 hv_man_table_jtcvs(
   tbl,
@@ -44,43 +44,40 @@ cannot disagree with the cells. A
 table without that record falls back to \code{"No. (\%) or Mean±SD"};
 pass the right text yourself for any other statistic.}
 
-\item{font}{Font family. Default \code{"Times New Roman"} (house rule).
-Any single non-empty string is accepted: \code{flextable} silently
-substitutes an unknown font name, so a typo would otherwise pass
-unnoticed, while a deliberate override is legitimate.}
+\item{font}{Font family. Checked as a single non-empty string, as
+before, and ignored: the manuscript style sets no font, so the table
+takes the font of the document it is saved into.}
 
-\item{font_size}{Font size in points. Default \code{12} (house rule 5);
-pass \code{11} for wide tables. No other values are permitted -- the
-same rule \code{\link[=hv_man_table]{hv_man_table()}} enforces.}
+\item{font_size}{Font size in points. Checked as before (\code{11} or \code{12},
+the rule \code{\link[=hv_man_table]{hv_man_table()}} enforces) and ignored, for the same reason
+as \code{font}.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.}
 }
 \value{
-A \code{flextable} with a 2-row header and merged section rows, ready
-for \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}. It carries an \code{hv_header_footnotes}
-attribute, the text of the \code{n} superscript, which that saver writes.
+A \code{flextable} in the manuscript style's describe layout, ready
+for \code{\link[=hv_man_table_save]{hv_man_table_save()}}.
 }
 \description{
+\strong{Deprecated.} Use
+\code{hv_man_table(tbl, style = "manuscript", layout = "describe")}, the
+manuscript style's describe layout, which this layout became. This
+function warns on every call and goes in the next release.
+}
+\details{
 Stage 2 of the \verb{\%summarytable} split: shapes the table. The macro
 controlled this with \verb{STYLE=} and \verb{PAGE=}. This renderer is the
 journal's one layout and takes neither; the CORR styles are chosen by
 \verb{style =} in \code{\link[=hv_man_table]{hv_man_table()}}. Pages are US Letter.
-}
-\details{
-Use this instead of \code{\link[=hv_man_table]{hv_man_table()}} when you're building the shape
-editorial actually needs at JTCVS submission: a 2-row header (group name
-spanning \code{n}/stat sub-columns, \code{Characteristic} spanning both rows) and
-bold, row-spanning section headers in the body, with no fill colour.
-Each \code{n} carries a superscript \code{a}, which \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}
-footnotes as "Patients with data available." This is
-a separate mode, not a replacement for \code{\link[=hv_man_table]{hv_man_table()}}'s flat-header
-CORR house style; the two exist because CORR reports and JTCVS
-submissions want different things from the same header row.
 
-On a table that mixes mean and median, the mark on the minority cells is
-a lettered superscript \code{b} with its own note, so the test footnotes letter
-from \code{c} rather than \code{b}.
+Until it goes, it passes its arguments through to that layout: \code{groups}
+and \code{trailing} choose the same group, Overall and comparison columns,
+and \code{stat_label} names the statistic under each group. The table is
+drawn in the manuscript style, not the JTCVS look it drew before: a
+full grid, shaded section rows spanning the table, \code{*} and \verb{†} notes,
+and no font of its own. \code{font} and \code{font_size} are checked and set
+nothing.
 }
 \section{Common mistakes}{
 
@@ -96,29 +93,25 @@ names are the \verb{stat_<k>} columns \code{gtsummary} creates, one per level
 of the \code{by} variable -- not the group labels. Two groups give
 \code{stat_1} and \code{stat_2}.
 
-\strong{"\code{font_size} must be 11 or 12."} House rule 5. Use \code{11} only for
-wide tables.
+\strong{"\code{font_size} must be 11 or 12."} House rule 5. The value is checked
+as before and then ignored: the manuscript style sets no font size, so
+the table takes the size of the document it is saved into.
 }
 
 \examples{
-library(gtsummary)
-tbl <- trial |>
-  tbl_summary(
-    by = trt,
-    statistic = list(
-      all_continuous() ~ "{N_nonmiss} ||| {mean}±{sd}",
-      all_categorical() ~ "{N_nonmiss} ||| {n} ({p}\%)"
-    ),
-    include = c(age, grade),
-    missing = "no"
-  )
-ft <- hv_man_table_jtcvs(
-  tbl,
-  groups = c(stat_1 = "Drug A (n=98)", stat_2 = "Drug B (n=102)")
+# Instead of hv_man_table_jtcvs() and hv_man_table_save_jtcvs():
+tbl <- hv_tbl_summary(
+  gtsummary::trial, by = "trt",
+  groups = list(Demography = c("age", "grade")),
+  continuous = "age", categorical = "grade", compare = "none"
 )
+ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
+out <- tempfile(fileext = ".docx")
+hv_man_table_save(ft, out, caption = "Table 2. Baseline Characteristics")
 
 }
 \seealso{
-\code{\link[=hv_man_table]{hv_man_table()}} for the flat-header CORR house-style mode.
+\code{hv_man_table(style = "manuscript", layout = "describe")}, the
+layout that replaces it, and \code{\link[=hv_man_table]{hv_man_table()}}.
 \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}} to write the result to a compliant \code{.docx}.
 }

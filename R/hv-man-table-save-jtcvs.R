@@ -1,15 +1,20 @@
-#' Write an hv_man_table_jtcvs() table to a compliant .docx
+#' Deprecated: Write an hv_man_table_jtcvs() table to a compliant .docx
+#'
+#' **Deprecated.** Use
+#' `hv_man_table_save(ft, file, caption = )` on a table from
+#' `hv_man_table(tbl, style = "manuscript", layout = "describe")`. This
+#' function warns on every call and goes in the next release.
 #'
 #' Stage 3 of the `%summarytable` split: writes the document. Replaces
 #' the macro's `RTFFILE=`/`PDFFILE=` output block.
 #'
-#' JTCVS counterpart to [hv_man_table_save()]: it adds a bold `Table N.
-#' Caption` paragraph before the table, and renders footnotes as lettered
-#' (`a.`, `b.`, ...) markers attached to specific body cells rather than
-#' the fixed symbol set [hv_man_table_save()] uses on the header row,
-#' matching the JTCVS template convention. The header footnote
-#' [hv_man_table_jtcvs()] marks on each `n` ("Patients with data
-#' available.") is written first, as `a`.
+#' Until it goes, it writes the table as [hv_man_table_save()] does, with
+#' `caption` above it and the table's own notes below. A test footnote
+#' from [hv_test_footnotes_jtcvs()] is dropped when the table already
+#' names that test, as a table from [hv_tbl_summary()] does in its dagger
+#' note; every other `footnotes` entry, a plain gtsummary table's test
+#' notes included, keeps a lettered superscript on its cells, lettered
+#' from `a`, and its line after the table's own notes.
 #'
 #' @section Common mistakes:
 #' **"`footnotes\[\[k\]\]$text` must be a single non-empty string."**
@@ -50,10 +55,8 @@
 #'   not auto-number tables for you; include the number yourself.
 #'   (`%summarytable` `TBLTITLE=` equivalent).
 #' @param footnotes Optional list of `list(row =, col =, text =)`, one per
-#'   footnote, in the order letters should be assigned. A table from
-#'   [hv_man_table_jtcvs()] already uses `a` for its `n` header ("Patients
-#'   with data available."), written first, so these start at `b`;
-#'   other flextables start at `a`.
+#'   footnote, in the order letters should be assigned. They are lettered
+#'   from `a`.
 #'   `col` is a single `col_keys` name. `row` may be a vector, in which
 #'   case the one letter marks every row named, which is how several rows
 #'   share a footnote. `row` indexes `ft`'s body rows as shown: for a
@@ -75,33 +78,25 @@
 #' @seealso [hv_man_table_jtcvs()] to build a compliant `flextable` first.
 #'
 #' @examples
-#' library(gtsummary)
-#' tbl <- trial |>
-#'   tbl_summary(
-#'     by = trt,
-#'     statistic = list(
-#'       all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}",
-#'       all_categorical() ~ "{N_nonmiss} ||| {n} ({p}%)"
-#'     ),
-#'     include = c(age, grade),
-#'     missing = "no"
-#'   )
-#' ft <- hv_man_table_jtcvs(
-#'   tbl,
-#'   groups = c(stat_1 = "Drug A (n=98)", stat_2 = "Drug B (n=102)")
+#' # Instead of hv_man_table_jtcvs() and hv_man_table_save_jtcvs():
+#' tbl <- hv_tbl_summary(
+#'   gtsummary::trial, by = "trt",
+#'   groups = list(Demography = c("age", "grade")),
+#'   continuous = "age", categorical = "grade", compare = "none"
 #' )
+#' ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
 #' out <- tempfile(fileext = ".docx")
-#' hv_man_table_save_jtcvs(
-#'   ft, out,
-#'   caption = "Table 1. Baseline Characteristics",
-#'   footnotes = list(list(
-#'     row = 1, col = "disp_stat_1", text = "Excludes one withdrawn patient."
-#'   ))
-#' )
+#' hv_man_table_save(ft, out, caption = "Table 2. Baseline Characteristics")
 #'
 #' @export
 hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
                                     abbreviations = NULL, ...) {
+  .Deprecated(msg = .jtcvs_deprecated(
+    "hv_man_table_save_jtcvs",
+    paste0("Use hv_man_table_save(ft, file, caption = ) on a table from ",
+           "hv_man_table(tbl, style = \"manuscript\", ",
+           "layout = \"describe\").")
+  ))
   .check_sas_args(list(...), "hv_man_table_save_jtcvs")
   .check_flextable(ft)
   .check_not_display(ft)
@@ -109,61 +104,47 @@ hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
   ft <- .drop_variable_column(ft)
   .check_string(caption, "caption")
   .check_abbreviations(abbreviations)
-
-  # Footnotes the renderer already marked in the header (the "a" on
-  # each `n`) keep their letters; footnotes given here take the rest.
-  header_notes <- attr(ft, "hv_header_footnotes", exact = TRUE)
-  letters_seq <- setdiff(letters, names(header_notes))
-  if (!is.null(footnotes) && length(footnotes) > length(letters_seq))
-    stop("Too many footnotes (max ", length(letters_seq),
-         " letters).", call. = FALSE)
-
+  if (!is.null(footnotes) && length(footnotes) > length(letters))
+    stop("Too many footnotes (max ", length(letters), " letters).",
+         call. = FALSE)
   .assert_footnote_entries(footnotes, ft)
 
-  if (!is.null(footnotes)) {
-    for (k in seq_along(footnotes)) {
-      fn <- footnotes[[k]]
-      ft <- flextable::append_chunks(
-        ft, i = fn$row, j = fn$col, part = "body",
-        flextable::as_sup(letters_seq[k])
-      )
-    }
-  }
-
-  fit <- .fit_page(ft)
-  ft <- fit$ft
-
-  doc <- officer::read_docx()
-  doc <- .page_section(doc, fit$landscape)
-  cap_par <- officer::fpar(
-    officer::ftext(caption, prop = .note_prop(.table_font(ft), bold = TRUE))
-  )
-  doc <- officer::body_add_fpar(doc, cap_par, style = "Normal")
-  doc <- flextable::body_add_flextable(doc, ft)
-
-  font <- .table_font(ft)
-  sup_prop <- .note_prop(font, "superscript")
-  for (k in seq_along(header_notes)) {
-    note_par <- officer::fpar(
-      officer::ftext(names(header_notes)[k], prop = sup_prop),
-      officer::ftext(paste0(". ", header_notes[[k]]), prop = .note_prop(font))
+  # The caller's own notes keep their letters on their cells for this
+  # release. A test note hv_test_footnotes_jtcvs() wrote is dropped only
+  # where the table already names that test; otherwise it is lettered
+  # like the caller's own.
+  footnotes <- .drop_named_tests(ft, footnotes)
+  lettered <- list()
+  for (k in seq_along(footnotes)) {
+    fn <- footnotes[[k]]
+    ft <- flextable::append_chunks(ft, i = fn$row, j = fn$col, part = "body",
+                                   flextable::as_sup(letters[k]))
+    lettered[[k]] <- data.frame(
+      text = c(letters[k], paste0(". ", fn$text)), sup = c(TRUE, FALSE),
+      italic = FALSE, stringsAsFactors = FALSE
     )
-    doc <- officer::body_add_fpar(doc, note_par, style = "Normal")
   }
+  .write_man_docx(ft, file, .default_footnotes(ft), abbreviations, caption,
+                  .table_style(ft), lettered)
+}
 
-  if (!is.null(footnotes)) {
-    for (k in seq_along(footnotes)) {
-      note_par <- officer::fpar(
-        officer::ftext(letters_seq[k], prop = sup_prop),
-        officer::ftext(paste0(". ", footnotes[[k]]$text),
-                       prop = .note_prop(font))
-      )
-      doc <- officer::body_add_fpar(doc, note_par, style = "Normal")
-    }
-  }
-
-  doc <- .add_abbreviations_key(doc, abbreviations, font)
-
-  print(doc, target = file)
-  invisible(file)
+# The entries hv_test_footnotes_jtcvs() writes: a test named on the
+# comparison column. A describe table from hv_tbl_summary() names those
+# tests itself, the others in its dagger note (its hv_test_note) and
+# Fisher's under its double dagger, so such an entry would say it twice.
+# A test the table does not name, as on a plain gtsummary table, keeps
+# its entry, which the saver letters.
+.drop_named_tests <- function(ft, footnotes) {
+  if (!identical(attr(ft, "hv_layout", exact = TRUE), "describe"))
+    return(footnotes)
+  fisher <- .hv_test_labels[["fisher.test"]]
+  named <- c(
+    if (!is.null(attr(ft, "hv_test_note", exact = TRUE)))
+      setdiff(.hv_test_labels, fisher),
+    if ("\u2021" %in% names(attr(ft, "hv_body_marks", exact = TRUE)))
+      fisher
+  )
+  Filter(function(fn) {
+    !(identical(fn$col, "hv_compare_col") && fn$text %in% named)
+  }, footnotes)
 }

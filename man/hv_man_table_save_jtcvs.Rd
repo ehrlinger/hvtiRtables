@@ -2,7 +2,7 @@
 % Please edit documentation in R/hv-man-table-save-jtcvs.R
 \name{hv_man_table_save_jtcvs}
 \alias{hv_man_table_save_jtcvs}
-\title{Write an hv_man_table_jtcvs() table to a compliant .docx}
+\title{Deprecated: Write an hv_man_table_jtcvs() table to a compliant .docx}
 \usage{
 hv_man_table_save_jtcvs(
   ft,
@@ -25,10 +25,8 @@ not auto-number tables for you; include the number yourself.
 (\verb{\%summarytable} \verb{TBLTITLE=} equivalent).}
 
 \item{footnotes}{Optional list of \code{list(row =, col =, text =)}, one per
-footnote, in the order letters should be assigned. A table from
-\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} already uses \code{a} for its \code{n} header ("Patients
-with data available."), written first, so these start at \code{b};
-other flextables start at \code{a}.
+footnote, in the order letters should be assigned. They are lettered
+from \code{a}.
 \code{col} is a single \code{col_keys} name. \code{row} may be a vector, in which
 case the one letter marks every row named, which is how several rows
 share a footnote. \code{row} indexes \code{ft}'s body rows as shown: for a
@@ -51,16 +49,22 @@ produce an error naming the argument to use instead.}
 Invisibly, the \code{file} path.
 }
 \description{
-Stage 3 of the \verb{\%summarytable} split: writes the document. Replaces
-the macro's \verb{RTFFILE=}/\verb{PDFFILE=} output block.
+\strong{Deprecated.} Use
+\code{hv_man_table_save(ft, file, caption = )} on a table from
+\code{hv_man_table(tbl, style = "manuscript", layout = "describe")}. This
+function warns on every call and goes in the next release.
 }
 \details{
-JTCVS counterpart to \code{\link[=hv_man_table_save]{hv_man_table_save()}}: it adds a bold \verb{Table N. Caption} paragraph before the table, and renders footnotes as lettered
-(\code{a.}, \code{b.}, ...) markers attached to specific body cells rather than
-the fixed symbol set \code{\link[=hv_man_table_save]{hv_man_table_save()}} uses on the header row,
-matching the JTCVS template convention. The header footnote
-\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} marks on each \code{n} ("Patients with data
-available.") is written first, as \code{a}.
+Stage 3 of the \verb{\%summarytable} split: writes the document. Replaces
+the macro's \verb{RTFFILE=}/\verb{PDFFILE=} output block.
+
+Until it goes, it writes the table as \code{\link[=hv_man_table_save]{hv_man_table_save()}} does, with
+\code{caption} above it and the table's own notes below. A test footnote
+from \code{\link[=hv_test_footnotes_jtcvs]{hv_test_footnotes_jtcvs()}} is dropped when the table already
+names that test, as a table from \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} does in its dagger
+note; every other \code{footnotes} entry, a plain gtsummary table's test
+notes included, keeps a lettered superscript on its cells, lettered
+from \code{a}, and its line after the table's own notes.
 }
 \section{Common mistakes}{
 
@@ -94,29 +98,15 @@ columns narrowed in proportion to fit; the font size is not changed.
 }
 
 \examples{
-library(gtsummary)
-tbl <- trial |>
-  tbl_summary(
-    by = trt,
-    statistic = list(
-      all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}",
-      all_categorical() ~ "{N_nonmiss} ||| {n} ({p}\%)"
-    ),
-    include = c(age, grade),
-    missing = "no"
-  )
-ft <- hv_man_table_jtcvs(
-  tbl,
-  groups = c(stat_1 = "Drug A (n=98)", stat_2 = "Drug B (n=102)")
+# Instead of hv_man_table_jtcvs() and hv_man_table_save_jtcvs():
+tbl <- hv_tbl_summary(
+  gtsummary::trial, by = "trt",
+  groups = list(Demography = c("age", "grade")),
+  continuous = "age", categorical = "grade", compare = "none"
 )
+ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
 out <- tempfile(fileext = ".docx")
-hv_man_table_save_jtcvs(
-  ft, out,
-  caption = "Table 1. Baseline Characteristics",
-  footnotes = list(list(
-    row = 1, col = "disp_stat_1", text = "Excludes one withdrawn patient."
-  ))
-)
+hv_man_table_save(ft, out, caption = "Table 2. Baseline Characteristics")
 
 }
 \seealso{

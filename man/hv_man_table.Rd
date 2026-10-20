@@ -10,6 +10,7 @@ hv_man_table(
   font_size = 12,
   digits = 2,
   style = "report",
+  layout = "compare",
   ...
 )
 }
@@ -33,8 +34,15 @@ without a breaking signature change.}
 
 \item{style}{A style name, \code{"report"} (default) or \code{"manuscript"}, or a
 style from \code{\link[=hv_table_style]{hv_table_style()}}. \code{"manuscript"} needs an
-\code{\link[=hv_tbl_summary]{hv_tbl_summary()}} table, refuses \code{continuous_stat = "both"}, and
-refuses \code{font} and \code{font_size}.}
+\code{\link[=hv_tbl_summary]{hv_tbl_summary()}} table, refuses \code{font} and \code{font_size}, and in the
+compare layout refuses \code{continuous_stat = "both"}.}
+
+\item{layout}{The manuscript style's layout, chosen by what the table
+does: \code{"compare"} (default), one overall \code{n} column for groups it
+compares, or \code{"describe"}, a count beside each group, for cohorts or
+repeated measures it describes side by side. Either shows an Overall
+column and comparison columns when the table carries them. Only with
+\code{style = "manuscript"}.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.}
@@ -90,16 +98,17 @@ yours to control, via the \code{statistic}/\code{digits} arguments to
 \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}}; see the package README for a worked example
 using \code{\link[gtsummary:style_sigfig]{gtsummary::style_sigfig()}} for 2-significant-figure rounding.
 
-Submitting to JTCVS instead? Use \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}, which builds the
-two-row merged spanning header that journal's template expects: CORR
-house style and JTCVS submission format want different things from the
-same header row.
+A manuscript table that describes cohorts or repeated measures side by
+side, rather than comparing groups, takes \code{layout = "describe"}: each
+group spans its own count and statistic, so every group has its count.
+Everything else is the comparison layout's. The JTCVS functions, whose
+layout this is, are deprecated.
 
-A table from \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} works here as well as in the JTCVS
-renderer. That function writes each cell as \code{"{N_nonmiss} ||| {stat}"}, and
-this one splits the two apart into a flat \code{No.} column immediately
-before the statistic it counts. Those are the same two values JTCVS
-mode puts under a merged spanning header, without the merge. House
+A table from \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} works in every style and layout. That
+function writes each cell as \code{"{N_nonmiss} ||| {stat}"}, and this one
+splits the two apart into a flat \code{No.} column immediately before the
+statistic it counts. Those are the same two values the describe layout
+puts under each group's spanning header, without the merge. House
 rule 8 wants that non-missing count, and \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}'s \code{*}
 footnote describes it, so it is kept rather than discarded. A plain
 \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} table carries no such convention and passes
@@ -132,25 +141,36 @@ wide tables.
 font of the document it is saved into. Drop the argument, or use
 \code{style = "report"}.
 
-\strong{The manuscript style refuses a \code{continuous_stat = "both"} table.}
+\strong{The compare layout refuses a \code{continuous_stat = "both"} table.}
 That table has a column for the median and another for the mean and
-SD, which the manuscript's one statistic column per group cannot
-lay out. Build the table with \code{"median"} or \code{"mean"}, or use the report
-style.
+SD, which the compare layout's one statistic column per group cannot
+lay out. Build the table with \code{"median"} or \code{"mean"}, or draw it with
+\code{layout = "describe"} or the report style, which show both.
 
 \strong{The manuscript style refuses a table not built by
 \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}.} The layout reads the overall count and the
 grouping's name that function records. Build the table with it.
+
+\strong{"\code{layout} chooses between the manuscript style's layouts."} You
+named a layout with the report style, which has one. Drop \code{layout}, or
+add \code{style = "manuscript"}.
 }
 
 \examples{
 library(gtsummary)
 tbl <- tbl_summary(trial, by = trt, include = c(age, grade))
 ft <- hv_man_table(tbl)
+ft2 <- hv_man_table(
+  hv_tbl_summary(
+    trial, by = "trt", groups = list(A = c("age", "grade")),
+    continuous = "age", categorical = "grade"
+  ),
+  style = "manuscript", layout = "describe"
+)
 
 }
 \seealso{
 \code{\link[=hv_man_table_save]{hv_man_table_save()}} to write the result to a compliant
-\code{.docx} with footnotes and an abbreviation key. \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}
-for the JTCVS submission format instead.
+\code{.docx} with footnotes and an abbreviation key. \code{\link[=hv_table_style]{hv_table_style()}} for
+each style's properties.
 }

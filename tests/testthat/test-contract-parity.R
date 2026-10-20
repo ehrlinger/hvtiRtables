@@ -10,7 +10,7 @@ test_that("font_size contract is identical across both renderers", {
   for (bad in list(10, 13, c(11, 12), "12", NA_real_, numeric(0))) {
     m1 <- tryCatch(hv_man_table(corr, font_size = bad),
                    error = conditionMessage)
-    m2 <- tryCatch(hv_man_table_jtcvs(jt, g, font_size = bad),
+    m2 <- tryCatch(jtcvs_quiet(hv_man_table_jtcvs(jt, g, font_size = bad)),
                    error = conditionMessage)
     expect_identical(m1, m2)
   }
@@ -23,7 +23,7 @@ test_that("font contract is identical across both renderers", {
   for (bad in list(12, c("a", "b"), "", NA_character_)) {
     m1 <- tryCatch(hv_man_table(corr, font = bad),
                    error = conditionMessage)
-    m2 <- tryCatch(hv_man_table_jtcvs(jt, g, font = bad),
+    m2 <- tryCatch(jtcvs_quiet(hv_man_table_jtcvs(jt, g, font = bad)),
                    error = conditionMessage)
     expect_identical(m1, m2)
   }
@@ -36,7 +36,7 @@ test_that("file contract is identical across both savers", {
     m1 <- tryCatch(hv_man_table_save(ft_corr, bad),
                    error = conditionMessage)
     m2 <- tryCatch(
-      hv_man_table_save_jtcvs(ft_jt, bad, caption = "T1."),
+      jtcvs_quiet(hv_man_table_save_jtcvs(ft_jt, bad, caption = "T1.")),
       error = conditionMessage
     )
     expect_identical(m1, m2)
@@ -46,9 +46,9 @@ test_that("file contract is identical across both savers", {
 test_that("tbl-class contract is identical across all consumers", {
   g <- c(stat_1 = "A")
   m1 <- tryCatch(hv_man_table("nope"), error = conditionMessage)
-  m2 <- tryCatch(hv_man_table_jtcvs("nope", g),
+  m2 <- tryCatch(jtcvs_quiet(hv_man_table_jtcvs("nope", g)),
                  error = conditionMessage)
-  m3 <- tryCatch(hv_test_footnotes_jtcvs("nope"),
+  m3 <- tryCatch(jtcvs_quiet(hv_test_footnotes_jtcvs("nope")),
                  error = conditionMessage)
   expect_identical(m1, m2)
   expect_identical(m1, m3)
@@ -58,7 +58,7 @@ test_that("ft-class contract is identical across both savers", {
   m1 <- tryCatch(hv_man_table_save("nope", tempfile()),
                  error = conditionMessage)
   m2 <- tryCatch(
-    hv_man_table_save_jtcvs("nope", tempfile(), caption = "T1."),
+    jtcvs_quiet(hv_man_table_save_jtcvs("nope", tempfile(), caption = "T1.")),
     error = conditionMessage
   )
   expect_identical(m1, m2)
@@ -80,10 +80,10 @@ test_that("footnote-text contract shares its tail across both savers", {
       error = conditionMessage
     )
     m2 <- tryCatch(
-      hv_man_table_save_jtcvs(
+      jtcvs_quiet(hv_man_table_save_jtcvs(
         ft_jt, tempfile(fileext = ".docx"), caption = "T1.",
         footnotes = list(list(row = 1, col = "n_stat_1", text = bad))
-      ),
+      )),
       error = conditionMessage
     )
     # Strips the leading "`<label>` " and the trailing " <closing fix>",
@@ -118,8 +118,10 @@ test_that("display-copy contract is identical across both savers", {
   m1 <- tryCatch(hv_man_table_save(shown, tempfile(fileext = ".docx")),
                  error = conditionMessage)
   m2 <- tryCatch(
-    hv_man_table_save_jtcvs(shown, tempfile(fileext = ".docx"),
-                            caption = "T1."),
+    jtcvs_quiet(hv_man_table_save_jtcvs(
+      shown, tempfile(fileext = ".docx"),
+      caption = "T1."
+    )),
     error = conditionMessage
   )
   expect_match(m1, "is a display copy", fixed = TRUE)

@@ -2,7 +2,7 @@
 % Please edit documentation in R/hv-test-footnotes-jtcvs.R
 \name{hv_test_footnotes_jtcvs}
 \alias{hv_test_footnotes_jtcvs}
-\title{Build lettered test footnotes from a gtsummary table}
+\title{Deprecated: Build lettered test footnotes from a gtsummary table}
 \usage{
 hv_test_footnotes_jtcvs(tbl)
 }
@@ -17,18 +17,26 @@ test, ready to pass as \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_j
 argument. \code{list()} when there is nothing to mark.
 }
 \description{
+\strong{Deprecated.} A table from
+\code{hv_man_table(tbl, style = "manuscript", layout = "describe")} names its
+tests in its dagger note and marks Fisher's exact test on its P values,
+so it needs no test footnotes. This function warns on every call and goes
+in the next release.
+}
+\details{
 Reproduces the macro's lettered test footnotes. The letters differ by
 design: the macro lettered by test (\code{a=ANOVA}, \code{b=Kruskal-Wallis},
 ...), while here letters follow the order the tests appear. One-way
 ANOVA appears only for variables listed in \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s
 \code{normal}.
-}
-\details{
+
 The SAS \verb{\%summarytable} macro marks every p-value with a superscript
 letter naming the test behind it. This builds those footnotes from the
 \code{test_name} column \code{\link[gtsummary:add_p]{gtsummary::add_p()}} records, in the format
 \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}'s \code{footnotes} argument expects, so you do
 not have to map test identifiers or count body rows by hand.
+\code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}} drops the ones a describe table already names
+itself.
 
 Takes the \code{gtsummary} object rather than the \code{flextable}, because
 \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} discards \code{test_name} when it reshapes the body.
@@ -84,18 +92,14 @@ equivalent is \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}.
 }
 
 \examples{
-set.seed(5)
-dta <- data.frame(
-  grp = factor(rep(c("A", "B"), each = 50)),
-  age = rnorm(100, 60, 12),
-  sex = factor(sample(c("F", "M"), 100, replace = TRUE))
-)
+# Instead of hv_test_footnotes_jtcvs():
 tbl <- hv_tbl_summary(
-  dta, by = "grp",
-  groups = list(Demography = c("age", "sex")),
-  continuous = "age", categorical = "sex"
+  gtsummary::trial, by = "trt",
+  groups = list(Demography = c("age", "grade")),
+  continuous = "age", categorical = "grade", compare = "pvalue"
 )
-hv_test_footnotes_jtcvs(tbl)
+ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
+attr(ft, "hv_footnotes")[["\u2020"]]
 
 }
 \seealso{

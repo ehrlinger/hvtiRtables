@@ -1,5 +1,7 @@
 linters: linters_with_defaults()
 exclusions: list(
+    "tests/testthat/test-hv-check-docx.R" = list(object_usage_linter = Inf),
+    "tests/testthat/test-hv-man-table-save-jtcvs.R" = list(object_usage_linter = Inf),
     "tests/testthat/test-table-styles.R" = list(object_usage_linter = Inf),
     "tests/testthat/test-word-output.R" = list(object_usage_linter = Inf)
   )

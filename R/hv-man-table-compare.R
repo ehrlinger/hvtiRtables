@@ -2,29 +2,21 @@
 # grid; a two-row header with "Characteristic" and "n" merged down and
 # the grouping's name spanning its levels; one overall n column; shaded
 # section rows spanning the table; no font of its own. Built from the
-# body the JTCVS renderer reshapes, whose layout becomes "describe" in
-# Phase 3, so the two layouts share their cells and differ in their
-# counts.
+# body the JTCVS renderer reshapes, as the "describe" layout is, so the
+# two layouts share their cells and differ in their counts.
 .man_table_compare <- function(tbl, style) {
+  .check_manuscript_tbl(tbl)
   tb <- tbl$table_body
-  if (!"hv_n" %in% names(tb))
-    stop("style = \"manuscript\" needs a table from hv_tbl_summary(), ",
-         "which carries each variable's overall count for the n column.",
-         call. = FALSE)
   if (any(grepl("^hv_median_stat_[0-9]+$", names(tb))))
-    stop("A manuscript table shows one statistic per group, and ",
-         "continuous_stat = \"both\" shows two. Build it with ",
-         "continuous_stat = \"median\" or \"mean\"; \"both\" is for the ",
-         "report.", call. = FALSE)
+    stop("The compare layout shows one statistic per group, and ",
+         "continuous_stat = \"both\" shows two. Build the table with ",
+         "continuous_stat = \"median\" or \"mean\"; layout = ",
+         "\"describe\" or the report style draws \"both\".",
+         call. = FALSE)
 
   by_label <- attr(tbl, "hv_by_label", exact = TRUE)
-  stat_cols <- grep("^stat_[0-9]+$", names(tb), value = TRUE)
-  hdr <- tbl$table_styling$header
-  hdr <- hdr[match(stat_cols, hdr$column), , drop = FALSE]
-  level <- if (is.null(by_label)) "All patients" else hdr$modify_stat_level
-  groups <- stats::setNames(
-    sprintf("%s (N = %s)", level, hdr$modify_stat_n), stat_cols
-  )
+  groups <- .group_labels(tbl)
+  stat_cols <- names(groups)
   .assert_stat_convention(tb, groups, caller = "hv_man_table")
 
   compare <- attr(tbl, "hv_trailing", exact = TRUE)
@@ -49,6 +41,42 @@
     ft <- flextable::merge_v(ft, j = down, part = "header")
   }
 
+  ft <- .dress_manuscript(ft, body, keys, style)
+  ft <- flextable::width(ft, j = "label", width = 2.0)
+  ft <- flextable::width(ft, j = c("hv_n", names(compare)), width = 0.6)
+  ft <- flextable::width(ft, j = disp, width = 1.1)
+
+  ft <- .mark_compare(ft, tbl, body, disp, style)
+  attr(ft, "hv_layout") <- "compare"
+  ft
+}
+
+# A manuscript table is drawn from the overall count and the grouping's
+# name hv_tbl_summary() records.
+.check_manuscript_tbl <- function(tbl) {
+  if (!"hv_n" %in% names(tbl$table_body))
+    stop("style = \"manuscript\" needs a table from hv_tbl_summary(), ",
+         "which carries each variable's overall count for the n column.",
+         call. = FALSE)
+  invisible(NULL)
+}
+
+# Each statistic column's header, "<level> (N = n)", or "All patients
+# (N = n)" for a table with no grouping.
+.group_labels <- function(tbl) {
+  stat_cols <- grep("^stat_[0-9]+$", names(tbl$table_body), value = TRUE)
+  hdr <- tbl$table_styling$header
+  hdr <- hdr[match(stat_cols, hdr$column), , drop = FALSE]
+  by_label <- attr(tbl, "hv_by_label", exact = TRUE)
+  level <- if (is.null(by_label)) "All patients" else hdr$modify_stat_level
+  stats::setNames(sprintf("%s (N = %s)", level, hdr$modify_stat_n),
+                  stat_cols)
+}
+
+# What both manuscript layouts share (design section 5.1): section rows
+# spanning the table, bold and shaded; a full grid; the header bold; no
+# font of its own; 300-twip rows kept whole; the header repeated.
+.dress_manuscript <- function(ft, body, keys, style) {
   sec_i <- which(body$is_section)
   for (i in sec_i)
     ft <- flextable::merge_at(ft, i = i, j = keys, part = "body")
@@ -80,27 +108,26 @@
   ft <- flextable::height_all(ft, height = style$row_height / 1440,
                               part = "all")
   ft <- flextable::hrule(ft, rule = "atleast", part = "all")
-  ft <- flextable::set_table_properties(ft, opts_word = list(
+  flextable::set_table_properties(ft, opts_word = list(
     split = !style$keep_rows, repeat_headers = style$repeat_header
   ))
-  ft <- flextable::width(ft, j = "label", width = 2.0)
-  ft <- flextable::width(ft, j = c("hv_n", names(compare)), width = 0.6)
-  ft <- flextable::width(ft, j = disp, width = 1.1)
-
-  .mark_compare(ft, tbl, body, disp, style)
 }
 
 # The notes in the manuscript's words, and the marks on cells: Fisher's
 # double dagger on its P, and the minority statistic's section sign or
 # pilcrow on every statistic cell of its rows (Phase 1's rule).
-.mark_compare <- function(ft, tbl, body, disp, style) {
+.mark_compare <- function(ft, tbl, body, disp, style,
+                          stat_label = attr(tbl, "hv_stat_label",
+                                            exact = TRUE)) {
   tb <- tbl$table_body
   notes <- attr(tbl, "hv_footnotes", exact = TRUE)
   notes[["*"]] <- style$count_note
-  tests <- attr(tbl, "hv_test_note", exact = TRUE)
-  smd <- attr(tbl, "hv_smd", exact = TRUE)
-  notes[["\u2020"]] <- .stat_note(attr(tbl, "hv_stat_label", exact = TRUE),
-                                  style)
+  # The test names and the SMD definition explain the comparison column,
+  # so they are in the note only when the table shows it.
+  shown <- "hv_compare_col" %in% ft$col_keys
+  tests <- if (shown) attr(tbl, "hv_test_note", exact = TRUE)
+  smd <- if (shown) attr(tbl, "hv_smd", exact = TRUE)
+  notes[["\u2020"]] <- .stat_note(stat_label, style)
   notes[["\u2020"]] <- .append_note(notes[["\u2020"]], tests)
   # Under "both" the cells read "(SMD 0.1)"; under "smd" the header says
   # "Std. Diff.".
@@ -120,8 +147,7 @@
     # its test name and returns no P; a mark there would sit alone in an
     # empty cell, so only a P that exists is marked, as .mark_fisher()
     # does for the report.
-    ok <- "hv_compare_col" %in% ft$col_keys &&
-      all(c("test_name", "p.value") %in% names(tb))
+    ok <- shown && all(c("test_name", "p.value") %in% names(tb))
     fisher <- if (ok) {
       tb$variable[!is.na(tb$test_name) & tb$test_name == "fisher.test" &
                     !is.na(tb$p.value)]

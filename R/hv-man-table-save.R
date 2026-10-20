@@ -42,8 +42,8 @@
 #' `caption = "Table 1. ..."`; a report table takes one optionally.
 #'
 #' **"`footnotes` must be a named list (symbol -> footnote text) ..."**
-#' You passed the JTCVS shape. The two savers' `footnotes` arguments are
-#' unrelated types: this one is keyed by symbol,
+#' You passed the deprecated JTCVS shape. The two savers' `footnotes`
+#' arguments are unrelated types: this one is keyed by symbol,
 #' `` list(`*` = "text") ``, and [hv_man_table_save_jtcvs()]'s is keyed
 #' by position, `list(list(row =, col =, text =))`. So
 #' [hv_test_footnotes_jtcvs()]'s output does not belong here;
@@ -83,8 +83,9 @@
 #'   `n`, else the first `n_stat_<k>` column [hv_man_table()] creates when
 #'   it splits an [hv_tbl_summary()] table, else the first column). In a
 #'   manuscript table the dagger goes on the grouping's spanning cell and
-#'   `*` on its `n` column. Each text is rendered as its own paragraph
-#'   below the table, in the order given.
+#'   `*` on its `n` column. In the describe layout `*` goes on every group's
+#'   `n` and the dagger on every statistic. Each text is rendered as its
+#'   own paragraph below the table, in the order given.
 #'   Every element must be named (unnamed or blank-named
 #'   entries raise an error) and every text must be a single non-empty
 #'   string (`NULL`, `NA`, a number, or a multi-element vector raise an
@@ -133,8 +134,15 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   # Hoisted out of .add_abbreviations_key() so it fires at entry
   # rather than mid-render: no partial .docx on a bad argument.
   .check_abbreviations(abbreviations)
-  abbreviations <- .with_table_abbreviations(ft, abbreviations)
+  .write_man_docx(ft, file, footnotes, abbreviations, caption, style)
+}
 
+# The document from a checked table: the caption, the table, its notes,
+# the key and the page. `lettered` holds the deprecated JTCVS saver's
+# positional notes, as runs, written after the table's own.
+.write_man_docx <- function(ft, file, footnotes, abbreviations, caption,
+                            style, lettered = list()) {
+  abbreviations <- .with_table_abbreviations(ft, abbreviations)
   footnotes <- .resolve_footnotes(ft, footnotes)
   ft <- .mark_header(ft, footnotes)
 
@@ -156,6 +164,9 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
       style = "Normal"
     )
   }
+  for (runs in lettered)
+    doc <- officer::body_add_fpar(doc, .runs_fpar(runs, font),
+                                  style = "Normal")
 
   doc <- .add_abbreviations_key(doc, abbreviations, font)
   doc <- .page_section(doc, fit$landscape)
@@ -313,11 +324,25 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 .mark_header <- function(ft, footnotes) {
   body_marks <- attr(ft, "hv_body_marks", exact = TRUE)
   for (sym in setdiff(names(footnotes), names(body_marks))) {
-    j <- which(ft$col_keys %in% .footnote_cols(ft, sym))
-    ft <- flextable::append_chunks(ft, i = 1, j = j, part = "header",
-                                   flextable::as_sup(sym))
+    cells <- .footnote_cells(ft, sym)
+    for (i in unique(cells$i))
+      ft <- flextable::append_chunks(ft, i = i, j = cells$j[cells$i == i],
+                                     part = "header", flextable::as_sup(sym))
   }
   ft
+}
+
+# The header cells, as (row, column), one footnote symbol attaches to.
+# Every mark goes on the first header row, which is the visible cell of
+# any column merged down, except in the describe layout, where each
+# group's name spans its pair in row 1 and row 2 names the count and
+# the statistic: their marks go on row 2.
+.footnote_cells <- function(ft, sym) {
+  j <- which(ft$col_keys %in% .footnote_cols(ft, sym))
+  i <- rep(1L, length(j))
+  pairs <- attr(ft, "hv_pairs", exact = TRUE)
+  i[ft$col_keys[j] %in% unlist(pairs)] <- 2L
+  data.frame(i = i, j = j)
 }
 
 # The style a table was drawn in. A flextable that did not come from
@@ -438,6 +463,19 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 # statistic, so it marks every column that holds one: on the count
 # column it claimed the "No." header was a median.
 .footnote_cols <- function(ft, sym) {
+  # Each group in the describe layout has its own count, so every count
+  # carries the count's mark and every statistic the dagger. The columns
+  # are the groups the table was built with (hv_pairs), not a stat_<k>
+  # pattern: the deprecated wrapper takes any column as a group.
+  pairs <- attr(ft, "hv_pairs", exact = TRUE)
+  if (!is.null(pairs)) {
+    if (identical(sym, "*")) return(pairs$n)
+    if (!identical(sym, "\u2020")) return(pairs$n[1])
+    cols <- pairs$stat
+    if (.compare_noted(ft))
+      cols <- c(cols, intersect("hv_compare_col", ft$col_keys))
+    return(cols)
+  }
   if (identical(sym, "\u2020")) {
     # A spanned header names the grouping once, above its levels, and
     # the statistic note belongs on that name.

@@ -41,16 +41,17 @@
 #' [gtsummary::tbl_summary()]; see the package README for a worked example
 #' using [gtsummary::style_sigfig()] for 2-significant-figure rounding.
 #'
-#' Submitting to JTCVS instead? Use [hv_man_table_jtcvs()], which builds the
-#' two-row merged spanning header that journal's template expects: CORR
-#' house style and JTCVS submission format want different things from the
-#' same header row.
+#' A manuscript table that describes cohorts or repeated measures side by
+#' side, rather than comparing groups, takes `layout = "describe"`: each
+#' group spans its own count and statistic, so every group has its count.
+#' Everything else is the comparison layout's. The JTCVS functions, whose
+#' layout this is, are deprecated.
 #'
-#' A table from [hv_tbl_summary()] works here as well as in the JTCVS
-#' renderer. That function writes each cell as `"{N_nonmiss} ||| {stat}"`, and
-#' this one splits the two apart into a flat `No.` column immediately
-#' before the statistic it counts. Those are the same two values JTCVS
-#' mode puts under a merged spanning header, without the merge. House
+#' A table from [hv_tbl_summary()] works in every style and layout. That
+#' function writes each cell as `"{N_nonmiss} ||| {stat}"`, and this one
+#' splits the two apart into a flat `No.` column immediately before the
+#' statistic it counts. Those are the same two values the describe layout
+#' puts under each group's spanning header, without the merge. House
 #' rule 8 wants that non-missing count, and [hv_man_footnotes()]'s `*`
 #' footnote describes it, so it is kept rather than discarded. A plain
 #' [gtsummary::tbl_summary()] table carries no such convention and passes
@@ -82,15 +83,19 @@
 #' font of the document it is saved into. Drop the argument, or use
 #' `style = "report"`.
 #'
-#' **The manuscript style refuses a `continuous_stat = "both"` table.**
+#' **The compare layout refuses a `continuous_stat = "both"` table.**
 #' That table has a column for the median and another for the mean and
-#' SD, which the manuscript's one statistic column per group cannot
-#' lay out. Build the table with `"median"` or `"mean"`, or use the report
-#' style.
+#' SD, which the compare layout's one statistic column per group cannot
+#' lay out. Build the table with `"median"` or `"mean"`, or draw it with
+#' `layout = "describe"` or the report style, which show both.
 #'
 #' **The manuscript style refuses a table not built by
 #' [hv_tbl_summary()].** The layout reads the overall count and the
 #' grouping's name that function records. Build the table with it.
+#'
+#' **"`layout` chooses between the manuscript style's layouts."** You
+#' named a layout with the report style, which has one. Drop `layout`, or
+#' add `style = "manuscript"`.
 #'
 #' @param tbl A `gtsummary` table object (must support `as_flex_table()`).
 #'   A table from [hv_tbl_summary()] is split as described above; any
@@ -107,8 +112,14 @@
 #'   without a breaking signature change.
 #' @param style A style name, `"report"` (default) or `"manuscript"`, or a
 #'   style from [hv_table_style()]. `"manuscript"` needs an
-#'   [hv_tbl_summary()] table, refuses `continuous_stat = "both"`, and
-#'   refuses `font` and `font_size`.
+#'   [hv_tbl_summary()] table, refuses `font` and `font_size`, and in the
+#'   compare layout refuses `continuous_stat = "both"`.
+#' @param layout The manuscript style's layout, chosen by what the table
+#'   does: `"compare"` (default), one overall `n` column for groups it
+#'   compares, or `"describe"`, a count beside each group, for cohorts or
+#'   repeated measures it describes side by side. Either shows an Overall
+#'   column and comparison columns when the table carries them. Only with
+#'   `style = "manuscript"`.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
@@ -120,25 +131,42 @@
 #'   saver's default dagger follows the table's continuous statistic.
 #'
 #' @seealso [hv_man_table_save()] to write the result to a compliant
-#'   `.docx` with footnotes and an abbreviation key. [hv_man_table_jtcvs()]
-#'   for the JTCVS submission format instead.
+#'   `.docx` with footnotes and an abbreviation key. [hv_table_style()] for
+#'   each style's properties.
 #'
 #' @examples
 #' library(gtsummary)
 #' tbl <- tbl_summary(trial, by = trt, include = c(age, grade))
 #' ft <- hv_man_table(tbl)
+#' ft2 <- hv_man_table(
+#'   hv_tbl_summary(
+#'     trial, by = "trt", groups = list(A = c("age", "grade")),
+#'     continuous = "age", categorical = "grade"
+#'   ),
+#'   style = "manuscript", layout = "describe"
+#' )
 #'
 #' @export
 hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
-                         digits = 2, style = "report", ...) {
+                         digits = 2, style = "report", layout = "compare",
+                         ...) {
   .check_sas_args(list(...), "hv_man_table")
   .check_gtsummary(tbl)
   style <- .as_style(style)
+  .check_layout(layout, style, given = !missing(layout))
   if (identical(style$name, "manuscript")) {
     if (!missing(font) || !missing(font_size))
       stop("`font` and `font_size` set the report style. A manuscript ",
            "table sets no font, so it takes the font of the document it ",
            "is saved into.", call. = FALSE)
+    if (identical(layout, "describe")) {
+      .check_manuscript_tbl(tbl)
+      return(.man_table_describe(
+        tbl, style, groups = .group_labels(tbl),
+        trailing = attr(tbl, "hv_trailing", exact = TRUE),
+        stat_label = attr(tbl, "hv_stat_label", exact = TRUE)
+      ))
+    }
     return(.man_table_compare(tbl, style))
   }
   .check_string(font, "font")
@@ -179,6 +207,21 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
     attr(ft, "hv_abbreviations") <- c(CI = "confidence interval")
   attr(ft, "hv_style") <- style
   ft
+}
+
+# A manuscript layout, chosen by what the table does (design section
+# 5.1): "compare" puts one overall n column beside groups it compares,
+# "describe" a count beside each group it describes. The report style
+# has one layout, so naming one there is a mistake, not a choice.
+.check_layout <- function(layout, style, given) {
+  if (!is.character(layout) || length(layout) != 1L || is.na(layout) ||
+        !layout %in% c("compare", "describe"))
+    stop("`layout` must be \"compare\" or \"describe\".", call. = FALSE)
+  if (given && !identical(style$name, "manuscript"))
+    stop("`layout` chooses between the manuscript style's layouts. ",
+         "The report style has one; drop `layout`, or use ",
+         "style = \"manuscript\".", call. = FALSE)
+  invisible(NULL)
 }
 
 # as_flex_table() writes every gtsummary footnote as a footer row inside

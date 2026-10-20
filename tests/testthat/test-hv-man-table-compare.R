@@ -140,7 +140,8 @@ test_that("compare refuses what it cannot draw", {
                  style = "manuscript"),
     "hv_tbl_summary"
   )
-  expect_error(cmp(cmp_tbl(continuous_stat = "both")), "one statistic")
+  expect_error(cmp(cmp_tbl(continuous_stat = "both")),
+               "one statistic.*layout = \"describe\" or the report style")
   expect_error(hv_man_table(cmp_tbl(), font = "Arial", style = "manuscript"),
                "document")
 })
@@ -152,4 +153,8 @@ test_that("the statistic note in each style's words", {
                    "Values are No. (%) or mean±SD.")
   expect_identical(.stat_note("No. (%) or Mean±SD", r),
                    "No. (%) or Mean±SD.")
+})
+
+test_that("compare: the flextable records its layout", {
+  expect_identical(attr(cmp(), "hv_layout"), "compare")
 })

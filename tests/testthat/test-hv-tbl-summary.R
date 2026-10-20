@@ -359,7 +359,7 @@ test_that("hv_tbl_summary p-values and test_name are filled, not blank", {
   labels <- tb$row_type == "label"
   expect_false(anyNA(tb$p.value[labels]))
   expect_false(anyNA(tb$test_name[labels]))
-  expect_gt(length(hv_test_footnotes_jtcvs(tbl)), 0)
+  expect_gt(length(jtcvs_quiet(hv_test_footnotes_jtcvs(tbl))), 0)
 })
 
 test_that("hv_tbl_summary compare = 'smd' adds a formatted std. diff. column", {
@@ -518,14 +518,14 @@ test_that("hv_tbl_summary + jtcvs reproduce the stratified example", {
   expect_true(grepl("^4190 \\|\\|\\| 964 ", female_row$stat_1))
   expect_true(grepl("^3758 \\|\\|\\| 1363 ", female_row$stat_2))
 
-  ft <- hv_man_table_jtcvs(
+  ft <- jtcvs_quiet(hv_man_table_jtcvs(
     tbl,
     groups = c(
       stat_1 = "PERIMOUNT (n=4190)", stat_2 = "Resilia (n=3758)"
     ),
     trailing = attr(tbl, "hv_trailing"),
     stat_label = attr(tbl, "hv_stat_label")
-  )
+  ))
   expect_s3_class(ft, "flextable")
 
   body <- ft$body$dataset
@@ -1088,10 +1088,10 @@ test_that("continuous_stat = \"both\" renders through both renderers", {
     c("n_stat_1", "hv_median_stat_1")
   )
   expect_match(d$hv_median_stat_1[d$label == "Age"], "^[0-9]+ \\[")
-  jt <- hv_man_table_jtcvs(
+  jt <- jtcvs_quiet(hv_man_table_jtcvs(
     tbl, groups = c(stat_0 = "Overall", stat_1 = "A", stat_2 = "B"),
     trailing = attr(tbl, "hv_trailing")
-  )
+  ))
   expect_identical(
     jt$col_keys[match("disp_stat_1", jt$col_keys) + c(-1L, 1L)],
     c("n_stat_1", "med_stat_1")
@@ -1256,7 +1256,7 @@ test_that("a normal variable is tested with pooled-variance one-way ANOVA", {
   want <- stats::t.test(age ~ trt, gtsummary::trial,
                         var.equal = TRUE)$p.value
   expect_equal(unname(tb$p.value[tb$variable == "age"]), want)
-  notes <- hv_test_footnotes_jtcvs(tbl)
+  notes <- jtcvs_quiet(hv_test_footnotes_jtcvs(tbl))
   expect_true("One-way analysis of variance." %in%
                 vapply(notes, `[[`, "", "text"))
 })
@@ -1383,7 +1383,9 @@ test_that("the report view shows the variable column beside the label", {
 
 test_that("a JTCVS table, always a manuscript, never shows the column", {
   tbl <- sv_tbl()
-  jt <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
+  jt <- jtcvs_quiet(hv_man_table_jtcvs(
+    tbl, groups = c(stat_1 = "A", stat_2 = "B")
+  ))
   expect_false("hv_variable" %in% jt$col_keys)
   chunks <- flextable::information_data_chunk(jt)
   expect_false(any(chunks$txt == "Variable"))
@@ -1411,11 +1413,11 @@ test_that("a saved JTCVS table never has the variable column", {
   skip_if_not_installed("broom")
   tbl <- sv_tbl(compare = "pvalue")
   path <- tempfile(fileext = ".docx")
-  hv_man_table_save_jtcvs(
+  jtcvs_quiet(hv_man_table_save_jtcvs(
     hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
                        trailing = attr(tbl, "hv_trailing")),
     path, caption = "T1."
-  )
+  ))
   cells <- sv_cells(path)
   expect_false(any(cells$text == "Variable"))
   expect_false(any(cells$text %in% c("age", "grade")))
@@ -1425,7 +1427,9 @@ test_that("the JTCVS saver drops the column from any flextable", {
   # hv_man_table_jtcvs() no longer builds it, so the saver's drop is the
   # guard for a flextable that carries it some other way.
   path <- tempfile(fileext = ".docx")
-  hv_man_table_save_jtcvs(hv_man_table(sv_tbl()), path, caption = "T1.")
+  jtcvs_quiet(hv_man_table_save_jtcvs(
+    hv_man_table(sv_tbl()), path, caption = "T1."
+  ))
   cells <- sv_cells(path)
   expect_false(any(cells$text == "Variable"))
   expect_false(any(cells$text %in% c("age", "grade")))
@@ -1638,7 +1642,7 @@ test_that("no Fisher row, no ‡ footnote and no mark", {
 
 test_that("the JTCVS test footnotes letter the Fisher row", {
   skip_if_not_installed("broom")
-  notes <- hv_test_footnotes_jtcvs(ce_tbl())
+  notes <- jtcvs_quiet(hv_test_footnotes_jtcvs(ce_tbl()))
   expect_true("Fisher exact test." %in% vapply(notes, `[[`, "", "text"))
 })
 

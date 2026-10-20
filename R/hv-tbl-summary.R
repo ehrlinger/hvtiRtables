@@ -6,7 +6,7 @@
 #' equivalent) and variable-type buckets (`continuous`/`binary`/
 #' `categorical`, the `CON3=`/`CAT1=`/`CAT2=` equivalents), rather than
 #' gtsummary's own tidyselect-based interface. Returns a plain `gtsummary`
-#' object, ready for [hv_man_table()] or [hv_man_table_jtcvs()].
+#' object, ready for [hv_man_table()].
 #'
 #' Continuous variables are summarized as `median [P<low>, P<high>]` by
 #' default, or as mean +/- SD, or both (`continuous_stat`), and tested
@@ -46,8 +46,8 @@
 #' (`"No. (%) or Median [<low>, <high> percentiles]"` by default, with
 #' ordinal suffixes; it follows `continuous_stat`);
 #' `hv_trailing`, a named character vector ready to pass as
-#' [hv_man_table_jtcvs()]'s `trailing` argument when `compare` produced a
-#' comparison column (`NULL` when `compare = "none"`); and `hv_footnotes`,
+#' naming the comparison columns the manuscript style shows, when `compare`
+#' produced one (`NULL` when `compare = "none"`); and `hv_footnotes`,
 #' the CORR footnote block that [hv_man_table()] carries into
 #' [hv_man_table_save()] so the default dagger follows `continuous_stat` and
 #' `percentiles` automatically. A mixed table also carries `hv_cell_marks`,
@@ -79,11 +79,6 @@
 #' mean difference is defined between two groups. Use
 #' `compare = "pvalue"` for three or more. If `by` is a factor with an
 #' unused level, `droplevels()` is usually what you want.
-#'
-#' **The Overall column is missing from the JTCVS table.**
-#' [hv_man_table_jtcvs()] lays out only the columns its `groups`
-#' argument names, and `overall = TRUE` is the default. Add
-#' `stat_0 = "Overall (n=<N>)"` to `groups`.
 #'
 #' **"`by` must not also be listed in `groups`."** `by` is the
 #' grouping variable being compared across, not a row to summarize.
@@ -147,9 +142,7 @@
 #' @param overall Single `TRUE`/`FALSE`. When `TRUE` (default), prepends
 #'   an Overall column across all groups (`%summarytable` `TOTALCOL=1`,
 #'   the macro's default). Ignored when `by` is `NULL`, since the single
-#'   column already is the overall one. [hv_man_table_jtcvs()] lays out
-#'   only the columns its `groups` argument names, so name `stat_0`
-#'   there to show it.
+#'   column already is the overall one.
 #' @param continuous_stat One of `"median"` (default), `"mean"`, or
 #'   `"both"`: how continuous variables not listed in `normal` are
 #'   summarized. `"median"` gives
@@ -187,11 +180,10 @@
 #'   adds a "Variable" column beside the label holding each variable's
 #'   column name in `data`, on its first row, as `%summarytable`'s
 #'   report did. It belongs to the report view: [hv_man_table()] and
-#'   [hv_man_table_display()] show it, while [hv_man_table_save()] and
-#'   [hv_man_table_save_jtcvs()] always drop it and [hv_man_table_jtcvs()]
-#'   never shows it, so a saved or JTCVS table is a manuscript table
-#'   whatever this says. Set `FALSE` to leave it out of the report view
-#'   too.
+#'   [hv_man_table_display()] show it, while [hv_man_table_save()]
+#'   always drops it and the manuscript style never shows it, so a saved
+#'   table is a manuscript table whatever this says. Set `FALSE` to leave
+#'   it out of the report view too.
 #' @param cutexact When a binary or categorical variable is tested with
 #'   Fisher's exact test rather than Pearson's chi-square (no continuity
 #'   correction). The default, `"any"`, uses Fisher whenever any one
@@ -202,8 +194,7 @@
 #'   The macro's default was `50`; `0` makes every categorical test
 #'   exact and a value above 100 makes none exact. In the CORR table
 #'   each Fisher p-value is marked with a superscript double dagger,
-#'   footnoted "Fisher exact test."; the JTCVS
-#'   route letters it through [hv_test_footnotes_jtcvs()]. Used only when
+#'   footnoted "Fisher exact test.", in every style. Used only when
 #'   `compare` produces p-values. The other tests that ran are named in
 #'   the dagger note instead, as "P values from the Wilcoxon rank sum test
 #'   and Pearson's chi-square test.", and the CORR table puts the dagger
@@ -212,8 +203,8 @@
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
-#' @return A `gtsummary` object, ready for [hv_man_table()] or
-#'   [hv_man_table_jtcvs()]. See Details for the `hv_stat_label`,
+#' @return A `gtsummary` object, ready for [hv_man_table()].
+#'   See Details for the `hv_stat_label`,
 #'   `hv_trailing`, and `hv_footnotes` renderer attributes. A table whose
 #'   rows mix mean and median also carries `hv_cell_marks`, a list with
 #'   `symbol` (`"§"` or `"¶"`) and `variables` (the names whose cells
@@ -222,9 +213,8 @@
 #'   when the data carry one), and the hidden `hv_n` column of
 #'   `table_body`, each variable's overall non-missing count.
 #'
-#' @seealso [hv_man_table()] or [hv_man_table_jtcvs()] to render the
-#'   result. [hv_man_footnotes()] for the percentile-footnote house
-#'   convention.
+#' @seealso [hv_man_table()] to render the result. [hv_man_footnotes()] for
+#'   the percentile-footnote house convention.
 #'
 #' @examples
 #' # A baseline-characteristics table of the kind a study manuscript

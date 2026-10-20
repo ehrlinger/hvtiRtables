@@ -136,8 +136,10 @@ test_that("each public function routes SAS names through the glossary", {
   expect_error(hv_man_table(tbl, STYLE = "journal"),
                "Use `style =`", fixed = TRUE)
   expect_error(
-    hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
-                       style = "journal"),
+    jtcvs_quiet(hv_man_table_jtcvs(
+      tbl, groups = c(stat_1 = "A", stat_2 = "B"),
+      style = "journal"
+    )),
     "the journal's one layout", fixed = TRUE
   )
   expect_error(
@@ -145,8 +147,10 @@ test_that("each public function routes SAS names through the glossary", {
     "Use `caption =`", fixed = TRUE
   )
   expect_error(
-    hv_man_table_save_jtcvs(ft, tempfile(fileext = ".docx"),
-                            caption = "T1", addfn = "note"),
+    jtcvs_quiet(hv_man_table_save_jtcvs(
+      ft, tempfile(fileext = ".docx"),
+      caption = "T1", addfn = "note"
+    )),
     "`footnotes =`", fixed = TRUE
   )
 })
@@ -235,12 +239,12 @@ test_that("all-positional extra arguments error instead of being swallowed", {
   # extras" and returned silently.
   expect_error(
     .check_sas_args(list("JUNK"), "hv_man_table"),
-    "unused argument (position 6)", fixed = TRUE
+    "unused argument (position 7)", fixed = TRUE
   )
   expect_error(
     hv_man_table(gtsummary::tbl_summary(gtsummary::trial, include = "age"),
-                 "Times New Roman", 12, 2, "report", "JUNK"),
-    "unused argument (position 6)", fixed = TRUE
+                 "Times New Roman", 12, 2, "report", "compare", "JUNK"),
+    "unused argument (position 7)", fixed = TRUE
   )
 })
 
@@ -249,7 +253,7 @@ test_that("a mixed named-and-positional dots list is handled sensibly", {
   # by position, not the old nonsense "unused argument ()".
   expect_error(
     .check_sas_args(list("JUNK", colour = "red"), "hv_man_table"),
-    "unused argument (position 6)", fixed = TRUE
+    "unused argument (position 7)", fixed = TRUE
   )
   # A positional extra followed by a *recognized* macro name: the
   # helpful macro-specific message wins over the positional one.

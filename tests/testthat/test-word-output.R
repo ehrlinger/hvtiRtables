@@ -24,13 +24,10 @@ wx_save_corr <- function(tbl = wx_tbl()) {
   f
 }
 
-wx_save_jtcvs <- function(tbl = wx_tbl(), footnotes = NULL) {
-  ft <- hv_man_table_jtcvs(
-    tbl, groups = c(stat_1 = "Drug A", stat_2 = "Drug B")
-  )
+wx_save_describe <- function(tbl = wx_tbl(), ...) {
+  ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
   f <- tempfile(fileext = ".docx")
-  hv_man_table_save_jtcvs(ft, f, caption = "Table 1. Test",
-                          footnotes = footnotes)
+  hv_man_table_save(ft, f, caption = "Table 1. Test", ...)
   f
 }
 
@@ -167,10 +164,10 @@ test_that("CORR: gtsummary's own footnotes never reach the table", {
   }
 })
 
-# -- JTCVS renderer ----------------------------------------------------
+# -- The manuscript's describe layout (the JTCVS renderer's, renamed) ---
 
-test_that("JTCVS: Characteristic appears once, spanning both header rows", {
-  f <- wx_save_jtcvs()
+test_that("describe: Characteristic appears once, spanning both header rows", {
+  f <- wx_save_describe()
   on.exit(unlink(f), add = TRUE)
   doc <- wx_doc(f)
   all_cells <- unlist(lapply(wx_rows(doc), cell_text))
@@ -181,70 +178,64 @@ test_that("JTCVS: Characteristic appears once, spanning both header rows", {
   expect_length(vmerge, 2L)
 })
 
-test_that("JTCVS: n carries a real superscript a, footnoted below", {
-  f <- wx_save_jtcvs()
+test_that("describe: every n carries the count's mark, noted below", {
+  f <- wx_save_describe()
   on.exit(unlink(f), add = TRUE)
   doc <- wx_doc(f)
   sub <- wx_rows(doc)[[2]]
-  n_cells <- Filter(function(cell) cell$text == "na", sub)
-  # Two groups, two n columns; the "a" is a superscript run, not text.
-  expect_length(n_cells, 2L)
-  expect_true(all(vapply(n_cells, `[[`, "", "sup") == "a"))
-
+  n_cells <- Filter(function(cell) cell$text == "n*", sub)
+  # Overall and two groups, three n columns; the mark is a superscript.
+  expect_length(n_cells, 3L)
+  expect_true(all(vapply(n_cells, `[[`, "", "sup") == "*"))
   notes <- wx_paragraphs_after_table(doc)
-  expect_identical(notes[1], "a. Patients with data available.")
+  expect_identical(notes[1], "*Patients with non-missing data.")
 })
 
-test_that("JTCVS: caller footnotes letter from b after the n footnote", {
-  f <- wx_save_jtcvs(footnotes = list(
-    list(row = 2, col = "disp_stat_1", text = "Own note.")
-  ))
-  on.exit(unlink(f), add = TRUE)
-  notes <- wx_paragraphs_after_table(wx_doc(f))
-  expect_identical(notes[1:2],
-                   c("a. Patients with data available.", "b. Own note."))
-})
-
-test_that("JTCVS: the statistic label follows the table's statistic", {
-  f <- wx_save_jtcvs()
+test_that("describe: the statistic label follows the table's statistic", {
+  f <- wx_save_describe()
   on.exit(unlink(f), add = TRUE)
   sub <- cell_text(wx_rows(wx_doc(f))[[2]])
   expect_true(
-    "No. (%) or Median [15th, 85th percentiles]" %in% sub
+    "No. (%) or Median [15th, 85th percentiles]\u2020" %in% sub
   )
   expect_false(any(grepl("Mean", sub, fixed = TRUE)))
 
-  f2 <- wx_save_jtcvs(wx_tbl("mean"))
+  f2 <- wx_save_describe(wx_tbl("mean"))
   on.exit(unlink(f2), add = TRUE)
   sub2 <- cell_text(wx_rows(wx_doc(f2))[[2]])
-  expect_true("No. (%) or Mean±SD" %in% sub2)
+  expect_true("No. (%) or Mean\u00B1SD\u2020" %in% sub2)
 })
 
-test_that("JTCVS: under continuous_stat = 'both', the stats sit side by side", {
-  f <- wx_save_jtcvs(wx_tbl("both"))
+test_that("describe: under continuous_stat = 'both', stats sit side by side", {
+  f <- wx_save_describe(wx_tbl("both"))
   on.exit(unlink(f), add = TRUE)
   rows <- wx_rows(wx_doc(f))
   labels <- vapply(rows, function(r) r[[1]]$text, "")
   age <- which(labels == "Age")
   # No sub-rows under the variable.
-  expect_false(labels[age + 1] %in% c("Mean±SD",
+  expect_false(labels[age + 1] %in% c("Mean\u00B1SD",
                                       "Median [15th, 85th percentiles]"))
   sub <- cell_text(rows[[2]])
-  expect_true("No. (%) or Mean±SD" %in% sub)
+  expect_true("No. (%) or Mean\u00B1SD\u2020" %in% sub)
   expect_true("Median [15th, 85th percentiles]" %in% sub)
 })
 
-test_that("JTCVS: no fill colour anywhere in the table", {
-  f <- wx_save_jtcvs()
+test_that("describe: only the section rows are shaded", {
+  f <- wx_save_describe()
   on.exit(unlink(f), add = TRUE)
-  fills <- unlist(lapply(wx_rows(wx_doc(f)),
-                         function(r) vapply(r, `[[`, "", "fill")))
-  fills <- fills[!is.na(fills)]
-  expect_true(all(toupper(fills) %in% c("FFFFFF", "AUTO")))
+  for (r in wx_rows(wx_doc(f))) {
+    fills <- vapply(r, `[[`, "", "fill")
+    fills <- toupper(fills[!is.na(fills)])
+    if (cell_text(r)[1] %in% c("Demography", "Disease")) {
+      expect_identical(fills, "CAEDFB")
+    } else {
+      expect_true(all(fills %in% c("FFFFFF", "AUTO")))
+    }
+  }
 })
 
-test_that("JTCVS: no % sign in any body cell, label column left", {
-  f <- wx_save_jtcvs()
+test_that("describe: no % sign in any body cell, label column left", {
+  f <- wx_save_describe()
   on.exit(unlink(f), add = TRUE)
   rows <- wx_rows(wx_doc(f))
   body <- unlist(lapply(rows[-(1:2)], cell_text))
@@ -267,8 +258,8 @@ wx_mixed <- function(overall = TRUE) {
 
 test_that("both renderers mark the minority statistic's cells in Word", {
   # Age is the one mean row against one median row, so the median is the
-  # default and the mean cells carry the mark: a pilcrow in the CORR
-  # table, and the JTCVS table's own lettered superscript.
+  # default and the mean cells carry the mark: a pilcrow in both the report
+  # and the manuscript's describe layout.
   f <- wx_save_corr(wx_mixed())
   on.exit(unlink(f), add = TRUE)
   doc <- wx_doc(f)
@@ -285,17 +276,17 @@ test_that("both renderers mark the minority statistic's cells in Word", {
   expect_true("† No. (%) or Median [15th, 85th percentiles]." %in% notes)
   expect_true("¶ Mean±SD." %in% notes)
 
-  f2 <- wx_save_jtcvs(wx_mixed())
+  f2 <- wx_save_describe(wx_mixed())
   on.exit(unlink(f2), add = TRUE)
   doc2 <- wx_doc(f2)
   rows2 <- wx_rows(doc2)
   labels2 <- vapply(rows2, function(r) r[[1]]$text, "")
   expect_true("Age" %in% labels2)
-  expect_true("No. (%) or Median [15th, 85th percentiles]" %in%
+  expect_true("No. (%) or Median [15th, 85th percentiles]\u2020" %in%
                 cell_text(rows2[[2]]))
   age2 <- cell_text(rows2[[which(labels2 == "Age")]])
-  expect_true(all(grepl("±[0-9.]+b$", age2[c(3, 5)])))
-  expect_true("b. Mean±SD." %in% wx_paragraphs_after_table(doc2))
+  expect_true(all(grepl("\u00B6$", age2[c(3, 5, 7)])))
+  expect_true("\u00B6Mean\u00B1SD." %in% wx_paragraphs_after_table(doc2))
 })
 
 # One orient value per section; a single section is expected.
@@ -352,19 +343,14 @@ test_that("CORR: footnotes and Key use the table's font", {
   }
 })
 
-test_that("JTCVS: caption, footnotes and Key use the table's font", {
-  ft <- hv_man_table_jtcvs(wx_tbl(),
-                           groups = c(stat_1 = "Drug A", stat_2 = "Drug B"))
-  f <- tempfile(fileext = ".docx")
+test_that("describe: caption, notes and Key set no font of their own", {
+  # The manuscript style takes the document's font, below the table too.
+  f <- wx_save_describe(abbreviations = c(SMD = "standardized difference"))
   on.exit(unlink(f), add = TRUE)
-  hv_man_table_save_jtcvs(
-    ft, f, caption = "Table 1. Test",
-    footnotes = list(list(row = 2, col = "disp_stat_1", text = "Own note.")),
-    abbreviations = c(SMD = "standardized difference")
-  )
   doc <- wx_doc(f)
-  after <- wx_note_fonts(doc, "//w:tbl/following-sibling::w:p")
-  caption <- wx_note_fonts(doc, "//w:body/w:p[1]")
-  expect_gt(length(after), 3L)
-  expect_true(all(c(after, caption) == "Times New Roman"))
+  runs <- xml2::xml_find_all(doc, "//w:tbl/following-sibling::w:p/w:r", wx_ns)
+  expect_gt(length(runs), 3L)
+  expect_length(
+    xml2::xml_find_all(doc, "//w:body/w:p//w:rFonts[@w:ascii]", wx_ns), 0L
+  )
 })

@@ -67,8 +67,10 @@ median.
 \strong{Passing the result to the JTCVS saver.} These footnotes are
 CORR-shaped, keyed by symbol, and belong to \code{\link[=hv_man_table_save]{hv_man_table_save()}}.
 \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}} takes an unrelated type keyed by row and
-column, and rejects this one. Its equivalent is
-\code{\link[=hv_test_footnotes_jtcvs]{hv_test_footnotes_jtcvs()}}.
+column, and rejects this one. Its equivalent,
+\code{\link[=hv_test_footnotes_jtcvs]{hv_test_footnotes_jtcvs()}}, is deprecated along with that saver: the
+describe layout of \code{hv_man_table(style = "manuscript")} names its tests
+in its own notes, which \code{\link[=hv_man_table_save]{hv_man_table_save()}} writes.
 
 \strong{Calling this helper with settings different from the table.} The
 automatic \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} -> \code{\link[=hv_man_table]{hv_man_table()}} ->

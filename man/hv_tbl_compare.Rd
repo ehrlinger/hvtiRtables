@@ -34,8 +34,8 @@ The column is placed rightmost, after any \code{compare} column, so
 \code{compare = "pvalue"} followed by this function puts the p-value and
 the standardized difference side by side. Call it again for a further
 column. \code{\link[=hv_man_table]{hv_man_table()}} shows the column directly;
-\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} shows it when you pass the table's
-\code{hv_trailing} attribute as \code{trailing}, which this function extends.
+The manuscript style shows it too, from the table's \code{hv_trailing}
+attribute, which this function extends.
 
 The values are shown exactly as given, so format them first, for
 example \code{sprintf("\%.1f", 100 * d)} for a difference as a percentage.
@@ -51,11 +51,6 @@ name in \code{groups}, not its label.
 \strong{"\code{values} names variable(s) not in the table: ..."} A name that
 matches no variable would silently show nothing. Usually a typo, or a
 variable dropped from \code{groups}.
-
-\strong{The new column is missing from the JTCVS table.}
-\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} lays out only the trailing columns its
-\code{trailing} argument names. Pass \code{trailing = attr(tbl, "hv_trailing")}
-after the last call to this function.
 }
 
 \examples{

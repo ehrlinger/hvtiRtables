@@ -12,11 +12,11 @@ mk_clean_docx <- function(path) {
   tbl <- hv_tbl_summary(
     dta, by = "grp", groups = list(Vitals = "age"), continuous = "age"
   )
-  ft <- hv_man_table_jtcvs(
+  ft <- jtcvs_quiet(hv_man_table_jtcvs(
     tbl, groups = c(stat_1 = "A", stat_2 = "B"),
     stat_label = attr(tbl, "hv_stat_label")
-  )
-  hv_man_table_save_jtcvs(ft, path, caption = "Table 1. X")
+  ))
+  jtcvs_quiet(hv_man_table_save_jtcvs(ft, path, caption = "Table 1. X"))
   path
 }
 
@@ -34,16 +34,16 @@ mk_footnote_docx <- function(path) {
   tbl <- hv_tbl_summary(
     dta, by = "grp", groups = list(Vitals = "age"), continuous = "age"
   )
-  ft <- hv_man_table_jtcvs(
+  ft <- jtcvs_quiet(hv_man_table_jtcvs(
     tbl, groups = c(stat_1 = "A", stat_2 = "B"),
     stat_label = attr(tbl, "hv_stat_label")
-  )
+  ))
   ft <- flextable::footnote(
     ft, i = 1, j = 1,
     value = flextable::as_paragraph("Values are median (15th, 85th)."),
     ref_symbols = "*", part = "header"
   )
-  hv_man_table_save_jtcvs(ft, path, caption = "Table 1. X")
+  jtcvs_quiet(hv_man_table_save_jtcvs(ft, path, caption = "Table 1. X"))
   path
 }
 
@@ -236,16 +236,16 @@ mk_digit_footnote_docx <- function(path, symbol = "1") {
   tbl <- hv_tbl_summary(
     dta, by = "grp", groups = list(Vitals = "age"), continuous = "age"
   )
-  ft <- hv_man_table_jtcvs(
+  ft <- jtcvs_quiet(hv_man_table_jtcvs(
     tbl, groups = c(stat_1 = "A", stat_2 = "B"),
     stat_label = attr(tbl, "hv_stat_label")
-  )
+  ))
   ft <- flextable::footnote(
     ft, i = 1, j = 1,
     value = flextable::as_paragraph("Wilcoxon rank sum test"),
     ref_symbols = symbol, part = "header"
   )
-  hv_man_table_save_jtcvs(ft, path, caption = "Table 1. X")
+  jtcvs_quiet(hv_man_table_save_jtcvs(ft, path, caption = "Table 1. X"))
   path
 }
 
@@ -461,11 +461,11 @@ test_that("the package's own tables pass the rule for their style", {
   hv_man_table_save(hv_man_table(tbl), f)
   expect_identical(nrow(mc_found(f, style = "report")), 0L)
   j <- tempfile(fileext = ".docx")
-  hv_man_table_save_jtcvs(
+  jtcvs_quiet(hv_man_table_save_jtcvs(
     hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
                        trailing = attr(tbl, "hv_trailing")),
     j, caption = "Table 1. Test"
-  )
+  ))
   expect_identical(nrow(mc_found(j)), 0L)
 })
 
