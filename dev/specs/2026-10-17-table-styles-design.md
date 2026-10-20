@@ -161,6 +161,11 @@ This table **is** the specification. Each row is a property the renderer sets. R
 marked † change what an existing renderer produces today. The JTCVS column records today's
 renderer, whose layout becomes `"describe"` (D3, section 5.1).
 
+Since Phase 4 the matrix is generated: `.style_matrix()` writes it from `hv_table_style()`,
+with the manuscript style as two columns, one per layout, and the "Table styles" article
+prints it. This table is the record of the decision; `test-table-styles.R` holds the
+generated matrix to its facts, and a change to a style updates both in one PR.
+
 | # | property | `"report"` | `"manuscript"` | JTCVS renderer today |
 |---|---|---|---|---|
 | 1 | Section row | label in the first cell, bold, left; **fill on every cell of the row**, unmerged † | spans the full width, bold; fill | spans the full width, bold, left; no fill |
@@ -173,7 +178,7 @@ renderer, whose layout becomes `"describe"` (D3, section 5.1).
 | 8 | Note markers | the standard's symbols by meaning (section 5.2), superscript | the standard's symbols by meaning (section 5.2), at the start of the note, not superscript | lettered `a.`, `b.` |
 | 9 | Count note | `Number of non-missing values.` (house rule 8) | `Patients with non-missing data.` | `Patients with data available.` |
 | 10 | Statistic note | `No. (%) or Median [15th, 85th percentiles].` | `Values are No. (%) or median [15th, 85th percentiles].` | named in the header row |
-| 11 | Abbreviations | `Key: A=…; B=…` (house rule 14) | `Key: A=…; B=…` | its own key |
+| 11 | Abbreviations | `Key: A, …; B, …`, each abbreviation in italics (house rule 14) | `Key: A, …; B, …` | its own key |
 | 12 | Font | Times New Roman 12 pt (house rule 5) | none set: the document's body font (11 pt in the submissions) | Times New Roman 12 pt |
 | 13 | Caption | optional: `Table 1. …`, bold, above the table, when given | `Table 1. …`, bold, above the table | above the table, plain |
 | 14 | Alignment and weight | header bold; first column left, others centered | header bold; first column left, others centered | everything left; header plain |
@@ -306,7 +311,7 @@ Three rows of the matrix cannot be met by a renderer alone:
   difference. The article's matrix is generated from `hv_table_style()`, not written by
   hand, so the two cannot drift. It also states, for each house rule, whether it is a
   content rule or a hand-edit rule and which styles keep it (section 6). The `@details` of
-  `hv_man_table()` link to the article.
+  `hv_man_table()` link to the article. How it is built is 2026-10-20-table-styles-phase4-plan.md.
 - **D7. hvtiRtemplates.** `dc-tables`' report stays `"report"`, with the Variable column on
   screen. Its Word export takes `"manuscript"`, with the fill color as a study choice. A
   later PR, after the hvtiRtables release.
