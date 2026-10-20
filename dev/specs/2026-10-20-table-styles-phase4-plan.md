@@ -33,7 +33,7 @@ knitr 1.51.
   (AGENTS.md). The change ships (`R/`, `man/`), so the fragment is required.
 - `NOT_CRAN=true Rscript -e 'devtools::test()'`: 0 failures, 0 warnings, 0 skips. The
   baseline on `main` is `FAIL 0 | WARN 0 | SKIP 0 | PASS 1382`; with this plan's tests it is
-  `PASS 1413` (measured on the probe build).
+  `PASS 1417` (measured on the probe build).
 - **Lint against an installed copy of the branch**, or new functions read as undefined:
   `R CMD INSTALL -l <scratch lib> .` then `R_LIBS=<scratch lib> Rscript -e
   'lintr::lint_package()'`: 0 lints. The line limit is lintr's default, **80 columns**, and
@@ -185,7 +185,10 @@ them for John.
     browser on `main`: a manuscript table read like the report's Times New Roman, the row
     the matrix says differs). The fix gives such a table an HTML class whose CSS makes every
     run inherit the page's font and size, and sets the footer lines' font to none, as the
-    body's is. It ships, because any HTML report showing a manuscript table had the defect,
+    body's is. The class and CSS are **appended** to the table's own HTML options, so a
+    scroll box, a frozen first column, or a class or CSS the caller set survive (an external
+    review of the first draft found that it replaced them, and a wide table lost its scroll
+    box). It ships, because any HTML report showing a manuscript table had the defect,
     not only the article. Fixing it in the article's CSS alone was rejected for that reason.
 11. **The site's flextable output sits on white in the dark theme.** flextable sets its text
     black and its cells transparent, so in the site's dark theme (`light-switch: true`) the
@@ -226,7 +229,7 @@ them for John.
 | `R/hv-table-style-matrix.R` (new) | Task 1: `.style_matrix()`, `.matrix_reads()`, `.mrow()`, `.matrix_rows()`; Task 2: `.house_rules()`, `.hrule()`, `.rule_rows()` |
 | `tests/testthat/test-table-styles.R` | Tasks 1 and 2: five tests, appended |
 | `R/hv-man-table-display.R`, `man/hv_man_table_display.Rd` | Task 3: `.document_font_html()`, called for a fontless style; roxygen |
-| `tests/testthat/test-hv-man-table-display.R` | Task 3: two tests, appended |
+| `tests/testthat/test-hv-man-table-display.R` | Task 3: three tests, appended |
 | `vignettes/articles/table-styles.qmd` (new) | Task 4 |
 | `_pkgdown.yml` | Task 4: the article under Guides |
 | `.Rbuildignore` | Task 4: `^vignettes/articles$` |
@@ -249,7 +252,8 @@ All code in Tasks 1 to 5 was built in a scratch `git archive` of `d65fc14` (code
   sets aside rules 3, 5 and 8 and keeps the rest.
 - **Red first:** with the new tests on `main`'s code, five display expectations fail and the
   five matrix and rules tests error ("could not find function"). With the code: the two files
-  `PASS 182` (from 151), the full suite `FAIL 0 | WARN 0 | SKIP 0 | PASS 1413`.
+  `PASS 182` (from 151), the full suite `FAIL 0 | WARN 0 | SKIP 0 | PASS 1413`, before the
+  HTML-options test below added four expectations.
 - **Mutations, each red:** the "Merged cells" row dropped (property test and matrix test);
   the fill cell hard-coded (the object test, two expectations); the display fix not called
   (four expectations); `opts_word` not passed back (one); the footer font left set (one); the
@@ -261,7 +265,22 @@ All code in Tasks 1 to 5 was built in a scratch `git archive` of `d65fc14` (code
   fix, body and footer computed to the page's `Outfit`, 16 px. The report kept
   `"Times New Roman"`. The `opts_word` of the displayed table (`split = FALSE`,
   `repeat_headers = TRUE`) survives the fix; `set_table_properties()` alone reset `split` to
-  `TRUE`. flextable renders each table inside a shadow DOM, so Bootstrap's `.table` rules do
+  `TRUE`.
+- **The HTML options, after the external review of `5fcb01b`.** Reproduced with flextable
+  0.10.0: a manuscript flextable given `scroll = list(height = "300px", freeze_first_column
+  = TRUE)`, `extra_class = "my-table"` and `extra_css = ".my-table { color: red; }"` came
+  out of the first draft's helper with `scroll` `NULL`, `extra_class` `"hv-document-font"`
+  and only the font rule as CSS. With the appending helper (Task 3's code): `scroll` kept
+  both settings, `extra_class` is `c("my-table", "hv-document-font")`, `extra_css` holds the
+  caller's rule, a line break, then the font rule, and the rendered HTML carries
+  `class='cl-... my-table hv-document-font'`, both CSS rules, the scroll box's `overflow`
+  and the frozen column's `sticky`. On a table with no HTML options of its own the result is
+  unchanged from the first draft (`extra_class` `"hv-document-font"`, the rule alone, since
+  flextable's default `extra_css` is `""` and is dropped). The new test is red on the first
+  draft's helper (three failures) and green on the appending one; the class-replaced and
+  CSS-replaced mutations each go red once. The display and table-styles files: `PASS 186`;
+  the full suite `FAIL 0 | WARN 0 | SKIP 0 | PASS 1417`; `lint_package()` on the installed
+  probe, 0 lints. flextable renders each table inside a shadow DOM, so Bootstrap's `.table` rules do
   not reach the cells.
 - **Dark theme:** with `data-bs-theme="dark"`, the body was `rgb(33, 37, 41)` and the table
   text `rgb(0, 0, 0)` on a transparent cell; the `extra.css` rule made it legible.
@@ -767,8 +786,10 @@ git commit -m "feat: .house_rules() says which house rules each style keeps"
 **Interfaces:**
 - Consumes: `.table_style(ft)` (already called as `style` in `hv_man_table_display()`).
 - Produces: `.document_font_html(ft)`, returning `ft` with its footer font and size unset,
-  HTML class `hv-document-font` and the CSS that makes its runs inherit the page's font and
-  size, every other table property unchanged. `hv_man_table_display()` calls it when
+  the HTML class `hv-document-font` appended to its `extra_class` and the CSS that makes its
+  runs inherit the page's font and size appended to its `extra_css`, every other table
+  property unchanged, every other HTML option (a scroll box and its frozen column, a class or
+  CSS of the caller's) included. `hv_man_table_display()` calls it when
   `is.na(style$font)`.
 
 - [ ] **Step 1: Write the failing tests** (append):
@@ -797,10 +818,32 @@ test_that("a report display keeps its own font, with no class", {
   html <- as.character(flextable::htmltools_value(shown))
   expect_false(grepl("hv-document-font", html, fixed = TRUE))
 })
+
+test_that("the font class joins the table's own HTML options", {
+  ft <- hv_man_table(fx_hv_tbl(), style = "manuscript")
+  p <- ft$properties
+  ft <- flextable::set_table_properties(
+    ft, opts_word = unclass(p$opts_word),
+    opts_html = list(
+      scroll = list(height = "300px", freeze_first_column = TRUE),
+      extra_class = "my-table", extra_css = ".my-table { color: red; }"
+    )
+  )
+  html <- hv_man_table_display(ft)$properties$opts_html
+  expect_identical(html$scroll,
+                   list(height = "300px", freeze_first_column = TRUE))
+  expect_identical(html$extra_class, c("my-table", "hv-document-font"))
+  expect_match(html$extra_css, ".my-table { color: red; }", fixed = TRUE)
+  expect_match(html$extra_css, paste0(".hv-document-font span { ",
+                                      "font-family: inherit"), fixed = TRUE)
+})
 ```
 
-- [ ] **Step 2: Run them; the first fails** (five expectations: the class, both HTML
-  matches, both footer checks; `opts_word` already matches).
+- [ ] **Step 2: Run them; the first and third fail.** The first on five expectations (the
+  class, both HTML matches, both footer checks; `opts_word` already matches); the third on
+  its class and the font rule, since `main` adds no font class. Its scroll and CSS
+  expectations already pass on `main`, which never touches `opts_html`; it is the
+  replace-instead-of-append mutation in Step 5 that they guard against.
   Run: `NOT_CRAN=true Rscript -e 'devtools::test(filter = "hv-man-table-display")'`
 
 - [ ] **Step 3: Implement.** In `hv_man_table_display()`, replace
@@ -824,8 +867,9 @@ test_that("a report display keeps its own font, with no class", {
 # missing name as font-family 'NA', which no browser has, so the browser
 # fell back to its own default, a serif, and a manuscript table looked
 # set in the report's Times New Roman. The class makes every run of the
-# table, its footer lines included, take the page's font and size. The
-# table's other properties are passed back, since
+# table, its footer lines included, take the page's font and size. It is
+# added to the table's own HTML options, a scroll box, a class or CSS
+# already set, and the table's other properties are passed back, since
 # set_table_properties() resets any it is not given.
 .document_font_html <- function(ft) {
   if (flextable::nrow_part(ft, "footer") > 0L) {
@@ -833,14 +877,16 @@ test_that("a report display keeps its own font, with no class", {
     ft <- flextable::fontsize(ft, size = NA_real_, part = "footer")
   }
   p <- ft$properties
+  html <- unclass(p$opts_html)
+  html$extra_class <- c(html$extra_class, "hv-document-font")
+  css <- c(html$extra_css,
+           paste0(".hv-document-font span { font-family: inherit ",
+                  "!important; font-size: inherit !important; }"))
+  html$extra_css <- paste(css[nzchar(css)], collapse = "\n")
   flextable::set_table_properties(
     ft, layout = p$layout, width = p$width, align = p$align,
     opts_word = unclass(p$opts_word), opts_pdf = unclass(p$opts_pdf),
-    opts_html = list(
-      extra_class = "hv-document-font",
-      extra_css = paste0(".hv-document-font span { font-family: inherit ",
-                         "!important; font-size: inherit !important; }")
-    )
+    opts_html = html
   )
 }
 ```
@@ -874,6 +920,11 @@ test_that("a report display keeps its own font, with no class", {
   - Delete the footer `font()` line: the footer font expectation fails.
   - Call `.document_font_html(ft)` for every style: the report test fails, and so does the
     existing "the footer lines take the table's font and size".
+  - **Replace the HTML options instead of appending to them**, by passing `opts_html =
+    list(extra_class = "hv-document-font", extra_css = <the rule>)` as the first draft of
+    this plan did: the third test fails three times (the scroll box, the class, the CSS).
+  - Assign `html$extra_class <- "hv-document-font"`: the third test fails on the class.
+  - Build `css` from the rule alone, dropping `html$extra_css`: it fails on the CSS.
 
 - [ ] **Step 6: Commit**
 
@@ -1213,7 +1264,7 @@ SITE=$(mktemp -d) && git archive HEAD | tar -x -C "$SITE" && \
   (cd "$SITE" && R_LIBS="$LIB" Rscript -e 'pkgdown::build_site(new_process = FALSE, install = FALSE)')
 ```
 
-  Expected: `FAIL 0 | WARN 0 | SKIP 0 | PASS 1413`; 0 lints; `character(0)`; 0/0/0 with the
+  Expected: `FAIL 0 | WARN 0 | SKIP 0 | PASS 1417`; 0 lints; `character(0)`; 0/0/0 with the
   manual and vignettes (apart from CRAN's "New submission" NOTE if the incoming checks run);
   `No problems found.`; the site builds with `Writing 'articles/table-styles.html'` and the
   three `.docx` copied. Then serve `"$SITE"/docs` and open `articles/table-styles.html` in a
