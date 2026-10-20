@@ -88,6 +88,10 @@ path, as the style that wrote it. Zero rows means clean.
 hv_check_docx(out, style = "manuscript")
 ```
 
+```{r, include = FALSE}
+unlink(out)
+```
+
 ## What the package refuses
 
 Every public function rejects out-of-spec input with a message naming

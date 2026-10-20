@@ -138,6 +138,7 @@ tbl <- tbl_summary(trial, by = trt, include = c(age, grade))
 ft <- hv_man_table(tbl)
 out <- tempfile(fileext = ".docx")
 hv_man_table_save(ft, out, abbreviations = c(N = "sample size"))
+unlink(out)
 
 }
 \seealso{
