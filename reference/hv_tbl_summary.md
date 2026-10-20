@@ -8,9 +8,7 @@ the macro's `LIST=` equivalent) and variable-type buckets
 (`continuous`/`binary`/ `categorical`, the `CON3=`/`CAT1=`/`CAT2=`
 equivalents), rather than gtsummary's own tidyselect-based interface.
 Returns a plain `gtsummary` object, ready for
-[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
-or
-[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md).
+[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md).
 
 ## Usage
 
@@ -120,9 +118,6 @@ hv_tbl_summary(
   column across all groups (`%summarytable` `TOTALCOL=1`, the macro's
   default). Ignored when `by` is `NULL`, since the single column already
   is the overall one.
-  [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
-  lays out only the columns its `groups` argument names, so name
-  `stat_0` there to show it.
 
 - continuous_stat:
 
@@ -176,13 +171,9 @@ hv_tbl_summary(
   [`hv_man_table_display()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_display.md)
   show it, while
   [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
-  and
-  [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
-  always drop it and
-  [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
-  never shows it, so a saved or JTCVS table is a manuscript table
-  whatever this says. Set `FALSE` to leave it out of the report view
-  too.
+  always drops it and the manuscript style never shows it, so a saved
+  table is a manuscript table whatever this says. Set `FALSE` to leave
+  it out of the report view too.
 
 - cutexact:
 
@@ -195,15 +186,12 @@ hv_tbl_summary(
   expect fewer than 5. The macro's default was `50`; `0` makes every
   categorical test exact and a value above 100 makes none exact. In the
   CORR table each Fisher p-value is marked with a superscript double
-  dagger, footnoted "Fisher exact test."; the JTCVS route letters it
-  through
-  [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md).
-  Used only when `compare` produces p-values. The other tests that ran
-  are named in the dagger note instead, as "P values from the Wilcoxon
-  rank sum test and Pearson's chi-square test.", and the CORR table puts
-  the dagger on the p-value header too. `compare = "smd"` or `"both"`
-  names the difference column "Std. Diff." and the same note says what
-  it is.
+  dagger, footnoted "Fisher exact test.", in every style. Used only when
+  `compare` produces p-values. The other tests that ran are named in the
+  dagger note instead, as "P values from the Wilcoxon rank sum test and
+  Pearson's chi-square test.", and the CORR table puts the dagger on the
+  p-value header too. `compare = "smd"` or `"both"` names the difference
+  column "Std. Diff." and the same note says what it is.
 
 - ...:
 
@@ -213,9 +201,7 @@ hv_tbl_summary(
 ## Value
 
 A `gtsummary` object, ready for
-[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
-or
-[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md).
+[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md).
 See Details for the `hv_stat_label`, `hv_trailing`, and `hv_footnotes`
 renderer attributes. A table whose rows mix mean and median also carries
 `hv_cell_marks`, a list with `symbol` (`"§"` or `"¶"`) and `variables`
@@ -264,11 +250,9 @@ The returned object carries these renderer attributes: `hv_stat_label`,
 the sub-header text naming the statistics shown
 (`"No. (%) or Median [<low>, <high> percentiles]"` by default, with
 ordinal suffixes; it follows `continuous_stat`); `hv_trailing`, a named
-character vector ready to pass as
-[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)'s
-`trailing` argument when `compare` produced a comparison column (`NULL`
-when `compare = "none"`); and `hv_footnotes`, the CORR footnote block
-that
+character vector ready to pass as naming the comparison columns the
+manuscript style shows, when `compare` produced one (`NULL` when
+`compare = "none"`); and `hv_footnotes`, the CORR footnote block that
 [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
 carries into
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
@@ -306,12 +290,6 @@ three or more. If `by` is a factor with an unused level,
 [`droplevels()`](https://rdrr.io/r/base/droplevels.html) is usually what
 you want.
 
-**The Overall column is missing from the JTCVS table.**
-[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
-lays out only the columns its `groups` argument names, and
-`overall = TRUE` is the default. Add `stat_0 = "Overall (n=<N>)"` to
-`groups`.
-
 **"`by` must not also be listed in `groups`."** `by` is the grouping
 variable being compared across, not a row to summarize. Before this
 check existed, the combination reached `gtsummary` and failed several
@@ -322,8 +300,6 @@ variable from `groups`.
 ## See also
 
 [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
-or
-[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
 to render the result.
 [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
 for the percentile-footnote house convention.

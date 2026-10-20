@@ -88,8 +88,13 @@ CORR-shaped, keyed by symbol, and belong to
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md).
 [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
 takes an unrelated type keyed by row and column, and rejects this one.
-Its equivalent is
-[`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md).
+Its equivalent,
+[`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md),
+is deprecated along with that saver: the describe layout of
+`hv_man_table(style = "manuscript")` names its tests in its own notes,
+which
+[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
+writes.
 
 **Calling this helper with settings different from the table.** The
 automatic

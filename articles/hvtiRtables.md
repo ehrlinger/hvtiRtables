@@ -5,8 +5,9 @@
 library(hvtiRtables)
 ```
 
-This walks one complete JTCVS submission table, from a data frame to a
-checked `.docx`. The CORR house-style path is shorter and covered in
+This walks one complete manuscript table, from a data frame to a checked
+`.docx`, and then lays the same table out to describe its groups side by
+side. The report path is shorter and covered in
 [`?hv_man_table`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md).
 
 ## 1. Summarize the data
@@ -31,9 +32,8 @@ tbl <- hv_tbl_summary(
 )
 ```
 
-The result carries two attributes the renderer wants: the
-percentile-aware sub-header text, and a ready-made `trailing` argument
-for the comparison column.
+The result records what the manuscript style reads: the statistic it
+shows and the comparison column.
 
 ``` r
 
@@ -44,63 +44,47 @@ attr(tbl, "hv_trailing")
 #>            "P"
 ```
 
-## 2. Render the JTCVS shape
+## 2. Shape the manuscript table
 
 ``` r
 
-ft <- hv_man_table_jtcvs(
-  tbl,
-  groups = c(
-    stat_0 = "Overall (n=200)",
-    stat_1 = "Drug A (n=98)",
-    stat_2 = "Drug B (n=102)"
-  ),
-  stat_label = attr(tbl, "hv_stat_label"),
-  trailing = attr(tbl, "hv_trailing")
-)
+ft <- hv_man_table(tbl, style = "manuscript")
 ```
 
-`groups` names are the `stat_<k>` columns `gtsummary` built: `stat_0`
-for the Overall column
-[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
-adds by default, then one per level of `trt`. The renderer lays out only
-the columns named here. The labels are yours, including each column’s N.
+The `"compare"` layout, the default, for groups the table compares: one
+overall `n` column, the grouping spanning its levels, and the P column.
 
-## 3. Build the test footnotes
-
-[`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md)
-reads which test produced each p-value and returns footnotes in the
-shape the saver expects, with the body-row indices already computed.
+## 3. Or describe the groups side by side
 
 ``` r
 
-notes <- hv_test_footnotes_jtcvs(tbl)
-length(notes)
-#> [1] 2
-notes[[1]]$text
-#> [1] "Wilcoxon rank-sum test."
+ft2 <- hv_man_table(tbl, style = "manuscript", layout = "describe")
 ```
+
+The `"describe"` layout gives each group its own count, for separate
+cohorts or repeated measures. The P column stays, because the table
+carries it. Either layout names the tests behind the p-values in its
+dagger note, so there is no separate step for test footnotes.
 
 ## 4. Save and check
 
 ``` r
 
 out <- tempfile(fileext = ".docx")
-hv_man_table_save_jtcvs(
+hv_man_table_save(
   ft, out,
   caption = "Table 1. Baseline Characteristics",
-  footnotes = notes,
   abbreviations = c(SMD = "standardized mean difference")
 )
 ```
 
 Neither saver checks its own output, so run
 [`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md)
-on the path. Zero rows means clean.
+on the path, as the style that wrote it. Zero rows means clean.
 
 ``` r
 
-hv_check_docx(out)
+hv_check_docx(out, style = "manuscript")
 #> [1] type     table    location detail  
 #> <0 rows> (or 0-length row.names)
 ```
@@ -112,12 +96,12 @@ the fix, rather than letting it reach `gtsummary` or `flextable`.
 
 ``` r
 
-hv_man_table_jtcvs(
+hv_man_table(
   gtsummary::tbl_summary(gtsummary::trial, by = "trt", include = "age"),
-  groups = c(stat_1 = "A", stat_2 = "B")
+  style = "manuscript"
 )
 #> Error:
-#> ! `tbl` was not built with the "{N_nonmiss} ||| {stat}" convention hv_man_table_jtcvs() requires, so column `stat_1` cannot be split into its N and statistic parts. Build it with hv_tbl_summary(), or pass statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"). First unparseable value: "46 (37, 60)".
+#> ! style = "manuscript" needs a table from hv_tbl_summary(), which carries each variable's overall count for the n column.
 ```
 
 ``` r

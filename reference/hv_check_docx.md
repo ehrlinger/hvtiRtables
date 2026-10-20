@@ -73,7 +73,7 @@ Five detectors run:
 ## Common mistakes
 
 **"`path` must be a single non-empty string."** The argument is a file
-path, not a `flextable` or an `officer` document. Neither saver runs
+path, not a `flextable` or an `officer` document. The saver does not run
 this on its own output, so call it on the written `.docx` afterwards.
 
 **Reading a `hidden_column` finding as a gutter column.** It is not one.
@@ -88,16 +88,12 @@ way matches it too. Read it as a prompt to look, not a verdict.
 
 **Expecting a repair.** This is read-only and never modifies the file.
 Fix what it reports in Word, or rebuild the table through
-[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
-or
-[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md).
+[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md).
 
 ## See also
 
-[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
-and
-[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md),
-which write the files this checks. Neither runs the check on its own
+[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md),
+which writes the files this checks. It does not run the check on its own
 output, so call this on the path afterwards when you want it.
 
 ## Examples
@@ -107,17 +103,14 @@ output, so call this on the path afterwards when you want it.
 # I/O-bound enough to trip CRAN's 5s example budget (12.7s elapsed at
 # 1.0.0). It runs, and is meant to -- it is not \dontrun{}.
 # \donttest{
-library(gtsummary)
-tbl <- trial |>
-  tbl_summary(
-    by = trt,
-    statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"),
-    include = age,
-    missing = "no"
-  )
-ft <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
+tbl <- hv_tbl_summary(
+  gtsummary::trial, by = "trt",
+  groups = list(Demography = "age"),
+  continuous = "age", categorical = character(0), compare = "none"
+)
+ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
 out <- tempfile(fileext = ".docx")
-hv_man_table_save_jtcvs(ft, out, caption = "Table 1. X")
+hv_man_table_save(ft, out, caption = "Table 1. X")
 hv_check_docx(out)
 #> [1] type     table    location detail  
 #> <0 rows> (or 0-length row.names)

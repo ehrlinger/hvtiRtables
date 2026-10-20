@@ -110,17 +110,13 @@
 </tr>
 <tr class="even">
 <td>Shape the table</td>
+<td><code><a href="../reference/hv_man_table.html">hv_man_table()</a></code></td>
 <td>
-<code><a href="../reference/hv_man_table.html">hv_man_table()</a></code>, <code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>
-</td>
-<td>
-<code>STYLE=</code> is <code>style =</code> in <code><a href="../reference/hv_man_table.html">hv_man_table()</a></code>; <code>PAGE=</code> has none (pages are US Letter)</td>
+<code>STYLE=</code> is <code>style =</code> in <code><a href="../reference/hv_man_table.html">hv_man_table()</a></code>, and a manuscript table’s <code>layout =</code> chooses compare or describe; <code>PAGE=</code> has none (pages are US Letter)</td>
 </tr>
 <tr class="odd">
 <td>Write the file</td>
-<td>
-<code><a href="../reference/hv_man_table_save.html">hv_man_table_save()</a></code>, <code><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>
-</td>
+<td><code><a href="../reference/hv_man_table_save.html">hv_man_table_save()</a></code></td>
 <td>
 <code>RTFFILE=</code>, <code>PDFFILE=</code>, <code>XMLFILE=</code>, <code>TBLTITLE=</code>, <code>ADDFN=</code>, <code>PRINTFN=</code>
 </td>
@@ -198,7 +194,7 @@
 </tr>
 </tbody>
 </table>
-<p><code>overall = TRUE</code> matches the macro’s <code>TOTALCOL=1</code>. <code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> lays out only the <code>stat_&lt;k&gt;</code> columns its <code>groups</code> vector names, so name <code>stat_0</code> there to show the Overall column. <code>continuous_stat = "both"</code> shows mean +/- SD and median (percentiles) side by side, in two columns per group, for choosing one when the manuscript is drafted. To show mean +/- SD for some variables and medians for others while every continuous test stays nonparametric, list the former in <code>mean_sd</code>.</p>
+<p><code>overall = TRUE</code> matches the macro’s <code>TOTALCOL=1</code>. Both manuscript layouts show the Overall column when the table carries it. <code>continuous_stat = "both"</code> shows mean +/- SD and median (percentiles) side by side, in two columns per group, for choosing one when the manuscript is drafted. To show mean +/- SD for some variables and medians for others while every continuous test stays nonparametric, list the former in <code>mean_sd</code>.</p>
 </section><section class="level2"><h2 id="a-ported-call">A ported call<a class="anchor" aria-label="anchor" href="#a-ported-call"></a>
 </h2>
 <p>The <code>%summarytable</code> call from <code>tp.dc.stddiff.summarytable.sas</code>:</p>
@@ -345,8 +341,7 @@
 <tr class="even">
 <td><code>PRINTFN=</code></td>
 <td>omit <code>footnotes</code> (default)</td>
-<td>
-<strong>CORR only.</strong> The house block is CORR-shaped and cannot be passed to <code><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>, which needs <code>list(row =, col =, text =)</code> entries; build those, or use <code><a href="../reference/hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code>. On the standard <code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> -&gt; <code><a href="../reference/hv_man_table.html">hv_man_table()</a></code> path, the default dagger follows <code>continuous_stat</code> and <code>percentiles</code> automatically. Use <code>footnotes = NULL</code> for <code>PRINTFN=0</code>.</td>
+<td>On the standard <code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> -&gt; <code><a href="../reference/hv_man_table.html">hv_man_table()</a></code> path, the default dagger follows <code>continuous_stat</code> and <code>percentiles</code> automatically. Use <code>footnotes = NULL</code> for <code>PRINTFN=0</code>.</td>
 </tr>
 <tr class="odd">
 <td>
@@ -383,7 +378,7 @@
 <span><span class="co">#&gt; [1] 1.75</span></span></code></pre></div>
 </div>
 <p>Medians agree at every n; Q1, Q3 and <code>pNN</code> diverge silently. <code>gtsummary</code>’s <code>{pXX}</code> statistics already use <code>type = 2</code>, so <code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> matches SAS without intervention. <strong>Any <code><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">stats::quantile()</a></code> call you write by hand in ported code does not</strong> - pin <code>type = 2</code> explicitly.</p>
-<p>The percentiles actually used are recorded on the table object as <code>attr(tbl, "hv_stat_label")</code>, and <code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> reads it when <code>stat_label</code> is left at its default, so the sub-header names the statistic the cells hold. Before 1.0.5 the default was a literal mean-and-SD string, and a median table rendered without an explicit <code>stat_label =</code> claimed mean/SD over median columns.</p>
+<p>The percentiles actually used are recorded on the table object as <code>attr(tbl, "hv_stat_label")</code>, and the describe layout’s second header row reads it, so the sub-header names the statistic the cells hold. Before 1.0.5 the default was a literal mean-and-SD string, and a median table rendered without an explicit <code>stat_label =</code> claimed mean/SD over median columns.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hv_tbl_summary.html">hv_tbl_summary</a></span><span class="op">(</span></span>

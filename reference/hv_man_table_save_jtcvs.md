@@ -1,7 +1,8 @@
-# Write an hv_man_table_jtcvs() table to a compliant .docx
+# Deprecated: Write an hv_man_table_jtcvs() table to a compliant .docx
 
-Stage 3 of the `%summarytable` split: writes the document. Replaces the
-macro's `RTFFILE=`/`PDFFILE=` output block.
+**Deprecated.** Use `hv_man_table_save(ft, file, caption = )` on a table
+from `hv_man_table(tbl, style = "manuscript", layout = "describe")`.
+This function warns on every call and goes in the next release.
 
 ## Usage
 
@@ -39,10 +40,7 @@ hv_man_table_save_jtcvs(
 - footnotes:
 
   Optional list of `list(row =, col =, text =)`, one per footnote, in
-  the order letters should be assigned. A table from
-  [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
-  already uses `a` for its `n` header ("Patients with data available."),
-  written first, so these start at `b`; other flextables start at `a`.
+  the order letters should be assigned. They are lettered from `a`.
   `col` is a single `col_keys` name. `row` may be a vector, in which
   case the one letter marks every row named, which is how several rows
   share a footnote. `row` indexes `ft`'s body rows as shown: for a
@@ -76,17 +74,19 @@ Invisibly, the `file` path.
 
 ## Details
 
-JTCVS counterpart to
-[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md):
-it adds a bold `Table N. Caption` paragraph before the table, and
-renders footnotes as lettered (`a.`, `b.`, ...) markers attached to
-specific body cells rather than the fixed symbol set
+Stage 3 of the `%summarytable` split: writes the document. Replaces the
+macro's `RTFFILE=`/`PDFFILE=` output block.
+
+Until it goes, it writes the table as
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
-uses on the header row, matching the JTCVS template convention. The
-header footnote
-[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
-marks on each `n` ("Patients with data available.") is written first, as
-`a`.
+does, with `caption` above it and the table's own notes below. A test
+footnote from
+[`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md)
+is dropped when the table already names that test, as a table from
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+does in its dagger note; every other `footnotes` entry, a plain
+gtsummary table's test notes included, keeps a lettered superscript on
+its cells, lettered from `a`, and its line after the table's own notes.
 
 ## Common mistakes
 
@@ -131,27 +131,13 @@ to build a compliant `flextable` first.
 ## Examples
 
 ``` r
-library(gtsummary)
-tbl <- trial |>
-  tbl_summary(
-    by = trt,
-    statistic = list(
-      all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}",
-      all_categorical() ~ "{N_nonmiss} ||| {n} ({p}%)"
-    ),
-    include = c(age, grade),
-    missing = "no"
-  )
-ft <- hv_man_table_jtcvs(
-  tbl,
-  groups = c(stat_1 = "Drug A (n=98)", stat_2 = "Drug B (n=102)")
+# Instead of hv_man_table_jtcvs() and hv_man_table_save_jtcvs():
+tbl <- hv_tbl_summary(
+  gtsummary::trial, by = "trt",
+  groups = list(Demography = c("age", "grade")),
+  continuous = "age", categorical = "grade", compare = "none"
 )
+ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
 out <- tempfile(fileext = ".docx")
-hv_man_table_save_jtcvs(
-  ft, out,
-  caption = "Table 1. Baseline Characteristics",
-  footnotes = list(list(
-    row = 1, col = "disp_stat_1", text = "Excludes one withdrawn patient."
-  ))
-)
+hv_man_table_save(ft, out, caption = "Table 2. Baseline Characteristics")
 ```

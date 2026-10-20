@@ -121,8 +121,10 @@ median.</p></li>
 <p><strong>Passing the result to the JTCVS saver.</strong> These footnotes are
 CORR-shaped, keyed by symbol, and belong to <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code>.
 <code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> takes an unrelated type keyed by row and
-column, and rejects this one. Its equivalent is
-<code><a href="hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code>.</p>
+column, and rejects this one. Its equivalent,
+<code><a href="hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code>, is deprecated along with that saver: the
+describe layout of <code>hv_man_table(style = "manuscript")</code> names its tests
+in its own notes, which <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> writes.</p>
 <p><strong>Calling this helper with settings different from the table.</strong> The
 automatic <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> -&gt; <code><a href="hv_man_table.html">hv_man_table()</a></code> -&gt;
 <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> path stays synchronized. If you call this helper

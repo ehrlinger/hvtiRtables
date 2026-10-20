@@ -14,8 +14,8 @@
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
 <meta property="og:title" content="Manuscript-Compliant Table Construction for HVTI CORR Group">
-<meta name="description" content='Turns gtsummary table objects into MS Word tables complying with HVTI CORRs "Table Construction for Manuscripts" rules: flat (non-merged) headers, no hidden spacer columns, footnotes and abbreviation keys as text below the table, house font and rounding conventions. A JTCVS submission mode is also available, with merged spanning headers and lettered cell-targeted footnotes matching that journals own template. Tables are drawn in a style named by its role: a report style and a manuscript style.'>
-<meta property="og:description" content='Turns gtsummary table objects into MS Word tables complying with HVTI CORRs "Table Construction for Manuscripts" rules: flat (non-merged) headers, no hidden spacer columns, footnotes and abbreviation keys as text below the table, house font and rounding conventions. A JTCVS submission mode is also available, with merged spanning headers and lettered cell-targeted footnotes matching that journals own template. Tables are drawn in a style named by its role: a report style and a manuscript style.'>
+<meta name="description" content="Turns gtsummary table objects into MS Word tables complying with HVTI CORR's &quot;Table Construction for Manuscripts&quot; rules: flat (non-merged) headers, no hidden spacer columns, footnotes and abbreviation keys as text below the table, house font and rounding conventions. The manuscript style lays a table out to compare groups or to describe cohorts side by side. Tables are drawn in a style named by its role: a report style and a manuscript style.">
+<meta property="og:description" content="Turns gtsummary table objects into MS Word tables complying with HVTI CORR's &quot;Table Construction for Manuscripts&quot; rules: flat (non-merged) headers, no hidden spacer columns, footnotes and abbreviation keys as text below the table, house font and rounding conventions. The manuscript style lays a table out to compare groups or to describe cohorts side by side. Tables are drawn in a style named by its role: a report style and a manuscript style.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -74,7 +74,7 @@
 <p><a href="https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml" class="external-link"><img src="https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml/badge.svg" alt="lint"></a> <!-- badges: end --></p>
 <p>Full reference documentation and worked examples: <a href="https://ehrlinger.github.io/hvtiRtables/">ehrlinger.github.io/hvtiRtables</a></p>
 <p>You already know the drill: hand-copy a <code>gtsummary</code> table into a Word template, or run it through the SAS table macro, and by the third revision a footnote wording has drifted, a header has re-merged itself, or the font quietly changed. hvtiRtables closes that gap. Give it a <code>gtsummary</code> table object and you get back a <code>.docx</code> that already matches HVTI CORR’s “Table Construction for Manuscripts” rules (house font and rounding, footnotes and an abbreviation key as text below the table, no hidden spacer columns), the same way every time.</p>
-<p>Two house styles exist because two audiences want different things from the same header row. Most CORR reports and manuscripts use a flat, single header row (<code><a href="reference/hv_man_table.html">hv_man_table()</a></code>); a JTCVS submission wants the traditional two-row spanning header instead (<code><a href="reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>). Use whichever matches where the table is headed.</p>
+<p>Tables are drawn in a style named by its role. A report table (<code><a href="reference/hv_man_table.html">hv_man_table()</a></code>) is the working table of an analysis report. A manuscript table (<code>hv_man_table(style = "manuscript")</code>) is what a journal receives, laid out by what it does: <code>"compare"</code> for groups it compares, <code>"describe"</code> for cohorts or repeated measures it describes side by side.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -109,25 +109,13 @@
 <span><span class="fu"><a href="reference/hv_man_table_save.html">hv_man_table_save</a></span><span class="op">(</span><span class="va">ft</span>, <span class="st">"table1.docx"</span>, caption <span class="op">=</span> <span class="st">"Table 1. Baseline Characteristics"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="jtcvs-submission-format">JTCVS submission format<a class="anchor" aria-label="anchor" href="#jtcvs-submission-format"></a>
+<h2 id="describing-cohorts-side-by-side">Describing cohorts side by side<a class="anchor" aria-label="anchor" href="#describing-cohorts-side-by-side"></a>
 </h2>
-<p>When you’re submitting to JTCVS, use <code><a href="reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> / <code><a href="reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> instead of <code><a href="reference/hv_man_table.html">hv_man_table()</a></code> / <code><a href="reference/hv_man_table_save.html">hv_man_table_save()</a></code>. This is not a drop-in swap: the JTCVS pair requires a <code>groups</code> argument naming each <code>stat_&lt;k&gt;</code> column (no default), requires the table’s statistic to follow the <code>{N_nonmiss} ||| {stat}</code> convention, and requires a <code>caption</code> string at save time. The merged spanning header and lettered footnotes match the journal’s own submission template, so once those three things are supplied you’re not hand-reformatting the table a second time after the flat-header version is already done:</p>
+<p>A table that describes separate cohorts, or the same patients at several times, gives each group its own count. Name the layout:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ddsjoberg/gtsummary" class="external-link">gtsummary</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ehrlinger/hvtiRtables" class="external-link">hvtiRtables</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="va">trial</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html" class="external-link">tbl_summary</a></span><span class="op">(</span></span>
-<span>    by <span class="op">=</span> <span class="va">trt</span>,</span>
-<span>    statistic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/select_helpers.html" class="external-link">all_continuous</a></span><span class="op">(</span><span class="op">)</span> <span class="op">~</span> <span class="st">"{N_nonmiss} ||| {mean}±{sd}"</span><span class="op">)</span>,</span>
-<span>    include <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">grade</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
-<span><span class="va">ft</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs</a></span><span class="op">(</span></span>
-<span>  <span class="va">tbl</span>,</span>
-<span>  groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>stat_1 <span class="op">=</span> <span class="st">"Drug A (n=98)"</span>, stat_2 <span class="op">=</span> <span class="st">"Drug B (n=102)"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs</a></span><span class="op">(</span><span class="va">ft</span>, <span class="st">"table1.docx"</span>, caption <span class="op">=</span> <span class="st">"Table 1. Baseline Characteristics"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">ft</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hv_man_table.html">hv_man_table</a></span><span class="op">(</span><span class="va">tbl</span>, style <span class="op">=</span> <span class="st">"manuscript"</span>, layout <span class="op">=</span> <span class="st">"describe"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/hv_man_table_save.html">hv_man_table_save</a></span><span class="op">(</span><span class="va">ft</span>, <span class="st">"table2.docx"</span>, caption <span class="op">=</span> <span class="st">"Table 2. Cohorts"</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>, <code><a href="reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> and <code><a href="reference/hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code> are deprecated and go in the next release; their layout is this one.</p>
 </div>
 <div class="section level2">
 <h2 id="migrating-from-the-summarytable-sas-macro">Migrating from the <code>%summarytable</code> SAS macro<a class="anchor" aria-label="anchor" href="#migrating-from-the-summarytable-sas-macro"></a>
@@ -154,9 +142,7 @@
 </tr>
 <tr>
 <td>Shape</td>
-<td>
-<code><a href="reference/hv_man_table.html">hv_man_table()</a></code> / <code><a href="reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>
-</td>
+<td><code><a href="reference/hv_man_table.html">hv_man_table()</a></code></td>
 <td>
 <code>STYLE=</code> is <code>style =</code>; <code>PAGE=</code> has none (pages are US Letter)</td>
 </tr>
@@ -174,7 +160,7 @@
 </tbody>
 </table>
 <p>The one thing worth knowing before you start: <code>CON1=</code> variables change statistic by default. The macro reported them as mean +/- SD with one-way ANOVA; every continuous variable here defaults to a median with a non-parametric test, which is the <code>CON3=</code> behavior. List a <code>CON1=</code> variable in <code>normal</code> as well as <code>continuous</code> to get the macro’s mean +/- SD and ANOVA back. It’s the largest of four defaults that produce different numbers from a faithful-looking port; the vignette’s “Defaults that differ” table lists all four.</p>
-<p>For CORR tables, the standard dagger footnote follows <code>continuous_stat</code> and <code>percentiles</code> automatically through <code><a href="reference/hv_man_table.html">hv_man_table()</a></code> and <code><a href="reference/hv_man_table_save.html">hv_man_table_save()</a></code>. A mean table therefore says <code>No. (%) or Mean±SD</code>; a table showing both statistics names both. The <code>(%)</code> lives there and in the JTCVS sub-header, not in the cells, which print <code>12 (39)</code> as the SAS macro does.</p>
+<p>For CORR tables, the standard dagger footnote follows <code>continuous_stat</code> and <code>percentiles</code> automatically through <code><a href="reference/hv_man_table.html">hv_man_table()</a></code> and <code><a href="reference/hv_man_table_save.html">hv_man_table_save()</a></code>. A mean table therefore says <code>No. (%) or Mean±SD</code>; a table showing both statistics names both. The <code>(%)</code> lives there and in the describe layout’s second header row, not in the cells, which print <code>12 (39)</code> as the SAS macro does.</p>
 <p>Mean±SD cells follow Eugene H. Blackstone’s (EHB’s) paired rounding rule. The mean is rounded to the SD’s first-significant-digit place and the SD one place finer; an SD beginning with 1 gives both one additional place. Exact ties round to even, and so do those of medians and percentiles (62.5 shows as 62, where gtsummary and SAS showed 63). Medians and percentiles follow the house notation instead: brackets, 2 significant digits, and a value of 10 or more to the units place (<code>102 [63, 170]</code>). P values print without a leading zero (<code>.013</code>, <code>&lt;.001</code>). A table that mixes mean and median marks the cells of the statistic fewer rows use (<code>§</code> on medians, <code>¶</code> on means), with a note for each.</p>
 <p>Full parameter map, the four defaults that differ, and the <code>QNTLDEF</code> quantile trap: <strong><a href="https://ehrlinger.github.io/hvtiRtables/articles/sas-migration.html">Porting a <code>%summarytable</code> program to R</a></strong>.</p>
 </div>

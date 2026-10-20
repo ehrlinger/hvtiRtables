@@ -5,13 +5,13 @@ a grouped, ordered variable list (groups, the macro's LIST=
 equivalent) and variable-type buckets (continuous/binary/
 categorical, the CON3=/CAT1=/CAT2= equivalents), rather than
 gtsummary's own tidyselect-based interface. Returns a plain gtsummary
-object, ready for hv_man_table() or hv_man_table_jtcvs()."><meta property="og:description" content="Thin wrapper over gtsummary::tbl_summary() modeled on the interface
+object, ready for hv_man_table()."><meta property="og:description" content="Thin wrapper over gtsummary::tbl_summary() modeled on the interface
 biostats team members already know from the %summarytable SAS macro:
 a grouped, ordered variable list (groups, the macro's LIST=
 equivalent) and variable-type buckets (continuous/binary/
 categorical, the CON3=/CAT1=/CAT2= equivalents), rather than
 gtsummary's own tidyselect-based interface. Returns a plain gtsummary
-object, ready for hv_man_table() or hv_man_table_jtcvs()."><!-- dependencies from examples --></head><body>
+object, ready for hv_man_table()."><!-- dependencies from examples --></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -64,7 +64,7 @@ a grouped, ordered variable list (<code>groups</code>, the macro's <code>LIST=</
 equivalent) and variable-type buckets (<code>continuous</code>/<code>binary</code>/
 <code>categorical</code>, the <code>CON3=</code>/<code>CAT1=</code>/<code>CAT2=</code> equivalents), rather than
 gtsummary's own tidyselect-based interface. Returns a plain <code>gtsummary</code>
-object, ready for <code><a href="hv_man_table.html">hv_man_table()</a></code> or <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>.</p>
+object, ready for <code><a href="hv_man_table.html">hv_man_table()</a></code>.</p>
     </div>
 
     <div class="section level2">
@@ -172,9 +172,7 @@ convention (<code>%summarytable</code> <code>PP=</code> equivalent).</p></dd>
 <dd><p>Single <code>TRUE</code>/<code>FALSE</code>. When <code>TRUE</code> (default), prepends
 an Overall column across all groups (<code>%summarytable</code> <code>TOTALCOL=1</code>,
 the macro's default). Ignored when <code>by</code> is <code>NULL</code>, since the single
-column already is the overall one. <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> lays out
-only the columns its <code>groups</code> argument names, so name <code>stat_0</code>
-there to show it.</p></dd>
+column already is the overall one.</p></dd>
 
 
 <dt id="arg-continuous-stat">continuous_stat<a class="anchor" aria-label="anchor" href="#arg-continuous-stat"></a></dt>
@@ -224,11 +222,10 @@ working.</p></dd>
 adds a "Variable" column beside the label holding each variable's
 column name in <code>data</code>, on its first row, as <code>%summarytable</code>'s
 report did. It belongs to the report view: <code><a href="hv_man_table.html">hv_man_table()</a></code> and
-<code><a href="hv_man_table_display.html">hv_man_table_display()</a></code> show it, while <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> and
-<code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> always drop it and <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>
-never shows it, so a saved or JTCVS table is a manuscript table
-whatever this says. Set <code>FALSE</code> to leave it out of the report view
-too.</p></dd>
+<code><a href="hv_man_table_display.html">hv_man_table_display()</a></code> show it, while <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code>
+always drops it and the manuscript style never shows it, so a saved
+table is a manuscript table whatever this says. Set <code>FALSE</code> to leave
+it out of the report view too.</p></dd>
 
 
 <dt id="arg-cutexact">cutexact<a class="anchor" aria-label="anchor" href="#arg-cutexact"></a></dt>
@@ -242,8 +239,7 @@ Fisher when at least that percentage of cells expect fewer than 5.
 The macro's default was <code>50</code>; <code>0</code> makes every categorical test
 exact and a value above 100 makes none exact. In the CORR table
 each Fisher p-value is marked with a superscript double dagger,
-footnoted "Fisher exact test."; the JTCVS
-route letters it through <code><a href="hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code>. Used only when
+footnoted "Fisher exact test.", in every style. Used only when
 <code>compare</code> produces p-values. The other tests that ran are named in
 the dagger note instead, as "P values from the Wilcoxon rank sum test
 and Pearson's chi-square test.", and the CORR table puts the dagger
@@ -258,8 +254,8 @@ produce an error naming the argument to use instead.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>gtsummary</code> object, ready for <code><a href="hv_man_table.html">hv_man_table()</a></code> or
-<code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>. See Details for the <code>hv_stat_label</code>,
+    <p>A <code>gtsummary</code> object, ready for <code><a href="hv_man_table.html">hv_man_table()</a></code>.
+See Details for the <code>hv_stat_label</code>,
 <code>hv_trailing</code>, and <code>hv_footnotes</code> renderer attributes. A table whose
 rows mix mean and median also carries <code>hv_cell_marks</code>, a list with
 <code>symbol</code> (<code>"§"</code> or <code>"¶"</code>) and <code>variables</code> (the names whose cells
@@ -304,8 +300,8 @@ can be inferred, so gtsummary's existing display is kept.</p>
 (<code>"No. (%) or Median [&lt;low&gt;, &lt;high&gt; percentiles]"</code> by default, with
 ordinal suffixes; it follows <code>continuous_stat</code>);
 <code>hv_trailing</code>, a named character vector ready to pass as
-<code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>'s <code>trailing</code> argument when <code>compare</code> produced a
-comparison column (<code>NULL</code> when <code>compare = "none"</code>); and <code>hv_footnotes</code>,
+naming the comparison columns the manuscript style shows, when <code>compare</code>
+produced one (<code>NULL</code> when <code>compare = "none"</code>); and <code>hv_footnotes</code>,
 the CORR footnote block that <code><a href="hv_man_table.html">hv_man_table()</a></code> carries into
 <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> so the default dagger follows <code>continuous_stat</code> and
 <code>percentiles</code> automatically. A mixed table also carries <code>hv_cell_marks</code>,
@@ -336,10 +332,6 @@ variable needs to appear in <code>groups</code>. The two lists must match.</p>
 mean difference is defined between two groups. Use
 <code>compare = "pvalue"</code> for three or more. If <code>by</code> is a factor with an
 unused level, <code><a href="https://rdrr.io/r/base/droplevels.html" class="external-link">droplevels()</a></code> is usually what you want.</p>
-<p><strong>The Overall column is missing from the JTCVS table.</strong>
-<code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> lays out only the columns its <code>groups</code>
-argument names, and <code>overall = TRUE</code> is the default. Add
-<code>stat_0 = "Overall (n=&lt;N&gt;)"</code> to <code>groups</code>.</p>
 <p><strong>"<code>by</code> must not also be listed in <code>groups</code>."</strong> <code>by</code> is the
 grouping variable being compared across, not a row to summarize.
 Before this check existed, the combination reached <code>gtsummary</code> and
@@ -349,9 +341,8 @@ never mentioned <code>by</code>. Remove the variable from <code>groups</code>.</
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="hv_man_table.html">hv_man_table()</a></code> or <code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> to render the
-result. <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code> for the percentile-footnote house
-convention.</p></div>
+    <div class="dont-index"><p><code><a href="hv_man_table.html">hv_man_table()</a></code> to render the result. <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code> for
+the percentile-footnote house convention.</p></div>
     </div>
 
     <div class="section level2">

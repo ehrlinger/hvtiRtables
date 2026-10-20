@@ -15,6 +15,7 @@ hv_man_table(
   font_size = 12,
   digits = 2,
   style = "report",
+  layout = "compare",
   ...
 )
 ```
@@ -55,8 +56,17 @@ hv_man_table(
   [`hv_table_style()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_table_style.md).
   `"manuscript"` needs an
   [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
-  table, refuses `continuous_stat = "both"`, and refuses `font` and
-  `font_size`.
+  table, refuses `font` and `font_size`, and in the compare layout
+  refuses `continuous_stat = "both"`.
+
+- layout:
+
+  The manuscript style's layout, chosen by what the table does:
+  `"compare"` (default), one overall `n` column for groups it compares,
+  or `"describe"`, a count beside each group, for cohorts or repeated
+  measures it describes side by side. Either shows an Overall column and
+  comparison columns when the table carries them. Only with
+  `style = "manuscript"`.
 
 - ...:
 
@@ -126,18 +136,18 @@ see the package README for a worked example using
 [`gtsummary::style_sigfig()`](https://www.danieldsjoberg.com/gtsummary/reference/style_sigfig.html)
 for 2-significant-figure rounding.
 
-Submitting to JTCVS instead? Use
-[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md),
-which builds the two-row merged spanning header that journal's template
-expects: CORR house style and JTCVS submission format want different
-things from the same header row.
+A manuscript table that describes cohorts or repeated measures side by
+side, rather than comparing groups, takes `layout = "describe"`: each
+group spans its own count and statistic, so every group has its count.
+Everything else is the comparison layout's. The JTCVS functions, whose
+layout this is, are deprecated.
 
 A table from
 [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
-works here as well as in the JTCVS renderer. That function writes each
-cell as `"{N_nonmiss} ||| {stat}"`, and this one splits the two apart
-into a flat `No.` column immediately before the statistic it counts.
-Those are the same two values JTCVS mode puts under a merged spanning
+works in every style and layout. That function writes each cell as
+`"{N_nonmiss} ||| {stat}"`, and this one splits the two apart into a
+flat `No.` column immediately before the statistic it counts. Those are
+the same two values the describe layout puts under each group's spanning
 header, without the merge. House rule 8 wants that non-missing count,
 and
 [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)'s
@@ -178,23 +188,28 @@ tables.
 font of the document it is saved into. Drop the argument, or use
 `style = "report"`.
 
-**The manuscript style refuses a `continuous_stat = "both"` table.**
-That table has a column for the median and another for the mean and SD,
-which the manuscript's one statistic column per group cannot lay out.
-Build the table with `"median"` or `"mean"`, or use the report style.
+**The compare layout refuses a `continuous_stat = "both"` table.** That
+table has a column for the median and another for the mean and SD, which
+the compare layout's one statistic column per group cannot lay out.
+Build the table with `"median"` or `"mean"`, or draw it with
+`layout = "describe"` or the report style, which show both.
 
 **The manuscript style refuses a table not built by
 [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md).**
 The layout reads the overall count and the grouping's name that function
 records. Build the table with it.
 
+**"`layout` chooses between the manuscript style's layouts."** You named
+a layout with the report style, which has one. Drop `layout`, or add
+`style = "manuscript"`.
+
 ## See also
 
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
 to write the result to a compliant `.docx` with footnotes and an
 abbreviation key.
-[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
-for the JTCVS submission format instead.
+[`hv_table_style()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_table_style.md)
+for each style's properties.
 
 ## Examples
 
@@ -202,4 +217,11 @@ for the JTCVS submission format instead.
 library(gtsummary)
 tbl <- tbl_summary(trial, by = trt, include = c(age, grade))
 ft <- hv_man_table(tbl)
+ft2 <- hv_man_table(
+  hv_tbl_summary(
+    trial, by = "trt", groups = list(A = c("age", "grade")),
+    continuous = "age", categorical = "grade"
+  ),
+  style = "manuscript", layout = "describe"
+)
 ```

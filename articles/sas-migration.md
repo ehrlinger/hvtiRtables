@@ -20,8 +20,8 @@ so the parameters you know are distributed across separate calls:
 | Stage | Function | Macro parameters that land here |
 |----|----|----|
 | Compute stats and tests | [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md) | `DATA=`, `CLASS=`, `CON*=`, `CAT*=`, `ORD1=`, `LIST=`, `PP=`, `PVALUES=`, `ASD=`, `TOTALCOL=`, `CUTEXACT=` |
-| Shape the table | [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md), [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md) | `STYLE=` is `style =` in [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md); `PAGE=` has none (pages are US Letter) |
-| Write the file | [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md), [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md) | `RTFFILE=`, `PDFFILE=`, `XMLFILE=`, `TBLTITLE=`, `ADDFN=`, `PRINTFN=` |
+| Shape the table | [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md) | `STYLE=` is `style =` in [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md), and a manuscript table’s `layout =` chooses compare or describe; `PAGE=` has none (pages are US Letter) |
+| Write the file | [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md) | `RTFFILE=`, `PDFFILE=`, `XMLFILE=`, `TBLTITLE=`, `ADDFN=`, `PRINTFN=` |
 | Verify the file | [`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md) | *(no analogue)* |
 
 If you pass a macro parameter to the wrong stage, the error says which
@@ -50,14 +50,13 @@ Five places where a faithful-looking port produces different numbers.
 | `ASD=` | `%stddiff`: Gaussian and non-Gaussian variables apart, printed as a percentage | gtsummary’s generic standardized mean difference, a proportion | compute with `hvtiRpropensity::ps_stddiff()` and add it with [`hv_tbl_compare()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_compare.md) |
 | `ORD1=` | `n (%)`, Kruskal-Wallis | folds into `categorical`, chi-square | none |
 
-`overall = TRUE` matches the macro’s `TOTALCOL=1`.
-[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
-lays out only the `stat_<k>` columns its `groups` vector names, so name
-`stat_0` there to show the Overall column. `continuous_stat = "both"`
-shows mean +/- SD and median (percentiles) side by side, in two columns
-per group, for choosing one when the manuscript is drafted. To show mean
-+/- SD for some variables and medians for others while every continuous
-test stays nonparametric, list the former in `mean_sd`.
+`overall = TRUE` matches the macro’s `TOTALCOL=1`. Both manuscript
+layouts show the Overall column when the table carries it.
+`continuous_stat = "both"` shows mean +/- SD and median (percentiles)
+side by side, in two columns per group, for choosing one when the
+manuscript is drafted. To show mean +/- SD for some variables and
+medians for others while every continuous test stays nonparametric, list
+the former in `mean_sd`.
 
 ## A ported call
 
@@ -123,7 +122,7 @@ tbl <- hv_tbl_summary(
 | `NCOL=` | automatic | per-group Ns always shown, and the Overall column’s N with the default `overall = TRUE` (`NCOL=3`) |
 | `TBLTITLE=` | `caption` | required by `style = "manuscript"`, optional for the report |
 | `ADDFN=` | `footnotes` | on the save function |
-| `PRINTFN=` | omit `footnotes` (default) | **CORR only.** The house block is CORR-shaped and cannot be passed to [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md), which needs `list(row =, col =, text =)` entries; build those, or use [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md). On the standard [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md) -\> [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md) path, the default dagger follows `continuous_stat` and `percentiles` automatically. Use `footnotes = NULL` for `PRINTFN=0`. |
+| `PRINTFN=` | omit `footnotes` (default) | On the standard [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md) -\> [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md) path, the default dagger follows `continuous_stat` and `percentiles` automatically. Use `footnotes = NULL` for `PRINTFN=0`. |
 | `RTFFILE=`, `PDFFILE=`, `XMLFILE=` | `file` | output is always `.docx` |
 
 When `continuous_stat = "mean"` or `"both"`, mean±SD cells follow Eugene
@@ -183,12 +182,11 @@ matches SAS without intervention. **Any
 write by hand in ported code does not** - pin `type = 2` explicitly.
 
 The percentiles actually used are recorded on the table object as
-`attr(tbl, "hv_stat_label")`, and
-[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
-reads it when `stat_label` is left at its default, so the sub-header
-names the statistic the cells hold. Before 1.0.5 the default was a
-literal mean-and-SD string, and a median table rendered without an
-explicit `stat_label =` claimed mean/SD over median columns.
+`attr(tbl, "hv_stat_label")`, and the describe layout’s second header
+row reads it, so the sub-header names the statistic the cells hold.
+Before 1.0.5 the default was a literal mean-and-SD string, and a median
+table rendered without an explicit `stat_label =` claimed mean/SD over
+median columns.
 
 ``` r
 

@@ -102,8 +102,8 @@ The column is placed rightmost, after any <code>compare</code> column, so
 <code>compare = "pvalue"</code> followed by this function puts the p-value and
 the standardized difference side by side. Call it again for a further
 column. <code><a href="hv_man_table.html">hv_man_table()</a></code> shows the column directly;
-<code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> shows it when you pass the table's
-<code>hv_trailing</code> attribute as <code>trailing</code>, which this function extends.</p>
+The manuscript style shows it too, from the table's <code>hv_trailing</code>
+attribute, which this function extends.</p>
 <p>The values are shown exactly as given, so format them first, for
 example <code>sprintf("%.1f", 100 * d)</code> for a difference as a percentage.
 A variable missing from <code>values</code> is left blank.</p>
@@ -119,10 +119,6 @@ name in <code>groups</code>, not its label.</p>
 <p><strong>"<code>values</code> names variable(s) not in the table: ..."</strong> A name that
 matches no variable would silently show nothing. Usually a typo, or a
 variable dropped from <code>groups</code>.</p>
-<p><strong>The new column is missing from the JTCVS table.</strong>
-<code><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code> lays out only the trailing columns its
-<code>trailing</code> argument names. Pass <code>trailing = attr(tbl, "hv_trailing")</code>
-after the last call to this function.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

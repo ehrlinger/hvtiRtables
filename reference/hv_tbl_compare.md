@@ -46,10 +46,8 @@ column is placed rightmost, after any `compare` column, so
 standardized difference side by side. Call it again for a further
 column.
 [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
-shows the column directly;
-[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
-shows it when you pass the table's `hv_trailing` attribute as
-`trailing`, which this function extends.
+shows the column directly; The manuscript style shows it too, from the
+table's `hv_trailing` attribute, which this function extends.
 
 The values are shown exactly as given, so format them first, for example
 `sprintf("%.1f", 100 * d)` for a difference as a percentage. A variable
@@ -66,12 +64,6 @@ by the variable's column name, the name in `groups`, not its label.
 **"`values` names variable(s) not in the table: ..."** A name that
 matches no variable would silently show nothing. Usually a typo, or a
 variable dropped from `groups`.
-
-**The new column is missing from the JTCVS table.**
-[`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
-lays out only the trailing columns its `trailing` argument names. Pass
-`trailing = attr(tbl, "hv_trailing")` after the last call to this
-function.
 
 ## See also
 

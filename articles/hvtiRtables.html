@@ -85,7 +85,7 @@
 <div class="sourceCode cell-code" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ehrlinger/hvtiRtables" class="external-link">hvtiRtables</a></span><span class="op">)</span></span></code></pre></div>
 </div>
-<p>This walks one complete JTCVS submission table, from a data frame to a checked <code>.docx</code>. The CORR house-style path is shorter and covered in <code><a href="../reference/hv_man_table.html">?hv_man_table</a></code>.</p>
+<p>This walks one complete manuscript table, from a data frame to a checked <code>.docx</code>, and then lays the same table out to describe its groups side by side. The report path is shorter and covered in <code><a href="../reference/hv_man_table.html">?hv_man_table</a></code>.</p>
 <section class="level2"><h2 id="summarize-the-data">1. Summarize the data<a class="anchor" aria-label="anchor" href="#summarize-the-data"></a>
 </h2>
 <p><code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> takes a grouped, ordered variable list and type buckets, the way the SAS <code>%summarytable</code> macro does. Every variable in <code>groups</code> appears in exactly one of <code>continuous</code>, <code>binary</code>, or <code>categorical</code>.</p>
@@ -103,7 +103,7 @@
 <span>  compare <span class="op">=</span> <span class="st">"pvalue"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
-<p>The result carries two attributes the renderer wants: the percentile-aware sub-header text, and a ready-made <code>trailing</code> argument for the comparison column.</p>
+<p>The result records what the manuscript style reads: the statistic it shows and the comparison column.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="st">"hv_stat_label"</span><span class="op">)</span></span>
@@ -112,49 +112,35 @@
 <span><span class="co">#&gt; hv_compare_col </span></span>
 <span><span class="co">#&gt;            "P"</span></span></code></pre></div>
 </div>
-</section><section class="level2"><h2 id="render-the-jtcvs-shape">2. Render the JTCVS shape<a class="anchor" aria-label="anchor" href="#render-the-jtcvs-shape"></a>
+</section><section class="level2"><h2 id="shape-the-manuscript-table">2. Shape the manuscript table<a class="anchor" aria-label="anchor" href="#shape-the-manuscript-table"></a>
 </h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ft</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs</a></span><span class="op">(</span></span>
-<span>  <span class="va">tbl</span>,</span>
-<span>  groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    stat_0 <span class="op">=</span> <span class="st">"Overall (n=200)"</span>,</span>
-<span>    stat_1 <span class="op">=</span> <span class="st">"Drug A (n=98)"</span>,</span>
-<span>    stat_2 <span class="op">=</span> <span class="st">"Drug B (n=102)"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  stat_label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="st">"hv_stat_label"</span><span class="op">)</span>,</span>
-<span>  trailing <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="st">"hv_trailing"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">ft</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hv_man_table.html">hv_man_table</a></span><span class="op">(</span><span class="va">tbl</span>, style <span class="op">=</span> <span class="st">"manuscript"</span><span class="op">)</span></span></code></pre></div>
 </div>
-<p><code>groups</code> names are the <code>stat_&lt;k&gt;</code> columns <code>gtsummary</code> built: <code>stat_0</code> for the Overall column <code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> adds by default, then one per level of <code>trt</code>. The renderer lays out only the columns named here. The labels are yours, including each column’s N.</p>
-</section><section class="level2"><h2 id="build-the-test-footnotes">3. Build the test footnotes<a class="anchor" aria-label="anchor" href="#build-the-test-footnotes"></a>
+<p>The <code>"compare"</code> layout, the default, for groups the table compares: one overall <code>n</code> column, the grouping spanning its levels, and the P column.</p>
+</section><section class="level2"><h2 id="or-describe-the-groups-side-by-side">3. Or describe the groups side by side<a class="anchor" aria-label="anchor" href="#or-describe-the-groups-side-by-side"></a>
 </h2>
-<p><code><a href="../reference/hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code> reads which test produced each p-value and returns footnotes in the shape the saver expects, with the body-row indices already computed.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">notes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">notes</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 2</span></span>
-<span><span class="va">notes</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">text</span></span>
-<span><span class="co">#&gt; [1] "Wilcoxon rank-sum test."</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">ft2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hv_man_table.html">hv_man_table</a></span><span class="op">(</span><span class="va">tbl</span>, style <span class="op">=</span> <span class="st">"manuscript"</span>, layout <span class="op">=</span> <span class="st">"describe"</span><span class="op">)</span></span></code></pre></div>
 </div>
+<p>The <code>"describe"</code> layout gives each group its own count, for separate cohorts or repeated measures. The P column stays, because the table carries it. Either layout names the tests behind the p-values in its dagger note, so there is no separate step for test footnotes.</p>
 </section><section class="level2"><h2 id="save-and-check">4. Save and check<a class="anchor" aria-label="anchor" href="#save-and-check"></a>
 </h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".docx"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs</a></span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/hv_man_table_save.html">hv_man_table_save</a></span><span class="op">(</span></span>
 <span>  <span class="va">ft</span>, <span class="va">out</span>,</span>
 <span>  caption <span class="op">=</span> <span class="st">"Table 1. Baseline Characteristics"</span>,</span>
-<span>  footnotes <span class="op">=</span> <span class="va">notes</span>,</span>
 <span>  abbreviations <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>SMD <span class="op">=</span> <span class="st">"standardized mean difference"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
-<p>Neither saver checks its own output, so run <code><a href="../reference/hv_check_docx.html">hv_check_docx()</a></code> on the path. Zero rows means clean.</p>
+<p>Neither saver checks its own output, so run <code><a href="../reference/hv_check_docx.html">hv_check_docx()</a></code> on the path, as the style that wrote it. Zero rows means clean.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/hv_check_docx.html">hv_check_docx</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hv_check_docx.html">hv_check_docx</a></span><span class="op">(</span><span class="va">out</span>, style <span class="op">=</span> <span class="st">"manuscript"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] type     table    location detail  </span></span>
 <span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span></code></pre></div>
 </div>
@@ -163,12 +149,12 @@
 <p>Every public function rejects out-of-spec input with a message naming the fix, rather than letting it reach <code>gtsummary</code> or <code>flextable</code>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hv_man_table.html">hv_man_table</a></span><span class="op">(</span></span>
 <span>  <span class="fu">gtsummary</span><span class="fu">::</span><span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html" class="external-link">tbl_summary</a></span><span class="op">(</span><span class="fu">gtsummary</span><span class="fu">::</span><span class="va"><a href="https://www.danieldsjoberg.com/gtsummary/reference/trial.html" class="external-link">trial</a></span>, by <span class="op">=</span> <span class="st">"trt"</span>, include <span class="op">=</span> <span class="st">"age"</span><span class="op">)</span>,</span>
-<span>  groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>stat_1 <span class="op">=</span> <span class="st">"A"</span>, stat_2 <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span></span>
+<span>  style <span class="op">=</span> <span class="st">"manuscript"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Error:</span></span>
-<span><span class="co">#&gt; ! `tbl` was not built with the "{N_nonmiss} ||| {stat}" convention hv_man_table_jtcvs() requires, so column `stat_1` cannot be split into its N and statistic parts. Build it with hv_tbl_summary(), or pass statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"). First unparseable value: "46 (37, 60)".</span></span></code></pre></div>
+<span><span class="co">#&gt; ! style = "manuscript" needs a table from hv_tbl_summary(), which carries each variable's overall count for the n column.</span></span></code></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="downlit sourceCode r">

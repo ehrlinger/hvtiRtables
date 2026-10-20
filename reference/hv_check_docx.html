@@ -124,8 +124,8 @@ reads it. With <code>style = "report"</code>, any merged cell is a finding.</p><
 
 
 <p><strong>"<code>path</code> must be a single non-empty string."</strong> The argument is a
-file path, not a <code>flextable</code> or an <code>officer</code> document. Neither saver
-runs this on its own output, so call it on the written <code>.docx</code>
+file path, not a <code>flextable</code> or an <code>officer</code> document. The saver
+does not run this on its own output, so call it on the written <code>.docx</code>
 afterwards.</p>
 <p><strong>Reading a <code>hidden_column</code> finding as a gutter column.</strong> It is not
 one. The detector requires empty <strong>and</strong> narrower than 0.1 inch,
@@ -138,12 +138,12 @@ start that way matches it too. Read it as a prompt to look, not a
 verdict.</p>
 <p><strong>Expecting a repair.</strong> This is read-only and never modifies the
 file. Fix what it reports in Word, or rebuild the table through
-<code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> or <code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>.</p>
+<code><a href="hv_man_table_save.html">hv_man_table_save()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> and <code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>, which
-write the files this checks. Neither runs the check on its own
+    <div class="dont-index"><p><code><a href="hv_man_table_save.html">hv_man_table_save()</a></code>, which writes the files this checks. It does
+not run the check on its own
 output, so call this on the path afterwards when you want it.</p></div>
     </div>
 
@@ -153,17 +153,14 @@ output, so call this on the path afterwards when you want it.</p></div>
 <span class="r-in"><span><span class="co"># I/O-bound enough to trip CRAN's 5s example budget (12.7s elapsed at</span></span></span>
 <span class="r-in"><span><span class="co"># 1.0.0). It runs, and is meant to -- it is not \dontrun{}.</span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ddsjoberg/gtsummary" class="external-link">gtsummary</a></span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="va">trial</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html" class="external-link">tbl_summary</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    by <span class="op">=</span> <span class="va">trt</span>,</span></span>
-<span class="r-in"><span>    statistic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/select_helpers.html" class="external-link">all_continuous</a></span><span class="op">(</span><span class="op">)</span> <span class="op">~</span> <span class="st">"{N_nonmiss} ||| {mean} ± {sd}"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    include <span class="op">=</span> <span class="va">age</span>,</span></span>
-<span class="r-in"><span>    missing <span class="op">=</span> <span class="st">"no"</span></span></span>
-<span class="r-in"><span>  <span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">ft</span> <span class="op">&lt;-</span> <span class="fu"><a href="hv_man_table_jtcvs.html">hv_man_table_jtcvs</a></span><span class="op">(</span><span class="va">tbl</span>, groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>stat_1 <span class="op">=</span> <span class="st">"A"</span>, stat_2 <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="hv_tbl_summary.html">hv_tbl_summary</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="fu">gtsummary</span><span class="fu">::</span><span class="va"><a href="https://www.danieldsjoberg.com/gtsummary/reference/trial.html" class="external-link">trial</a></span>, by <span class="op">=</span> <span class="st">"trt"</span>,</span></span>
+<span class="r-in"><span>  groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Demography <span class="op">=</span> <span class="st">"age"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  continuous <span class="op">=</span> <span class="st">"age"</span>, categorical <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>, compare <span class="op">=</span> <span class="st">"none"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ft</span> <span class="op">&lt;-</span> <span class="fu"><a href="hv_man_table.html">hv_man_table</a></span><span class="op">(</span><span class="va">tbl</span>, style <span class="op">=</span> <span class="st">"manuscript"</span>, layout <span class="op">=</span> <span class="st">"describe"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".docx"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs</a></span><span class="op">(</span><span class="va">ft</span>, <span class="va">out</span>, caption <span class="op">=</span> <span class="st">"Table 1. X"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="hv_man_table_save.html">hv_man_table_save</a></span><span class="op">(</span><span class="va">ft</span>, <span class="va">out</span>, caption <span class="op">=</span> <span class="st">"Table 1. X"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">hv_check_docx</span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] type     table    location detail  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;0 rows&gt; (or 0-length row.names)</span>

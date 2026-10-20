@@ -85,11 +85,6 @@ p-value marked with a double dagger, and `footnotes` leaves it
 unexplained or files another note under it. Omit `footnotes`, or add the
 entry the error names.
 
-**"`ft` is a JTCVS table ..."** The helper shows CORR tables. A JTCVS
-table letters its notes, and
-[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
-places them.
-
 **Different notes in the report and in Word.** Pass the same `footnotes`
 and `abbreviations` to both calls.
 

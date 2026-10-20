@@ -96,8 +96,9 @@ symbol goes on the table's count-column header cell (a column named
 <code>n</code>, else the first <code>n_stat_&lt;k&gt;</code> column <code><a href="hv_man_table.html">hv_man_table()</a></code> creates when
 it splits an <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code> table, else the first column). In a
 manuscript table the dagger goes on the grouping's spanning cell and
-<code>*</code> on its <code>n</code> column. Each text is rendered as its own paragraph
-below the table, in the order given.
+<code>*</code> on its <code>n</code> column. In the describe layout <code>*</code> goes on every group's
+<code>n</code> and the dagger on every statistic. Each text is rendered as its
+own paragraph below the table, in the order given.
 Every element must be named (unnamed or blank-named
 entries raise an error) and every text must be a single non-empty
 string (<code>NULL</code>, <code>NA</code>, a number, or a multi-element vector raise an
@@ -173,8 +174,8 @@ manuscript style, which requires a caption so the title is written with
 the table. Pass
 <code>caption = "Table 1. ..."</code>; a report table takes one optionally.</p>
 <p><strong>"<code>footnotes</code> must be a named list (symbol -&gt; footnote text) ..."</strong>
-You passed the JTCVS shape. The two savers' <code>footnotes</code> arguments are
-unrelated types: this one is keyed by symbol,
+You passed the deprecated JTCVS shape. The two savers' <code>footnotes</code>
+arguments are unrelated types: this one is keyed by symbol,
 <code>list(`*` = "text")</code>, and <code><a href="hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code>'s is keyed
 by position, <code>list(list(row =, col =, text =))</code>. So
 <code><a href="hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code>'s output does not belong here;

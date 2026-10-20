@@ -1,11 +1,10 @@
-# Build lettered test footnotes from a gtsummary table
+# Deprecated: Build lettered test footnotes from a gtsummary table
 
-Reproduces the macro's lettered test footnotes. The letters differ by
-design: the macro lettered by test (`a=ANOVA`, `b=Kruskal-Wallis`, ...),
-while here letters follow the order the tests appear. One-way ANOVA
-appears only for variables listed in
-[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)'s
-`normal`.
+**Deprecated.** A table from
+`hv_man_table(tbl, style = "manuscript", layout = "describe")` names its
+tests in its dagger note and marks Fisher's exact test on its P values,
+so it needs no test footnotes. This function warns on every call and
+goes in the next release.
 
 ## Usage
 
@@ -33,6 +32,13 @@ there is nothing to mark.
 
 ## Details
 
+Reproduces the macro's lettered test footnotes. The letters differ by
+design: the macro lettered by test (`a=ANOVA`, `b=Kruskal-Wallis`, ...),
+while here letters follow the order the tests appear. One-way ANOVA
+appears only for variables listed in
+[`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)'s
+`normal`.
+
 The SAS `%summarytable` macro marks every p-value with a superscript
 letter naming the test behind it. This builds those footnotes from the
 `test_name` column
@@ -41,6 +47,8 @@ records, in the format
 [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)'s
 `footnotes` argument expects, so you do not have to map test identifiers
 or count body rows by hand.
+[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
+drops the ones a describe table already names itself.
 
 Takes the `gtsummary` object rather than the `flextable`, because
 [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
@@ -115,38 +123,13 @@ not to this function's JTCVS output.
 ## Examples
 
 ``` r
-set.seed(5)
-dta <- data.frame(
-  grp = factor(rep(c("A", "B"), each = 50)),
-  age = rnorm(100, 60, 12),
-  sex = factor(sample(c("F", "M"), 100, replace = TRUE))
-)
+# Instead of hv_test_footnotes_jtcvs():
 tbl <- hv_tbl_summary(
-  dta, by = "grp",
-  groups = list(Demography = c("age", "sex")),
-  continuous = "age", categorical = "sex"
+  gtsummary::trial, by = "trt",
+  groups = list(Demography = c("age", "grade")),
+  continuous = "age", categorical = "grade", compare = "pvalue"
 )
-hv_test_footnotes_jtcvs(tbl)
-#> [[1]]
-#> [[1]]$row
-#> [1] 2
-#> 
-#> [[1]]$col
-#> [1] "hv_compare_col"
-#> 
-#> [[1]]$text
-#> [1] "Wilcoxon rank-sum test."
-#> 
-#> 
-#> [[2]]
-#> [[2]]$row
-#> [1] 3
-#> 
-#> [[2]]$col
-#> [1] "hv_compare_col"
-#> 
-#> [[2]]$text
-#> [1] "Pearson chi-square test."
-#> 
-#> 
+ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
+attr(ft, "hv_footnotes")[["\u2020"]]
+#> [1] "Values are No. (%) or median [15th, 85th percentiles]; P values from the Wilcoxon rank sum test and Pearson's chi-square test."
 ```

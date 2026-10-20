@@ -55,13 +55,15 @@ hv_man_table_save(
   creates when it splits an
   [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
   table, else the first column). In a manuscript table the dagger goes
-  on the grouping's spanning cell and `*` on its `n` column. Each text
-  is rendered as its own paragraph below the table, in the order given.
-  Every element must be named (unnamed or blank-named entries raise an
-  error) and every text must be a single non-empty string (`NULL`, `NA`,
-  a number, or a multi-element vector raise an error, since each writes
-  a dangling marker); an empty list is a no-op, same as `NULL`.
-  (`%summarytable` `ADDFN=` equivalent; `PRINTFN=1`'s house block is
+  on the grouping's spanning cell and `*` on its `n` column. In the
+  describe layout `*` goes on every group's `n` and the dagger on every
+  statistic. Each text is rendered as its own paragraph below the table,
+  in the order given. Every element must be named (unnamed or
+  blank-named entries raise an error) and every text must be a single
+  non-empty string (`NULL`, `NA`, a number, or a multi-element vector
+  raise an error, since each writes a dangling marker); an empty list is
+  a no-op, same as `NULL`. (`%summarytable` `ADDFN=` equivalent;
+  `PRINTFN=1`'s house block is
   [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)).
 
 - abbreviations:
@@ -137,9 +139,9 @@ the table. Pass `caption = "Table 1. ..."`; a report table takes one
 optionally.
 
 **"`footnotes` must be a named list (symbol -\> footnote text) ..."**
-You passed the JTCVS shape. The two savers' `footnotes` arguments are
-unrelated types: this one is keyed by symbol, `` list(`*` = "text") ``,
-and
+You passed the deprecated JTCVS shape. The two savers' `footnotes`
+arguments are unrelated types: this one is keyed by symbol,
+`` list(`*` = "text") ``, and
 [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)'s
 is keyed by position, `list(list(row =, col =, text =))`. So
 [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md)'s

@@ -1,11 +1,9 @@
-# Build a JTCVS-format manuscript table with merged spanning headers
+# Deprecated: Build a JTCVS-Format Manuscript Table with Merged Headers
 
-Stage 2 of the `%summarytable` split: shapes the table. The macro
-controlled this with `STYLE=` and `PAGE=`. This renderer is the
-journal's one layout and takes neither; the CORR styles are chosen by
-`style =` in
-[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md).
-Pages are US Letter.
+**Deprecated.** Use
+`hv_man_table(tbl, style = "manuscript", layout = "describe")`, the
+manuscript style's describe layout, which this layout became. This
+function warns on every call and goes in the next release.
 
 ## Usage
 
@@ -65,17 +63,15 @@ hv_man_table_jtcvs(
 
 - font:
 
-  Font family. Default `"Times New Roman"` (house rule). Any single
-  non-empty string is accepted: `flextable` silently substitutes an
-  unknown font name, so a typo would otherwise pass unnoticed, while a
-  deliberate override is legitimate.
+  Font family. Checked as a single non-empty string, as before, and
+  ignored: the manuscript style sets no font, so the table takes the
+  font of the document it is saved into.
 
 - font_size:
 
-  Font size in points. Default `12` (house rule 5); pass `11` for wide
-  tables. No other values are permitted – the same rule
+  Font size in points. Checked as before (`11` or `12`, the rule
   [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
-  enforces.
+  enforces) and ignored, for the same reason as `font`.
 
 - ...:
 
@@ -84,30 +80,24 @@ hv_man_table_jtcvs(
 
 ## Value
 
-A `flextable` with a 2-row header and merged section rows, ready for
-[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md).
-It carries an `hv_header_footnotes` attribute, the text of the `n`
-superscript, which that saver writes.
+A `flextable` in the manuscript style's describe layout, ready for
+[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md).
 
 ## Details
 
-Use this instead of
-[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
-when you're building the shape editorial actually needs at JTCVS
-submission: a 2-row header (group name spanning `n`/stat sub-columns,
-`Characteristic` spanning both rows) and bold, row-spanning section
-headers in the body, with no fill colour. Each `n` carries a superscript
-`a`, which
-[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
-footnotes as "Patients with data available." This is a separate mode,
-not a replacement for
-[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)'s
-flat-header CORR house style; the two exist because CORR reports and
-JTCVS submissions want different things from the same header row.
+Stage 2 of the `%summarytable` split: shapes the table. The macro
+controlled this with `STYLE=` and `PAGE=`. This renderer is the
+journal's one layout and takes neither; the CORR styles are chosen by
+`style =` in
+[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md).
+Pages are US Letter.
 
-On a table that mixes mean and median, the mark on the minority cells is
-a lettered superscript `b` with its own note, so the test footnotes
-letter from `c` rather than `b`.
+Until it goes, it passes its arguments through to that layout: `groups`
+and `trailing` choose the same group, Overall and comparison columns,
+and `stat_label` names the statistic under each group. The table is
+drawn in the manuscript style, not the JTCVS look it drew before: a full
+grid, shaded section rows spanning the table, `*` and `†` notes, and no
+font of its own. `font` and `font_size` are checked and set nothing.
 
 ## Common mistakes
 
@@ -125,32 +115,28 @@ are the `stat_<k>` columns `gtsummary` creates, one per level of the
 `by` variable – not the group labels. Two groups give `stat_1` and
 `stat_2`.
 
-**"`font_size` must be 11 or 12."** House rule 5. Use `11` only for wide
-tables.
+**"`font_size` must be 11 or 12."** House rule 5. The value is checked
+as before and then ignored: the manuscript style sets no font size, so
+the table takes the size of the document it is saved into.
 
 ## See also
 
-[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
-for the flat-header CORR house-style mode.
+`hv_man_table(style = "manuscript", layout = "describe")`, the layout
+that replaces it, and
+[`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md).
 [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
 to write the result to a compliant `.docx`.
 
 ## Examples
 
 ``` r
-library(gtsummary)
-tbl <- trial |>
-  tbl_summary(
-    by = trt,
-    statistic = list(
-      all_continuous() ~ "{N_nonmiss} ||| {mean}±{sd}",
-      all_categorical() ~ "{N_nonmiss} ||| {n} ({p}%)"
-    ),
-    include = c(age, grade),
-    missing = "no"
-  )
-ft <- hv_man_table_jtcvs(
-  tbl,
-  groups = c(stat_1 = "Drug A (n=98)", stat_2 = "Drug B (n=102)")
+# Instead of hv_man_table_jtcvs() and hv_man_table_save_jtcvs():
+tbl <- hv_tbl_summary(
+  gtsummary::trial, by = "trt",
+  groups = list(Demography = c("age", "grade")),
+  continuous = "age", categorical = "grade", compare = "none"
 )
+ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
+out <- tempfile(fileext = ".docx")
+hv_man_table_save(ft, out, caption = "Table 2. Baseline Characteristics")
 ```
