@@ -308,3 +308,110 @@ test_that("the manuscript names the tests in its dagger note and marks P", {
                      info = cmp)
   }
 })
+
+# -- the manuscript's describe layout, saved ------------------------------
+
+dsc_save <- function(tbl = st_tbl(), fill = "#CAEDFB") {
+  ft <- hv_man_table(tbl, style = hv_table_style("manuscript", fill = fill),
+                     layout = "describe")
+  f <- tempfile(fileext = ".docx")
+  hv_man_table_save(ft, f, caption = "Table 2. Cohorts")
+  f
+}
+
+test_that("describe, rows 1-3: spanning shaded sections and a full grid", {
+  x <- wx_doc(dsc_save(fill = "#A5C9EB"))
+  tc <- xq(sec_row(x), "./w:tc")
+  expect_length(tc, 1L)
+  expect_identical(xml2::xml_attr(xq(tc, ".//w:gridSpan"), "val"),
+                   as.character(ncols(x)))
+  expect_identical(xml2::xml_attr(xq(tc, ".//w:shd"), "fill"), "A5C9EB")
+  n_tc <- length(xq(x, "//w:tc"))
+  for (side in c("top", "bottom", "left", "right")) {
+    path <- sprintf("//w:tcBorders/w:%s[@w:val='single' and @w:sz='4']", side)
+    expect_length(xq(x, path), n_tc)
+  }
+})
+
+test_that("describe, rows 4-5: each group spans its pair; n* on each", {
+  x <- wx_doc(dsc_save())
+  expect_length(xq(x, "//w:tr[w:trPr/w:tblHeader]"), 2L)
+  top <- vapply(xq(x, "//w:tr[1]/w:tc"), wx_text, character(1))
+  expect_identical(top[1:4], c("Characteristic", "Overall (N = 200)",
+                               "Drug A (N = 98)", "Drug B (N = 102)"))
+  expect_identical(top[5], "P†")
+  expect_length(xq(x, "//w:tr[1]/w:tc[.//w:gridSpan[@w:val='2']]"), 3L)
+  sub <- vapply(xq(x, "//w:tr[2]/w:tc"), wx_text, character(1))
+  stat <- "No. (%) or Median [15th, 85th percentiles]†"
+  expect_identical(sub[2:7], rep(c("n*", stat), 3))
+})
+
+test_that("describe, rows 8-10: the notes, as compare writes them", {
+  x <- wx_doc(dsc_save())
+  notes <- vapply(xq(x, "//w:tbl/following-sibling::w:p"), wx_text,
+                  character(1))
+  expect_identical(notes[1], "*Patients with non-missing data.")
+  expect_match(notes[2], "^†Values are No\\. \\(%\\) or median")
+  sup <- xq(x, paste0("//w:tbl/following-sibling::w:p//",
+                      "w:vertAlign[@w:val='superscript']"))
+  expect_length(sup, 0L)
+})
+
+test_that("describe: no font, a caption, Letter, and hv_check_docx() passes", {
+  f <- dsc_save()
+  x <- wx_doc(f)
+  expect_length(xq(x, "//w:tbl//w:rFonts[@w:ascii]"), 0L)
+  expect_identical(wx_text(xq(x, "//w:body/*[1]")[[1]]), "Table 2. Cohorts")
+  expect_setequal(unname(pg_size(f)), c("12240", "15840"))
+  expect_identical(nrow(hv_check_docx(f, style = "manuscript")), 0L)
+})
+
+test_that("a replica of a two-cohort describe table: no Overall, no P", {
+  # ms.1333's shape: two separate cohorts side by side, a count each.
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = c("age", "marker"), Disease = "stage"),
+    continuous = c("age", "marker"), categorical = "stage",
+    overall = FALSE, compare = "none", show_variable = FALSE
+  )
+  f <- dsc_save(tbl)
+  x <- wx_doc(f)
+  top <- vapply(xq(x, "//w:tr[1]/w:tc"), wx_text, character(1))
+  expect_identical(top, c("Characteristic", "Drug A (N = 98)",
+                          "Drug B (N = 102)"))
+  sub <- vapply(xq(x, "//w:tr[2]/w:tc"), wx_text, character(1))
+  expect_identical(sum(sub == "n*"), 2L)
+  expect_identical(fit_geometry(f)$landscape, FALSE)
+  expect_identical(nrow(hv_check_docx(f, style = "manuscript")), 0L)
+})
+
+test_that("a describe table displays with its marks where Word has them", {
+  shown <- hv_man_table_display(hv_man_table(
+    st_tbl(), style = "manuscript", layout = "describe"
+  ))
+  ch <- flextable::information_data_chunk(shown)
+  marks <- ch[ch$.part == "header" & ch$vertical.align == "superscript", ]
+  stars <- as.character(marks$.col_id[marks$txt == "*"])
+  expect_identical(sort(unique(stars)), c("n_stat_0", "n_stat_1", "n_stat_2"))
+  expect_true(all(marks$.row_id[marks$txt == "*"] == 2L))
+  foot <- ch[ch$.part == "footer" & ch$.row_id == 1, ]
+  expect_identical(paste(foot$txt, collapse = ""),
+                   "*Patients with non-missing data.")
+})
+
+test_that("describe marks the groups it was built with, whatever their names", {
+  tbl <- fx_jtcvs_tbl()
+  tbl$table_body$custom_a <- tbl$table_body$stat_1
+  tbl$table_body$custom_b <- tbl$table_body$stat_2
+  ft <- .man_table_describe(tbl, hv_table_style("manuscript"),
+                            groups = c(custom_a = "A", custom_b = "B"),
+                            trailing = NULL, stat_label = NULL)
+  expect_identical(attr(ft, "hv_pairs"),
+                   list(n = c("n_custom_a", "n_custom_b"),
+                        stat = c("disp_custom_a", "disp_custom_b")))
+  f <- tempfile(fileext = ".docx")
+  hv_man_table_save(ft, f, caption = "Table 2. Cohorts")
+  sub <- vapply(xq(wx_doc(f), "//w:tr[2]/w:tc"), wx_text, character(1))
+  expect_identical(sum(sub == "n*"), 2L)
+  expect_identical(sum(endsWith(sub, "†")), 2L)
+})

@@ -313,11 +313,25 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 .mark_header <- function(ft, footnotes) {
   body_marks <- attr(ft, "hv_body_marks", exact = TRUE)
   for (sym in setdiff(names(footnotes), names(body_marks))) {
-    j <- which(ft$col_keys %in% .footnote_cols(ft, sym))
-    ft <- flextable::append_chunks(ft, i = 1, j = j, part = "header",
-                                   flextable::as_sup(sym))
+    cells <- .footnote_cells(ft, sym)
+    for (i in unique(cells$i))
+      ft <- flextable::append_chunks(ft, i = i, j = cells$j[cells$i == i],
+                                     part = "header", flextable::as_sup(sym))
   }
   ft
+}
+
+# The header cells, as (row, column), one footnote symbol attaches to.
+# Every mark goes on the first header row, which is the visible cell of
+# any column merged down, except in the describe layout, where each
+# group's name spans its pair in row 1 and row 2 names the count and
+# the statistic: their marks go on row 2.
+.footnote_cells <- function(ft, sym) {
+  j <- which(ft$col_keys %in% .footnote_cols(ft, sym))
+  i <- rep(1L, length(j))
+  pairs <- attr(ft, "hv_pairs", exact = TRUE)
+  i[ft$col_keys[j] %in% unlist(pairs)] <- 2L
+  data.frame(i = i, j = j)
 }
 
 # The style a table was drawn in. A flextable that did not come from
@@ -438,6 +452,19 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 # statistic, so it marks every column that holds one: on the count
 # column it claimed the "No." header was a median.
 .footnote_cols <- function(ft, sym) {
+  # Each group in the describe layout has its own count, so every count
+  # carries the count's mark and every statistic the dagger. The columns
+  # are the groups the table was built with (hv_pairs), not a stat_<k>
+  # pattern: the deprecated wrapper takes any column as a group.
+  pairs <- attr(ft, "hv_pairs", exact = TRUE)
+  if (!is.null(pairs)) {
+    if (identical(sym, "*")) return(pairs$n)
+    if (!identical(sym, "\u2020")) return(pairs$n[1])
+    cols <- pairs$stat
+    if (.compare_noted(ft))
+      cols <- c(cols, intersect("hv_compare_col", ft$col_keys))
+    return(cols)
+  }
   if (identical(sym, "\u2020")) {
     # A spanned header names the grouping once, above its levels, and
     # the statistic note belongs on that name.
