@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,6 +45,11 @@
       <small>Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.9" id="hvtirtables-109">hvtiRtables 1.0.9<a class="anchor" aria-label="anchor" href="#hvtirtables-109"></a></h2>
+<ul><li>
+<code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> no longer fails when the calling session defines an object named <code>sd</code> or <code>median</code>. gtsummary turns each statistic in <code>{mean}±{sd}</code> or <code>{median} [{p15}, {p85}]</code> into a function by looking its name up from where <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html" class="external-link">tbl_summary()</a></code> was called, and from inside a package that lookup reaches the global environment before <code>package:stats</code>, so a study whose <code>R/</code> folder defined <code>sd</code> (as hvtiRtemplates jobs source it into the global environment) got “Value must be a named list of functions” whenever a row showed mean±SD or a median. The call now runs from an environment holding <code><a href="https://rdrr.io/r/stats/sd.html" class="external-link">stats::sd</a></code> and <code><a href="https://rdrr.io/r/stats/median.html" class="external-link">stats::median</a></code> and then only base, so nothing a user defines can shadow a statistic. Present in 1.0.7 and 1.0.8.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.8" id="hvtirtables-108">hvtiRtables 1.0.8<a class="anchor" aria-label="anchor" href="#hvtirtables-108"></a></h2>
 <ul><li><p><code><a href="../reference/hv_man_table_save.html">hv_man_table_save()</a></code> and <code><a href="../reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> always drop the “Variable” column <code>hv_tbl_summary(show_variable = TRUE)</code> adds, before fitting the page, so a saved table is always a manuscript table and its width and orientation are the manuscript table’s. <code><a href="../reference/hv_man_table.html">hv_man_table()</a></code> and <code><a href="../reference/hv_man_table_display.html">hv_man_table_display()</a></code> keep it for the report view; <code>show_variable</code> stays <code>TRUE</code> by default and no longer needs setting to <code>FALSE</code> for a manuscript. <code><a href="../reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>, whose table is always a manuscript table, no longer shows it.</p></li>
