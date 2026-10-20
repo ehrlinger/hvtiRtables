@@ -17,7 +17,8 @@
     `caption =`.
   - The manuscript style refuses what it cannot lay out, each with an error that says what
     to do instead: `font` and `font_size` (it sets no font), `continuous_stat = "both"`
-    (one statistic per group), and a table not built by `hv_tbl_summary()` (it reads the
+    in the compare layout (one statistic per group; the describe layout draws it), and a
+    table not built by `hv_tbl_summary()` (it reads the
     overall count and the grouping's name that function records).
   - The manuscript's label column is 2.0 in wide, so a Table 1 with Overall, two groups and
     a P value is 6.5 in and stays on a portrait Letter page.
