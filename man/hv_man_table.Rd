@@ -10,6 +10,7 @@ hv_man_table(
   font_size = 12,
   digits = 2,
   style = "report",
+  layout = "compare",
   ...
 )
 }
@@ -35,6 +36,13 @@ without a breaking signature change.}
 style from \code{\link[=hv_table_style]{hv_table_style()}}. \code{"manuscript"} needs an
 \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} table, refuses \code{continuous_stat = "both"}, and
 refuses \code{font} and \code{font_size}.}
+
+\item{layout}{The manuscript style's layout, chosen by what the table
+does: \code{"compare"} (default), one overall \code{n} column for groups it
+compares, or \code{"describe"}, a count beside each group, for cohorts or
+repeated measures it describes side by side. Either shows an Overall
+column and comparison columns when the table carries them. Only with
+\code{style = "manuscript"}.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.}

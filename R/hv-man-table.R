@@ -109,6 +109,12 @@
 #'   style from [hv_table_style()]. `"manuscript"` needs an
 #'   [hv_tbl_summary()] table, refuses `continuous_stat = "both"`, and
 #'   refuses `font` and `font_size`.
+#' @param layout The manuscript style's layout, chosen by what the table
+#'   does: `"compare"` (default), one overall `n` column for groups it
+#'   compares, or `"describe"`, a count beside each group, for cohorts or
+#'   repeated measures it describes side by side. Either shows an Overall
+#'   column and comparison columns when the table carries them. Only with
+#'   `style = "manuscript"`.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
@@ -130,15 +136,25 @@
 #'
 #' @export
 hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
-                         digits = 2, style = "report", ...) {
+                         digits = 2, style = "report", layout = "compare",
+                         ...) {
   .check_sas_args(list(...), "hv_man_table")
   .check_gtsummary(tbl)
   style <- .as_style(style)
+  .check_layout(layout, style, given = !missing(layout))
   if (identical(style$name, "manuscript")) {
     if (!missing(font) || !missing(font_size))
       stop("`font` and `font_size` set the report style. A manuscript ",
            "table sets no font, so it takes the font of the document it ",
            "is saved into.", call. = FALSE)
+    if (identical(layout, "describe")) {
+      .check_manuscript_tbl(tbl)
+      return(.man_table_describe(
+        tbl, style, groups = .group_labels(tbl),
+        trailing = attr(tbl, "hv_trailing", exact = TRUE),
+        stat_label = attr(tbl, "hv_stat_label", exact = TRUE)
+      ))
+    }
     return(.man_table_compare(tbl, style))
   }
   .check_string(font, "font")
@@ -188,6 +204,21 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
 # the table as paragraphs, and hv_man_table_save() writes them there, so
 # none of gtsummary's own may reach the table. hv_check_docx() flags the
 # footer row.
+# A manuscript layout, chosen by what the table does (design section
+# 5.1): "compare" puts one overall n column beside groups it compares,
+# "describe" a count beside each group it describes. The report style
+# has one layout, so naming one there is a mistake, not a choice.
+.check_layout <- function(layout, style, given) {
+  if (!is.character(layout) || length(layout) != 1L || is.na(layout) ||
+        !layout %in% c("compare", "describe"))
+    stop("`layout` must be \"compare\" or \"describe\".", call. = FALSE)
+  if (given && !identical(style$name, "manuscript"))
+    stop("`layout` chooses between the manuscript style's layouts. ",
+         "The report style has one; drop `layout`, or use ",
+         "style = \"manuscript\".", call. = FALSE)
+  invisible(NULL)
+}
+
 .drop_gtsummary_notes <- function(tbl) {
   tbl <- gtsummary::remove_footnote_header(tbl)
   tbl <- gtsummary::remove_footnote_body(tbl)

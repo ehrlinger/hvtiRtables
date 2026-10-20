@@ -235,12 +235,12 @@ test_that("all-positional extra arguments error instead of being swallowed", {
   # extras" and returned silently.
   expect_error(
     .check_sas_args(list("JUNK"), "hv_man_table"),
-    "unused argument (position 6)", fixed = TRUE
+    "unused argument (position 7)", fixed = TRUE
   )
   expect_error(
     hv_man_table(gtsummary::tbl_summary(gtsummary::trial, include = "age"),
-                 "Times New Roman", 12, 2, "report", "JUNK"),
-    "unused argument (position 6)", fixed = TRUE
+                 "Times New Roman", 12, 2, "report", "compare", "JUNK"),
+    "unused argument (position 7)", fixed = TRUE
   )
 })
 
@@ -249,7 +249,7 @@ test_that("a mixed named-and-positional dots list is handled sensibly", {
   # by position, not the old nonsense "unused argument ()".
   expect_error(
     .check_sas_args(list("JUNK", colour = "red"), "hv_man_table"),
-    "unused argument (position 6)", fixed = TRUE
+    "unused argument (position 7)", fixed = TRUE
   )
   # A positional extra followed by a *recognized* macro name: the
   # helpful macro-specific message wins over the positional one.
