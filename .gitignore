@@ -9,3 +9,6 @@ reports/
 /vignettes/*_files/
 /vignettes/articles/*.docx
 /vignettes/articles/*_files/
+/vignettes/articles/.quarto/
+/vignettes/articles/*.quarto_ipynb
+/vignettes/articles/.gitignore

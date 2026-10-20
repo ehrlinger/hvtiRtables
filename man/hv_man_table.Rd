@@ -69,7 +69,11 @@ spanning its levels, one overall \code{n} column, shaded section rows that
 span the table, a bold header, and no font of its own, so the table
 takes the body font of the document it is saved into. It needs a table
 from \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}, and \code{\link[=hv_man_table_save]{hv_man_table_save()}} requires a \code{caption}
-for it. See \code{\link[=hv_table_style]{hv_table_style()}} for the properties of each style.
+for it. See \code{\link[=hv_table_style]{hv_table_style()}} for the properties of each style, and
+the \href{https://ehrlinger.github.io/hvtiRtables/articles/table-styles.html}{Table styles}
+article, which draws one table in each style and layout beside the
+matrix of their properties and says which house rules each style
+keeps.
 
 The rest of this page describes the \code{"report"} style.
 

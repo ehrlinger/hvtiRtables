@@ -112,7 +112,12 @@ of the `.docx` is Word's alone; open the saved files to see it:
   and the caption a bold line above it. In Word both are paragraphs,
   the caption above the table and the notes below it, in the same
   words.
-- **The dark theme.** The tables are shown on white, as on paper.
+- **The dark theme.** The example tables are shown on white, as in
+  Word, whatever the site's theme; the reference tables below follow
+  the site's theme.
+- **The abbreviation key.** In the saved file the key is one line below
+  the notes, in the form `Key: A, definition`, with each abbreviation in
+  italics (house rule 14, decision 7). Here it is the same line.
 
 ## The matrix
 
@@ -166,7 +171,8 @@ knitr::kable(h, col.names = c("Rule", "What it asks", "Kind", "report",
              row.names = FALSE)
 ```
 
-Each file saved above passes, checked as the style that wrote it:
+Each file saved above passes, checked as the style that wrote it. A
+count of 0 means the saved file has no findings:
 
 ```{r}
 nrow(hv_check_docx("table-styles-report.docx", style = "report"))

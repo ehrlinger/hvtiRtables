@@ -12,7 +12,12 @@
 #' span the table, a bold header, and no font of its own, so the table
 #' takes the body font of the document it is saved into. It needs a table
 #' from [hv_tbl_summary()], and [hv_man_table_save()] requires a `caption`
-#' for it. See [hv_table_style()] for the properties of each style.
+#' for it. See [hv_table_style()] for the properties of each style, and
+#' the [Table styles](
+#' https://ehrlinger.github.io/hvtiRtables/articles/table-styles.html)
+#' article, which draws one table in each style and layout beside the
+#' matrix of their properties and says which house rules each style
+#' keeps.
 #'
 #' The rest of this page describes the `"report"` style.
 #'
