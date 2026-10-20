@@ -127,6 +127,7 @@ hv_man_table_display <- function(ft, footnotes = NULL,
   flextable::set_table_properties(
     ft, layout = p$layout, width = p$width, align = p$align,
     opts_word = unclass(p$opts_word), opts_pdf = unclass(p$opts_pdf),
-    opts_html = html
+    opts_html = html, word_title = p$word_title,
+    word_description = p$word_description
   )
 }

@@ -17,8 +17,9 @@ describes side by side.
 
 This page draws one table in each, then prints the matrix of what
 differs. The matrix is read from `hv_table_style()` when the page is
-built, so it says what the package does, not what someone remembered
-to write down.
+built, so it is not copied by hand. Some properties are labels the
+renderers do not read yet; the matrix lists them as the style records
+them.
 
 ## One table
 
@@ -101,8 +102,9 @@ same code the saver uses for its marks and notes. Fill, grid, spans,
 weight, alignment, marks and note wording are the saved file's. Some
 of the `.docx` is Word's alone; open the saved files to see it:
 
-- **The page.** Every style saves to US Letter, turned landscape when
-  the table is wider than a portrait page.
+- **The page.** Every style saves to US Letter. The report turns
+  landscape when it has three or more statistic columns or is wider
+  than a portrait page; the manuscript turns only on width.
 - **The manuscript's font.** The manuscript style sets no font, so in
   Word the table takes the document's body font. Here it takes this
   page's font.
@@ -112,12 +114,13 @@ of the `.docx` is Word's alone; open the saved files to see it:
   and the caption a bold line above it. In Word both are paragraphs,
   the caption above the table and the notes below it, in the same
   words.
-- **The dark theme.** The example tables are shown on white, as in
-  Word, whatever the site's theme; the reference tables below follow
-  the site's theme.
-- **The abbreviation key.** In the saved file the key is one line below
+- **The dark theme.** The example tables (flextable) are shown on
+  white, as in Word, whatever the site's theme; the matrix and rules
+  tables below follow the site's theme. The site's CSS rule whitens
+  every flextable on the site, the reference examples included.
+- **The abbreviation key.** In the saved file the key is one paragraph below
   the notes, in the form `Key: A, definition`, with each abbreviation in
-  italics (house rule 14, decision 7). Here it is the same line.
+  italics (house rule 14). Here it is the same paragraph.
 
 ## The matrix
 
@@ -161,7 +164,10 @@ hand, so a rule that exists to keep a hand-edited table editable became
 a style property: the report keeps it, and the manuscript keeps it or
 sets it aside where the submissions did. A content rule says what a
 reader needs whoever made the table, and binds every style.
-`hv_check_docx()` checks the rules marked checked in any saved file.
+`hv_check_docx()` checks the rules marked checked in any saved file;
+rule 3 is checked as each style keeps it, strictly with
+`style = "report"` and allowing header and full-width section merges
+otherwise.
 
 ```{r, echo = FALSE}
 h <- hvtiRtables:::.house_rules()

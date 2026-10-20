@@ -311,7 +311,7 @@ Three rows of the matrix cannot be met by a renderer alone:
   difference. The article's matrix is generated from `hv_table_style()`, not written by
   hand, so the two cannot drift. It also states, for each house rule, whether it is a
   content rule or a hand-edit rule and which styles keep it (section 6). The `@details` of
-  `hv_man_table()` link to the article. How it is built is 2026-10-20-table-styles-phase4-plan.md.
+  `hv_man_table()` link to the article. Phase 4's plan, 2026-10-20-table-styles-phase4-plan.md, builds it.
 - **D7. hvtiRtemplates.** `dc-tables`' report stays `"report"`, with the Variable column on
   screen. Its Word export takes `"manuscript"`, with the fill color as a study choice. A
   later PR, after the hvtiRtables release.

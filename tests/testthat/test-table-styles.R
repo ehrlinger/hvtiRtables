@@ -158,6 +158,7 @@ test_that("rows 14-16: weight, row height, rows kept whole, header repeated", {
   expect_length(xq(m, "//w:trPr/w:cantSplit"), n_tr)
   r <- wx_doc(st_save("report"))
   expect_length(xq(r, "//w:trPr/w:cantSplit"), 0L)
+  expect_length(xq(r, "//w:trHeight[@w:hRule='atLeast']"), 0L) # auto
 })
 
 test_that("row 14: labels are left-justified and statistics centered", {

@@ -247,12 +247,16 @@ test_that("the font class joins the table's own HTML options", {
   p <- ft$properties
   ft <- flextable::set_table_properties(
     ft, opts_word = unclass(p$opts_word),
+    word_title = "Table 1", word_description = "Baseline table",
     opts_html = list(
       scroll = list(height = "300px", freeze_first_column = TRUE),
       extra_class = "my-table", extra_css = ".my-table { color: red; }"
     )
   )
-  html <- hv_man_table_display(ft)$properties$opts_html
+  shown <- hv_man_table_display(ft)
+  expect_identical(shown$properties$word_title, "Table 1")
+  expect_identical(shown$properties$word_description, "Baseline table")
+  html <- shown$properties$opts_html
   expect_identical(html$scroll,
                    list(height = "300px", freeze_first_column = TRUE))
   expect_identical(html$extra_class, c("my-table", "hv-document-font"))

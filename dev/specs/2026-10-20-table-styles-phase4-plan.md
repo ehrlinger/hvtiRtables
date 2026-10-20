@@ -135,7 +135,8 @@ them for John.
 4. **How the matrix is generated.** The style object holds codes (`borders = "grid"`), so
    each matrix row is a function from `(style, layout)` to the cell's words, keyed on the
    property's value with `switch()`. A value with no words gives `NULL`, which `vapply()`
-   refuses, so a new value cannot reach the article blank. Each row names the properties it
+   refuses, so a new value cannot reach the article blank. The implementation maps every value through
+   `.say()`, which errors naming the row and value on an unknown, NA or empty value. Each row names the properties it
    reads, and a test asserts that every property of `hv_table_style()` is read by some row
    (the style's `name` heads its column), so a property added later cannot go undocumented.
    **The layout is an argument, not a property** (design 5.1, Phase 3 decision 2), so the

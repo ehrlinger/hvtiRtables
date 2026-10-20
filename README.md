@@ -28,6 +28,7 @@ Tables are drawn in a style named by its role. A report table
 table (`hv_man_table(style = "manuscript")`) is what a journal receives,
 laid out by what it does: `"compare"` for groups it compares, `"describe"`
 for cohorts or repeated measures it describes side by side.
+
 The [Table styles](https://ehrlinger.github.io/hvtiRtables/articles/table-styles.html)
 article draws one table in each and lists what differs.
 
