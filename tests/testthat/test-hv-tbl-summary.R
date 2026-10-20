@@ -2058,3 +2058,45 @@ test_that("a standardized difference is named and defined, not 'Difference'", {
                         compare = "pvalue")
   expect_null(attr(tbl, "hv_smd"))
 })
+
+# gtsummary turns each "{name}" in a statistic string into a function by
+# evaluating the name in its caller's environment. From inside a package
+# that lookup reaches the global environment before package:stats, so a
+# study that defines `sd` or `median` in its R/ folder, as hvtiRtemplates
+# jobs source it, broke every table that showed mean +/- SD or a median.
+# `mean` lives in base, which is searched first, and was never exposed.
+with_global <- function(values, code) {
+  for (nm in names(values)) assign(nm, values[[nm]], envir = globalenv())
+  on.exit(rm(list = names(values), envir = globalenv()))
+  force(code)
+}
+
+test_that("objects named like statistics never shadow them", {
+  build <- function(continuous, ...) {
+    hv_tbl_summary(gtsummary::trial, by = "trt",
+                   groups = list(D = c(continuous, "stage")),
+                   continuous = continuous, categorical = "stage", ...)
+  }
+  shadows <- list(
+    sd = 1, median = 1, mean = 1, min = 1, max = 1, n = 1, p = 1,
+    N_nonmiss = 1, p25 = 1, p75 = 1, p15 = 1, p85 = 1, quantile = 1,
+    oneway.test = 1, fisher.test = 1, chisq.test = 1, t.test = 1,
+    chisq.test.no.correct = 1, var = 1, smd = 1
+  )
+  for (stat in c("median", "mean", "both")) {
+    for (cont in list(c("age", "marker"), "age")) {
+      mean_sd <- if (length(cont) > 1L) "marker" else character(0)
+      args <- list(continuous = cont, mean_sd = mean_sd,
+                   continuous_stat = stat)
+      clean <- do.call(build, args)$table_body
+      shadowed <- with_global(shadows, do.call(build, args)$table_body)
+      expect_identical(shadowed, clean, info = paste(stat, length(cont)))
+    }
+  }
+  normal <- function() {
+    build(c("age", "marker"), normal = "marker")$table_body
+  }
+  clean <- normal()
+  shadowed <- with_global(list(sd = data.frame(x = 1), median = "a"), normal())
+  expect_identical(shadowed, clean)
+})

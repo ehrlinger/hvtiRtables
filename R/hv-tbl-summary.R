@@ -452,7 +452,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # nolint start: object_usage_linter.
   no_comma <- gtsummary::label_style_number(big.mark = "")
   # nolint end
-  tbl <- gtsummary::tbl_summary(
+  tbl <- .tbl_summary_isolated(
     data,
     by = if (is.null(by)) NULL else gtsummary::all_of(by),
     include = gtsummary::all_of(vars),
@@ -857,6 +857,26 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     .format_to_place(mean, mean_place), "\u00B1",
     .format_to_place(sd, mean_place - 1L)
   )
+}
+
+# gtsummary turns each "{name}" in a statistic string into a function by
+# evaluating the name in the environment tbl_summary() was called from. A
+# function defined in this package inherits namespace -> imports -> base ->
+# the global environment -> package:stats, so an object a study defines as
+# `sd` or `median` (hvtiRtemplates jobs source the study's R/ into the
+# global environment) is found before stats::sd and stats::median and the
+# call fails. Calling tbl_summary() from a function whose enclosure holds
+# those two and then only base closes the lookup: nothing a user defines can
+# shadow a statistic. `mean`, `min` and `max` are base; the percentiles
+# gtsummary builds itself from "pNN".
+.stat_lookup_env <- function() {
+  list2env(list(sd = stats::sd, median = stats::median), parent = baseenv())
+}
+
+.tbl_summary_isolated <- function(...) {
+  call_tbl_summary <- function(...) gtsummary::tbl_summary(...)
+  environment(call_tbl_summary) <- .stat_lookup_env()
+  call_tbl_summary(...)
 }
 
 # gtsummary retains unrounded statistics in ARD cards. Use those rather than
