@@ -23,7 +23,10 @@
 #' @return A list of class `"hv_table_style"`, one element per property,
 #'   for [hv_man_table()]'s `style` argument.
 #'
-#' @seealso [hv_man_table()], which draws a table in a style.
+#' @seealso [hv_man_table()], which draws a table in a style. The
+#'   [Table styles](
+#'   https://ehrlinger.github.io/hvtiRtables/articles/table-styles.html)
+#'   article prints every style's properties, read from this object.
 #'
 #' @examples
 #' hv_table_style("manuscript", fill = "#A5C9EB")$fill

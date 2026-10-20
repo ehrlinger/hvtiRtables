@@ -158,6 +158,7 @@ test_that("rows 14-16: weight, row height, rows kept whole, header repeated", {
   expect_length(xq(m, "//w:trPr/w:cantSplit"), n_tr)
   r <- wx_doc(st_save("report"))
   expect_length(xq(r, "//w:trPr/w:cantSplit"), 0L)
+  expect_length(xq(r, "//w:trHeight[@w:hRule='atLeast']"), 0L) # auto
 })
 
 test_that("row 14: labels are left-justified and statistics centered", {
@@ -414,4 +415,175 @@ test_that("describe marks the groups it was built with, whatever their names", {
   sub <- vapply(xq(wx_doc(f), "//w:tr[2]/w:tc"), wx_text, character(1))
   expect_identical(sum(sub == "n*"), 2L)
   expect_identical(sum(endsWith(sub, "†")), 2L)
+})
+
+# -- the matrix the "Table styles" article prints (design D6) -------------
+
+# The design's section 5 matrix and its 5.1 describe column, as facts:
+# the wording is the generated matrix's, the content the design's. A
+# change to a style changes a cell here, and the design records it.
+test_that("the style matrix states the design's matrix", {
+  dag <- "\u2020"
+  m <- .style_matrix()
+  expect_identical(m$property, c(
+    "Section row", "Fill color", "Borders", "Header", "Non-missing count",
+    "Overall and comparison columns", "Continuous values",
+    "Categorical values", "Note markers", "Count note", "Statistic note",
+    "Abbreviations", "Font", "Caption", "Alignment and weight",
+    "Row height", "Header repeated on a new page", "Page",
+    "Variable column", "Merged cells"
+  ))
+  shared <- c(
+    "`#CAEDFB`; `hv_table_style(fill =)` sets it",
+    "shown when the table carries them",
+    "`9.9 [8.5, 11]`, `63\u00B113`: the house standard",
+    "`30 (42)`: the house standard",
+    "`Key: A, \u2026; B, \u2026`",
+    "header bold; first column left, others centered",
+    "yes", "US Letter, landscape when wide, else portrait"
+  )
+  expect_identical(m$property[m$shared], c(
+    "Fill color", "Overall and comparison columns", "Continuous values",
+    "Categorical values", "Abbreviations", "Alignment and weight",
+    "Header repeated on a new page", "Page"
+  ))
+  expect_identical(m$report[m$shared], shared)
+  expect_identical(m$report[!m$shared], c(
+    paste0("label in the first cell, bold, left; fill on every cell of ",
+           "the row, unmerged"),
+    "horizontal rules only",
+    paste0("one row: a `No.` column before each group's `<group> N = n`; ",
+           "`*` on the first `No.`, `", dag, "` on each group"),
+    "one column per group",
+    "the house symbols by meaning, superscript, then a space",
+    "`Number of non-missing values.`",
+    "`No. (%) or Median [15th, 85th percentiles].`",
+    "Times New Roman 12 pt",
+    "optional: bold, above the table, when given",
+    "auto",
+    "on screen only; every saved `.docx` drops it",
+    "none"
+  ))
+  ms <- c(
+    "spans the full width, bold; filled",
+    "full grid: box plus all inner lines, single 0.5 pt",
+    NA, NA,
+    paste0("the house symbols by meaning, at the start of the note, not ",
+           "superscript"),
+    "`Patients with non-missing data.`",
+    "`Values are No. (%) or median [15th, 85th percentiles].`",
+    "none set: the document's body font",
+    "required: bold, above the table",
+    "at least 300 twips, rows kept on one page",
+    "never",
+    "header and section rows"
+  )
+  ms_cmp <- ms
+  ms_cmp[3:4] <- c(
+    paste0("two rows: `Characteristic` and `n*` merged down, the ",
+           "grouping's name with `", dag, "` spanning its levels; row 2 ",
+           "`<level> (N = n)`"),
+    "one overall `n*` column"
+  )
+  ms_dsc <- ms
+  ms_dsc[3:4] <- c(
+    paste0("two rows: each group, `<level> (N = n)`, spans its own (n, ",
+           "statistic) pair; row 2 names them, `n*` and the statistic ",
+           "with `", dag, "`"),
+    "one `n*` column per group, Overall's included"
+  )
+  expect_identical(m$compare[!m$shared], ms_cmp)
+  expect_identical(m$describe[!m$shared], ms_dsc)
+})
+
+test_that("every style property is written into the matrix", {
+  expect_setequal(.matrix_reads(), names(hv_table_style()))
+})
+
+test_that("the matrix is read from the style objects, not written", {
+  fill <- .style_matrix(manuscript = hv_table_style("manuscript",
+                                                    fill = "#A5C9EB"))
+  i <- fill$property == "Fill color"
+  expect_identical(fill$compare[i],
+                   "`#A5C9EB`; `hv_table_style(fill =)` sets it")
+  expect_false(fill$shared[i])
+  s <- hv_table_style("report")
+  s$borders <- "grid"
+  b <- .style_matrix(report = s)
+  expect_identical(b$report[b$property == "Borders"],
+                   "full grid: box plus all inner lines, single 0.5 pt")
+  s$borders <- "dotted"
+  expect_error(.style_matrix(report = s),
+               "No words for borders = dotted in the style matrix")
+})
+
+test_that("a property value with no words errors naming the row", {
+  for (p in c("merged", "fill", "count_note")) {
+    for (bad in list(NA_character_, "")) {
+      s <- hv_table_style("report")
+      s[[p]] <- bad
+      expect_error(.style_matrix(report = s),
+                   sprintf("No words for %s = ", p), fixed = TRUE)
+    }
+  }
+})
+
+test_that("the matrix's notes and key are the words the saver writes", {
+  m <- .style_matrix()
+  cell <- function(col, prop) gsub("`", "", m[[col]][m$property == prop])
+  after <- function(f) {
+    vapply(xq(wx_doc(f), "//w:tbl/following-sibling::w:p"), wx_text,
+           character(1))
+  }
+  r <- after(st_save("report"))
+  expect_identical(r[1], paste("*", cell("report", "Count note")))
+  expect_identical(r[2], paste0("\u2020 ", sub("\\.$", "", cell(
+    "report", "Statistic note"
+  )), "; P values from the Wilcoxon rank sum test and Pearson's ",
+  "chi-square test."))
+  x <- after(st_save("manuscript"))
+  expect_identical(x[1], paste0("*", cell("compare", "Count note")))
+  # The manuscript's dagger note goes on to name the tests.
+  stat <- sub("\\.$", ";", cell("compare", "Statistic note"))
+  expect_identical(x[2], paste0(
+    "\u2020", stat, " P values from the Wilcoxon rank sum test and ",
+    "Pearson's chi-square test."
+  ))
+  f <- tempfile(fileext = ".docx")
+  hv_man_table_save(hv_man_table(st_tbl()), f,
+                    abbreviations = c(B = "\u2026", A = "\u2026"))
+  expect_identical(utils::tail(after(f), 1),
+                   cell("report", "Abbreviations"))
+})
+
+test_that("the house rules: content binds every style, hand edits vary", {
+  h <- .house_rules()
+  expect_identical(h$rule, c("2", "3", "5", "8", "13", "14", "", "", "",
+                             "", ""))
+  expect_identical(h$kind, c(rep("hand edit", 4), "content", "hand edit",
+                             rep("content", 5)))
+  expect_true(all(h$report == "kept"))
+  expect_identical(h$manuscript[h$kind == "content"], rep("kept", 6))
+  expect_identical(h$manuscript[2:4], c(
+    "set aside: merges its header and section rows",
+    "set aside: the document's body font",
+    "set aside: \"Patients with non-missing data.\""
+  ))
+  expect_identical(h$checked, c(FALSE, TRUE, FALSE, FALSE, TRUE, FALSE,
+                                TRUE, TRUE, FALSE, FALSE, FALSE))
+  s <- hv_table_style("manuscript")
+  s$font <- "Times New Roman"
+  expect_identical(.house_rules(manuscript = s)$manuscript[3], "kept")
+})
+
+test_that("the house rules: an unreadable style value errors naming the rule", {
+  s <- hv_table_style("manuscript")
+  s$count_note <- NA_character_
+  expect_error(.house_rules(manuscript = s), "count_note")
+  s <- hv_table_style("manuscript")
+  s$merged <- ""
+  expect_error(.house_rules(manuscript = s), "merged")
+  s <- hv_table_style("manuscript")
+  s$font <- 12
+  expect_error(.house_rules(manuscript = s), "font")
 })

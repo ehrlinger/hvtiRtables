@@ -7,3 +7,8 @@ reports/
 /vignettes/.quarto/
 /vignettes/*.html
 /vignettes/*_files/
+/vignettes/articles/*.docx
+/vignettes/articles/*_files/
+/vignettes/articles/.quarto/
+/vignettes/articles/*.quarto_ipynb
+/vignettes/articles/.gitignore

@@ -1,0 +1,187 @@
+---
+title: "Table styles"
+description: >
+  One table drawn in each style and layout, beside the matrix of their
+  properties, and the house rules each style keeps.
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+A table is drawn in a style named by its role. The report style is the
+working table of an analysis report. The manuscript style is the table a
+journal receives, laid out by what the table does: `"compare"` for
+groups it compares, `"describe"` for cohorts or repeated measures it
+describes side by side.
+
+This page draws one table in each, then prints the matrix of what
+differs. The matrix is read from `hv_table_style()` when the page is
+built, so it is not copied by hand. Some properties are labels the
+renderers do not read yet; the matrix lists them as the style records
+them.
+
+## One table
+
+```{r setup}
+library(hvtiRtables)
+```
+
+The data are `gtsummary::trial`, a simulated trial that ships with
+gtsummary. Age is shown as mean±SD and the marker level as a median, so
+the table also carries the mark the house standard puts on the
+statistic fewer rows use (`¶`).
+
+```{r}
+tbl <- hv_tbl_summary(
+  gtsummary::trial, by = "trt",
+  groups = list(Demography = c("age", "marker"),
+                Disease = c("stage", "grade")),
+  continuous = c("age", "marker"), categorical = c("stage", "grade"),
+  mean_sd = "age", show_variable = FALSE
+)
+key <- c(SD = "standard deviation")
+```
+
+`show_variable = FALSE` leaves out the Variable column a report shows on
+screen. Every saved `.docx` drops it, and each table here is drawn as it
+is saved.
+
+## The report style
+
+```{r}
+report <- hv_man_table(tbl)
+hv_man_table_save(report, "table-styles-report.docx",
+                  abbreviations = key)
+```
+
+```{r, echo = FALSE}
+hv_man_table_display(report, abbreviations = key)
+```
+
+The saved file: [table-styles-report.docx](table-styles-report.docx).
+
+## The manuscript style, compare
+
+```{r}
+compare <- hv_man_table(tbl, style = "manuscript")
+hv_man_table_save(compare, "table-styles-compare.docx",
+                  abbreviations = key,
+                  caption = "Table 1. Baseline characteristics")
+```
+
+**Table 1. Baseline characteristics**
+
+```{r, echo = FALSE}
+hv_man_table_display(compare, abbreviations = key)
+```
+
+The saved file: [table-styles-compare.docx](table-styles-compare.docx).
+
+## The manuscript style, describe
+
+```{r}
+describe <- hv_man_table(tbl, style = "manuscript", layout = "describe")
+hv_man_table_save(describe, "table-styles-describe.docx",
+                  abbreviations = key,
+                  caption = "Table 2. The treatment arms side by side")
+```
+
+**Table 2. The treatment arms side by side**
+
+```{r, echo = FALSE}
+hv_man_table_display(describe, abbreviations = key)
+```
+
+The saved file: [table-styles-describe.docx](table-styles-describe.docx).
+
+## What a web page cannot show
+
+The tables above are `hv_man_table_display()`'s HTML, built from the
+same code the saver uses for its marks and notes. Fill, grid, spans,
+weight, alignment, marks and note wording are the saved file's. Some
+of the `.docx` is Word's alone; open the saved files to see it:
+
+- **The page.** Every style saves to US Letter. The report turns
+  landscape when it has three or more statistic columns or is wider
+  than a portrait page; the manuscript turns only on width.
+- **The manuscript's font.** The manuscript style sets no font, so in
+  Word the table takes the document's body font. Here it takes this
+  page's font.
+- **Rows and pages.** Row heights in twips, rows kept whole on a page,
+  and the header repeated on a new page are Word's pagination.
+- **Notes and caption.** Here the notes are footer lines of the table
+  and the caption a bold line above it. In Word both are paragraphs,
+  the caption above the table and the notes below it, in the same
+  words.
+- **The dark theme.** The example tables (flextable) are shown on
+  white, as in Word, whatever the site's theme; the matrix and rules
+  tables below follow the site's theme. The site's CSS rule whitens
+  every flextable on the site, the reference examples included.
+- **The abbreviation key.** In the saved file the key is one paragraph below
+  the notes, in the form `Key: A, definition`, with each abbreviation in
+  italics (house rule 14). Here it is the same paragraph.
+
+## The matrix
+
+```{r, include = FALSE}
+m <- hvtiRtables:::.style_matrix()
+```
+
+The manuscript style takes two columns because its layout is an
+argument of `hv_man_table()`, not a property of the style, so one style
+object serves both tables. A row the same in every style is listed once,
+after the matrix.
+
+```{r, echo = FALSE}
+knitr::kable(
+  m[!m$shared, c("property", "report", "compare", "describe")],
+  col.names = c("Property", "report", "manuscript, compare",
+                "manuscript, describe"),
+  row.names = FALSE
+)
+```
+
+What every style shares:
+
+```{r, echo = FALSE}
+knitr::kable(m[m$shared, c("property", "report")],
+             col.names = c("Property", "Every style"), row.names = FALSE)
+```
+
+The values are the house standard, which `hv_tbl_summary()` writes for
+every style: P values without a leading zero (`.013`, `<.001`, `>.9`),
+and the statistic fewer rows use marked on its cells, `§` on a median
+among means and `¶` on a mean among medians. A journal that prints the
+submitted table can change the fill:
+`hv_table_style("manuscript", fill = "#A5C9EB")`.
+
+## The house rules
+
+*Table Construction for Manuscripts* (7/14/2026) was written for tables
+edited by hand for submission. A generated table is never edited by
+hand, so a rule that exists to keep a hand-edited table editable became
+a style property: the report keeps it, and the manuscript keeps it or
+sets it aside where the submissions did. A content rule says what a
+reader needs whoever made the table, and binds every style.
+`hv_check_docx()` checks the rules marked checked in any saved file;
+rule 3 is checked as each style keeps it, strictly with
+`style = "report"` and allowing header and full-width section merges
+otherwise.
+
+```{r, echo = FALSE}
+h <- hvtiRtables:::.house_rules()
+h$checked <- ifelse(h$checked, "yes", "")
+knitr::kable(h, col.names = c("Rule", "What it asks", "Kind", "report",
+                              "manuscript", "Checked"),
+             row.names = FALSE)
+```
+
+Each file saved above passes, checked as the style that wrote it. A
+count of 0 means the saved file has no findings:
+
+```{r}
+nrow(hv_check_docx("table-styles-report.docx", style = "report"))
+nrow(hv_check_docx("table-styles-compare.docx", style = "manuscript"))
+nrow(hv_check_docx("table-styles-describe.docx", style = "manuscript"))
+```

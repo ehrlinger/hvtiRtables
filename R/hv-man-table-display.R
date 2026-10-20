@@ -9,7 +9,9 @@
 #'
 #' The notes follow the table's style: a manuscript table's notes begin
 #' with the plain symbol and use the submissions' wording, as they do in
-#' the saved file.
+#' the saved file. A manuscript table sets no font, so in HTML it takes
+#' the font and size of the page around it, as in Word it takes the
+#' document's.
 #'
 #' The one deliberate difference is the "Variable" column
 #' [hv_tbl_summary()]'s `show_variable` adds: the display keeps it, as the
@@ -96,6 +98,36 @@ hv_man_table_display <- function(ft, footnotes = NULL,
       ft <- flextable::fontsize(ft, size = size[1], part = "footer")
     ft <- flextable::align(ft, align = "left", part = "footer")
   }
+  if (is.na(style$font)) ft <- .document_font_html(ft)
   attr(ft, "hv_display") <- TRUE
   ft
+}
+
+# A style that sets no font takes the document's (design question 5).
+# In Word that is a run with no font; in HTML flextable writes the
+# missing name as font-family 'NA', which no browser has, so the browser
+# fell back to its own default, a serif, and a manuscript table looked
+# set in the report's Times New Roman. The class makes every run of the
+# table, its footer lines included, take the page's font and size. It is
+# added to the table's own HTML options, a scroll box, a class or CSS
+# already set, and the table's other properties are passed back, since
+# set_table_properties() resets any it is not given.
+.document_font_html <- function(ft) {
+  if (flextable::nrow_part(ft, "footer") > 0L) {
+    ft <- flextable::font(ft, fontname = NA_character_, part = "footer")
+    ft <- flextable::fontsize(ft, size = NA_real_, part = "footer")
+  }
+  p <- ft$properties
+  html <- unclass(p$opts_html)
+  html$extra_class <- c(html$extra_class, "hv-document-font")
+  css <- c(html$extra_css,
+           paste0(".hv-document-font span { font-family: inherit ",
+                  "!important; font-size: inherit !important; }"))
+  html$extra_css <- paste(css[nzchar(css)], collapse = "\n")
+  flextable::set_table_properties(
+    ft, layout = p$layout, width = p$width, align = p$align,
+    opts_word = unclass(p$opts_word), opts_pdf = unclass(p$opts_pdf),
+    opts_html = html, word_title = p$word_title,
+    word_description = p$word_description
+  )
 }

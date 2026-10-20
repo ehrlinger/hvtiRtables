@@ -33,7 +33,9 @@ since HTML has no page to put them on.
 \details{
 The notes follow the table's style: a manuscript table's notes begin
 with the plain symbol and use the submissions' wording, as they do in
-the saved file.
+the saved file. A manuscript table sets no font, so in HTML it takes
+the font and size of the page around it, as in Word it takes the
+document's.
 
 The one deliberate difference is the "Variable" column
 \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s \code{show_variable} adds: the display keeps it, as the

@@ -39,5 +39,7 @@ hv_table_style("manuscript", fill = "#A5C9EB")$fill
 
 }
 \seealso{
-\code{\link[=hv_man_table]{hv_man_table()}}, which draws a table in a style.
+\code{\link[=hv_man_table]{hv_man_table()}}, which draws a table in a style. The
+\href{https://ehrlinger.github.io/hvtiRtables/articles/table-styles.html}{Table styles}
+article prints every style's properties, read from this object.
 }

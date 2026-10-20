@@ -218,3 +218,49 @@ test_that("a manuscript display writes its notes in the manuscript's words", {
                    "*Patients with non-missing data.")
   expect_false(any(first$vertical.align == "superscript"))
 })
+
+test_that("a fontless style's display takes the page's font in HTML", {
+  ft <- hv_man_table(fx_hv_tbl(), style = "manuscript")
+  shown <- hv_man_table_display(ft)
+  expect_identical(shown$properties$opts_html$extra_class,
+                   "hv-document-font")
+  html <- as.character(flextable::htmltools_value(shown))
+  expect_match(html, "class='[^']*hv-document-font'")
+  expect_match(html, paste0(".hv-document-font span { font-family: ",
+                            "inherit !important;"), fixed = TRUE)
+  sty <- shown$footer$styles$text
+  expect_true(all(is.na(sty$font.family$data)))
+  expect_true(all(is.na(sty$font.size$data)))
+  # Its other properties survive: rows kept whole, the header repeated.
+  expect_identical(shown$properties$opts_word, ft$properties$opts_word)
+})
+
+test_that("a report display keeps its own font, with no class", {
+  shown <- hv_man_table_display(dp_ft(), abbreviations = dp_abbr)
+  expect_null(shown$properties$opts_html$extra_class)
+  html <- as.character(flextable::htmltools_value(shown))
+  expect_false(grepl("hv-document-font", html, fixed = TRUE))
+})
+
+test_that("the font class joins the table's own HTML options", {
+  ft <- hv_man_table(fx_hv_tbl(), style = "manuscript")
+  p <- ft$properties
+  ft <- flextable::set_table_properties(
+    ft, opts_word = unclass(p$opts_word),
+    word_title = "Table 1", word_description = "Baseline table",
+    opts_html = list(
+      scroll = list(height = "300px", freeze_first_column = TRUE),
+      extra_class = "my-table", extra_css = ".my-table { color: red; }"
+    )
+  )
+  shown <- hv_man_table_display(ft)
+  expect_identical(shown$properties$word_title, "Table 1")
+  expect_identical(shown$properties$word_description, "Baseline table")
+  html <- shown$properties$opts_html
+  expect_identical(html$scroll,
+                   list(height = "300px", freeze_first_column = TRUE))
+  expect_identical(html$extra_class, c("my-table", "hv-document-font"))
+  expect_match(html$extra_css, ".my-table { color: red; }", fixed = TRUE)
+  expect_match(html$extra_css, paste0(".hv-document-font span { ",
+                                      "font-family: inherit"), fixed = TRUE)
+})
