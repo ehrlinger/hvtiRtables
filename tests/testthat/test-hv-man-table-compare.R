@@ -153,3 +153,7 @@ test_that("the statistic note in each style's words", {
   expect_identical(.stat_note("No. (%) or Mean±SD", r),
                    "No. (%) or Mean±SD.")
 })
+
+test_that("compare: the flextable records its layout", {
+  expect_identical(attr(cmp(), "hv_layout"), "compare")
+})
