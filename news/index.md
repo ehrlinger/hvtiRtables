@@ -1,5 +1,212 @@
 # Changelog
 
+## hvtiRtables 1.0.8
+
+- [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
+  and
+  [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
+  always drop the “Variable” column
+  `hv_tbl_summary(show_variable = TRUE)` adds, before fitting the page,
+  so a saved table is always a manuscript table and its width and
+  orientation are the manuscript table’s.
+  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+  and
+  [`hv_man_table_display()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_display.md)
+  keep it for the report view; `show_variable` stays `TRUE` by default
+  and no longer needs setting to `FALSE` for a manuscript.
+  [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md),
+  whose table is always a manuscript table, no longer shows it.
+
+- Tables follow the house notation standard
+  (dev/specs/2026-10-17-table-styles-design.md, section 5.2). **Existing
+  tables change:**
+
+  - Medians are shown in brackets, each number to 2 significant digits
+    and a value of 10 or more to the units place: `102 [63, 170]`,
+    `0.31 [0.21, 0.39]`. The statistic note reads “Median \[15th, 85th
+    percentiles\]”.
+  - P values drop the leading zero: `.013`, `<.001`, `>.9`.
+  - A table mixing medians and means marks the cells of whichever
+    statistic fewer rows use, a section sign on medians and a pilcrow on
+    means, with a note for each; the row-label suffixes (“Age, Mean±SD”)
+    and the “No. (%) or as labeled” note are gone.
+  - Mean ± SD is unchanged: `63±13`, unspaced, EHB paired rounding.
+  - Exact ties in a median or percentile round to even, as for mean +/-
+    SD: 62.5 shows as 62, where gtsummary and SAS showed 63.
+  - In
+    [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
+    the mark is a lettered superscript `b` with its own note, so the
+    test footnotes letter from `c` (they were `b`, `c`).
+  - Passing `footnotes = hv_man_footnotes()` explicitly on a mixed table
+    now errors unless the footnotes carry the mark’s note. `§` and `¶`
+    are reserved on mixed tables; use `||` for a study note.
+
+- Tables are drawn in a style named by its role
+  (dev/specs/2026-10-17-table-styles-design.md).
+  [`hv_table_style()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_table_style.md)
+  holds a style’s properties; `hv_man_table(style =)` takes `"report"`
+  (the default, today’s table) or `"manuscript"`.
+
+  - The manuscript style lays out a comparison table as the submissions
+    did: a full grid, a two-row header with the grouping spanning its
+    levels, one overall `n` column, shaded section rows spanning the
+    table, a bold header and caption, 300-twip rows kept whole, and no
+    font of its own, so it takes the document’s body font. Its notes
+    begin with the plain symbol: `*Patients with non-missing data.`,
+    `†Values are No. (%) or median [15th, 85th percentiles].`
+  - [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
+    takes `caption`, written bold above the table: the manuscript style
+    requires it, and a report may give one.
+  - [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+    carries each variable’s overall non-missing count and the grouping’s
+    name for the manuscript header.
+  - [`hv_man_table_display()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_display.md)
+    shows the notes in the table’s style, so a manuscript table’s notes
+    begin with the plain symbol there as they do in the saved file.
+  - The SAS glossary maps `STYLE=` to `style =` (CORR family only) and
+    `TBLTITLE=` to `caption =`.
+  - The manuscript style refuses what it cannot lay out, each with an
+    error that says what to do instead: `font` and `font_size` (it sets
+    no font), `continuous_stat = "both"` in the compare layout (one
+    statistic per group; the describe layout draws it), and a table not
+    built by
+    [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+    (it reads the overall count and the grouping’s name that function
+    records).
+  - The manuscript’s label column is 2.0 in wide, so a Table 1 with
+    Overall, two groups and a P value is 6.5 in and stays on a portrait
+    Letter page.
+  - [`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md)
+    checks merged cells: by default merges only in header rows and in
+    section rows that span the table, and none at all with
+    `style = "report"`.
+  - [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
+    section rows now span the table in one cell; they were a label
+    beside one merged blank cell.
+  - **Existing tables change:** the report shades its section rows
+    (`#CAEDFB` by default, every cell, unmerged), its header is now bold
+    throughout (the `N = n` lines and the marks were not), and both
+    savers write US Letter pages instead of A4, so a wide table now fits
+    a 9.0 in landscape text block instead of 9.7 in.
+
+- [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+  no longer carries gtsummary’s own footnotes inside the table. A saved
+  table with `compare = "pvalue"` (or `"smd"` or `"both"`) ended in a
+  footer row reading “1Wilcoxon rank sum test; Pearson’s Chi-squared
+  test”, with a raised digit on the p-value header, and
+  `compare = "both"` added an “Abbreviation: CI = Confidence Interval”
+  row: house rule 13 puts notes below the table. **Existing tables
+  change:**
+
+  - The dagger note now names the tests behind the p-values (“… Median
+    \[15th, 85th percentiles\]; P values from the Wilcoxon rank sum test
+    and Pearson’s chi-square test.”), and the dagger marks the p-value
+    header as well as the statistic headers. Fisher’s exact test keeps
+    its own double dagger and is not repeated. A table with no p-values
+    has no test sentence. The manuscript style says it in its own words,
+    “Values are … median \[15th, 85th percentiles\]; P values from the
+    …”, and marks its comparison header the same way.
+  - `compare = "smd"` and `"both"` head the difference column “Std.
+    Diff.” (gtsummary’s “Difference” was explained only by the footnote
+    now gone), and the dagger note says “Std. Diff. is the standardized
+    mean difference, with its 95% CI.” (the manuscript style: “Std.
+    Diff.” or, under `"both"`, “SMD”, without the CI it does not show).
+    The dagger marks that header.
+  - A table showing a confidence interval (`compare = "both"`) defines
+    `CI` in the key, beside any `abbreviations` you pass (your own
+    definition of `CI` wins).
+
+- [`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md)
+  flags a last-row cell that opens with a superscript number, the form
+  gtsummary writes a footnote in, and one that starts “Abbreviation:”.
+  It returned no findings for the tables above.
+
+- The manuscript style gains its second layout, `"describe"`, for tables
+  that describe cohorts or repeated measures side by side
+  (dev/specs/2026-10-17-table-styles-design.md, section 5.1):
+  `hv_man_table(tbl, style = "manuscript", layout = "describe")`. Each
+  group spans its own count and statistic, so every group has its count,
+  and an Overall column and comparison columns appear when the table
+  carries them. Everything else is the comparison layout’s: the full
+  grid, shaded section rows spanning the table, a bold header, notes
+  that begin with the plain symbol, no font of its own, and US Letter
+  pages. The describe layout draws `continuous_stat = "both"`, which the
+  compare layout refuses. `layout = "compare"` is the default, and the
+  report style takes no `layout`.
+
+  - [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)’s
+    `layout` argument follows `style`, so a call passing every argument
+    by position reaches `...` at the seventh, not the sixth. A named SAS
+    argument such as `%summarytable`’s `STYLE=` is caught by its name at
+    any position; only an unnamed extra argument is reported at position
+    7.
+  - Describe’s marks follow the notation standard: `*` on each group’s
+    `n` and `†` on each statistic, with
+    `*Patients with non-missing data.` and the dagger note below the
+    table, and `hv_man_table_save(ft, file, caption = )` writes the
+    caption above it.
+  - [`hv_man_table_display()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_display.md)
+    shows a describe table; it refused one before.
+
+- **Deprecated:**
+  [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md),
+  [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
+  and
+  [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md)
+  warn on every call and go in the next release. Until then their
+  arguments keep their meaning: `groups` and `trailing` choose the same
+  columns, and `stat_label` names the statistic.
+
+  - **Their output changes:** the table is drawn in the describe layout,
+    with the same columns as before but the manuscript’s grid, shading,
+    notes (`*Patients with non-missing data.` for
+    `a. Patients with data available.`) and the document’s font.
+  - [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
+    writes `caption` above the table and the table’s own notes below it,
+    as
+    [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
+    does, and keeps `abbreviations`. It drops a test footnote that
+    [`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md)
+    wrote when the table already names that test, as an
+    [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+    table does in its dagger note and with Fisher’s mark on its P
+    values. Every other positional `footnotes` entry keeps a lettered
+    superscript on its cells, lettered from `a`, with its line after the
+    table’s own notes; the unnamed test notes of a plain gtsummary table
+    stay lettered the same way.
+  - Given a flextable that is not a describe table,
+    [`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)
+    now writes that table’s default notes and header marks; it used to
+    write only the lettered notes.
+  - Move to
+    `hv_man_table(tbl, style = "manuscript", layout = "describe")` and
+    `hv_man_table_save(ft, file, caption = )`; the test notes then come
+    from the table.
+
+- The package site gains a “Table styles” article: one synthetic table
+  drawn in each style and layout (report; manuscript, compare;
+  manuscript, describe), beside the matrix of their properties, and a
+  table of the house rules saying which are content rules, binding every
+  style, and which are hand-edit rules, and which styles keep each. The
+  matrix is written from
+  [`hv_table_style()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_table_style.md)
+  when the site is built, so it is read from the style objects, not
+  copied by hand. Each table’s saved `.docx` is a download on the page.
+  [`?hv_man_table`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+  and
+  [`?hv_table_style`](https://ehrlinger.github.io/hvtiRtables/reference/hv_table_style.md)
+  link to it.
+
+- The site keeps flextable tables on white in its dark theme
+  (`pkgdown/extra.css`), as they appear in Word, reference examples
+  included.
+
+- [`hv_man_table_display()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_display.md)
+  shows a manuscript table in the page’s font and size. The manuscript
+  style sets no font, and in HTML its table fell back to the browser’s
+  default font, a serif, so it looked set in the report’s Times New
+  Roman, while its notes were in Helvetica.
+
 ## hvtiRtables 1.0.7
 
 - New
