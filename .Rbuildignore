@@ -19,3 +19,4 @@
 ^pkgdown$
 ^vignettes/\.quarto$
 ^news$
+^vignettes/articles$
