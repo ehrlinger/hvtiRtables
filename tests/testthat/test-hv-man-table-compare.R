@@ -140,7 +140,8 @@ test_that("compare refuses what it cannot draw", {
                  style = "manuscript"),
     "hv_tbl_summary"
   )
-  expect_error(cmp(cmp_tbl(continuous_stat = "both")), "one statistic")
+  expect_error(cmp(cmp_tbl(continuous_stat = "both")),
+               "one statistic.*layout = \"describe\" or the report style")
   expect_error(hv_man_table(cmp_tbl(), font = "Arial", style = "manuscript"),
                "document")
 })

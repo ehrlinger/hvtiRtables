@@ -160,3 +160,59 @@ test_that("a layout is the manuscript style's choice, and one of two", {
     hv_man_table(ds_tbl(), style = "manuscript")$col_keys
   )
 })
+
+# The dagger note names the tests and defines the SMD only when the table
+# shows the column those sentences explain.
+test_that("the dagger note names the tests only where the column is shown", {
+  dagger <- function(ft) attr(ft, "hv_footnotes")[["\u2020"]]
+  names_tests <- function(note) {
+    grepl("P values", note, fixed = TRUE) ||
+      grepl("standardized", note, fixed = TRUE)
+  }
+  tbl <- ds_tbl(compare = "both")
+  bare <- tbl
+  attr(bare, "hv_trailing") <- NULL
+  groups <- c(stat_1 = "A", stat_2 = "B")
+
+  with_col <- ds(tbl)
+  expect_true("hv_compare_col" %in% with_col$col_keys)
+  expect_true(names_tests(dagger(with_col)))
+  expect_true(grepl("standardized", dagger(with_col), fixed = TRUE))
+
+  without <- ds(bare)
+  expect_false("hv_compare_col" %in% without$col_keys)
+  expect_false(names_tests(dagger(without)))
+  expect_null(attr(without, "hv_test_note"))
+  expect_null(attr(without, "hv_smd"))
+
+  # The deprecated wrapper, with and without the trailing column.
+  old <- function(...) {
+    jtcvs_quiet(hv_man_table_jtcvs(tbl, groups = groups, ...))
+  }
+  old_with <- old(trailing = attr(tbl, "hv_trailing"))
+  old_none <- old()
+  expect_true(names_tests(dagger(old_with)))
+  expect_false("hv_compare_col" %in% old_none$col_keys)
+  expect_false(names_tests(dagger(old_none)))
+
+  # Saved, the note on the page says the same.
+  notes <- function(ft) {
+    f <- tempfile(fileext = ".docx")
+    jtcvs_quiet(hv_man_table_save_jtcvs(ft, f, caption = "T1."))
+    paste(vapply(
+      xml2::xml_find_all(wx_doc(f), "//w:tbl/following-sibling::w:p", wx_ns),
+      wx_text, character(1)
+    ), collapse = "\n")
+  }
+  expect_true(names_tests(notes(old_with)))
+  expect_false(names_tests(notes(old_none)))
+
+  # A test note on a column the table does not show is refused, as before.
+  expect_error(
+    jtcvs_quiet(hv_man_table_save_jtcvs(
+      old_none, tempfile(fileext = ".docx"), caption = "T1.",
+      footnotes = list(list(row = 1, col = "hv_compare_col", text = "x"))
+    )),
+    "col_keys|not a column|`footnotes\\[\\[1\\]\\]\\$col`"
+  )
+})

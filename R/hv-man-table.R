@@ -83,11 +83,11 @@
 #' font of the document it is saved into. Drop the argument, or use
 #' `style = "report"`.
 #'
-#' **The manuscript style refuses a `continuous_stat = "both"` table.**
+#' **The compare layout refuses a `continuous_stat = "both"` table.**
 #' That table has a column for the median and another for the mean and
-#' SD, which the manuscript's one statistic column per group cannot
-#' lay out. Build the table with `"median"` or `"mean"`, or use the report
-#' style.
+#' SD, which the compare layout's one statistic column per group cannot
+#' lay out. Build the table with `"median"` or `"mean"`, or draw it with
+#' `layout = "describe"` or the report style, which show both.
 #'
 #' **The manuscript style refuses a table not built by
 #' [hv_tbl_summary()].** The layout reads the overall count and the
@@ -112,8 +112,8 @@
 #'   without a breaking signature change.
 #' @param style A style name, `"report"` (default) or `"manuscript"`, or a
 #'   style from [hv_table_style()]. `"manuscript"` needs an
-#'   [hv_tbl_summary()] table, refuses `continuous_stat = "both"`, and
-#'   refuses `font` and `font_size`.
+#'   [hv_tbl_summary()] table, refuses `font` and `font_size`, and in the
+#'   compare layout refuses `continuous_stat = "both"`.
 #' @param layout The manuscript style's layout, chosen by what the table
 #'   does: `"compare"` (default), one overall `n` column for groups it
 #'   compares, or `"describe"`, a count beside each group, for cohorts or

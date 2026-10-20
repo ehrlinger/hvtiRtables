@@ -34,8 +34,8 @@ without a breaking signature change.}
 
 \item{style}{A style name, \code{"report"} (default) or \code{"manuscript"}, or a
 style from \code{\link[=hv_table_style]{hv_table_style()}}. \code{"manuscript"} needs an
-\code{\link[=hv_tbl_summary]{hv_tbl_summary()}} table, refuses \code{continuous_stat = "both"}, and
-refuses \code{font} and \code{font_size}.}
+\code{\link[=hv_tbl_summary]{hv_tbl_summary()}} table, refuses \code{font} and \code{font_size}, and in the
+compare layout refuses \code{continuous_stat = "both"}.}
 
 \item{layout}{The manuscript style's layout, chosen by what the table
 does: \code{"compare"} (default), one overall \code{n} column for groups it
@@ -141,11 +141,11 @@ wide tables.
 font of the document it is saved into. Drop the argument, or use
 \code{style = "report"}.
 
-\strong{The manuscript style refuses a \code{continuous_stat = "both"} table.}
+\strong{The compare layout refuses a \code{continuous_stat = "both"} table.}
 That table has a column for the median and another for the mean and
-SD, which the manuscript's one statistic column per group cannot
-lay out. Build the table with \code{"median"} or \code{"mean"}, or use the report
-style.
+SD, which the compare layout's one statistic column per group cannot
+lay out. Build the table with \code{"median"} or \code{"mean"}, or draw it with
+\code{layout = "describe"} or the report style, which show both.
 
 \strong{The manuscript style refuses a table not built by
 \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}.} The layout reads the overall count and the

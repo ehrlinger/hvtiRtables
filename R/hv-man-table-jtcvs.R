@@ -113,8 +113,9 @@
 #' of the `by` variable -- not the group labels. Two groups give
 #' `stat_1` and `stat_2`.
 #'
-#' **"`font_size` must be 11 or 12."** House rule 5. Use `11` only for
-#' wide tables.
+#' **"`font_size` must be 11 or 12."** House rule 5. The value is checked
+#' as before and then ignored: the manuscript style sets no font size, so
+#' the table takes the size of the document it is saved into.
 #'
 #' @param tbl A `gtsummary` table object whose `statistic` argument
 #'   used `"{N_nonmiss} ||| {<stat>}"` for every group column.
@@ -141,20 +142,20 @@
 #'   cannot disagree with the cells. A
 #'   table without that record falls back to `"No. (%) or Mean±SD"`;
 #'   pass the right text yourself for any other statistic.
-#' @param font Font family. Default `"Times New Roman"` (house rule).
-#'   Any single non-empty string is accepted: `flextable` silently
-#'   substitutes an unknown font name, so a typo would otherwise pass
-#'   unnoticed, while a deliberate override is legitimate.
-#' @param font_size Font size in points. Default `12` (house rule 5);
-#'   pass `11` for wide tables. No other values are permitted -- the
-#'   same rule [hv_man_table()] enforces.
+#' @param font Font family. Checked as a single non-empty string, as
+#'   before, and ignored: the manuscript style sets no font, so the table
+#'   takes the font of the document it is saved into.
+#' @param font_size Font size in points. Checked as before (`11` or `12`,
+#'   the rule [hv_man_table()] enforces) and ignored, for the same reason
+#'   as `font`.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
 #' @return A `flextable` in the manuscript style's describe layout, ready
 #'   for [hv_man_table_save()].
 #'
-#' @seealso [hv_man_table()] for the flat-header CORR house-style mode.
+#' @seealso `hv_man_table(style = "manuscript", layout = "describe")`, the
+#'   layout that replaces it, and [hv_man_table()].
 #'   [hv_man_table_save_jtcvs()] to write the result to a compliant `.docx`.
 #'
 #' @examples

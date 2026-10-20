@@ -107,7 +107,7 @@
 #'   continuous = "age", categorical = "grade", compare = "pvalue"
 #' )
 #' ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
-#' attr(ft, "hv_footnotes")[["†"]]
+#' attr(ft, "hv_footnotes")[["\u2020"]]
 #'
 #' @export
 hv_test_footnotes_jtcvs <- function(tbl) {

@@ -116,8 +116,8 @@ For CORR tables, the standard dagger footnote follows `continuous_stat` and
 `percentiles` automatically through `hv_man_table()` and
 `hv_man_table_save()`. A mean table therefore says `No. (%) or Mean±SD`; a
 table showing both statistics names both. The `(%)` lives there and in the
-JTCVS sub-header, not in the cells, which print `12 (39)` as the SAS macro
-does.
+describe layout's second header row, not in the cells, which print `12 (39)`
+as the SAS macro does.
 
 Mean±SD cells follow Eugene H. Blackstone's (EHB's) paired rounding rule.
 The mean is rounded to the SD's first-significant-digit place and the SD one

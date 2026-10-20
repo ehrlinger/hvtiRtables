@@ -31,8 +31,10 @@
 #' **Passing the result to the JTCVS saver.** These footnotes are
 #' CORR-shaped, keyed by symbol, and belong to [hv_man_table_save()].
 #' [hv_man_table_save_jtcvs()] takes an unrelated type keyed by row and
-#' column, and rejects this one. Its equivalent is
-#' [hv_test_footnotes_jtcvs()].
+#' column, and rejects this one. Its equivalent,
+#' [hv_test_footnotes_jtcvs()], is deprecated along with that saver: the
+#' describe layout of `hv_man_table(style = "manuscript")` names its tests
+#' in its own notes, which [hv_man_table_save()] writes.
 #'
 #' **Calling this helper with settings different from the table.** The
 #' automatic [hv_tbl_summary()] -> [hv_man_table()] ->

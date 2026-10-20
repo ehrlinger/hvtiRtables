@@ -184,9 +184,9 @@ in ported code does not** - pin `type = 2` explicitly.
 
 The percentiles actually used are recorded on the table object as
 `attr(tbl, "hv_stat_label")`, and the describe layout's second header row reads
-it, so the sub-header names the statistic the cells hold. Before 1.0.5 the default was a literal
-mean-and-SD string, and a median table rendered without an explicit
-`stat_label =` claimed mean/SD over median columns.
+it, so the sub-header names the statistic the cells hold. Before 1.0.5 the
+default was a literal mean-and-SD string, and a median table rendered without
+an explicit `stat_label =` claimed mean/SD over median columns.
 
 ```{r}
 tbl <- hv_tbl_summary(

@@ -8,10 +8,11 @@
   .check_manuscript_tbl(tbl)
   tb <- tbl$table_body
   if (any(grepl("^hv_median_stat_[0-9]+$", names(tb))))
-    stop("A manuscript table shows one statistic per group, and ",
-         "continuous_stat = \"both\" shows two. Build it with ",
-         "continuous_stat = \"median\" or \"mean\"; \"both\" is for the ",
-         "report.", call. = FALSE)
+    stop("The compare layout shows one statistic per group, and ",
+         "continuous_stat = \"both\" shows two. Build the table with ",
+         "continuous_stat = \"median\" or \"mean\"; layout = ",
+         "\"describe\" or the report style draws \"both\".",
+         call. = FALSE)
 
   by_label <- attr(tbl, "hv_by_label", exact = TRUE)
   groups <- .group_labels(tbl)
@@ -121,8 +122,11 @@
   tb <- tbl$table_body
   notes <- attr(tbl, "hv_footnotes", exact = TRUE)
   notes[["*"]] <- style$count_note
-  tests <- attr(tbl, "hv_test_note", exact = TRUE)
-  smd <- attr(tbl, "hv_smd", exact = TRUE)
+  # The test names and the SMD definition explain the comparison column,
+  # so they are in the note only when the table shows it.
+  shown <- "hv_compare_col" %in% ft$col_keys
+  tests <- if (shown) attr(tbl, "hv_test_note", exact = TRUE)
+  smd <- if (shown) attr(tbl, "hv_smd", exact = TRUE)
   notes[["\u2020"]] <- .stat_note(stat_label, style)
   notes[["\u2020"]] <- .append_note(notes[["\u2020"]], tests)
   # Under "both" the cells read "(SMD 0.1)"; under "smd" the header says
@@ -143,8 +147,7 @@
     # its test name and returns no P; a mark there would sit alone in an
     # empty cell, so only a P that exists is marked, as .mark_fisher()
     # does for the report.
-    ok <- "hv_compare_col" %in% ft$col_keys &&
-      all(c("test_name", "p.value") %in% names(tb))
+    ok <- shown && all(c("test_name", "p.value") %in% names(tb))
     fisher <- if (ok) {
       tb$variable[!is.na(tb$test_name) & tb$test_name == "fisher.test" &
                     !is.na(tb$p.value)]
