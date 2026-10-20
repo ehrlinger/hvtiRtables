@@ -161,8 +161,8 @@ them for John.
    design states wrongly: row 11.** The design writes the key as `Key: A=...; B=...` (house
    rule 14); the saver has always written `Key: A, ...; B, ...` with the abbreviation in
    italics, and the generated cell reads that from `.key_runs()`, the saver's own code. Task 0
-   corrects the design to the code. **If house rule 14 wants `A=...`, that is a saver change
-   for John to call, not this phase's.**
+   corrects the design to the code. John confirmed on 2026-10-20 that the key keeps the
+   saver's form, `A, definition`, so there is no saver change.
 8. **The note and key cells are cross-checked against the saved `.docx`**, so the matrix is
    held to the output as well as to the design: the count note, the statistic note and the
    key in the matrix must equal the paragraphs the saver writes.
@@ -178,7 +178,8 @@ them for John.
    needs Word or LibreOffice in CI, and committed images would drift from the code, which is
    the defect D6 exists to prevent. The caption is a bold markdown line above each manuscript
    table, because `flextable::set_caption()` printed nothing in the Quarto render (probed).
-10. **`hv_man_table_display()` makes a fontless style take the page's font in HTML.** The
+10. **`hv_man_table_display()` makes a fontless style take the page's font in HTML.**
+    Confirmed by John, 2026-10-20: the fix ships in the package. The
     manuscript style sets no font (question 5), which flextable writes into HTML as
     `font-family:'NA'`. No browser has that font, so the table's body fell back to the
     browser's default, a serif, while its footer lines kept flextable's Helvetica (seen in a
@@ -210,7 +211,8 @@ them for John.
     (3, 13, hidden columns, layers). **The rule texts are paraphrased** from the package's own
     references to the memo, which is not in the repository: rule 2 from the saver's roxygen
     ("the insertion point"), rule 8's wording from `hv_man_footnotes()`, rule 14 from the
-    saver. John should check them against *Table Construction for Manuscripts* (7/14/2026).
+    saver. John checked them against *Table Construction for Manuscripts* (7/14/2026) on
+    2026-10-20 and they stand.
 14. **The example table is `gtsummary::trial`, with age as mean±SD and the marker as a
     median**, so it shows the house standard's minority mark (`¶`) and its note, and the marker
     difference between styles (row 8) on a real cell. `show_variable = FALSE`, since every
