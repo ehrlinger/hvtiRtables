@@ -25,12 +25,14 @@ wx_save_corr <- function(tbl = wx_tbl()) {
 }
 
 wx_save_jtcvs <- function(tbl = wx_tbl(), footnotes = NULL) {
-  ft <- hv_man_table_jtcvs(
+  ft <- jtcvs_quiet(hv_man_table_jtcvs(
     tbl, groups = c(stat_1 = "Drug A", stat_2 = "Drug B")
-  )
+  ))
   f <- tempfile(fileext = ".docx")
-  hv_man_table_save_jtcvs(ft, f, caption = "Table 1. Test",
-                          footnotes = footnotes)
+  jtcvs_quiet(hv_man_table_save_jtcvs(
+    ft, f, caption = "Table 1. Test",
+    footnotes = footnotes
+  ))
   f
 }
 
@@ -353,15 +355,17 @@ test_that("CORR: footnotes and Key use the table's font", {
 })
 
 test_that("JTCVS: caption, footnotes and Key use the table's font", {
-  ft <- hv_man_table_jtcvs(wx_tbl(),
-                           groups = c(stat_1 = "Drug A", stat_2 = "Drug B"))
+  ft <- jtcvs_quiet(hv_man_table_jtcvs(
+    wx_tbl(),
+    groups = c(stat_1 = "Drug A", stat_2 = "Drug B")
+  ))
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
-  hv_man_table_save_jtcvs(
+  jtcvs_quiet(hv_man_table_save_jtcvs(
     ft, f, caption = "Table 1. Test",
     footnotes = list(list(row = 2, col = "disp_stat_1", text = "Own note.")),
     abbreviations = c(SMD = "standardized difference")
-  )
+  ))
   doc <- wx_doc(f)
   after <- wx_note_fonts(doc, "//w:tbl/following-sibling::w:p")
   caption <- wx_note_fonts(doc, "//w:body/w:p[1]")

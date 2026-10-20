@@ -41,11 +41,21 @@ fx_hv_tbl <- function() {
   )
 }
 
+# The three JTCVS functions are deprecated (design D3) and warn on every
+# call. A test of what such a call still does runs it through this,
+# which muffles that warning and no other; test-hv-man-table-jtcvs.R
+# asserts the warning itself. It goes with the functions.
+jtcvs_quiet <- function(expr) {
+  withCallingHandlers(expr, deprecatedWarning = function(w) {
+    invokeRestart("muffleWarning")
+  })
+}
+
 # A rendered JTCVS flextable.
 fx_jtcvs_ft <- function() {
-  hv_man_table_jtcvs(
+  jtcvs_quiet(hv_man_table_jtcvs(
     fx_jtcvs_tbl(), groups = c(stat_1 = "A", stat_2 = "B")
-  )
+  ))
 }
 
 # Collect every stop() call in an expression tree. A regex over
@@ -96,11 +106,11 @@ fit_geometry <- function(path) {
 # Save a JTCVS table and measure it against the page.
 save_fit <- function(tbl, groups) {
   path <- tempfile(fileext = ".docx")
-  hv_man_table_save_jtcvs(
+  jtcvs_quiet(hv_man_table_save_jtcvs(
     hv_man_table_jtcvs(tbl, groups = groups,
                        trailing = attr(tbl, "hv_trailing")),
     path, caption = "T1."
-  )
+  ))
   fit_geometry(path)
 }
 

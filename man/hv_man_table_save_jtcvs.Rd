@@ -2,7 +2,7 @@
 % Please edit documentation in R/hv-man-table-save-jtcvs.R
 \name{hv_man_table_save_jtcvs}
 \alias{hv_man_table_save_jtcvs}
-\title{Write an hv_man_table_jtcvs() table to a compliant .docx}
+\title{Deprecated: Write an hv_man_table_jtcvs() table to a compliant .docx}
 \usage{
 hv_man_table_save_jtcvs(
   ft,
@@ -51,10 +51,15 @@ produce an error naming the argument to use instead.}
 Invisibly, the \code{file} path.
 }
 \description{
-Stage 3 of the \verb{\%summarytable} split: writes the document. Replaces
-the macro's \verb{RTFFILE=}/\verb{PDFFILE=} output block.
+\strong{Deprecated.} Use
+\code{hv_man_table_save(ft, file, caption = )} on a table from
+\code{hv_man_table(tbl, style = "manuscript", layout = "describe")}. This
+function warns on every call and goes in the next release.
 }
 \details{
+Stage 3 of the \verb{\%summarytable} split: writes the document. Replaces
+the macro's \verb{RTFFILE=}/\verb{PDFFILE=} output block.
+
 JTCVS counterpart to \code{\link[=hv_man_table_save]{hv_man_table_save()}}: it adds a bold \verb{Table N. Caption} paragraph before the table, and renders footnotes as lettered
 (\code{a.}, \code{b.}, ...) markers attached to specific body cells rather than
 the fixed symbol set \code{\link[=hv_man_table_save]{hv_man_table_save()}} uses on the header row,
@@ -94,29 +99,15 @@ columns narrowed in proportion to fit; the font size is not changed.
 }
 
 \examples{
-library(gtsummary)
-tbl <- trial |>
-  tbl_summary(
-    by = trt,
-    statistic = list(
-      all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}",
-      all_categorical() ~ "{N_nonmiss} ||| {n} ({p}\%)"
-    ),
-    include = c(age, grade),
-    missing = "no"
-  )
-ft <- hv_man_table_jtcvs(
-  tbl,
-  groups = c(stat_1 = "Drug A (n=98)", stat_2 = "Drug B (n=102)")
+# Instead of hv_man_table_jtcvs() and hv_man_table_save_jtcvs():
+tbl <- hv_tbl_summary(
+  gtsummary::trial, by = "trt",
+  groups = list(Demography = c("age", "grade")),
+  continuous = "age", categorical = "grade", compare = "none"
 )
+ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
 out <- tempfile(fileext = ".docx")
-hv_man_table_save_jtcvs(
-  ft, out,
-  caption = "Table 1. Baseline Characteristics",
-  footnotes = list(list(
-    row = 1, col = "disp_stat_1", text = "Excludes one withdrawn patient."
-  ))
-)
+hv_man_table_save(ft, out, caption = "Table 2. Baseline Characteristics")
 
 }
 \seealso{

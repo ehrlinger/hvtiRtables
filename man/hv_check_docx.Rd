@@ -88,17 +88,14 @@ file. Fix what it reports in Word, or rebuild the table through
 # I/O-bound enough to trip CRAN's 5s example budget (12.7s elapsed at
 # 1.0.0). It runs, and is meant to -- it is not \dontrun{}.
 \donttest{
-library(gtsummary)
-tbl <- trial |>
-  tbl_summary(
-    by = trt,
-    statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"),
-    include = age,
-    missing = "no"
-  )
-ft <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
+tbl <- hv_tbl_summary(
+  gtsummary::trial, by = "trt",
+  groups = list(Demography = "age"),
+  continuous = "age", categorical = character(0), compare = "none"
+)
+ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
 out <- tempfile(fileext = ".docx")
-hv_man_table_save_jtcvs(ft, out, caption = "Table 1. X")
+hv_man_table_save(ft, out, caption = "Table 1. X")
 hv_check_docx(out)
 }
 

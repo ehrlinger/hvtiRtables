@@ -45,14 +45,16 @@ test_that("hv_tbl_compare sits beside compare = 'pvalue' in both renderers", {
   expect_identical(utils::tail(corr$col_keys, 2), c("p.value", "hv_join_1"))
   d <- corr$body$dataset
   expect_identical(d$hv_join_1[d$label == "Age"], "3.1")
-  jt <- hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
-                           trailing = attr(tbl, "hv_trailing"))
+  jt <- jtcvs_quiet(hv_man_table_jtcvs(
+    tbl, groups = c(stat_1 = "A", stat_2 = "B"),
+    trailing = attr(tbl, "hv_trailing")
+  ))
   expect_identical(utils::tail(jt$col_keys, 2),
                    c("hv_compare_col", "hv_join_1"))
   jd <- jt$body$dataset
   expect_identical(jd$hv_join_1[jd$label == "Age"], "3.1")
   # The test letters still land on the p-value column.
-  notes <- hv_test_footnotes_jtcvs(tbl)
+  notes <- jtcvs_quiet(hv_test_footnotes_jtcvs(tbl))
   expect_true(length(notes) > 0L)
   expect_true(all(vapply(notes, `[[`, "", "col") == "hv_compare_col"))
 })
@@ -71,11 +73,11 @@ test_that("a joined table saves to valid .docx through both savers", {
   hv_man_table_save(hv_man_table(tbl), path)
   expect_identical(nrow(hv_check_docx(path)), 0L)
   jpath <- tempfile(fileext = ".docx")
-  hv_man_table_save_jtcvs(
+  jtcvs_quiet(hv_man_table_save_jtcvs(
     hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
                        trailing = attr(tbl, "hv_trailing")),
     jpath, caption = "T1.", footnotes = hv_test_footnotes_jtcvs(tbl)
-  )
+  ))
   expect_true(file.exists(jpath))
 })
 

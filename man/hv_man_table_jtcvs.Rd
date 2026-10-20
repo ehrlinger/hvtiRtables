@@ -2,7 +2,7 @@
 % Please edit documentation in R/hv-man-table-jtcvs.R
 \name{hv_man_table_jtcvs}
 \alias{hv_man_table_jtcvs}
-\title{Build a JTCVS-format manuscript table with merged spanning headers}
+\title{Deprecated: Build a JTCVS-Format Manuscript Table with Merged Headers}
 \usage{
 hv_man_table_jtcvs(
   tbl,
@@ -62,12 +62,17 @@ for \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}. It carrie
 attribute, the text of the \code{n} superscript, which that saver writes.
 }
 \description{
+\strong{Deprecated.} Use
+\code{hv_man_table(tbl, style = "manuscript", layout = "describe")}, the
+manuscript style's describe layout, which this layout became. This
+function warns on every call and goes in the next release.
+}
+\details{
 Stage 2 of the \verb{\%summarytable} split: shapes the table. The macro
 controlled this with \verb{STYLE=} and \verb{PAGE=}. This renderer is the
 journal's one layout and takes neither; the CORR styles are chosen by
 \verb{style =} in \code{\link[=hv_man_table]{hv_man_table()}}. Pages are US Letter.
-}
-\details{
+
 Use this instead of \code{\link[=hv_man_table]{hv_man_table()}} when you're building the shape
 editorial actually needs at JTCVS submission: a 2-row header (group name
 spanning \code{n}/stat sub-columns, \code{Characteristic} spanning both rows) and
@@ -101,21 +106,15 @@ wide tables.
 }
 
 \examples{
-library(gtsummary)
-tbl <- trial |>
-  tbl_summary(
-    by = trt,
-    statistic = list(
-      all_continuous() ~ "{N_nonmiss} ||| {mean}±{sd}",
-      all_categorical() ~ "{N_nonmiss} ||| {n} ({p}\%)"
-    ),
-    include = c(age, grade),
-    missing = "no"
-  )
-ft <- hv_man_table_jtcvs(
-  tbl,
-  groups = c(stat_1 = "Drug A (n=98)", stat_2 = "Drug B (n=102)")
+# Instead of hv_man_table_jtcvs() and hv_man_table_save_jtcvs():
+tbl <- hv_tbl_summary(
+  gtsummary::trial, by = "trt",
+  groups = list(Demography = c("age", "grade")),
+  continuous = "age", categorical = "grade", compare = "none"
 )
+ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
+out <- tempfile(fileext = ".docx")
+hv_man_table_save(ft, out, caption = "Table 2. Baseline Characteristics")
 
 }
 \seealso{

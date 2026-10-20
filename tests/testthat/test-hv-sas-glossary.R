@@ -136,8 +136,10 @@ test_that("each public function routes SAS names through the glossary", {
   expect_error(hv_man_table(tbl, STYLE = "journal"),
                "Use `style =`", fixed = TRUE)
   expect_error(
-    hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"),
-                       style = "journal"),
+    jtcvs_quiet(hv_man_table_jtcvs(
+      tbl, groups = c(stat_1 = "A", stat_2 = "B"),
+      style = "journal"
+    )),
     "the journal's one layout", fixed = TRUE
   )
   expect_error(
@@ -145,8 +147,10 @@ test_that("each public function routes SAS names through the glossary", {
     "Use `caption =`", fixed = TRUE
   )
   expect_error(
-    hv_man_table_save_jtcvs(ft, tempfile(fileext = ".docx"),
-                            caption = "T1", addfn = "note"),
+    jtcvs_quiet(hv_man_table_save_jtcvs(
+      ft, tempfile(fileext = ".docx"),
+      caption = "T1", addfn = "note"
+    )),
     "`footnotes =`", fixed = TRUE
   )
 })

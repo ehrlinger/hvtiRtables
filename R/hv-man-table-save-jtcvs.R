@@ -1,4 +1,9 @@
-#' Write an hv_man_table_jtcvs() table to a compliant .docx
+#' Deprecated: Write an hv_man_table_jtcvs() table to a compliant .docx
+#'
+#' **Deprecated.** Use
+#' `hv_man_table_save(ft, file, caption = )` on a table from
+#' `hv_man_table(tbl, style = "manuscript", layout = "describe")`. This
+#' function warns on every call and goes in the next release.
 #'
 #' Stage 3 of the `%summarytable` split: writes the document. Replaces
 #' the macro's `RTFFILE=`/`PDFFILE=` output block.
@@ -75,33 +80,25 @@
 #' @seealso [hv_man_table_jtcvs()] to build a compliant `flextable` first.
 #'
 #' @examples
-#' library(gtsummary)
-#' tbl <- trial |>
-#'   tbl_summary(
-#'     by = trt,
-#'     statistic = list(
-#'       all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}",
-#'       all_categorical() ~ "{N_nonmiss} ||| {n} ({p}%)"
-#'     ),
-#'     include = c(age, grade),
-#'     missing = "no"
-#'   )
-#' ft <- hv_man_table_jtcvs(
-#'   tbl,
-#'   groups = c(stat_1 = "Drug A (n=98)", stat_2 = "Drug B (n=102)")
+#' # Instead of hv_man_table_jtcvs() and hv_man_table_save_jtcvs():
+#' tbl <- hv_tbl_summary(
+#'   gtsummary::trial, by = "trt",
+#'   groups = list(Demography = c("age", "grade")),
+#'   continuous = "age", categorical = "grade", compare = "none"
 #' )
+#' ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
 #' out <- tempfile(fileext = ".docx")
-#' hv_man_table_save_jtcvs(
-#'   ft, out,
-#'   caption = "Table 1. Baseline Characteristics",
-#'   footnotes = list(list(
-#'     row = 1, col = "disp_stat_1", text = "Excludes one withdrawn patient."
-#'   ))
-#' )
+#' hv_man_table_save(ft, out, caption = "Table 2. Baseline Characteristics")
 #'
 #' @export
 hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,
                                     abbreviations = NULL, ...) {
+  .Deprecated(msg = .jtcvs_deprecated(
+    "hv_man_table_save_jtcvs",
+    paste0("Use hv_man_table_save(ft, file, caption = ) on a table from ",
+           "hv_man_table(tbl, style = \"manuscript\", ",
+           "layout = \"describe\").")
+  ))
   .check_sas_args(list(...), "hv_man_table_save_jtcvs")
   .check_flextable(ft)
   .check_not_display(ft)

@@ -80,7 +80,12 @@
   result
 }
 
-#' Build a JTCVS-format manuscript table with merged spanning headers
+#' Deprecated: Build a JTCVS-Format Manuscript Table with Merged Headers
+#'
+#' **Deprecated.** Use
+#' `hv_man_table(tbl, style = "manuscript", layout = "describe")`, the
+#' manuscript style's describe layout, which this layout became. This
+#' function warns on every call and goes in the next release.
 #'
 #' Stage 2 of the `%summarytable` split: shapes the table. The macro
 #' controlled this with `STYLE=` and `PAGE=`. This renderer is the
@@ -160,27 +165,26 @@
 #'   [hv_man_table_save_jtcvs()] to write the result to a compliant `.docx`.
 #'
 #' @examples
-#' library(gtsummary)
-#' tbl <- trial |>
-#'   tbl_summary(
-#'     by = trt,
-#'     statistic = list(
-#'       all_continuous() ~ "{N_nonmiss} ||| {mean}±{sd}",
-#'       all_categorical() ~ "{N_nonmiss} ||| {n} ({p}%)"
-#'     ),
-#'     include = c(age, grade),
-#'     missing = "no"
-#'   )
-#' ft <- hv_man_table_jtcvs(
-#'   tbl,
-#'   groups = c(stat_1 = "Drug A (n=98)", stat_2 = "Drug B (n=102)")
+#' # Instead of hv_man_table_jtcvs() and hv_man_table_save_jtcvs():
+#' tbl <- hv_tbl_summary(
+#'   gtsummary::trial, by = "trt",
+#'   groups = list(Demography = c("age", "grade")),
+#'   continuous = "age", categorical = "grade", compare = "none"
 #' )
+#' ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
+#' out <- tempfile(fileext = ".docx")
+#' hv_man_table_save(ft, out, caption = "Table 2. Baseline Characteristics")
 #'
 #' @export
 hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
                                stat_label = NULL,
                                font = "Times New Roman", font_size = 12,
                                ...) {
+  .Deprecated(msg = .jtcvs_deprecated(
+    "hv_man_table_jtcvs",
+    paste0("Use hv_man_table(tbl, style = \"manuscript\", ",
+           "layout = \"describe\"), which draws the same columns.")
+  ))
   .check_sas_args(list(...), "hv_man_table_jtcvs")
   .check_gtsummary(tbl)
   .assert_jtcvs_groups(tbl, groups)
@@ -298,4 +302,10 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
     ft <- flextable::width(ft, j = names(trailing), width = 0.6)
 
   ft
+}
+
+# The deprecation every JTCVS function raises (design D3): it names the
+# call that replaces it and says when the function goes.
+.jtcvs_deprecated <- function(old, instead) {
+  paste0(old, "() is deprecated and goes in the next release. ", instead)
 }

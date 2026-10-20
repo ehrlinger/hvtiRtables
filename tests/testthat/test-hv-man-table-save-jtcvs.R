@@ -14,9 +14,9 @@ mk_jtcvs_ft <- function() {
     statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"),
     missing = "no"
   )
-  hv_man_table_jtcvs(
+  jtcvs_quiet(hv_man_table_jtcvs(
     tbl, groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)")
-  )
+  ))
 }
 
 read_docx_text <- function(path) {
@@ -33,7 +33,9 @@ test_that("hv_man_table_save_jtcvs renders a bold caption before the table", {
   ft <- mk_jtcvs_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
-  hv_man_table_save_jtcvs(ft, f, caption = "Table 1. Baseline Characteristics")
+  jtcvs_quiet(hv_man_table_save_jtcvs(
+    ft, f, caption = "Table 1. Baseline Characteristics"
+  ))
   xml <- read_docx_text(f)
   expect_true(grepl("Table 1. Baseline Characteristics", xml, fixed = TRUE))
   # flextable/officer emit `<w:b w:val="true"/>`, not the bare `<w:b/>` form —
@@ -49,13 +51,13 @@ test_that("hv_man_table_save_jtcvs attaches lettered footnotes to cells", {
   ft <- mk_jtcvs_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
-  hv_man_table_save_jtcvs(
+  jtcvs_quiet(hv_man_table_save_jtcvs(
     ft, f, caption = "Table 1. Baseline Characteristics",
     footnotes = list(
       list(row = 1, col = "n_stat_1", text = "First footnote."),
       list(row = 1, col = "n_stat_2", text = "Second footnote.")
     )
-  )
+  ))
   xml <- read_docx_text(f)
   # The superscript letter and its ". <text>" run are separate <w:r> runs
   # (different run formatting), so the raw XML never contains a contiguous
@@ -84,10 +86,10 @@ test_that("hv_man_table_save_jtcvs reuses the shared Key: helper", {
   ft <- mk_jtcvs_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
-  hv_man_table_save_jtcvs(
+  jtcvs_quiet(hv_man_table_save_jtcvs(
     ft, f, caption = "Table 1. Baseline Characteristics",
     abbreviations = c(SD = "standard deviation")
-  )
+  ))
   xml <- read_docx_text(f)
   expect_true(grepl("Key:", xml, fixed = TRUE))
   expect_true(grepl("SD", xml, fixed = TRUE))
@@ -97,10 +99,10 @@ test_that("hv_man_table_save_jtcvs rejects an out-of-range footnote row", {
   ft <- mk_jtcvs_ft()
   out <- tempfile(fileext = ".docx")
   expect_error(
-    hv_man_table_save_jtcvs(
+    jtcvs_quiet(hv_man_table_save_jtcvs(
       ft, out, caption = "Table 1. X",
       footnotes = list(list(row = 999, col = "n_stat_1", text = "note"))
-    ),
+    )),
     "whole numbers between"
   )
 })
@@ -125,17 +127,17 @@ test_that("hv_man_table_save_jtcvs rejects a fractional footnote row", {
     statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"),
     missing = "no"
   )
-  ft <- hv_man_table_jtcvs(
+  ft <- jtcvs_quiet(hv_man_table_jtcvs(
     tbl, groups = c(stat_1 = "Group A", stat_2 = "Group B")
-  )
+  ))
   expect_identical(flextable::nrow_part(ft, "body"), 2L)
 
   out <- tempfile(fileext = ".docx")
   expect_error(
-    hv_man_table_save_jtcvs(
+    jtcvs_quiet(hv_man_table_save_jtcvs(
       ft, out, caption = "Table 1. X",
       footnotes = list(list(row = 1.5, col = "n_stat_1", text = "note"))
-    ),
+    )),
     "whole numbers"
   )
 })
@@ -144,10 +146,10 @@ test_that("hv_man_table_save_jtcvs rejects an unknown footnote column", {
   ft <- mk_jtcvs_ft()
   out <- tempfile(fileext = ".docx")
   expect_error(
-    hv_man_table_save_jtcvs(
+    jtcvs_quiet(hv_man_table_save_jtcvs(
       ft, out, caption = "Table 1. X",
       footnotes = list(list(row = 1, col = "nope", text = "note"))
-    ),
+    )),
     "not a column"
   )
 })
@@ -167,16 +169,16 @@ test_that("hv_man_table_save_jtcvs marks every row of a vector-valued row", {
     statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean} ± {sd}"),
     missing = "no"
   )
-  ft <- hv_man_table_jtcvs(
+  ft <- jtcvs_quiet(hv_man_table_jtcvs(
     tbl, groups = c(stat_1 = "Group A", stat_2 = "Group B")
-  )
+  ))
   expect_identical(flextable::nrow_part(ft, "body"), 2L)
 
   out <- tempfile(fileext = ".docx")
-  hv_man_table_save_jtcvs(
+  jtcvs_quiet(hv_man_table_save_jtcvs(
     ft, out, caption = "Table 1. X",
     footnotes = list(list(row = c(1, 2), col = "n_stat_1", text = "note"))
-  )
+  ))
   xml <- read_docx_text(out)
   # One superscript "a" per marked cell, plus one in the footnote line.
   expect_gte(lengths(regmatches(xml, gregexpr("superscript", xml))), 3)
@@ -194,19 +196,19 @@ test_that("hv_man_table_save_jtcvs rejects a bad abbreviations arg", {
 
   out <- tempfile(fileext = ".docx")
   expect_error(
-    hv_man_table_save_jtcvs(
+    jtcvs_quiet(hv_man_table_save_jtcvs(
       ft, out, caption = "Table 1. X", abbreviations = c("no name")
-    ),
+    )),
     "non-empty name"
   )
   expect_false(file.exists(out))
 
   out <- tempfile(fileext = ".docx")
   expect_error(
-    hv_man_table_save_jtcvs(
+    jtcvs_quiet(hv_man_table_save_jtcvs(
       ft, out, caption = "Table 1. X",
       abbreviations = list(SD = "standard deviation")
-    ),
+    )),
     "named character vector"
   )
   expect_false(file.exists(out))
@@ -215,7 +217,7 @@ test_that("hv_man_table_save_jtcvs rejects a bad abbreviations arg", {
 test_that("hv_man_table_save_jtcvs validates file", {
   ft <- fx_jtcvs_ft()
   for (bad in list(1, NA_character_, "", character(0))) {
-    expect_error(hv_man_table_save_jtcvs(ft, bad, caption = "T1."),
+    expect_error(jtcvs_quiet(hv_man_table_save_jtcvs(ft, bad, caption = "T1.")),
                  "must be a single non-empty file")
   }
 })
@@ -226,10 +228,10 @@ test_that("hv_man_table_save_jtcvs rejects a footnote with no text", {
   ft <- fx_jtcvs_ft()
   out <- tempfile(fileext = ".docx")
   expect_error(
-    hv_man_table_save_jtcvs(
+    jtcvs_quiet(hv_man_table_save_jtcvs(
       ft, out, caption = "T1.",
       footnotes = list(list(row = 1, col = "n_stat_1"))
-    ),
+    )),
     "must be a single non-empty string"
   )
   expect_false(file.exists(out))
@@ -240,10 +242,10 @@ test_that("hv_man_table_save_jtcvs rejects non-string footnote text", {
   for (bad in list(NULL, NA, 1, c("a", "b"), "")) {
     out <- tempfile(fileext = ".docx")
     expect_error(
-      hv_man_table_save_jtcvs(
+      jtcvs_quiet(hv_man_table_save_jtcvs(
         ft, out, caption = "T1.",
         footnotes = list(list(row = 1, col = "n_stat_1", text = bad))
-      ),
+      )),
       "must be a single non-empty string"
     )
     expect_false(file.exists(out))
@@ -254,8 +256,10 @@ test_that("hv_man_table_save_jtcvs writes nothing when it rejects", {
   ft <- fx_jtcvs_ft()
   out <- tempfile(fileext = ".docx")
   expect_error(
-    hv_man_table_save_jtcvs(ft, out, caption = "T1.",
-                            abbreviations = list(N = "x")),
+    jtcvs_quiet(hv_man_table_save_jtcvs(
+      ft, out, caption = "T1.",
+      abbreviations = list(N = "x")
+    )),
     "named character vector"
   )
   expect_false(file.exists(out))
@@ -265,10 +269,10 @@ test_that("hv_man_table_save_jtcvs rejects a flat footnotes list", {
   ft <- fx_jtcvs_ft()
   out <- tempfile(fileext = ".docx")
   msg <- tryCatch(
-    hv_man_table_save_jtcvs(
+    jtcvs_quiet(hv_man_table_save_jtcvs(
       ft, out, caption = "T",
       footnotes = list(row = 1, col = "label", text = "x")
-    ),
+    )),
     error = conditionMessage
   )
   expect_false(grepl("$ operator", msg, fixed = TRUE))
@@ -316,6 +320,8 @@ test_that("a narrow JTCVS table stays portrait at its own widths", {
 
 test_that("the JTCVS saver writes a US Letter page", {
   f <- tempfile(fileext = ".docx")
-  hv_man_table_save_jtcvs(fx_jtcvs_ft(), f, caption = "Table 1. Test")
+  jtcvs_quiet(hv_man_table_save_jtcvs(
+    fx_jtcvs_ft(), f, caption = "Table 1. Test"
+  ))
   expect_setequal(unname(pg_size(f)), c("12240", "15840"))
 })
