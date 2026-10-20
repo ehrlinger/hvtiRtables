@@ -190,9 +190,20 @@ test_that("hv_test_footnotes_jtcvs round-trips through a saved .docx", {
     readLines(file.path(xdir, "word", "document.xml"), warn = FALSE),
     collapse = ""
   )
-  expect_true(grepl("Kruskal-Wallis test.", xml, fixed = TRUE))
-  expect_true(grepl("Pearson chi-square test.", xml, fixed = TRUE))
-  expect_true(grepl("Fisher exact test.", xml, fixed = TRUE))
+  # The describe table names its own tests, so the saver drops these
+  # entries rather than say each twice.
+  notes <- vapply(
+    xml2::xml_find_all(wx_doc(out), "//w:tbl/following-sibling::w:p",
+                       wx_ns),
+    wx_text, character(1)
+  )
+  expect_identical(notes, c(
+    "*Patients with non-missing data.",
+    paste0("\u2020Values are No. (%) or median [15th, 85th percentiles]; ",
+           "P values from the Kruskal-Wallis test and Pearson's ",
+           "chi-square test."),
+    "\u2021Fisher exact test."
+  ))
   expect_false(grepl("ANOVA", xml, fixed = TRUE))
 })
 

@@ -51,7 +51,8 @@ test_that("the wrappers keep the Overall, P and Std. Diff. columns", {
     xml2::xml_text, character(1)
   )
   expect_true("Overall" %in% head)
-  expect_true(any(startsWith(head, "P")))
+  # The P column's label, then the dagger its note (the tests) puts on it.
+  expect_true("P\u2020" %in% head)
   expect_true("Std. Diff." %in% head)
 })
 
@@ -198,38 +199,6 @@ test_that("hv_man_table_jtcvs builds a 2-row header with merged group spans", {
   )
 })
 
-test_that("hv_man_table_jtcvs bolds and merges section rows, without fill", {
-  ft <- jtcvs_quiet(hv_man_table_jtcvs(
-    mk_jtcvs_tbl(),
-    groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)")
-  ))
-  body <- ft$body$dataset
-  sec_i <- which(body$label %in% c("Demographics", "Cardiac"))
-  expect_length(sec_i, 2L)
-  bold_map <- ft$body$styles$text$bold$data
-  expect_true(all(bold_map[sec_i, 1]))
-  # bold only, not italic, matching the canonical "Table Construction for
-  # Manuscripts" house example (not bold-italic, as an earlier JTCVS
-  # worked-example table happened to use)
-  italic_map <- ft$body$styles$text$italic$data
-  expect_false(any(italic_map[sec_i, 1]))
-  # No fill: the #CAEDFB shading was removed at review (2026-10-14); the
-  # SAS macro shades nothing either.
-  bg_map <- ft$body$styles$cells$background.color$data
-  expect_false(any(bg_map[sec_i, 1] == "#CAEDFB"))
-})
-
-test_that("hv_man_table_jtcvs sets column widths to avoid wrapping", {
-  ft <- jtcvs_quiet(hv_man_table_jtcvs(
-    mk_jtcvs_tbl(),
-    groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)")
-  ))
-  widths <- dim(ft)$widths
-  expect_equal(unname(widths["label"]), 2.5)
-  expect_equal(unname(widths["n_stat_1"]), 0.6)
-  expect_equal(unname(widths["disp_stat_1"]), 0.9)
-})
-
 test_that("hv_man_table_jtcvs rejects a trailing name not in table_body", {
   expect_error(
     jtcvs_quiet(hv_man_table_jtcvs(
@@ -295,15 +264,6 @@ test_that("hv_man_table_jtcvs adds an optional trailing column", {
   expect_true("std_diff" %in% ft$col_keys)
   xml <- docx_xml_jtcvs(ft)
   expect_true(grepl("Std. Diff.", xml, fixed = TRUE))
-})
-
-test_that("hv_man_table_jtcvs applies the house font", {
-  ft <- jtcvs_quiet(hv_man_table_jtcvs(
-    mk_jtcvs_tbl(),
-    groups = c(stat_1 = "Group A (n=27)", stat_2 = "Group B (n=33)")
-  ))
-  xml <- docx_xml_jtcvs(ft)
-  expect_true(grepl("Times New Roman", xml, fixed = TRUE))
 })
 
 test_that("hv_man_table_jtcvs accepts a custom stat_label", {
@@ -462,47 +422,6 @@ test_that("the JTCVS comparison column has no leading zero", {
   expect_false(any(grepl("^[<>]?0\\.", p)))
 })
 
-test_that("the JTCVS minority mark reaches every display column", {
-  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
-                        groups = list(A = c("age", "marker")),
-                        continuous = c("age", "marker"), mean_sd = "age",
-                        compare = "none", show_variable = FALSE)
-  ft <- jtcvs_quiet(hv_man_table_jtcvs(
-    tbl, groups = c(stat_1 = "A", stat_2 = "B")
-  ))
-  ch <- flextable::information_data_chunk(ft)
-  age_row <- which(ft$body$dataset$variable == "age")
-  for (col in c("disp_stat_1", "disp_stat_2")) {
-    cell <- ch[ch$.part == "body" & ch$.row_id == age_row &
-                 ch$.col_id == col & ch$txt == "b", ]
-    expect_equal(nrow(cell), 1L, info = col)
-    expect_identical(cell$vertical.align, "superscript", info = col)
-  }
-})
-
-test_that("the JTCVS table letters the minority mark and its note", {
-  # One mean row and one median row: a tie, so the default stays median
-  # and the mean row is the one marked.
-  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
-                        groups = list(A = c("age", "marker")),
-                        continuous = c("age", "marker"), mean_sd = "age",
-                        compare = "none", show_variable = FALSE)
-  ft <- jtcvs_quiet(hv_man_table_jtcvs(
-    tbl, groups = c(stat_1 = "A", stat_2 = "B")
-  ))
-  expect_identical(attr(ft, "hv_header_footnotes")$b, "Mean±SD.")
-  ch <- flextable::information_data_chunk(ft)
-  age_row <- which(ft$body$dataset$variable == "age")
-  marked <- ch$txt[ch$.part == "body" & ch$.row_id == age_row &
-                     ch$.col_id == "disp_stat_1"]
-  expect_true("b" %in% marked)
-  path <- tempfile(fileext = ".docx")
-  jtcvs_quiet(hv_man_table_save_jtcvs(ft, path, caption = "Table 1. Test"))
-  text <- officer::docx_summary(officer::read_docx(path))$text
-  expect_true(any(grepl("Mean±SD.", text, fixed = TRUE)))
-  expect_false(any(grepl("Age, Mean", text, fixed = TRUE)))
-})
-
 test_that("a JTCVS section row spans the table in one cell", {
   tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
                         groups = list(Demography = c("age", "grade")),
@@ -514,4 +433,91 @@ test_that("a JTCVS section row spans the table in one cell", {
   sec <- which(ft$body$dataset$is_section)
   n <- length(ft$col_keys)
   expect_equal(unname(ft$body$spans$rows[sec, ]), c(n, rep(0L, n - 1L)))
+})
+
+test_that("the wrapper passes groups, trailing and stat_label through", {
+  tbl <- fx_jtcvs_tbl()
+  tbl$table_body$a <- "x"
+  ft <- jtcvs_quiet(hv_man_table_jtcvs(
+    tbl, groups = c(stat_2 = "Second", stat_1 = "First"),
+    trailing = c(a = "Own"), stat_label = "Mean (SD)"
+  ))
+  expect_identical(attr(ft, "hv_layout"), "describe")
+  expect_identical(ft$col_keys, c("label", "n_stat_2", "disp_stat_2",
+                                  "n_stat_1", "disp_stat_1", "a"))
+  head <- flextable::information_data_chunk(ft)
+  head <- head[head$.part == "header", ]
+  txt <- function(i, k) {
+    paste(head$txt[head$.row_id == i & head$.col_id == k], collapse = "")
+  }
+  expect_identical(c(txt(1, "n_stat_2"), txt(1, "n_stat_1"), txt(1, "a"),
+                     txt(2, "disp_stat_2")),
+                   c("Second", "First", "Own", "Mean (SD)"))
+})
+
+test_that("the deprecated call marks the minority statistic with a pilcrow", {
+  # One mean row against one median row: a tie, so the median stays the
+  # default and the mean row carries the standard's mark.
+  tbl <- hv_tbl_summary(gtsummary::trial, by = "trt",
+                        groups = list(A = c("age", "marker")),
+                        continuous = c("age", "marker"), mean_sd = "age",
+                        compare = "none", show_variable = FALSE)
+  ft <- jtcvs_quiet(
+    hv_man_table_jtcvs(tbl, groups = c(stat_1 = "A", stat_2 = "B"))
+  )
+  expect_identical(attr(ft, "hv_body_marks"),
+                   c("¶" = "Mean±SD."))
+  ch <- flextable::information_data_chunk(ft)
+  age <- which(ft$body$dataset$variable == "age")
+  for (col in c("disp_stat_1", "disp_stat_2"))
+    expect_true(any(ch$.part == "body" & ch$.row_id == age &
+                      ch$.col_id == col & ch$txt == "¶" &
+                      ch$vertical.align == "superscript"), info = col)
+  path <- tempfile(fileext = ".docx")
+  jtcvs_quiet(hv_man_table_save_jtcvs(ft, path, caption = "Table 1. Test"))
+  text <- officer::docx_summary(officer::read_docx(path))$text
+  expect_true("¶Mean±SD." %in% text)
+  expect_false(any(grepl("Age, Mean", text, fixed = TRUE)))
+})
+
+test_that("the wrapper's marks follow custom group columns", {
+  tbl <- fx_jtcvs_tbl()
+  tbl$table_body$custom_a <- tbl$table_body$stat_1
+  tbl$table_body$custom_b <- tbl$table_body$stat_2
+  ft <- jtcvs_quiet(hv_man_table_jtcvs(
+    tbl, groups = c(custom_a = "A", custom_b = "B")
+  ))
+  f <- tempfile(fileext = ".docx")
+  jtcvs_quiet(hv_man_table_save_jtcvs(ft, f, caption = "Table 1. X"))
+  x <- officer::read_docx(f)$doc_obj$get()
+  sub <- vapply(xml2::xml_find_all(x, "//w:tbl/w:tr[2]/w:tc"),
+                xml2::xml_text, character(1))
+  expect_identical(sum(sub == "n*"), 2L)
+  expect_identical(sum(endsWith(sub, "†")), 2L)
+})
+
+test_that("a test note the table does not name itself is kept, lettered", {
+  # A plain gtsummary table carries no test sentence in its dagger note,
+  # so the note hv_test_footnotes_jtcvs() wrote is the only place the
+  # test is named.
+  skip_if_not_installed("broom")
+  tbl <- gtsummary::add_p(fx_jtcvs_tbl())
+  tbl <- gtsummary::modify_table_body(tbl, function(tb) {
+    tb$hv_compare_col <- ifelse(is.na(tb$p.value), NA_character_,
+                                sprintf("%.2f", tb$p.value))
+    tb
+  })
+  ft <- jtcvs_quiet(hv_man_table_jtcvs(
+    tbl, groups = c(stat_1 = "A", stat_2 = "B"),
+    trailing = c(hv_compare_col = "P")
+  ))
+  notes <- jtcvs_quiet(hv_test_footnotes_jtcvs(tbl))
+  expect_identical(vapply(notes, `[[`, "", "text"),
+                   c("Wilcoxon rank-sum test.", "Pearson chi-square test."))
+  f <- tempfile(fileext = ".docx")
+  jtcvs_quiet(hv_man_table_save_jtcvs(ft, f, caption = "Table 1. X",
+                                      footnotes = notes))
+  text <- officer::docx_summary(officer::read_docx(f))$text
+  expect_true("a. Wilcoxon rank-sum test." %in% text)
+  expect_true("b. Pearson chi-square test." %in% text)
 })

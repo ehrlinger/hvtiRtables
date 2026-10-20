@@ -35,6 +35,8 @@ letter naming the test behind it. This builds those footnotes from the
 \code{test_name} column \code{\link[gtsummary:add_p]{gtsummary::add_p()}} records, in the format
 \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}'s \code{footnotes} argument expects, so you do
 not have to map test identifiers or count body rows by hand.
+\code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}} drops the ones a describe table already names
+itself.
 
 Takes the \code{gtsummary} object rather than the \code{flextable}, because
 \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} discards \code{test_name} when it reshapes the body.

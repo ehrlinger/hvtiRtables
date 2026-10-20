@@ -133,8 +133,15 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   # Hoisted out of .add_abbreviations_key() so it fires at entry
   # rather than mid-render: no partial .docx on a bad argument.
   .check_abbreviations(abbreviations)
-  abbreviations <- .with_table_abbreviations(ft, abbreviations)
+  .write_man_docx(ft, file, footnotes, abbreviations, caption, style)
+}
 
+# The document from a checked table: the caption, the table, its notes,
+# the key and the page. `lettered` holds the deprecated JTCVS saver's
+# positional notes, as runs, written after the table's own.
+.write_man_docx <- function(ft, file, footnotes, abbreviations, caption,
+                            style, lettered = list()) {
+  abbreviations <- .with_table_abbreviations(ft, abbreviations)
   footnotes <- .resolve_footnotes(ft, footnotes)
   ft <- .mark_header(ft, footnotes)
 
@@ -156,6 +163,9 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
       style = "Normal"
     )
   }
+  for (runs in lettered)
+    doc <- officer::body_add_fpar(doc, .runs_fpar(runs, font),
+                                  style = "Normal")
 
   doc <- .add_abbreviations_key(doc, abbreviations, font)
   doc <- .page_section(doc, fit$landscape)

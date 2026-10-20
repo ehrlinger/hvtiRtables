@@ -57,9 +57,8 @@ same rule \code{\link[=hv_man_table]{hv_man_table()}} enforces.}
 produce an error naming the argument to use instead.}
 }
 \value{
-A \code{flextable} with a 2-row header and merged section rows, ready
-for \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}. It carries an \code{hv_header_footnotes}
-attribute, the text of the \code{n} superscript, which that saver writes.
+A \code{flextable} in the manuscript style's describe layout, ready
+for \code{\link[=hv_man_table_save]{hv_man_table_save()}}.
 }
 \description{
 \strong{Deprecated.} Use
@@ -73,19 +72,13 @@ controlled this with \verb{STYLE=} and \verb{PAGE=}. This renderer is the
 journal's one layout and takes neither; the CORR styles are chosen by
 \verb{style =} in \code{\link[=hv_man_table]{hv_man_table()}}. Pages are US Letter.
 
-Use this instead of \code{\link[=hv_man_table]{hv_man_table()}} when you're building the shape
-editorial actually needs at JTCVS submission: a 2-row header (group name
-spanning \code{n}/stat sub-columns, \code{Characteristic} spanning both rows) and
-bold, row-spanning section headers in the body, with no fill colour.
-Each \code{n} carries a superscript \code{a}, which \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}
-footnotes as "Patients with data available." This is
-a separate mode, not a replacement for \code{\link[=hv_man_table]{hv_man_table()}}'s flat-header
-CORR house style; the two exist because CORR reports and JTCVS
-submissions want different things from the same header row.
-
-On a table that mixes mean and median, the mark on the minority cells is
-a lettered superscript \code{b} with its own note, so the test footnotes letter
-from \code{c} rather than \code{b}.
+Until it goes, it passes its arguments through to that layout: \code{groups}
+and \code{trailing} choose the same group, Overall and comparison columns,
+and \code{stat_label} names the statistic under each group. The table is
+drawn in the manuscript style, not the JTCVS look it drew before: a
+full grid, shaded section rows spanning the table, \code{*} and \verb{†} notes,
+and no font of its own. \code{font} and \code{font_size} are checked and set
+nothing.
 }
 \section{Common mistakes}{
 

@@ -47,7 +47,7 @@ test_that("hv_man_table_save_jtcvs renders a bold caption before the table", {
   expect_true(grepl('w:b w:val="true"', preceding_run, fixed = TRUE))
 })
 
-test_that("hv_man_table_save_jtcvs attaches lettered footnotes to cells", {
+test_that("the deprecated saver keeps a caller's notes, lettered from a", {
   ft <- mk_jtcvs_ft()
   f <- tempfile(fileext = ".docx")
   on.exit(unlink(f), add = TRUE)
@@ -58,28 +58,58 @@ test_that("hv_man_table_save_jtcvs attaches lettered footnotes to cells", {
       list(row = 1, col = "n_stat_2", text = "Second footnote.")
     )
   ))
-  xml <- read_docx_text(f)
-  # The superscript letter and its ". <text>" run are separate <w:r> runs
-  # (different run formatting), so the raw XML never contains a contiguous
-  # "a. Patients..." string — tags intervene between the two <w:t> elements.
-  # Verified against actual rendered XML: use the same windowed-context
-  # pattern as the caption/bold check above instead of a literal substring.
-  # "a" is the renderer's own `n` header footnote, so these take b and c.
-  a_pos <- regexpr("Patients with data available.", xml, fixed = TRUE)
-  a_preceding <- substr(xml, max(1, a_pos - 500), a_pos)
-  expect_true(grepl(">a<", a_preceding, fixed = TRUE))
+  x <- wx_doc(f)
+  notes <- vapply(
+    xml2::xml_find_all(x, "//w:tbl/following-sibling::w:p", wx_ns),
+    wx_text, character(1)
+  )
+  # The table's own notes first, in the manuscript's symbols, then the
+  # caller's, lettered from a now that no n carries an "a".
+  expect_identical(notes, c("*Patients with non-missing data.",
+                            "\u2020Values are No. (%) or mean\u00B1SD.",
+                            "a. First footnote.", "b. Second footnote."))
+  age <- wx_rows(x)[[3]] # two header rows, then age
+  expect_identical(vapply(age, `[[`, "", "sup"), c("", "a", "", "b", ""))
+})
 
-  b_pos <- regexpr("First footnote.", xml, fixed = TRUE)
-  # 500, not 250: each run now carries its font, which lengthens the XML
-  # between the superscript and its text.
-  b_preceding <- substr(xml, max(1, b_pos - 500), b_pos)
-  expect_true(grepl('vertAlign w:val="superscript"', b_preceding, fixed = TRUE))
-  expect_true(grepl(">b<", b_preceding, fixed = TRUE))
-
-  c_pos <- regexpr("Second footnote.", xml, fixed = TRUE)
-  c_preceding <- substr(xml, max(1, c_pos - 500), c_pos)
-  expect_true(grepl('vertAlign w:val="superscript"', c_preceding, fixed = TRUE))
-  expect_true(grepl(">c<", c_preceding, fixed = TRUE))
+test_that(".drop_named_tests drops a test note only where the table names it", {
+  entry <- function(text, col = "hv_compare_col") {
+    list(row = 1, col = col, text = text)
+  }
+  wilcox <- entry(.hv_test_labels[["wilcox.test"]])
+  fisher <- entry(.hv_test_labels[["fisher.test"]])
+  own <- entry(.hv_test_labels[["wilcox.test"]], col = "disp_stat_1")
+  notes <- list(wilcox, fisher, own)
+  ft_with <- function(layout = "describe", test_note = NULL, marks = NULL) {
+    ft <- flextable::flextable(data.frame(a = 1))
+    attr(ft, "hv_layout") <- layout
+    attr(ft, "hv_test_note") <- test_note
+    attr(ft, "hv_body_marks") <- marks
+    ft
+  }
+  # Neither named: both stay.
+  expect_identical(.drop_named_tests(ft_with(), notes), notes)
+  # The dagger note names the tests: Fisher's stays, as only a double
+  # dagger on the P values names it.
+  expect_identical(
+    .drop_named_tests(ft_with(test_note = "x"), notes), list(fisher, own)
+  )
+  # The double dagger names Fisher's: the others stay.
+  dd <- c("\u2021" = .hv_test_labels[["fisher.test"]])
+  expect_identical(
+    .drop_named_tests(ft_with(marks = dd), notes), list(wilcox, own)
+  )
+  # Both: only a caller's own note on another column stays.
+  expect_identical(
+    .drop_named_tests(ft_with(test_note = "x", marks = dd), notes),
+    list(own)
+  )
+  # A table that is not a describe table names nothing.
+  expect_identical(
+    .drop_named_tests(ft_with(layout = "compare", test_note = "x",
+                              marks = dd), notes),
+    notes
+  )
 })
 
 test_that("hv_man_table_save_jtcvs reuses the shared Key: helper", {
@@ -314,8 +344,8 @@ test_that("a narrow JTCVS table stays portrait at its own widths", {
   )
   g <- save_fit(tbl, c(stat_1 = "A", stat_2 = "B"))
   expect_false(g$landscape)
-  # 2.5 + 2 x (0.6 + 0.9) inches, untouched.
-  expect_equal(g$table, 5.5 * 1440, tolerance = 2)
+  # 2.0 + 2 x (0.6 + 1.1) inches, the describe layout's, untouched.
+  expect_equal(g$table, 5.4 * 1440, tolerance = 1e-3)
 })
 
 test_that("the JTCVS saver writes a US Letter page", {

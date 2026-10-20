@@ -30,6 +30,8 @@
 #' `test_name` column [gtsummary::add_p()] records, in the format
 #' [hv_man_table_save_jtcvs()]'s `footnotes` argument expects, so you do
 #' not have to map test identifiers or count body rows by hand.
+#' [hv_man_table_save_jtcvs()] drops the ones a describe table already names
+#' itself.
 #'
 #' Takes the `gtsummary` object rather than the `flextable`, because
 #' [hv_man_table_jtcvs()] discards `test_name` when it reshapes the body.

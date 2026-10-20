@@ -149,10 +149,13 @@ test_that("a display copy cannot be saved to Word", {
   )
 })
 
-test_that("display refuses a JTCVS table, whose notes are lettered", {
-  expect_error(hv_man_table_display(fx_jtcvs_ft()),
-               "`ft` is a JTCVS table from hv_man_table_jtcvs()",
-               fixed = TRUE)
+test_that("display shows the deprecated JTCVS call's describe table", {
+  shown <- hv_man_table_display(fx_jtcvs_ft())
+  expect_true(isTRUE(attr(shown, "hv_display")))
+  foot <- flextable::information_data_chunk(shown)
+  foot <- foot[foot$.part == "footer" & foot$.row_id == 1, ]
+  expect_identical(paste(foot$txt, collapse = ""),
+                   "*Patients with non-missing data.")
 })
 
 test_that("display refuses its own result rather than marking it twice", {
