@@ -54,7 +54,7 @@ finished by hand, and both carry hand-edit errors as a result.
 |---|---|---|---|
 | `"report"` | the analysis report, read on screen | `hv_man_table()` | horizontal rules only, one flat header row, a count column per group, the Variable column on screen |
 | `"manuscript"`, layout `"compare"` | tables a journal receives that compare groups | none | full grid, one overall `n*` column, the grouping spanning its levels, full-width shaded section rows, bracketed percentiles (ms.1264, BVR rv3) |
-| `"manuscript"`, layout `"describe"` | tables describing separate cohorts | `hv_man_table_jtcvs()`, renamed | each group spans its own (n, statistic) pair, a count per group, no Overall, no P (ms.1333) |
+| `"manuscript"`, layout `"describe"` | tables describing separate cohorts | `hv_man_table_jtcvs()`, renamed | each group spans its own (n, statistic) pair, a count per group; Overall and comparison columns when the table carries them (ms.1333 carries neither) |
 
 ## 4. Evidence
 
@@ -193,9 +193,9 @@ differs only where the content differs, as measured in ms.1333:
 |---|---|---|
 | Count | one overall `n*` column | one count column per group, and one for Overall when shown |
 | Overall and comparison columns | shown when the table carries them | shown when the table carries them, as today's JTCVS renderer does; ms.1333's tables carry neither |
-| Header | `Characteristic` and `n*` merged down; the grouping spans its levels | each group spans its own (n, statistic) pair; row 2 names them |
+| Header | `Characteristic` and `n*` merged down; the grouping spans its levels | each group spans its own (n, statistic) pair; row 2 names them: n, and the table's statistic label |
 | Borders | full grid | full grid, as `"compare"` (ms.1333 used horizontal rules) |
-| Note markers | `*`, `†` | `*`, `†`, as `"compare"` (ms.1333 used a lettered `a`) |
+| Note markers | `*`, `†` | `*`, `†`, as `"compare"`: `*` on each group's n, `†` on each statistic (ms.1333 used a lettered `a`) |
 
 The two layouts differ in **where the counts go**, not in which columns may appear. An Overall
 column and comparison columns (P, a standardized difference) appear in either layout when the
@@ -211,7 +211,7 @@ n = 8 and weight n = 5 under N = 10). Dropping the column would hide every denom
 section 6's content rule forbids.
 
 The layout is chosen by the table, not the journal: a study that compares groups in Table 1
-and describes cohorts in Table 2 uses both in one manuscript.
+and describes cohorts in Table 2 uses both in one manuscript. The layout is an argument of hv_man_table(), not a property of the style, so one style object (one journal's fill) serves both tables.
 
 ### 5.2 The house standard, adopted 2026-10-17
 
@@ -295,7 +295,7 @@ Three rows of the matrix cannot be met by a renderer alone:
   Overall and comparison columns when the table carries them (section 5.1). A test calls each
   wrapper with an Overall column and a P and a standardized-difference column and asserts the
   output keeps all three. No other hvtiR package calls them (checked 2026-10-17 across
-  hvtiRtemplates, hvtiRutilities and hvtiPlotR). Their tests move to `"describe"`.
+  hvtiRtemplates, hvtiRutilities and hvtiPlotR). Their tests move to `"describe"`. What a deprecated call draws during that release is decision 1 of 2026-10-19-table-styles-phase3-plan.md.
 - **D4. Section shading in every style.** In `"report"` the fill goes on every cell of the
   section row and nothing is merged, so rule 3 holds there. In `"manuscript"` the spanned
   cell is filled.
