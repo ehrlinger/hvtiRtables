@@ -46,7 +46,6 @@ reference:
   contents:
   - hv_table_style
   - hv_man_table
-  - hv_man_table_jtcvs
 
 - title: "3. Write the document — `RTFFILE=` / `PDFFILE=`"
   desc: >
@@ -55,9 +54,7 @@ reference:
   contents:
   - hv_man_table_save
   - hv_man_table_display
-  - hv_man_table_save_jtcvs
   - hv_man_footnotes
-  - hv_test_footnotes_jtcvs
 
 - title: "4. Verify the written file"
   desc: >
@@ -75,6 +72,15 @@ reference:
     `hvtiPlotR::hv_correlation_matrix()`.
   contents:
   - hv_correlation_table
+
+- title: "Deprecated"
+  desc: >
+    The JTCVS functions, whose layout is now the manuscript style's
+    describe layout. They warn on every call and go in the next release.
+  contents:
+  - hv_man_table_jtcvs
+  - hv_man_table_save_jtcvs
+  - hv_test_footnotes_jtcvs
 
 - title: "Package overview"
   desc: >

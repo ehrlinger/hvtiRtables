@@ -86,9 +86,7 @@ convention (\verb{\%summarytable} \verb{PP=} equivalent).}
 \item{overall}{Single \code{TRUE}/\code{FALSE}. When \code{TRUE} (default), prepends
 an Overall column across all groups (\verb{\%summarytable} \code{TOTALCOL=1},
 the macro's default). Ignored when \code{by} is \code{NULL}, since the single
-column already is the overall one. \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} lays out
-only the columns its \code{groups} argument names, so name \code{stat_0}
-there to show it.}
+column already is the overall one.}
 
 \item{continuous_stat}{One of \code{"median"} (default), \code{"mean"}, or
 \code{"both"}: how continuous variables not listed in \code{normal} are
@@ -130,11 +128,10 @@ working.}
 adds a "Variable" column beside the label holding each variable's
 column name in \code{data}, on its first row, as \verb{\%summarytable}'s
 report did. It belongs to the report view: \code{\link[=hv_man_table]{hv_man_table()}} and
-\code{\link[=hv_man_table_display]{hv_man_table_display()}} show it, while \code{\link[=hv_man_table_save]{hv_man_table_save()}} and
-\code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}} always drop it and \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}
-never shows it, so a saved or JTCVS table is a manuscript table
-whatever this says. Set \code{FALSE} to leave it out of the report view
-too.}
+\code{\link[=hv_man_table_display]{hv_man_table_display()}} show it, while \code{\link[=hv_man_table_save]{hv_man_table_save()}}
+always drops it and the manuscript style never shows it, so a saved
+table is a manuscript table whatever this says. Set \code{FALSE} to leave
+it out of the report view too.}
 
 \item{cutexact}{When a binary or categorical variable is tested with
 Fisher's exact test rather than Pearson's chi-square (no continuity
@@ -146,8 +143,7 @@ Fisher when at least that percentage of cells expect fewer than 5.
 The macro's default was \code{50}; \code{0} makes every categorical test
 exact and a value above 100 makes none exact. In the CORR table
 each Fisher p-value is marked with a superscript double dagger,
-footnoted "Fisher exact test."; the JTCVS
-route letters it through \code{\link[=hv_test_footnotes_jtcvs]{hv_test_footnotes_jtcvs()}}. Used only when
+footnoted "Fisher exact test.", in every style. Used only when
 \code{compare} produces p-values. The other tests that ran are named in
 the dagger note instead, as "P values from the Wilcoxon rank sum test
 and Pearson's chi-square test.", and the CORR table puts the dagger
@@ -158,8 +154,8 @@ difference column "Std. Diff." and the same note says what it is.}
 produce an error naming the argument to use instead.}
 }
 \value{
-A \code{gtsummary} object, ready for \code{\link[=hv_man_table]{hv_man_table()}} or
-\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}. See Details for the \code{hv_stat_label},
+A \code{gtsummary} object, ready for \code{\link[=hv_man_table]{hv_man_table()}}.
+See Details for the \code{hv_stat_label},
 \code{hv_trailing}, and \code{hv_footnotes} renderer attributes. A table whose
 rows mix mean and median also carries \code{hv_cell_marks}, a list with
 \code{symbol} (\code{"§"} or \code{"¶"}) and \code{variables} (the names whose cells
@@ -175,7 +171,7 @@ a grouped, ordered variable list (\code{groups}, the macro's \verb{LIST=}
 equivalent) and variable-type buckets (\code{continuous}/\code{binary}/
 \code{categorical}, the \verb{CON3=}/\verb{CAT1=}/\verb{CAT2=} equivalents), rather than
 gtsummary's own tidyselect-based interface. Returns a plain \code{gtsummary}
-object, ready for \code{\link[=hv_man_table]{hv_man_table()}} or \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}.
+object, ready for \code{\link[=hv_man_table]{hv_man_table()}}.
 }
 \details{
 Continuous variables are summarized as \verb{median [P<low>, P<high>]} by
@@ -216,8 +212,8 @@ The returned object carries these renderer attributes:
 (\code{"No. (\%) or Median [<low>, <high> percentiles]"} by default, with
 ordinal suffixes; it follows \code{continuous_stat});
 \code{hv_trailing}, a named character vector ready to pass as
-\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}}'s \code{trailing} argument when \code{compare} produced a
-comparison column (\code{NULL} when \code{compare = "none"}); and \code{hv_footnotes},
+naming the comparison columns the manuscript style shows, when \code{compare}
+produced one (\code{NULL} when \code{compare = "none"}); and \code{hv_footnotes},
 the CORR footnote block that \code{\link[=hv_man_table]{hv_man_table()}} carries into
 \code{\link[=hv_man_table_save]{hv_man_table_save()}} so the default dagger follows \code{continuous_stat} and
 \code{percentiles} automatically. A mixed table also carries \code{hv_cell_marks},
@@ -251,11 +247,6 @@ mean difference is defined between two groups. Use
 \code{compare = "pvalue"} for three or more. If \code{by} is a factor with an
 unused level, \code{droplevels()} is usually what you want.
 
-\strong{The Overall column is missing from the JTCVS table.}
-\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} lays out only the columns its \code{groups}
-argument names, and \code{overall = TRUE} is the default. Add
-\code{stat_0 = "Overall (n=<N>)"} to \code{groups}.
-
 \strong{"\code{by} must not also be listed in \code{groups}."} \code{by} is the
 grouping variable being compared across, not a row to summarize.
 Before this check existed, the combination reached \code{gtsummary} and
@@ -281,7 +272,6 @@ hv_tbl_summary(
 
 }
 \seealso{
-\code{\link[=hv_man_table]{hv_man_table()}} or \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} to render the
-result. \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} for the percentile-footnote house
-convention.
+\code{\link[=hv_man_table]{hv_man_table()}} to render the result. \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} for
+the percentile-footnote house convention.
 }

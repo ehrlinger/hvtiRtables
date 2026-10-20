@@ -63,8 +63,8 @@ reads it. With \code{style = "report"}, any merged cell is a finding.
 \section{Common mistakes}{
 
 \strong{"\code{path} must be a single non-empty string."} The argument is a
-file path, not a \code{flextable} or an \code{officer} document. Neither saver
-runs this on its own output, so call it on the written \code{.docx}
+file path, not a \code{flextable} or an \code{officer} document. The saver
+does not run this on its own output, so call it on the written \code{.docx}
 afterwards.
 
 \strong{Reading a \code{hidden_column} finding as a gutter column.} It is not
@@ -80,7 +80,7 @@ verdict.
 
 \strong{Expecting a repair.} This is read-only and never modifies the
 file. Fix what it reports in Word, or rebuild the table through
-\code{\link[=hv_man_table_save]{hv_man_table_save()}} or \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}.
+\code{\link[=hv_man_table_save]{hv_man_table_save()}}.
 }
 
 \examples{
@@ -101,7 +101,7 @@ hv_check_docx(out)
 
 }
 \seealso{
-\code{\link[=hv_man_table_save]{hv_man_table_save()}} and \code{\link[=hv_man_table_save_jtcvs]{hv_man_table_save_jtcvs()}}, which
-write the files this checks. Neither runs the check on its own
+\code{\link[=hv_man_table_save]{hv_man_table_save()}}, which writes the files this checks. It does
+not run the check on its own
 output, so call this on the path afterwards when you want it.
 }

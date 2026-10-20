@@ -323,8 +323,8 @@
 #'
 #' @section Common mistakes:
 #' **"`path` must be a single non-empty string."** The argument is a
-#' file path, not a `flextable` or an `officer` document. Neither saver
-#' runs this on its own output, so call it on the written `.docx`
+#' file path, not a `flextable` or an `officer` document. The saver
+#' does not run this on its own output, so call it on the written `.docx`
 #' afterwards.
 #'
 #' **Reading a `hidden_column` finding as a gutter column.** It is not
@@ -340,7 +340,7 @@
 #'
 #' **Expecting a repair.** This is read-only and never modifies the
 #' file. Fix what it reports in Word, or rebuild the table through
-#' [hv_man_table_save()] or [hv_man_table_save_jtcvs()].
+#' [hv_man_table_save()].
 #'
 #' @param path Path to a `.docx` file.
 #' @param style `NULL`, the default, applies the rule every style shares.
@@ -352,8 +352,8 @@
 #'   `location` (row/column detail where applicable, `NA` otherwise), and
 #'   `detail` (human-readable description). Zero rows means clean.
 #'
-#' @seealso [hv_man_table_save()] and [hv_man_table_save_jtcvs()], which
-#'   write the files this checks. Neither runs the check on its own
+#' @seealso [hv_man_table_save()], which writes the files this checks. It does
+#'   not run the check on its own
 #'   output, so call this on the path afterwards when you want it.
 #'
 #' @examples

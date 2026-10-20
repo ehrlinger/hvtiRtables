@@ -14,8 +14,8 @@
 #' `compare = "pvalue"` followed by this function puts the p-value and
 #' the standardized difference side by side. Call it again for a further
 #' column. [hv_man_table()] shows the column directly;
-#' [hv_man_table_jtcvs()] shows it when you pass the table's
-#' `hv_trailing` attribute as `trailing`, which this function extends.
+#' The manuscript style shows it too, from the table's `hv_trailing`
+#' attribute, which this function extends.
 #'
 #' The values are shown exactly as given, so format them first, for
 #' example `sprintf("%.1f", 100 * d)` for a difference as a percentage.
@@ -30,11 +30,6 @@
 #' **"`values` names variable(s) not in the table: ..."** A name that
 #' matches no variable would silently show nothing. Usually a typo, or a
 #' variable dropped from `groups`.
-#'
-#' **The new column is missing from the JTCVS table.**
-#' [hv_man_table_jtcvs()] lays out only the trailing columns its
-#' `trailing` argument names. Pass `trailing = attr(tbl, "hv_trailing")`
-#' after the last call to this function.
 #'
 #' @param tbl A `gtsummary` object, normally from [hv_tbl_summary()].
 #' @param values Named character vector: variable name -> the text to

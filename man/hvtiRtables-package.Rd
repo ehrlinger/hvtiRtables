@@ -7,48 +7,42 @@
 \title{hvtiRtables: Manuscript-Compliant Table Construction}
 \description{
 Turns \code{gtsummary} table objects into MS Word tables that comply with
-HVTI CORR's "Table Construction for Manuscripts" rules. Two
-rendering modes exist because CORR reports and JTCVS submissions
-want different things from the same header row.
+HVTI CORR's "Table Construction for Manuscripts" rules. A table is
+drawn in a style named by its role, and a manuscript table in the
+layout its content needs.
 }
-\section{Which mode do I want?}{
+\section{Which style do I want?}{
 
-\strong{CORR house style} has a flat, non-merged header, no hidden
-spacer columns, and footnotes as text below the table. Use for
-internal reports and any journal without its own template.
+\strong{The report style} has a flat, non-merged header, a count beside
+each group, and footnotes as text below the table. Use it for analysis
+reports.
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{tbl <- gtsummary::tbl_summary(dta, by = "trt")
 ft  <- hv_man_table(tbl)
 hv_man_table_save(ft, "table1.docx")
 }\if{html}{\out{</div>}}
 
-\strong{JTCVS submission format} has a two-row merged spanning header,
-shaded section rows, and lettered cell-targeted footnotes. Use when
-submitting to that journal.
+\strong{The manuscript style} is the table a journal receives: a full
+grid, a two-row header, shaded section rows, and the document's own
+font. Its \code{"compare"} layout gives groups it compares one overall \code{n}
+column; its \code{"describe"} layout gives cohorts it describes side by
+side a count each. The JTCVS functions are deprecated: their layout is
+\code{"describe"}.
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{tbl <- hv_tbl_summary(
   dta, by = "trt",
   groups = list(Demography = c("age", "sex")),
   continuous = "age", categorical = "sex"
 )
-ft <- hv_man_table_jtcvs(
-  tbl,
-  groups = c(stat_0 = "Overall (n=200)", stat_1 = "A (n=98)",
-             stat_2 = "B (n=102)"),
-  stat_label = attr(tbl, "hv_stat_label"),
-  trailing = attr(tbl, "hv_trailing")
-)
-hv_man_table_save_jtcvs(
-  ft, "table1.docx", caption = "Table 1. Baseline Characteristics",
-  footnotes = hv_test_footnotes_jtcvs(tbl)
-)
+ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
+hv_man_table_save(ft, "table2.docx", caption = "Table 2. Cohorts")
 }\if{html}{\out{</div>}}
 }
 
 \section{Checking a finished document}{
 
 \code{\link[=hv_check_docx]{hv_check_docx()}} reads any \code{.docx} and reports the structural
-patterns the house rules forbid. Neither saver runs it on its own
+patterns the house rules forbid. The saver does not run it on its own
 output, so call it on the path afterwards.
 }
 

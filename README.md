@@ -23,11 +23,11 @@ object and you get back a `.docx` that already matches HVTI CORR's
 footnotes and an abbreviation key as text below the table, no hidden
 spacer columns), the same way every time.
 
-Two house styles exist because two audiences want different things from
-the same header row. Most CORR reports and manuscripts use a flat, single
-header row (`hv_man_table()`); a JTCVS submission wants the traditional
-two-row spanning header instead (`hv_man_table_jtcvs()`). Use whichever
-matches where the table is headed.
+Tables are drawn in a style named by its role. A report table
+(`hv_man_table()`) is the working table of an analysis report. A manuscript
+table (`hv_man_table(style = "manuscript")`) is what a journal receives,
+laid out by what it does: `"compare"` for groups it compares, `"describe"`
+for cohorts or repeated measures it describes side by side.
 
 ## Installation
 
@@ -76,36 +76,19 @@ ft <- hv_man_table(tbl, style = "manuscript")
 hv_man_table_save(ft, "table1.docx", caption = "Table 1. Baseline Characteristics")
 ```
 
-## JTCVS submission format
+## Describing cohorts side by side
 
-When you're submitting to JTCVS, use `hv_man_table_jtcvs()` /
-`hv_man_table_save_jtcvs()` instead of `hv_man_table()` /
-`hv_man_table_save()`. This is not a drop-in swap: the JTCVS pair
-requires a `groups` argument naming each `stat_<k>` column (no default),
-requires the table's statistic to follow the `{N_nonmiss} ||| {stat}`
-convention, and requires a `caption` string at save time. The merged
-spanning header and lettered footnotes match the journal's own
-submission template, so once those three things are supplied you're not
-hand-reformatting the table a second time after the flat-header version
-is already done:
+A table that describes separate cohorts, or the same patients at several
+times, gives each group its own count. Name the layout:
 
 ``` r
-library(gtsummary)
-library(hvtiRtables)
-
-tbl <- trial |>
-  tbl_summary(
-    by = trt,
-    statistic = list(all_continuous() ~ "{N_nonmiss} ||| {mean}±{sd}"),
-    include = c(age, grade)
-  )
-
-ft <- hv_man_table_jtcvs(
-  tbl,
-  groups = c(stat_1 = "Drug A (n=98)", stat_2 = "Drug B (n=102)")
-)
-hv_man_table_save_jtcvs(ft, "table1.docx", caption = "Table 1. Baseline Characteristics")
+ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
+hv_man_table_save(ft, "table2.docx", caption = "Table 2. Cohorts")
 ```
+
+`hv_man_table_jtcvs()`, `hv_man_table_save_jtcvs()` and
+`hv_test_footnotes_jtcvs()` are deprecated and go in the next release;
+their layout is this one.
 
 ## Migrating from the `%summarytable` SAS macro
 
@@ -116,7 +99,7 @@ spread across separate calls:
 | Stage | Function | Macro parameters |
 |---|---|---|
 | Compute | `hv_tbl_summary()` | `CLASS=`, `CON*=`, `CAT*=`, `LIST=`, `PP=`, `PVALUES=`, `TOTALCOL=` |
-| Shape | `hv_man_table()` / `hv_man_table_jtcvs()` | `STYLE=` is `style =`; `PAGE=` has none (pages are US Letter) |
+| Shape | `hv_man_table()` | `STYLE=` is `style =`; `PAGE=` has none (pages are US Letter) |
 | Write | `hv_man_table_save*()` | `RTFFILE=`, `ADDFN=`, `TBLTITLE=` (`caption`) |
 | Verify | `hv_check_docx()` | *(no analogue)* |
 

@@ -42,8 +42,8 @@
 #' `caption = "Table 1. ..."`; a report table takes one optionally.
 #'
 #' **"`footnotes` must be a named list (symbol -> footnote text) ..."**
-#' You passed the JTCVS shape. The two savers' `footnotes` arguments are
-#' unrelated types: this one is keyed by symbol,
+#' You passed the deprecated JTCVS shape. The two savers' `footnotes`
+#' arguments are unrelated types: this one is keyed by symbol,
 #' `` list(`*` = "text") ``, and [hv_man_table_save_jtcvs()]'s is keyed
 #' by position, `list(list(row =, col =, text =))`. So
 #' [hv_test_footnotes_jtcvs()]'s output does not belong here;
@@ -83,8 +83,9 @@
 #'   `n`, else the first `n_stat_<k>` column [hv_man_table()] creates when
 #'   it splits an [hv_tbl_summary()] table, else the first column). In a
 #'   manuscript table the dagger goes on the grouping's spanning cell and
-#'   `*` on its `n` column. Each text is rendered as its own paragraph
-#'   below the table, in the order given.
+#'   `*` on its `n` column. In the describe layout `*` goes on every group's
+#'   `n` and the dagger on every statistic. Each text is rendered as its
+#'   own paragraph below the table, in the order given.
 #'   Every element must be named (unnamed or blank-named
 #'   entries raise an error) and every text must be a single non-empty
 #'   string (`NULL`, `NA`, a number, or a multi-element vector raise an
