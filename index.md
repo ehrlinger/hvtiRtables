@@ -24,6 +24,10 @@ is the working table of an analysis report. A manuscript table
 out by what it does: `"compare"` for groups it compares, `"describe"`
 for cohorts or repeated measures it describes side by side.
 
+The [Table
+styles](https://ehrlinger.github.io/hvtiRtables/articles/table-styles.html)
+article draws one table in each and lists what differs.
+
 ## Installation
 
 hvtiRtables is part of the HVTI R family. Install it with the rest of

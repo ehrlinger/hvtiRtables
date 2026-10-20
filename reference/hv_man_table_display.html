@@ -30,6 +30,7 @@ since HTML has no page to put them on."><!-- dependencies from examples --><link
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/sas-migration.html">Porting a %summarytable program to R</a></li>
+    <li><a class="dropdown-item" href="../articles/table-styles.html">Table styles</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -99,7 +100,9 @@ display.</p>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The notes follow the table's style: a manuscript table's notes begin
 with the plain symbol and use the submissions' wording, as they do in
-the saved file.</p>
+the saved file. A manuscript table sets no font, so in HTML it takes
+the font and size of the page around it, as in Word it takes the
+document's.</p>
 <p>The one deliberate difference is the "Variable" column
 <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>'s <code>show_variable</code> adds: the display keeps it, as the
 report view, while the saved table never has it.</p>

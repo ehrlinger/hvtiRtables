@@ -99,7 +99,10 @@ and
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
 requires a `caption` for it. See
 [`hv_table_style()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_table_style.md)
-for the properties of each style.
+for the properties of each style, and the [Table
+styles](https://ehrlinger.github.io/hvtiRtables/articles/table-styles.html)
+article, which draws one table in each style and layout beside the
+matrix of their properties and says which house rules each style keeps.
 
 The rest of this page describes the `"report"` style.
 

@@ -47,7 +47,9 @@ differs.
 ## See also
 
 [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md),
-which draws a table in a style.
+which draws a table in a style. The [Table
+styles](https://ehrlinger.github.io/hvtiRtables/articles/table-styles.html)
+article prints every style's properties, read from this object.
 
 ## Examples
 

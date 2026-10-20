@@ -28,3 +28,12 @@
     max-width: 2000px;
   }
 }
+
+/* flextable output on a page of its own: the tables set their text in
+   black, so in the dark theme they need the white of the page they are
+   printed on. */
+.flextable-shadow-host {
+  background-color: #fff;
+  color: #000;
+  padding: 0.5rem;
+}

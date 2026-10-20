@@ -45,7 +45,8 @@ hv_man_table_display(ft, footnotes = NULL, abbreviations = NULL)
 
 The notes follow the table's style: a manuscript table's notes begin
 with the plain symbol and use the submissions' wording, as they do in
-the saved file.
+the saved file. A manuscript table sets no font, so in HTML it takes the
+font and size of the page around it, as in Word it takes the document's.
 
 The one deliberate difference is the "Variable" column
 [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)'s

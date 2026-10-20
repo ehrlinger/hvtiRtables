@@ -28,6 +28,7 @@ pages are US Letter, turning landscape when the table is wide.'></head><body>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/sas-migration.html">Porting a %summarytable program to R</a></li>
+    <li><a class="dropdown-item" href="../articles/table-styles.html">Table styles</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -141,7 +142,11 @@ spanning its levels, one overall <code>n</code> column, shaded section rows that
 span the table, a bold header, and no font of its own, so the table
 takes the body font of the document it is saved into. It needs a table
 from <code><a href="hv_tbl_summary.html">hv_tbl_summary()</a></code>, and <code><a href="hv_man_table_save.html">hv_man_table_save()</a></code> requires a <code>caption</code>
-for it. See <code><a href="hv_table_style.html">hv_table_style()</a></code> for the properties of each style.</p>
+for it. See <code><a href="hv_table_style.html">hv_table_style()</a></code> for the properties of each style, and
+the <a href="https://ehrlinger.github.io/hvtiRtables/articles/table-styles.html">Table styles</a>
+article, which draws one table in each style and layout beside the
+matrix of their properties and says which house rules each style
+keeps.</p>
 <p>The rest of this page describes the <code>"report"</code> style.</p>
 <p>You give this a <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html" class="external-link">gtsummary::tbl_summary()</a></code> (or any gtsummary table object
 supporting <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/as_flex_table.html" class="external-link">gtsummary::as_flex_table()</a></code>), and you get back a <code>flextable</code>

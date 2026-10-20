@@ -40,6 +40,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/sas-migration.html">Porting a %summarytable program to R</a></li>
+    <li><a class="dropdown-item" href="articles/table-styles.html">Table styles</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
@@ -75,6 +76,7 @@
 <p>Full reference documentation and worked examples: <a href="https://ehrlinger.github.io/hvtiRtables/">ehrlinger.github.io/hvtiRtables</a></p>
 <p>You already know the drill: hand-copy a <code>gtsummary</code> table into a Word template, or run it through the SAS table macro, and by the third revision a footnote wording has drifted, a header has re-merged itself, or the font quietly changed. hvtiRtables closes that gap. Give it a <code>gtsummary</code> table object and you get back a <code>.docx</code> that already matches HVTI CORR’s “Table Construction for Manuscripts” rules (house font and rounding, footnotes and an abbreviation key as text below the table, no hidden spacer columns), the same way every time.</p>
 <p>Tables are drawn in a style named by its role. A report table (<code><a href="reference/hv_man_table.html">hv_man_table()</a></code>) is the working table of an analysis report. A manuscript table (<code>hv_man_table(style = "manuscript")</code>) is what a journal receives, laid out by what it does: <code>"compare"</code> for groups it compares, <code>"describe"</code> for cohorts or repeated measures it describes side by side.</p>
+<p>The <a href="https://ehrlinger.github.io/hvtiRtables/articles/table-styles.html">Table styles</a> article draws one table in each and lists what differs.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
