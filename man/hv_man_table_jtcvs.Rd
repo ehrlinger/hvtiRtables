@@ -108,6 +108,7 @@ tbl <- hv_tbl_summary(
 ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
 out <- tempfile(fileext = ".docx")
 hv_man_table_save(ft, out, caption = "Table 2. Baseline Characteristics")
+unlink(out)
 
 }
 \seealso{

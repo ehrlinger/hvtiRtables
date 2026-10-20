@@ -87,6 +87,7 @@
 #' ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
 #' out <- tempfile(fileext = ".docx")
 #' hv_man_table_save(ft, out, caption = "Table 2. Baseline Characteristics")
+#' unlink(out)
 #'
 #' @export
 hv_man_table_save_jtcvs <- function(ft, file, caption, footnotes = NULL,

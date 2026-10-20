@@ -118,6 +118,7 @@
 #' ft <- hv_man_table(tbl)
 #' out <- tempfile(fileext = ".docx")
 #' hv_man_table_save(ft, out, abbreviations = c(N = "sample size"))
+#' unlink(out)
 #'
 #' @export
 hv_man_table_save <- function(ft, file, footnotes = NULL,

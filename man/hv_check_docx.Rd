@@ -84,10 +84,6 @@ file. Fix what it reports in Word, or rebuild the table through
 }
 
 \examples{
-# \donttest{}: the example writes a .docx and reads it back, which is
-# I/O-bound enough to trip CRAN's 5s example budget (12.7s elapsed at
-# 1.0.0). It runs, and is meant to -- it is not \dontrun{}.
-\donttest{
 tbl <- hv_tbl_summary(
   gtsummary::trial, by = "trt",
   groups = list(Demography = "age"),
@@ -97,7 +93,7 @@ ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
 out <- tempfile(fileext = ".docx")
 hv_man_table_save(ft, out, caption = "Table 1. X")
 hv_check_docx(out)
-}
+unlink(out)
 
 }
 \seealso{
