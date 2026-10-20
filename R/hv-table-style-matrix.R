@@ -151,3 +151,70 @@
     })
   )
 }
+
+# The house rules of "Table Construction for Manuscripts" (7/14/2026)
+# that design section 6 names. A content rule binds every style; a
+# hand-edit rule exists so a table edited by hand stays editable, and a
+# style keeps it or sets it aside. Where a style property decides that,
+# the cell is read from the style, as the matrix is, and an unreadable
+# value errors naming the property. `checked` marks the rules
+# hv_check_docx() checks in a saved file.
+.house_rules <- function(report = hv_table_style("report"),
+                         manuscript = hv_table_style("manuscript")) {
+  rules <- .rule_rows()
+  data.frame(
+    rule = vapply(rules, function(r) r$rule, character(1)),
+    says = vapply(rules, function(r) r$says, character(1)),
+    kind = vapply(rules, function(r) r$kind, character(1)),
+    report = vapply(rules, function(r) r$keep(report), character(1)),
+    manuscript = vapply(rules, function(r) r$keep(manuscript),
+                        character(1)),
+    checked = vapply(rules, function(r) r$checked, logical(1)),
+    stringsAsFactors = FALSE
+  )
+}
+
+.hrule <- function(rule, says, kind, keep = function(s) "kept",
+                   checked = FALSE) {
+  list(rule = rule, says = says, kind = kind, keep = keep,
+       checked = checked)
+}
+
+.rule_rows <- function() {
+  rule_8 <- "Number of non-missing values."
+  list(
+    .hrule("2", "No blank paragraph where the table is pasted",
+           "hand edit"),
+    .hrule("3", "No merged cells", "hand edit", function(s) {
+      merged <- .say("merged", s$merged)
+      if (identical(merged, "none")) "kept" else
+        paste("set aside: merges its", merged)
+    }, checked = TRUE),
+    .hrule("5", "Times New Roman, 12 pt (11 pt for a wide table)",
+           "hand edit", function(s) {
+             if (length(s$font) == 1L && is.na(s$font))
+               return("set aside: the document's body font")
+             font <- .say("font", s$font)
+             if (identical(font, "Times New Roman")) "kept" else
+               paste("set aside:", font)
+           }),
+    .hrule("8", sprintf("The count note reads \"%s\"", rule_8),
+           "hand edit", function(s) {
+             note <- .say("count_note", s$count_note)
+             if (identical(note, rule_8)) "kept" else
+               sprintf("set aside: \"%s\"", note)
+           }),
+    .hrule("13", "Notes below the table, never inside it", "content",
+           checked = TRUE),
+    .hrule("14", "One abbreviation key, sorted, below the notes",
+           "hand edit"),
+    .hrule("", "No hidden spacing columns", "content", checked = TRUE),
+    .hrule("", "No floating layers (text boxes, frames)", "content",
+           checked = TRUE),
+    .hrule("", paste("The non-missing count is shown, and its note says",
+                     "what it counts"), "content"),
+    .hrule("", "Every statistic is named and every mark explained",
+           "content"),
+    .hrule("", "Every abbreviation in the table is defined", "content")
+  )
+}

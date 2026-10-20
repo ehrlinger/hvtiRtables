@@ -554,3 +554,35 @@ test_that("the matrix's notes and key are the words the saver writes", {
   expect_identical(utils::tail(after(f), 1),
                    cell("report", "Abbreviations"))
 })
+
+test_that("the house rules: content binds every style, hand edits vary", {
+  h <- .house_rules()
+  expect_identical(h$rule, c("2", "3", "5", "8", "13", "14", "", "", "",
+                             "", ""))
+  expect_identical(h$kind, c(rep("hand edit", 4), "content", "hand edit",
+                             rep("content", 5)))
+  expect_true(all(h$report == "kept"))
+  expect_identical(h$manuscript[h$kind == "content"], rep("kept", 6))
+  expect_identical(h$manuscript[2:4], c(
+    "set aside: merges its header and section rows",
+    "set aside: the document's body font",
+    "set aside: \"Patients with non-missing data.\""
+  ))
+  expect_identical(h$checked, c(FALSE, TRUE, FALSE, FALSE, TRUE, FALSE,
+                                TRUE, TRUE, FALSE, FALSE, FALSE))
+  s <- hv_table_style("manuscript")
+  s$font <- "Times New Roman"
+  expect_identical(.house_rules(manuscript = s)$manuscript[3], "kept")
+})
+
+test_that("the house rules: an unreadable style value errors naming the rule", {
+  s <- hv_table_style("manuscript")
+  s$count_note <- NA_character_
+  expect_error(.house_rules(manuscript = s), "count_note")
+  s <- hv_table_style("manuscript")
+  s$merged <- ""
+  expect_error(.house_rules(manuscript = s), "merged")
+  s <- hv_table_style("manuscript")
+  s$font <- 12
+  expect_error(.house_rules(manuscript = s), "font")
+})
