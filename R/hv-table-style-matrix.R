@@ -27,6 +27,7 @@
 
 # The style properties the matrix reads: every row's, and the style's
 # name, which heads its column.
+# "name" is exempt from a row: it selects the style and is not drawn.
 .matrix_reads <- function() {
   unique(c("name", unlist(lapply(.matrix_rows(), function(r) r$reads))))
 }
@@ -35,47 +36,62 @@
   list(property = property, reads = reads, cell = cell)
 }
 
-# One function per row, from (style, layout) to the cell's words. A
-# property value with no words errors in vapply(), so a new value cannot
-# reach the article blank.
+# The words for a property value. A value with none (unknown, NA, empty)
+# errors naming the row and the value, so it cannot reach the article
+# blank or as "NA".
+.say <- function(row, value, ...) {
+  words <- list(...)
+  ok <- is.character(value) && length(value) == 1L && !is.na(value) &&
+    nzchar(value)
+  if (ok && !length(words)) return(value)
+  if (ok && value %in% names(words)) return(words[[value]])
+  shown <- if (is.character(value) && length(value) == 1L)
+    value else deparse(value)
+  stop(sprintf("No words for %s = %s in the style matrix.", row, shown),
+       call. = FALSE)
+}
+
+# One function per row, from (style, layout) to the cell's words.
 .matrix_rows <- function() {
   dag <- "\u2020"
   list(
     .mrow("Section row", "section", function(s, layout) {
-      switch(s$section,
-             label = paste0("label in the first cell, bold, left; fill on ",
-                            "every cell of the row, unmerged"),
-             spanned = "spans the full width, bold; filled")
+      .say("section", s$section,
+           label = paste0("label in the first cell, bold, left; fill on ",
+                          "every cell of the row, unmerged"),
+           spanned = "spans the full width, bold; filled")
     }),
     .mrow("Fill color", "fill", function(s, layout) {
-      sprintf("`%s`; `hv_table_style(fill =)` sets it", s$fill)
+      sprintf("`%s`; `hv_table_style(fill =)` sets it", .say("fill", s$fill))
     }),
     .mrow("Borders", "borders", function(s, layout) {
-      switch(s$borders,
-             rules = "horizontal rules only",
-             grid = paste0("full grid: box plus all inner lines, single ",
-                           "0.5 pt"))
+      .say("borders", s$borders,
+           rules = "horizontal rules only",
+           grid = paste0("full grid: box plus all inner lines, single ",
+                         "0.5 pt"))
     }),
     .mrow("Header", "header", function(s, layout) {
+      .say("header", s$header, flat = "", spanned = "")
       if (identical(s$header, "flat"))
         return(paste0("one row: a `No.` column before each group's ",
                       "`<group> N = n`; `*` on the first `No.`, `", dag,
                       "` on each group"))
-      switch(layout,
-             compare = paste0("two rows: `Characteristic` and `n*` merged ",
-                              "down, the grouping's name with `", dag,
-                              "` spanning its levels; row 2 ",
-                              "`<level> (N = n)`"),
-             describe = paste0("two rows: each group, `<level> (N = n)`, ",
-                               "spans its own (n, statistic) pair; row 2 ",
-                               "names them, `n*` and the statistic with `",
-                               dag, "`"))
+      .say("layout", layout,
+           compare = paste0("two rows: `Characteristic` and `n*` merged ",
+                            "down, the grouping's name with `", dag,
+                            "` spanning its levels; row 2 ",
+                            "`<level> (N = n)`"),
+           describe = paste0("two rows: each group, `<level> (N = n)`, ",
+                             "spans its own (n, statistic) pair; row 2 ",
+                             "names them, `n*` and the statistic with `",
+                             dag, "`"))
     }),
     .mrow("Non-missing count", "count", function(s, layout) {
+      .say("count", s$count, per_group = "", overall = "")
       if (identical(s$count, "per_group")) return("one column per group")
-      switch(layout,
-             compare = "one overall `n*` column",
-             describe = "one `n*` column per group, Overall's included")
+      .say("layout", layout,
+           compare = "one overall `n*` column",
+           describe = "one `n*` column per group, Overall's included")
     }),
     .mrow("Overall and comparison columns", character(0),
           function(s, layout) "shown when the table carries them"),
@@ -86,14 +102,14 @@
       "`30 (42)`: the house standard"
     }),
     .mrow("Note markers", "marker", function(s, layout) {
-      switch(s$marker,
-             superscript = paste0("the house symbols by meaning, ",
-                                  "superscript, then a space"),
-             leading = paste0("the house symbols by meaning, at the start ",
-                              "of the note, not superscript"))
+      .say("marker", s$marker,
+           superscript = paste0("the house symbols by meaning, ",
+                                "superscript, then a space"),
+           leading = paste0("the house symbols by meaning, at the start ",
+                            "of the note, not superscript"))
     }),
     .mrow("Count note", "count_note", function(s, layout) {
-      sprintf("`%s`", s$count_note)
+      sprintf("`%s`", .say("count_note", s$count_note))
     }),
     .mrow("Statistic note", "stat_lead", function(s, layout) {
       sprintf("`%s`", .stat_note(.stat_label("median", c(15, 85)), s))
@@ -107,9 +123,9 @@
       sprintf("%s %g pt", s$font, s$font_size)
     }),
     .mrow("Caption", "caption", function(s, layout) {
-      switch(s$caption,
-             optional = "optional: bold, above the table, when given",
-             required = "required: bold, above the table")
+      .say("caption", s$caption,
+           optional = "optional: bold, above the table, when given",
+           required = "required: bold, above the table")
     }),
     .mrow("Alignment and weight", "header_bold", function(s, layout) {
       paste0(if (s$header_bold) "header bold" else "header plain",
@@ -123,13 +139,15 @@
     .mrow("Header repeated on a new page", "repeat_header",
           function(s, layout) if (s$repeat_header) "yes" else "no"),
     .mrow("Page", "page", function(s, layout) {
-      switch(s$page,
-             letter = "US Letter, landscape when wide, else portrait")
+      .say("page", s$page,
+           letter = "US Letter, landscape when wide, else portrait")
     }),
     .mrow("Variable column", "variable", function(s, layout) {
       if (s$variable) "on screen only; every saved `.docx` drops it" else
         "never"
     }),
-    .mrow("Merged cells", "merged", function(s, layout) s$merged)
+    .mrow("Merged cells", "merged", function(s, layout) {
+      .say("merged", s$merged)
+    })
   )
 }

@@ -512,7 +512,19 @@ test_that("the matrix is read from the style objects, not written", {
   expect_identical(b$report[b$property == "Borders"],
                    "full grid: box plus all inner lines, single 0.5 pt")
   s$borders <- "dotted"
-  expect_error(.style_matrix(report = s))
+  expect_error(.style_matrix(report = s),
+               "No words for borders = dotted in the style matrix")
+})
+
+test_that("a property value with no words errors naming the row", {
+  for (p in c("merged", "fill", "count_note")) {
+    for (bad in list(NA_character_, "")) {
+      s <- hv_table_style("report")
+      s[[p]] <- bad
+      expect_error(.style_matrix(report = s),
+                   sprintf("No words for %s = ", p), fixed = TRUE)
+    }
+  }
 })
 
 test_that("the matrix's notes and key are the words the saver writes", {
@@ -532,7 +544,10 @@ test_that("the matrix's notes and key are the words the saver writes", {
   expect_identical(x[1], paste0("*", cell("compare", "Count note")))
   # The manuscript's dagger note goes on to name the tests.
   stat <- sub("\\.$", ";", cell("compare", "Statistic note"))
-  expect_true(startsWith(x[2], paste0("\u2020", stat)))
+  expect_identical(x[2], paste0(
+    "\u2020", stat, " P values from the Wilcoxon rank sum test and ",
+    "Pearson's chi-square test."
+  ))
   f <- tempfile(fileext = ".docx")
   hv_man_table_save(hv_man_table(st_tbl()), f,
                     abbreviations = c(B = "\u2026", A = "\u2026"))
