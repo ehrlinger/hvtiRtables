@@ -112,7 +112,7 @@ Each is a reading of the design where it is silent, or a choice it leaves open. 
 them for John.
 
 1. **The article is pkgdown-only, in `vignettes/articles/table-styles.qmd`, build-ignored and
-   not shipped.** D6 asks for "a pkgdown article", and its readers read it on the site, beside
+   not shipped.** Confirmed by John, 2026-10-20. D6 asks for "a pkgdown article", and its readers read it on the site, beside
    the reference pages it links. Not shipping it means: `R CMD check` neither builds nor times
    it (probed: `R CMD build` with `^vignettes/articles$` in `.Rbuildignore` builds the two
    vignettes and leaves the article out of the tarball); it adds no dependency (it uses
