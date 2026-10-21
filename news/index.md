@@ -1,5 +1,26 @@
 # Changelog
 
+## hvtiRtables 1.0.10
+
+- Study-supplied text can carry superscripts and subscripts, written as
+  in Pandoc: a label `"BSA (m^2^)"` raises the 2 and `"HbA~1c~"` lowers
+  the 1c. It applies to labels, levels, the `by` levels and section
+  names in every style and layout, and to the notes, the abbreviation
+  key and the caption
+  [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
+  writes. A pair holds no whitespace, so `"~5 years"` prints as typed,
+  and text without markup is unchanged.
+  [`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md)
+  reports any markup a saved file still holds as plain text, as a
+  `"markup"` finding.
+
+- The table-style output tests now read fill, row height, font, font
+  size and note wording from
+  [`hv_table_style()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_table_style.md)
+  instead of repeating them, so a change to the house style moves the
+  expectations with it. One test still pins the defaults. No change for
+  users.
+
 ## hvtiRtables 1.0.9
 
 - [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
