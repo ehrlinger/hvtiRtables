@@ -11,12 +11,14 @@ hv_man_table_display(ft, footnotes = NULL, abbreviations = NULL)
 
 \item{footnotes}{Optional named list, symbol -> footnote text, exactly
 as for \code{\link[=hv_man_table_save]{hv_man_table_save()}}. Omit it for the table's own footnotes;
-\code{NULL} shows none.}
+\code{NULL} shows none. A note's text may carry \verb{^2^} or \verb{~2~} markup, as
+a label does.}
 
 \item{abbreviations}{Optional named character vector, abbreviation ->
 definition, exactly as for \code{\link[=hv_man_table_save]{hv_man_table_save()}}: shown as one
 "Key:" line, sorted by abbreviation. A table showing a confidence
-interval adds \code{CI} unless you define it.}
+interval adds \code{CI} unless you define it.
+A name or definition may carry \verb{^2^} or \verb{~2~} markup, as a label does.}
 }
 \value{
 \code{ft} with the header marks and the footer lines added, for

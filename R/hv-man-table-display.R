@@ -46,11 +46,13 @@
 #' @param ft A `flextable`, from [hv_man_table()].
 #' @param footnotes Optional named list, symbol -> footnote text, exactly
 #'   as for [hv_man_table_save()]. Omit it for the table's own footnotes;
-#'   `NULL` shows none.
+#'   `NULL` shows none. A note's text may carry `^2^` or `~2~` markup, as
+#'   a label does.
 #' @param abbreviations Optional named character vector, abbreviation ->
 #'   definition, exactly as for [hv_man_table_save()]: shown as one
 #'   "Key:" line, sorted by abbreviation. A table showing a confidence
 #'   interval adds `CI` unless you define it.
+#'   A name or definition may carry `^2^` or `~2~` markup, as a label does.
 #'
 #' @return `ft` with the header marks and the footer lines added, for
 #'   display.

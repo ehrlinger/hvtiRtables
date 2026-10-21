@@ -25,7 +25,8 @@ uses the \code{hv_footnotes} attribute carried from \code{\link[=hv_tbl_summary]
 \code{\link[=hv_man_table]{hv_man_table()}}, so the dagger follows that table's \code{continuous_stat}
 and \code{percentiles}. Other flextables fall back to \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}'s
 median/15th-85th house defaults. Pass \code{NULL} to suppress both, or
-compose with \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} to override or extend.
+compose with \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} to override or extend. A note's
+text may carry \verb{^2^} or \verb{~2~} markup, as a label does.
 Symbols must be drawn from \code{c("*", "†", "‡", "§", "¶", "||")}. \verb{†}
 describes the statistic, so it is appended as a superscript reference
 mark to every statistic-column header (\verb{stat_<k>}), and to the
@@ -53,12 +54,14 @@ Rendered as one \verb{Key:} paragraph below any
 footnotes, sorted alphabetically by abbreviation, abbreviation
 italicized, pairs separated by \code{"; "} (house rule 14). Every element
 must be named (unnamed or blank-named entries raise an error); an
-empty or \code{NULL} vector is a no-op.}
+empty or \code{NULL} vector is a no-op.
+A name or definition may carry \verb{^2^} or \verb{~2~} markup, as a label does.}
 
 \item{caption}{The table's caption, written in bold on its own line
 above the table. A manuscript table requires one, so it is written
 with the table and not typed in later; a report table takes one when
-given and writes none otherwise.}
+given and writes none otherwise.
+It may carry \verb{^2^} or \verb{~2~} markup, as a label does.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.}

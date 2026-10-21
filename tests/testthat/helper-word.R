@@ -31,3 +31,25 @@ wx_rows <- function(doc) {
     })
   })
 }
+
+# The runs of the first Word paragraph whose text contains `has`, each as
+# list(text, align, bold, italic). A w:b or w:i written off
+# (w:val="0" or "false") is not bold or italic.
+wx_runs <- function(path, has) {
+  doc <- wx_doc(path)
+  p <- xml2::xml_find_first(
+    doc, sprintf("//w:p[contains(string(.), '%s')]", has), wx_ns
+  )
+  on <- function(r, tag) {
+    node <- xml2::xml_find_first(r, sprintf(".//w:rPr/w:%s", tag), wx_ns)
+    !inherits(node, "xml_missing") &&
+      !xml2::xml_attr(node, "val") %in% c("0", "false")
+  }
+  lapply(xml2::xml_find_all(p, ".//w:r", wx_ns), function(r) {
+    va <- xml2::xml_find_first(r, ".//w:vertAlign", wx_ns)
+    list(text = xml2::xml_text(r),
+         align = if (inherits(va, "xml_missing")) "baseline" else
+           xml2::xml_attr(va, "val"),
+         bold = on(r, "b"), italic = on(r, "i"))
+  })
+}

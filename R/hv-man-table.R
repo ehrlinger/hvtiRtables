@@ -68,7 +68,19 @@
 #' said in the notes [hv_man_table_save()] writes: the tests behind the
 #' p-values in the dagger note, and CI in the key.
 #'
+#' Superscripts and subscripts are written into the text as in Pandoc:
+#' a label `"BSA (m^2^)"` raises the 2 and `"HbA~1c~"` lowers the 1c, in
+#' labels, levels, the `by` levels and section names alike. A pair holds no
+#' whitespace, so `"~5 years"` and `"x ^ y"` print as typed. The notes, the
+#' abbreviation key and the caption [hv_man_table_save()] writes take the
+#' same markup.
+#'
 #' @section Common mistakes:
+#' **`m^2` prints with a caret.** A pair needs both markers, so an
+#' unclosed `m^2` prints as typed and nothing flags it. Write `m^2^`. A
+#' pair runs to the next matching marker, so `a^2+b^2` raises `2+b`;
+#' write `a^2^+b^2^`.
+#'
 #' **Cells read `98 ||| 46 (32, 63)`.** You are on a version before the
 #' split; upgrade. `|||` is the internal separator [hv_tbl_summary()]
 #' writes between the count and the statistic, never intended to reach a
@@ -211,7 +223,7 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   if ("conf.low" %in% ft$col_keys)
     attr(ft, "hv_abbreviations") <- c(CI = "confidence interval")
   attr(ft, "hv_style") <- style
-  ft
+  .apply_markup(ft)
 }
 
 # A manuscript layout, chosen by what the table does (design section

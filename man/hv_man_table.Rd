@@ -123,8 +123,20 @@ writes them as a footer row and a raised digit inside the table, and
 house rule 13 puts notes below it. \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} says what they
 said in the notes \code{\link[=hv_man_table_save]{hv_man_table_save()}} writes: the tests behind the
 p-values in the dagger note, and CI in the key.
+
+Superscripts and subscripts are written into the text as in Pandoc:
+a label \code{"BSA (m^2^)"} raises the 2 and \code{"HbA~1c~"} lowers the 1c, in
+labels, levels, the \code{by} levels and section names alike. A pair holds no
+whitespace, so \code{"~5 years"} and \code{"x ^ y"} print as typed. The notes, the
+abbreviation key and the caption \code{\link[=hv_man_table_save]{hv_man_table_save()}} writes take the
+same markup.
 }
 \section{Common mistakes}{
+
+\strong{\code{m^2} prints with a caret.} A pair needs both markers, so an
+unclosed \code{m^2} prints as typed and nothing flags it. Write \verb{m^2^}. A
+pair runs to the next matching marker, so \code{a^2+b^2} raises \code{2+b};
+write \verb{a^2^+b^2^}.
 
 \strong{Cells read \verb{98 ||| 46 (32, 63)}.} You are on a version before the
 split; upgrade. \verb{|||} is the internal separator \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}

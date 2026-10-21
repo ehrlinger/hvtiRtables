@@ -23,11 +23,11 @@ A \code{data.frame} with one row per finding and columns \code{type},
 Read-only inspection of any Word document, whether written by this
 package or received from elsewhere. Reports the three structural
 failure patterns the canonical "Table Construction for Manuscripts"
-memo names, and a table too wide for its page, and never modifies the
-file.
+memo names, a table too wide for its page, and markup left as plain
+text, and never modifies the file.
 }
 \details{
-Five detectors run:
+Six detectors run:
 \itemize{
 \item \code{"layer"} (structural, high confidence): paragraphs positioned with
 \code{w:framePr}, or floating text boxes (\code{w:txbxContent}). Table content
@@ -58,6 +58,14 @@ outside the header rows, unless the row is one cell spanning the
 table. The header rows are the leading run of rows whose
 \code{w:tblHeader} flag is on, as Word
 reads it. With \code{style = "report"}, any merged cell is a finding.
+\item \code{"markup"} (heuristic, lower confidence): a paragraph whose baseline
+text still holds \verb{^...^} or \verb{~...~} markup, such as \code{"BSA (m^2^)"}.
+Raised and lowered runs are skipped, as they are the renderer's own
+output. \code{\link[=hv_man_table]{hv_man_table()}} and \code{\link[=hv_man_table_save]{hv_man_table_save()}} render the markup
+as a superscript or subscript, so markup left in the text reached
+Word another way, and would print as typed. It is a text pattern, so
+a URL such as \verb{http://host/~a/~b} also matches. Checked whatever
+\code{style} is given.
 }
 }
 \section{Common mistakes}{
@@ -72,11 +80,12 @@ one. The detector requires empty \strong{and} narrower than 0.1 inch,
 precisely so the deliberate half-inch gutter columns in the house
 JTCVS templates do not trip it. A finding here is a real spacer.
 
-\strong{Treating \code{embedded_footnote} as proof.} It is the one heuristic
-detector of the five: it matches a marker character opening a cell
-in a table's last row, and a legitimate last row that happens to
-start that way matches it too. Read it as a prompt to look, not a
-verdict.
+\strong{Treating \code{embedded_footnote} or \code{markup} as proof.} They are the two
+heuristic detectors of the six. \code{embedded_footnote} matches a marker
+character opening a cell in a table's last row, and a legitimate last
+row that happens to start that way matches it too. \code{markup} matches a
+pair of \code{^} or \code{~} characters, and a URL with two tildes matches it.
+Read either as a prompt to look, not a verdict.
 
 \strong{Expecting a repair.} This is read-only and never modifies the
 file. Fix what it reports in Word, or rebuild the table through

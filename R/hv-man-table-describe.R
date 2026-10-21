@@ -52,5 +52,5 @@
   # The saver and the display mark these columns, named for the groups
   # the table was built with, whatever those columns are called.
   attr(ft, "hv_pairs") <- list(n = n_cols, stat = disp)
-  ft
+  .apply_markup(ft)
 }

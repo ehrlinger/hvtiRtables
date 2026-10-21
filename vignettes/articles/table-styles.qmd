@@ -95,6 +95,26 @@ hv_man_table_display(describe, abbreviations = key)
 
 The saved file: [table-styles-describe.docx](table-styles-describe.docx).
 
+## Units in labels
+
+A label, a level, a note or the caption can carry a superscript or a
+subscript, written as in Pandoc: `^2^` raises the 2 and `~2~` lowers it.
+The study writes plain text, in its `vars()` or its data build, and every
+style sets it. A pair holds no whitespace, so `~5 years` prints as typed.
+
+```{r}
+units <- gtsummary::trial
+units$bsa <- 1.6 + (units$age %% 10) / 20
+attr(units$bsa, "label") <- "BSA (m^2^)"
+bsa <- hv_tbl_summary(units, by = "trt", groups = list(Size = "bsa"),
+                      continuous = "bsa", show_variable = FALSE)
+```
+
+```{r, echo = FALSE}
+hv_man_table_display(hv_man_table(bsa, style = "manuscript"),
+                     abbreviations = c(BSA = "body surface area"))
+```
+
 ## What a web page cannot show
 
 The tables above are `hv_man_table_display()`'s HTML, built from the

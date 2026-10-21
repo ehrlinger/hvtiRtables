@@ -285,11 +285,11 @@
 #' Read-only inspection of any Word document, whether written by this
 #' package or received from elsewhere. Reports the three structural
 #' failure patterns the canonical "Table Construction for Manuscripts"
-#' memo names, and a table too wide for its page, and never modifies the
-#' file.
+#' memo names, a table too wide for its page, and markup left as plain
+#' text, and never modifies the file.
 #'
 #' @details
-#' Five detectors run:
+#' Six detectors run:
 #'
 #' * `"layer"` (structural, high confidence): paragraphs positioned with
 #'   `w:framePr`, or floating text boxes (`w:txbxContent`). Table content
@@ -320,6 +320,14 @@
 #'   table. The header rows are the leading run of rows whose
 #'   `w:tblHeader` flag is on, as Word
 #'   reads it. With `style = "report"`, any merged cell is a finding.
+#' * `"markup"` (heuristic, lower confidence): a paragraph whose baseline
+#'   text still holds `^...^` or `~...~` markup, such as `"BSA (m^2^)"`.
+#'   Raised and lowered runs are skipped, as they are the renderer's own
+#'   output. [hv_man_table()] and [hv_man_table_save()] render the markup
+#'   as a superscript or subscript, so markup left in the text reached
+#'   Word another way, and would print as typed. It is a text pattern, so
+#'   a URL such as `http://host/~a/~b` also matches. Checked whatever
+#'   `style` is given.
 #'
 #' @section Common mistakes:
 #' **"`path` must be a single non-empty string."** The argument is a
@@ -332,11 +340,12 @@
 #' precisely so the deliberate half-inch gutter columns in the house
 #' JTCVS templates do not trip it. A finding here is a real spacer.
 #'
-#' **Treating `embedded_footnote` as proof.** It is the one heuristic
-#' detector of the five: it matches a marker character opening a cell
-#' in a table's last row, and a legitimate last row that happens to
-#' start that way matches it too. Read it as a prompt to look, not a
-#' verdict.
+#' **Treating `embedded_footnote` or `markup` as proof.** They are the two
+#' heuristic detectors of the six. `embedded_footnote` matches a marker
+#' character opening a cell in a table's last row, and a legitimate last
+#' row that happens to start that way matches it too. `markup` matches a
+#' pair of `^` or `~` characters, and a URL with two tildes matches it.
+#' Read either as a prompt to look, not a verdict.
 #'
 #' **Expecting a repair.** This is read-only and never modifies the
 #' file. Fix what it reports in Word, or rebuild the table through
@@ -378,6 +387,34 @@ hv_check_docx <- function(path, style = NULL) {
     .detect_hidden_col(doc),
     .detect_embedded_footnote(doc),
     .detect_wide_table(doc),
-    .detect_merged_cell(doc, strict)
+    .detect_merged_cell(doc, strict),
+    .detect_markup(doc)
+  )
+}
+
+# The renderer turns "m^2^" and "HbA~1c~" into raised and lowered runs
+# (design dev/specs/2026-10-21-label-markup-design.md). A pair still in
+# the text reached Word by a path the renderer does not cover, and would
+# print as typed. Only baseline runs are joined: a raised or lowered run is
+# the renderer's own output, and a label "~~x~~" leaves a literal ~, a
+# lowered x and a literal ~ that must not read back as "~x~".
+.detect_markup <- function(doc) {
+  paras <- xml2::xml_find_all(doc, "//w:p")
+  txt <- vapply(paras, function(p) {
+    runs <- xml2::xml_find_all(p, ".//w:r[not(w:rPr/w:vertAlign[
+      @w:val = 'superscript' or @w:val = 'subscript'])]")
+    paste(xml2::xml_text(xml2::xml_find_all(runs, "./w:t")), collapse = "")
+  }, character(1))
+  hit <- txt[grepl(.markup_pattern, txt, perl = TRUE)]
+  if (length(hit) == 0L) return(.empty_report())
+  .finding(
+    "markup", NA_integer_, NA_character_,
+    sprintf(
+      paste0("%d paragraph(s) carry ^...^ or ~...~ markup as plain text ",
+             "(first: \"%s\"). hv_man_table() and hv_man_table_save() ",
+             "render it as a superscript or subscript; this text reached ",
+             "Word another way."),
+      length(hit), hit[[1L]]
+    )
   )
 }

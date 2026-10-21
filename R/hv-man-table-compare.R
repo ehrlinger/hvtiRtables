@@ -48,7 +48,7 @@
 
   ft <- .mark_compare(ft, tbl, body, disp, style)
   attr(ft, "hv_layout") <- "compare"
-  ft
+  .apply_markup(ft)
 }
 
 # A manuscript table is drawn from the overall count and the grouping's

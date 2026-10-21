@@ -84,10 +84,11 @@ and `align` (`"baseline"`, `"superscript"` or `"subscript"`), and gives back the
 single baseline piece when there is no pair. Text without markup therefore takes the same
 path, and comes out unchanged.
 
-**Not covered: the deprecated JTCVS savers.** `hv_man_table_jtcvs()` already goes through the
-describe layout, so its cells get the markup. `hv_man_table_save_jtcvs()` writes its notes its
-own way and is deprecated; it is left as it is. Its docs say to move to `hv_man_table_save()`,
-and the guard in section 5 catches any leftover pair.
+**Both JTCVS paths are covered.** `hv_man_table_jtcvs()` goes through the describe layout, so its
+cells get the markup, and `hv_man_table_save_jtcvs()` writes through `.write_man_docx()`, so its
+caption, key and notes render it too. The guard in section 5 catches any leftover pair.
+
+Corrected 2026-10-21 after the final review.
 
 ## 5. The guard
 
