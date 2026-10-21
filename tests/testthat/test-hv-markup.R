@@ -86,3 +86,49 @@ test_that("a table without markup is unchanged", {
   ft <- hv_man_table(fx_hv_tbl())
   expect_identical(.apply_markup(ft), ft)
 })
+
+test_that("runs without markup are unchanged", {
+  runs <- .key_runs(c(SD = "standard deviation"))
+  expect_identical(.expand_markup(runs)[names(runs)], runs)
+})
+
+test_that("the abbreviation key and the caption render markup in Word", {
+  out <- tempfile(fileext = ".docx")
+  on.exit(unlink(out), add = TRUE)
+  hv_man_table_save(
+    hv_man_table(mk_markup_tbl(), style = "manuscript"), out,
+    abbreviations = c(BSA = "body surface area (m^2^)", "SpO~2~" = "oxygen"),
+    caption = "Table 1. Size (m^2^)"
+  )
+  key <- wx_runs(out, "Key:")
+  texts <- vapply(key, `[[`, "", "text")
+  aligns <- vapply(key, `[[`, "", "align")
+  expect_identical(aligns[texts == "2"], c("superscript", "subscript"))
+  expect_true(key[[which(texts == "SpO")]]$italic)
+  expect_true(key[[which(texts == "2" & aligns == "subscript")]]$italic)
+  cap <- wx_runs(out, "Table 1.")
+  expect_identical(vapply(cap, `[[`, "", "align"),
+                   c("baseline", "superscript", "baseline"))
+  expect_true(all(vapply(cap, `[[`, TRUE, "bold")))
+  # The saver's header marks are added after the markup, and both stay
+  # raised: the dagger on P, the letters on the group levels.
+  header_sup <- unlist(lapply(wx_rows(wx_doc(out))[1:2], function(row) {
+    vapply(row, `[[`, "", "sup")
+  }))
+  expect_true(any(grepl("†", header_sup)))
+  expect_true(all(c("a", "b") %in% header_sup))
+  expect_identical(nrow(hv_check_docx(out, style = "manuscript")), 0L)
+})
+
+test_that("the display's notes and key render markup", {
+  ft <- hv_man_table_display(
+    hv_man_table(mk_markup_tbl()),
+    abbreviations = c(BSA = "body surface area (m^2^)",
+                      "SpO~2~" = "saturation of O~2~")
+  )
+  footer <- chunk_aligns(ft, "footer")
+  # One raised 2 (m^2^); two lowered, the italic SpO~2~ and the plain O~2~.
+  expect_identical(sum(footer == "2:superscript"), 1L)
+  expect_identical(sum(footer == "2:subscript"), 2L)
+  expect_false(any(grepl("\\^2\\^|~2~", footer)))
+})

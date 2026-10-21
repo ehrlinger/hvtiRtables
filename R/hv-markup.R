@@ -75,3 +75,22 @@
   }
   ft
 }
+
+# Note, key and caption runs (a data frame of `text`, `sup`, `italic`
+# and, for the caption, `bold`), each run holding a pair split into one
+# run per piece. Adds `sub`; every other column is copied from the run.
+.expand_markup <- function(runs) {
+  if (is.null(runs) || nrow(runs) == 0L) return(runs)
+  if (is.null(runs$sub)) runs$sub <- FALSE
+  out <- lapply(seq_len(nrow(runs)), function(k) {
+    pieces <- .markup_pieces(runs$text[k])
+    rows <- runs[rep(k, nrow(pieces)), , drop = FALSE]
+    rows$text <- pieces$text
+    rows$sup <- rows$sup | pieces$align == "superscript"
+    rows$sub <- rows$sub | pieces$align == "subscript"
+    rows
+  })
+  out <- do.call(rbind, out)
+  rownames(out) <- NULL
+  out
+}

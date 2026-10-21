@@ -153,9 +153,10 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   doc <- officer::read_docx()
   font <- .table_font(ft)
   if (!is.null(caption))
-    doc <- officer::body_add_fpar(doc, officer::fpar(officer::ftext(
-      caption, prop = .note_prop(font, bold = TRUE)
-    )), style = "Normal")
+    doc <- officer::body_add_fpar(doc, .runs_fpar(data.frame(
+      text = caption, sup = FALSE, italic = FALSE, bold = TRUE,
+      stringsAsFactors = FALSE
+    ), font), style = "Normal")
   doc <- flextable::body_add_flextable(doc, ft)
 
   leading <- identical(style$marker, "leading")
@@ -390,25 +391,39 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
              stringsAsFactors = FALSE)
 }
 
-# Runs as a Word paragraph, in the table's font.
+# Runs as a Word paragraph, in the table's font, their markup rendered.
 .runs_fpar <- function(runs, font) {
+  runs <- .expand_markup(runs)
+  bold <- if (is.null(runs$bold)) rep(FALSE, nrow(runs)) else runs$bold
   do.call(officer::fpar, lapply(seq_len(nrow(runs)), function(k) {
-    prop <- if (runs$sup[k]) {
-      .note_prop(font, "superscript")
-    } else if (runs$italic[k]) {
-      .note_prop(font, italic = TRUE)
+    align <- if (runs$sup[k]) {
+      "superscript"
+    } else if (runs$sub[k]) {
+      "subscript"
     } else {
-      .note_prop(font)
+      "baseline"
     }
-    officer::ftext(runs$text[k], prop = prop)
+    args <- list(font, align)
+    if (runs$italic[k]) args$italic <- TRUE
+    if (bold[k]) args$bold <- TRUE
+    officer::ftext(runs$text[k], prop = do.call(.note_prop, args))
   }))
 }
 
-# Runs as a flextable paragraph, for a footer line.
+# Runs as a flextable paragraph, for a footer line, their markup
+# rendered.
 .runs_paragraph <- function(runs) {
+  runs <- .expand_markup(runs)
   do.call(flextable::as_paragraph, lapply(seq_len(nrow(runs)), function(k) {
-    if (runs$sup[k]) {
+    if (runs$italic[k] && (runs$sup[k] || runs$sub[k])) {
+      align <- if (runs$sup[k]) "superscript" else "subscript"
+      flextable::as_chunk(runs$text[k], props = officer::fp_text_lite(
+        italic = TRUE, vertical.align = align
+      ))
+    } else if (runs$sup[k]) {
       flextable::as_sup(runs$text[k])
+    } else if (runs$sub[k]) {
+      flextable::as_sub(runs$text[k])
     } else if (runs$italic[k]) {
       flextable::as_i(runs$text[k])
     } else {
