@@ -90,6 +90,7 @@ test_that("a table without markup is unchanged", {
 test_that("runs without markup are unchanged", {
   runs <- .key_runs(c(SD = "standard deviation"))
   expect_identical(.expand_markup(runs)[names(runs)], runs)
+  expect_false(any(.expand_markup(runs)$sub))
 })
 
 test_that("the abbreviation key and the caption render markup in Word", {
