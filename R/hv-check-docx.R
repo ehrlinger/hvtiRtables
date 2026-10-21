@@ -289,7 +289,7 @@
 #' file.
 #'
 #' @details
-#' Five detectors run:
+#' Six detectors run:
 #'
 #' * `"layer"` (structural, high confidence): paragraphs positioned with
 #'   `w:framePr`, or floating text boxes (`w:txbxContent`). Table content
@@ -320,6 +320,11 @@
 #'   table. The header rows are the leading run of rows whose
 #'   `w:tblHeader` flag is on, as Word
 #'   reads it. With `style = "report"`, any merged cell is a finding.
+#' * `"markup"` (structural, high confidence): a paragraph whose text
+#'   still holds `^...^` or `~...~` markup, such as `"BSA (m^2^)"`.
+#'   [hv_man_table()] and [hv_man_table_save()] render it as a superscript
+#'   or subscript, so markup left in the text reached Word another way,
+#'   and would print as typed. Checked whatever `style` is given.
 #'
 #' @section Common mistakes:
 #' **"`path` must be a single non-empty string."** The argument is a
@@ -333,7 +338,7 @@
 #' JTCVS templates do not trip it. A finding here is a real spacer.
 #'
 #' **Treating `embedded_footnote` as proof.** It is the one heuristic
-#' detector of the five: it matches a marker character opening a cell
+#' detector of the six: it matches a marker character opening a cell
 #' in a table's last row, and a legitimate last row that happens to
 #' start that way matches it too. Read it as a prompt to look, not a
 #' verdict.
@@ -378,6 +383,30 @@ hv_check_docx <- function(path, style = NULL) {
     .detect_hidden_col(doc),
     .detect_embedded_footnote(doc),
     .detect_wide_table(doc),
-    .detect_merged_cell(doc, strict)
+    .detect_merged_cell(doc, strict),
+    .detect_markup(doc)
+  )
+}
+
+# The renderer turns "m^2^" and "HbA~1c~" into raised and lowered runs
+# (design dev/specs/2026-10-21-label-markup-design.md). A pair still in
+# the text reached Word by a path the renderer does not cover, and would
+# print as typed.
+.detect_markup <- function(doc) {
+  paras <- xml2::xml_find_all(doc, "//w:p")
+  txt <- vapply(paras, function(p) {
+    paste(xml2::xml_text(xml2::xml_find_all(p, ".//w:t")), collapse = "")
+  }, character(1))
+  hit <- txt[grepl(.markup_pattern, txt, perl = TRUE)]
+  if (length(hit) == 0L) return(.empty_report())
+  .finding(
+    "markup", NA_integer_, NA_character_,
+    sprintf(
+      paste0("%d paragraph(s) carry ^...^ or ~...~ markup as plain text ",
+             "(first: \"%s\"). hv_man_table() and hv_man_table_save() ",
+             "render it as a superscript or subscript; this text reached ",
+             "Word another way."),
+      length(hit), hit[[1L]]
+    )
   )
 }

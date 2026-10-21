@@ -538,3 +538,22 @@ test_that("legacy w:hMerge groups count as merged cells", {
                 mc_tr())
   expect_identical(nrow(.detect_merged_cell(hdr)), 0L)
 })
+
+test_that("hv_check_docx detects markup left as plain text", {
+  clean <- tempfile(fileext = ".docx")
+  dirty <- tempfile(fileext = ".docx")
+  on.exit(unlink(c(clean, dirty)), add = TRUE)
+  mk_clean_docx(clean)
+  expect_false("markup" %in% hv_check_docx(clean)$type)
+  splice_docx_xml(clean, dirty, function(xml) {
+    sub("<w:body>",
+        "<w:body><w:p><w:r><w:t>BSA (m^2^)</w:t></w:r></w:p>",
+        xml, fixed = TRUE)
+  })
+  report <- hv_check_docx(dirty)
+  expect_true("markup" %in% report$type)
+  expect_match(report$detail[report$type == "markup"], "BSA (m^2^)",
+               fixed = TRUE)
+  # Whatever the style: unrendered markup is wrong in both.
+  expect_true("markup" %in% hv_check_docx(dirty, style = "report")$type)
+})
