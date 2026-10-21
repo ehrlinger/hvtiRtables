@@ -68,6 +68,13 @@
 #' said in the notes [hv_man_table_save()] writes: the tests behind the
 #' p-values in the dagger note, and CI in the key.
 #'
+#' Superscripts and subscripts are written into the text as in Pandoc:
+#' a label `"BSA (m^2^)"` raises the 2 and `"HbA~1c~"` lowers the 1c, in
+#' labels, levels, the `by` levels and section names alike. A pair holds no
+#' whitespace, so `"~5 years"` and `"x ^ y"` print as typed. The notes, the
+#' abbreviation key and the caption [hv_man_table_save()] writes take the
+#' same markup.
+#'
 #' @section Common mistakes:
 #' **Cells read `98 ||| 46 (32, 63)`.** You are on a version before the
 #' split; upgrade. `|||` is the internal separator [hv_tbl_summary()]

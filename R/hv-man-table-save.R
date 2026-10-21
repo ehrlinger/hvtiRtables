@@ -100,10 +100,12 @@
 #'   italicized, pairs separated by `"; "` (house rule 14). Every element
 #'   must be named (unnamed or blank-named entries raise an error); an
 #'   empty or `NULL` vector is a no-op.
+#'   A name or definition may carry `^2^` or `~2~` markup, as a label does.
 #' @param caption The table's caption, written in bold on its own line
 #'   above the table. A manuscript table requires one, so it is written
 #'   with the table and not typed in later; a report table takes one when
 #'   given and writes none otherwise.
+#'   It may carry `^2^` or `~2~` markup, as a label does.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'

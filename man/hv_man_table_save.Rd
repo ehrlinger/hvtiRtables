@@ -53,12 +53,14 @@ Rendered as one \verb{Key:} paragraph below any
 footnotes, sorted alphabetically by abbreviation, abbreviation
 italicized, pairs separated by \code{"; "} (house rule 14). Every element
 must be named (unnamed or blank-named entries raise an error); an
-empty or \code{NULL} vector is a no-op.}
+empty or \code{NULL} vector is a no-op.
+A name or definition may carry \verb{^2^} or \verb{~2~} markup, as a label does.}
 
 \item{caption}{The table's caption, written in bold on its own line
 above the table. A manuscript table requires one, so it is written
 with the table and not typed in later; a report table takes one when
-given and writes none otherwise.}
+given and writes none otherwise.
+It may carry \verb{^2^} or \verb{~2~} markup, as a label does.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.}

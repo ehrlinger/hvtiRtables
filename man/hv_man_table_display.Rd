@@ -16,7 +16,8 @@ as for \code{\link[=hv_man_table_save]{hv_man_table_save()}}. Omit it for the ta
 \item{abbreviations}{Optional named character vector, abbreviation ->
 definition, exactly as for \code{\link[=hv_man_table_save]{hv_man_table_save()}}: shown as one
 "Key:" line, sorted by abbreviation. A table showing a confidence
-interval adds \code{CI} unless you define it.}
+interval adds \code{CI} unless you define it.
+A name or definition may carry \verb{^2^} or \verb{~2~} markup, as a label does.}
 }
 \value{
 \code{ft} with the header marks and the footer lines added, for

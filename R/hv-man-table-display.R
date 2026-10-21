@@ -51,6 +51,7 @@
 #'   definition, exactly as for [hv_man_table_save()]: shown as one
 #'   "Key:" line, sorted by abbreviation. A table showing a confidence
 #'   interval adds `CI` unless you define it.
+#'   A name or definition may carry `^2^` or `~2~` markup, as a label does.
 #'
 #' @return `ft` with the header marks and the footer lines added, for
 #'   display.
