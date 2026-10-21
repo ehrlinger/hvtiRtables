@@ -63,9 +63,11 @@ test_that("hv_man_table output has no merged cells (gridSpan/vMerge)", {
 test_that("hv_man_table applies the house font and size", {
   ft <- hv_man_table(mk_tbl())
   xml <- docx_xml(ft)
-  expect_true(grepl("Times New Roman", xml, fixed = TRUE))
-  # 12pt = half-points * 2 = 24
-  expect_true(grepl('w:sz w:val="24"', xml, fixed = TRUE))
+  s <- hv_table_style("report")
+  expect_true(grepl(s$font, xml, fixed = TRUE))
+  # Word counts font size in half-points
+  expect_true(grepl(sprintf('w:sz w:val="%d"', as.integer(2 * s$font_size)),
+                    xml, fixed = TRUE))
 })
 
 test_that("hv_man_table honours a smaller font_size for wide tables", {
@@ -271,20 +273,21 @@ test_that("the report shades every cell of a section row, unmerged", {
   ft <- hv_man_table(fx_hv_tbl())
   sec <- which(ft$body$dataset$label == "Demography")
   expect_length(sec, 1L)
+  s <- hv_table_style("report")
   fills <- ft$body$styles$cells$background.color$data[sec, ]
-  expect_true(all(fills == "#CAEDFB"))
+  expect_true(all(fills == s$fill))
   expect_true(all(ft$body$spans$rows[sec, ] == 1L))
   other <- ft$body$styles$cells$background.color$data[-sec, ]
-  expect_false(any(other == "#CAEDFB"))
+  expect_false(any(other == s$fill))
 })
 
 test_that("a report style can carry a journal's fill", {
-  ft <- hv_man_table(fx_hv_tbl(),
-                     style = hv_table_style("report", fill = "#A5C9EB"))
+  s <- hv_table_style("report", fill = "#A5C9EB")
+  ft <- hv_man_table(fx_hv_tbl(), style = s)
   sec <- which(ft$body$dataset$label == "Demography")
   expect_true(all(ft$body$styles$cells$background.color$data[sec, ] ==
-                    "#A5C9EB"))
-  expect_identical(attr(ft, "hv_style")$fill, "#A5C9EB")
+                    s$fill))
+  expect_identical(attr(ft, "hv_style")$fill, s$fill)
 })
 
 test_that("the report style is the default, and an unknown style errors", {
