@@ -133,6 +133,11 @@ same markup.
 }
 \section{Common mistakes}{
 
+\strong{\code{m^2} prints with a caret.} A pair needs both markers, so an
+unclosed \code{m^2} prints as typed and nothing flags it. Write \verb{m^2^}. A
+pair runs to the next matching marker, so \code{a^2+b^2} raises \code{2+b};
+write \verb{a^2^+b^2^}.
+
 \strong{Cells read \verb{98 ||| 46 (32, 63)}.} You are on a version before the
 split; upgrade. \verb{|||} is the internal separator \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}
 writes between the count and the statistic, never intended to reach a

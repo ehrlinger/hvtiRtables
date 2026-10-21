@@ -133,3 +133,11 @@ test_that("the display's notes and key render markup", {
   expect_identical(sum(footer == "2:subscript"), 2L)
   expect_false(any(grepl("\\^2\\^|~2~", footer)))
 })
+
+test_that("a note carrying markup renders it", {
+  ft <- hv_man_table(mk_markup_tbl())
+  attr(ft, "hv_footnotes")[["*"]] <- "Patients with BSA in m^2^."
+  footer <- chunk_aligns(hv_man_table_display(ft), "footer")
+  expect_true("2:superscript" %in% footer)
+  expect_false(any(grepl("\\^2\\^", footer)))
+})

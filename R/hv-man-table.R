@@ -76,6 +76,11 @@
 #' same markup.
 #'
 #' @section Common mistakes:
+#' **`m^2` prints with a caret.** A pair needs both markers, so an
+#' unclosed `m^2` prints as typed and nothing flags it. Write `m^2^`. A
+#' pair runs to the next matching marker, so `a^2+b^2` raises `2+b`;
+#' write `a^2^+b^2^`.
+#'
 #' **Cells read `98 ||| 46 (32, 63)`.** You are on a version before the
 #' split; upgrade. `|||` is the internal separator [hv_tbl_summary()]
 #' writes between the count and the statistic, never intended to reach a

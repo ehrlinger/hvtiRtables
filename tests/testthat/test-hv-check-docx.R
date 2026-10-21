@@ -557,3 +557,16 @@ test_that("hv_check_docx detects markup left as plain text", {
   # Whatever the style: unrendered markup is wrong in both.
   expect_true("markup" %in% hv_check_docx(dirty, style = "report")$type)
 })
+
+test_that("hv_check_docx does not flag the package's own rendered markup", {
+  d <- gtsummary::trial
+  attr(d$age, "label") <- "~~x~~"
+  tbl <- hv_tbl_summary(
+    d, by = "trt", groups = list(Size = c("age", "grade")),
+    continuous = "age", categorical = "grade"
+  )
+  out <- tempfile(fileext = ".docx")
+  on.exit(unlink(out), add = TRUE)
+  hv_man_table_save(hv_man_table(tbl), out)
+  expect_false("markup" %in% hv_check_docx(out)$type)
+})

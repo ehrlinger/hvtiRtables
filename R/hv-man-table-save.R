@@ -71,7 +71,8 @@
 #'   [hv_man_table()], so the dagger follows that table's `continuous_stat`
 #'   and `percentiles`. Other flextables fall back to [hv_man_footnotes()]'s
 #'   median/15th-85th house defaults. Pass `NULL` to suppress both, or
-#'   compose with [hv_man_footnotes()] to override or extend.
+#'   compose with [hv_man_footnotes()] to override or extend. A note's
+#'   text may carry `^2^` or `~2~` markup, as a label does.
 #'   Symbols must be drawn from `c("*", "†", "‡", "§", "¶", "||")`. `†`
 #'   describes the statistic, so it is appended as a superscript reference
 #'   mark to every statistic-column header (`stat_<k>`), and to the

@@ -25,7 +25,8 @@ uses the \code{hv_footnotes} attribute carried from \code{\link[=hv_tbl_summary]
 \code{\link[=hv_man_table]{hv_man_table()}}, so the dagger follows that table's \code{continuous_stat}
 and \code{percentiles}. Other flextables fall back to \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}'s
 median/15th-85th house defaults. Pass \code{NULL} to suppress both, or
-compose with \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} to override or extend.
+compose with \code{\link[=hv_man_footnotes]{hv_man_footnotes()}} to override or extend. A note's
+text may carry \verb{^2^} or \verb{~2~} markup, as a label does.
 Symbols must be drawn from \code{c("*", "†", "‡", "§", "¶", "||")}. \verb{†}
 describes the statistic, so it is appended as a superscript reference
 mark to every statistic-column header (\verb{stat_<k>}), and to the
