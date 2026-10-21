@@ -211,7 +211,7 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
   if ("conf.low" %in% ft$col_keys)
     attr(ft, "hv_abbreviations") <- c(CI = "confidence interval")
   attr(ft, "hv_style") <- style
-  ft
+  .apply_markup(ft)
 }
 
 # A manuscript layout, chosen by what the table does (design section
