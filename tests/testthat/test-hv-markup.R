@@ -115,7 +115,7 @@ test_that("the abbreviation key and the caption render markup in Word", {
   header_sup <- unlist(lapply(wx_rows(wx_doc(out))[1:2], function(row) {
     vapply(row, `[[`, "", "sup")
   }))
-  expect_true(any(grepl("†", header_sup)))
+  expect_true(any(grepl("\u2020", header_sup)))
   expect_true(all(c("a", "b") %in% header_sup))
   expect_identical(nrow(hv_check_docx(out, style = "manuscript")), 0L)
 })
