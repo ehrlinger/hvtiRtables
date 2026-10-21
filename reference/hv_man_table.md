@@ -168,7 +168,19 @@ says what they said in the notes
 writes: the tests behind the p-values in the dagger note, and CI in the
 key.
 
+Superscripts and subscripts are written into the text as in Pandoc: a
+label `"BSA (m^2^)"` raises the 2 and `"HbA~1c~"` lowers the 1c, in
+labels, levels, the `by` levels and section names alike. A pair holds no
+whitespace, so `"~5 years"` and `"x ^ y"` print as typed. The notes, the
+abbreviation key and the caption
+[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
+writes take the same markup.
+
 ## Common mistakes
+
+**`m^2` prints with a caret.** A pair needs both markers, so an unclosed
+`m^2` prints as typed and nothing flags it. Write `m^2^`. A pair runs to
+the next matching marker, so `a^2+b^2` raises `2+b`; write `a^2^+b^2^`.
 
 **Cells read `98 ||| 46 (32, 63)`.** You are on a version before the
 split; upgrade. `|||` is the internal separator

@@ -128,6 +128,33 @@ hv_man_table_save(describe, "table-styles-describe.docx",
 The saved file:
 [table-styles-describe.docx](https://ehrlinger.github.io/hvtiRtables/articles/table-styles-describe.docx).
 
+## Units in labels
+
+A label, a level, a note or the caption can carry a superscript or a
+subscript, written as in Pandoc: `^2^` raises the 2 and `~2~` lowers it.
+The study writes plain text, in its
+[`vars()`](https://dplyr.tidyverse.org/reference/vars.html) or its data
+build, and every style sets it. A pair holds no whitespace, so
+`~5 years` prints as typed.
+
+``` r
+
+units <- gtsummary::trial
+units$bsa <- 1.6 + (units$age %% 10) / 20
+attr(units$bsa, "label") <- "BSA (m^2^)"
+bsa <- hv_tbl_summary(units, by = "trt", groups = list(Size = "bsa"),
+                      continuous = "bsa", show_variable = FALSE)
+```
+
+| Characteristic | n\* | Overall (N = 200) | Chemotherapy Treatment† |  | P† |
+|----|----|----|----|----|----|
+|  |  |  | Drug A (N = 98) | Drug B (N = 102) |  |
+| Size |  |  |  |  |  |
+| BSA (m2) | 189 | 1.8 \[1.6, 2.0\] | 1.8 \[1.6, 2.0\] | 1.8 \[1.6, 2.0\] | .077 |
+| \*Patients with non-missing data. |  |  |  |  |  |
+| †Values are No. (%) or median \[15th, 85th percentiles\]; P values from the Wilcoxon rank sum test. |  |  |  |  |  |
+| Key: BSA, body surface area |  |  |  |  |  |
+
 ## What a web page cannot show
 
 The tables above are

@@ -42,7 +42,8 @@ hv_man_table_save(
   median/15th-85th house defaults. Pass `NULL` to suppress both, or
   compose with
   [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
-  to override or extend. Symbols must be drawn from
+  to override or extend. A note's text may carry `^2^` or `~2~` markup,
+  as a label does. Symbols must be drawn from
   `c("*", "†", "‡", "§", "¶", "||")`. `†` describes the statistic, so it
   is appended as a superscript reference mark to every statistic-column
   header (`stat_<k>`), and to the count column only when the table has
@@ -74,14 +75,15 @@ hv_man_table_save(
   any footnotes, sorted alphabetically by abbreviation, abbreviation
   italicized, pairs separated by `"; "` (house rule 14). Every element
   must be named (unnamed or blank-named entries raise an error); an
-  empty or `NULL` vector is a no-op.
+  empty or `NULL` vector is a no-op. A name or definition may carry
+  `^2^` or `~2~` markup, as a label does.
 
 - caption:
 
   The table's caption, written in bold on its own line above the table.
   A manuscript table requires one, so it is written with the table and
   not typed in later; a report table takes one when given and writes
-  none otherwise.
+  none otherwise. It may carry `^2^` or `~2~` markup, as a label does.
 
 - ...:
 

@@ -558,6 +558,55 @@
 </div>
 </div>
 <p>The saved file: <a href="table-styles-describe.docx">table-styles-describe.docx</a>.</p>
+</section><section class="level2"><h2 id="units-in-labels">Units in labels<a class="anchor" aria-label="anchor" href="#units-in-labels"></a>
+</h2>
+<p>A label, a level, a note or the caption can carry a superscript or a subscript, written as in Pandoc: <code>^2^</code> raises the 2 and <code>~2~</code> lowers it. The study writes plain text, in its <code><a href="https://dplyr.tidyverse.org/reference/vars.html" class="external-link">vars()</a></code> or its data build, and every style sets it. A pair holds no whitespace, so <code>~5 years</code> prints as typed.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">units</span> <span class="op">&lt;-</span> <span class="fu">gtsummary</span><span class="fu">::</span><span class="va"><a href="https://www.danieldsjoberg.com/gtsummary/reference/trial.html" class="external-link">trial</a></span></span>
+<span><span class="va">units</span><span class="op">$</span><span class="va">bsa</span> <span class="op">&lt;-</span> <span class="fl">1.6</span> <span class="op">+</span> <span class="op">(</span><span class="va">units</span><span class="op">$</span><span class="va">age</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="fl">10</span><span class="op">)</span> <span class="op">/</span> <span class="fl">20</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">units</span><span class="op">$</span><span class="va">bsa</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"BSA (m^2^)"</span></span>
+<span><span class="va">bsa</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hv_tbl_summary.html">hv_tbl_summary</a></span><span class="op">(</span><span class="va">units</span>, by <span class="op">=</span> <span class="st">"trt"</span>, groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Size <span class="op">=</span> <span class="st">"bsa"</span><span class="op">)</span>,</span>
+<span>                      continuous <span class="op">=</span> <span class="st">"bsa"</span>, show_variable <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div class="tabwid">
+<style>.cl-d8bad469{}.cl-bae02b79{font-family:'NA';font-size:inherit;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-fc236536{font-family:'NA';font-size:inherit;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;vertical-align:super;}.cl-20fa233c{font-family:'NA';font-size:inherit;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-ffa1cf58{font-family:'NA';font-size:inherit;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;vertical-align:super;}.cl-5e507f4f{font-family:'NA';font-size:inherit;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-6477613b{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-a87b1e2d{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-0f8b87e2{width:2in;height:0.208in;background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0.5pt solid rgba(0, 0, 0, 1.00);border-right: 0.5pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8d0dec1c{width:0.6in;height:0.208in;background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0.5pt solid rgba(0, 0, 0, 1.00);border-right: 0.5pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-5bf3e29f{width:1.1in;height:0.208in;background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0.5pt solid rgba(0, 0, 0, 1.00);border-right: 0.5pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-a0af7354{width:2in;height:0.208in;background-color:rgba(202, 237, 251, 1.00);vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0.5pt solid rgba(0, 0, 0, 1.00);border-right: 0.5pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-0f27ae0a{width:0.6in;height:0.208in;background-color:rgba(202, 237, 251, 1.00);vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0.5pt solid rgba(0, 0, 0, 1.00);border-right: 0.5pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee097ad1{width:1.1in;height:0.208in;background-color:rgba(202, 237, 251, 1.00);vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0.5pt solid rgba(0, 0, 0, 1.00);border-right: 0.5pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-0bb1da5c{width:2in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8fac5ca2{width:0.6in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e2182de3{width:1.1in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.hv-document-font span { font-family: inherit !important; font-size: inherit !important; }</style>
+<table data-quarto-disable-processing="true" class="table cl-d8bad469 hv-document-font">
+<thead>
+<tr style="overflow-wrap:break-word;">
+<th rowspan="2" class="cl-0f8b87e2"><p class="cl-6477613b"><span class="cl-bae02b79">Characteristic</span></p></th>
+<th rowspan="2" class="cl-8d0dec1c"><p class="cl-a87b1e2d"><span class="cl-bae02b79">n</span><span class="cl-fc236536">*</span></p></th>
+<th rowspan="2" class="cl-5bf3e29f"><p class="cl-a87b1e2d"><span class="cl-bae02b79">Overall (N = 200)</span></p></th>
+<th colspan="2" class="cl-5bf3e29f"><p class="cl-a87b1e2d"><span class="cl-bae02b79">Chemotherapy Treatment</span><span class="cl-fc236536">†</span></p></th>
+<th rowspan="2" class="cl-8d0dec1c"><p class="cl-a87b1e2d"><span class="cl-bae02b79">P</span><span class="cl-fc236536">†</span></p></th>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<th class="cl-5bf3e29f"><p class="cl-a87b1e2d"><span class="cl-bae02b79">Drug A (N = 98)</span></p></th>
+<th class="cl-5bf3e29f"><p class="cl-a87b1e2d"><span class="cl-bae02b79">Drug B (N = 102)</span></p></th>
+</tr>
+</thead>
+<tbody>
+<tr style="overflow-wrap:break-word;"><td colspan="6" class="cl-a0af7354"><p class="cl-6477613b"><span class="cl-bae02b79">Size</span></p></td></tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-0f8b87e2"><p class="cl-6477613b"><span class="cl-20fa233c">BSA (m</span><span class="cl-ffa1cf58">2</span><span class="cl-20fa233c">)</span></p></td>
+<td class="cl-8d0dec1c"><p class="cl-a87b1e2d"><span class="cl-20fa233c">189</span></p></td>
+<td class="cl-5bf3e29f"><p class="cl-a87b1e2d"><span class="cl-20fa233c">1.8 [1.6, 2.0]</span></p></td>
+<td class="cl-5bf3e29f"><p class="cl-a87b1e2d"><span class="cl-20fa233c">1.8 [1.6, 2.0]</span></p></td>
+<td class="cl-5bf3e29f"><p class="cl-a87b1e2d"><span class="cl-20fa233c">1.8 [1.6, 2.0]</span></p></td>
+<td class="cl-8d0dec1c"><p class="cl-a87b1e2d"><span class="cl-20fa233c">.077</span></p></td>
+</tr>
+</tbody>
+<tfoot>
+<tr style="overflow-wrap:break-word;"><td colspan="6" class="cl-0bb1da5c"><p class="cl-6477613b"><span class="cl-20fa233c">*Patients with non-missing data.</span></p></td></tr>
+<tr style="overflow-wrap:break-word;"><td colspan="6" class="cl-0bb1da5c"><p class="cl-6477613b"><span class="cl-20fa233c">†Values are No. (%) or median [15th, 85th percentiles]; P values from the Wilcoxon rank sum test.</span></p></td></tr>
+<tr style="overflow-wrap:break-word;"><td colspan="6" class="cl-0bb1da5c"><p class="cl-6477613b"><span class="cl-20fa233c">Key: </span><span class="cl-5e507f4f">BSA</span><span class="cl-20fa233c">, body surface area</span></p></td></tr>
+</tfoot>
+</table>
+</div>
+</div>
+</div>
 </section><section class="level2"><h2 id="what-a-web-page-cannot-show">What a web page cannot show<a class="anchor" aria-label="anchor" href="#what-a-web-page-cannot-show"></a>
 </h2>
 <p>The tables above are <code><a href="../reference/hv_man_table_display.html">hv_man_table_display()</a></code>’s HTML, built from the same code the saver uses for its marks and notes. Fill, grid, spans, weight, alignment, marks and note wording are the saved file’s. Some of the <code>.docx</code> is Word’s alone; open the saved files to see it:</p>
@@ -841,7 +890,7 @@
 </div>
 <p>Each file saved above passes, checked as the style that wrote it. A count of 0 means the saved file has no findings:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/hv_check_docx.html">hv_check_docx</a></span><span class="op">(</span><span class="st">"table-styles-report.docx"</span>, style <span class="op">=</span> <span class="st">"report"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/hv_check_docx.html">hv_check_docx</a></span><span class="op">(</span><span class="st">"table-styles-compare.docx"</span>, style <span class="op">=</span> <span class="st">"manuscript"</span><span class="op">)</span><span class="op">)</span></span>

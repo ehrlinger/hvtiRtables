@@ -3,7 +3,8 @@
 Read-only inspection of any Word document, whether written by this
 package or received from elsewhere. Reports the three structural failure
 patterns the canonical "Table Construction for Manuscripts" memo names,
-and a table too wide for its page, and never modifies the file.
+a table too wide for its page, and markup left as plain text, and never
+modifies the file.
 
 ## Usage
 
@@ -33,7 +34,7 @@ A `data.frame` with one row per finding and columns `type`, `table`
 
 ## Details
 
-Five detectors run:
+Six detectors run:
 
 - `"layer"` (structural, high confidence): paragraphs positioned with
   `w:framePr`, or floating text boxes (`w:txbxContent`). Table content
@@ -70,6 +71,18 @@ Five detectors run:
   flag is on, as Word reads it. With `style = "report"`, any merged cell
   is a finding.
 
+- `"markup"` (heuristic, lower confidence): a paragraph whose baseline
+  text still holds `^...^` or `~...~` markup, such as `"BSA (m^2^)"`.
+  Raised and lowered runs are skipped, as they are the renderer's own
+  output.
+  [`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md)
+  and
+  [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
+  render the markup as a superscript or subscript, so markup left in the
+  text reached Word another way, and would print as typed. It is a text
+  pattern, so a URL such as `http://host/~a/~b` also matches. Checked
+  whatever `style` is given.
+
 ## Common mistakes
 
 **"`path` must be a single non-empty string."** The argument is a file
@@ -81,10 +94,12 @@ The detector requires empty **and** narrower than 0.1 inch, precisely so
 the deliberate half-inch gutter columns in the house JTCVS templates do
 not trip it. A finding here is a real spacer.
 
-**Treating `embedded_footnote` as proof.** It is the one heuristic
-detector of the five: it matches a marker character opening a cell in a
-table's last row, and a legitimate last row that happens to start that
-way matches it too. Read it as a prompt to look, not a verdict.
+**Treating `embedded_footnote` or `markup` as proof.** They are the two
+heuristic detectors of the six. `embedded_footnote` matches a marker
+character opening a cell in a table's last row, and a legitimate last
+row that happens to start that way matches it too. `markup` matches a
+pair of `^` or `~` characters, and a URL with two tildes matches it.
+Read either as a prompt to look, not a verdict.
 
 **Expecting a repair.** This is read-only and never modifies the file.
 Fix what it reports in Word, or rebuild the table through

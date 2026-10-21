@@ -27,7 +27,8 @@ hv_man_table_display(ft, footnotes = NULL, abbreviations = NULL)
 
   Optional named list, symbol -\> footnote text, exactly as for
   [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md).
-  Omit it for the table's own footnotes; `NULL` shows none.
+  Omit it for the table's own footnotes; `NULL` shows none. A note's
+  text may carry `^2^` or `~2~` markup, as a label does.
 
 - abbreviations:
 
@@ -35,7 +36,8 @@ hv_man_table_display(ft, footnotes = NULL, abbreviations = NULL)
   as for
   [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md):
   shown as one "Key:" line, sorted by abbreviation. A table showing a
-  confidence interval adds `CI` unless you define it.
+  confidence interval adds `CI` unless you define it. A name or
+  definition may carry `^2^` or `~2~` markup, as a label does.
 
 ## Value
 

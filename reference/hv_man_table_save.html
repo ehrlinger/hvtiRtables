@@ -85,7 +85,8 @@ uses the <code>hv_footnotes</code> attribute carried from <code><a href="hv_tbl_
 <code><a href="hv_man_table.html">hv_man_table()</a></code>, so the dagger follows that table's <code>continuous_stat</code>
 and <code>percentiles</code>. Other flextables fall back to <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code>'s
 median/15th-85th house defaults. Pass <code>NULL</code> to suppress both, or
-compose with <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code> to override or extend.
+compose with <code><a href="hv_man_footnotes.html">hv_man_footnotes()</a></code> to override or extend. A note's
+text may carry <code>^2^</code> or <code>~2~</code> markup, as a label does.
 Symbols must be drawn from <code>c("*", "†", "‡", "§", "¶", "||")</code>. <code>†</code>
 describes the statistic, so it is appended as a superscript reference
 mark to every statistic-column header (<code>stat_&lt;k&gt;</code>), and to the
@@ -115,14 +116,16 @@ Rendered as one <code>Key:</code> paragraph below any
 footnotes, sorted alphabetically by abbreviation, abbreviation
 italicized, pairs separated by <code>"; "</code> (house rule 14). Every element
 must be named (unnamed or blank-named entries raise an error); an
-empty or <code>NULL</code> vector is a no-op.</p></dd>
+empty or <code>NULL</code> vector is a no-op.
+A name or definition may carry <code>^2^</code> or <code>~2~</code> markup, as a label does.</p></dd>
 
 
 <dt id="arg-caption">caption<a class="anchor" aria-label="anchor" href="#arg-caption"></a></dt>
 <dd><p>The table's caption, written in bold on its own line
 above the table. A manuscript table requires one, so it is written
 with the table and not typed in later; a report table takes one when
-given and writes none otherwise.</p></dd>
+given and writes none otherwise.
+It may carry <code>^2^</code> or <code>~2~</code> markup, as a label does.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
