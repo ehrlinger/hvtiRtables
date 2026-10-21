@@ -1,7 +1,7 @@
 test_that("hv_man_footnotes returns the two house-standard footnotes", {
   sf <- hv_man_footnotes()
   expect_identical(sf, list(
-    `*` = "Number of non-missing values.",
+    `*` = hv_table_style("report")$count_note,
     `†` = "No. (%) or Median [15th, 85th percentiles]."
   ))
 })
@@ -72,7 +72,7 @@ test_that("non-finite percentiles fail without a coercion warning", {
 
 test_that("hv_man_footnotes can be overridden with modifyList", {
   sf <- modifyList(hv_man_footnotes(), list(`†` = "custom text"))
-  expect_identical(sf[["*"]], "Number of non-missing values.")
+  expect_identical(sf[["*"]], hv_table_style("report")$count_note)
   expect_identical(sf[["†"]], "custom text")
 })
 
@@ -83,10 +83,11 @@ test_that("hv_man_footnotes can be extended with an extra symbol", {
 })
 
 test_that("hv_man_footnotes() speaks each style's words", {
+  ms <- hv_table_style("manuscript")
   expect_identical(hv_man_footnotes(), hv_man_footnotes(style = "report"))
   expect_identical(
     hv_man_footnotes(continuous_stat = "mean", style = "manuscript"),
-    list(`*` = "Patients with non-missing data.",
-         `†` = "Values are No. (%) or mean±SD.")
+    list(`*` = ms$count_note,
+         `†` = paste0(ms$stat_lead, "No. (%) or mean±SD."))
   )
 })

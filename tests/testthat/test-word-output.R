@@ -188,7 +188,8 @@ test_that("describe: every n carries the count's mark, noted below", {
   expect_length(n_cells, 3L)
   expect_true(all(vapply(n_cells, `[[`, "", "sup") == "*"))
   notes <- wx_paragraphs_after_table(doc)
-  expect_identical(notes[1], "*Patients with non-missing data.")
+  expect_identical(notes[1],
+                   paste0("*", hv_table_style("manuscript")$count_note))
 })
 
 test_that("describe: the statistic label follows the table's statistic", {
@@ -223,11 +224,12 @@ test_that("describe: under continuous_stat = 'both', stats sit side by side", {
 test_that("describe: only the section rows are shaded", {
   f <- wx_save_describe()
   on.exit(unlink(f), add = TRUE)
+  ms <- hv_table_style("manuscript")
   for (r in wx_rows(wx_doc(f))) {
     fills <- vapply(r, `[[`, "", "fill")
     fills <- toupper(fills[!is.na(fills)])
     if (cell_text(r)[1] %in% c("Demography", "Disease")) {
-      expect_identical(fills, "CAEDFB")
+      expect_identical(fills, toupper(sub("^#", "", ms$fill)))
     } else {
       expect_true(all(fills %in% c("FFFFFF", "AUTO")))
     }

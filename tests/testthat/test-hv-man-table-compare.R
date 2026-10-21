@@ -51,17 +51,17 @@ test_that("compare: a two-row header, the grouping spanning its levels", {
 })
 
 test_that("compare: section rows span the table and are shaded", {
-  ft <- hv_man_table(cmp_tbl(),
-                     style = hv_table_style("manuscript", fill = "#A5C9EB"))
+  s <- hv_table_style("manuscript", fill = "#A5C9EB")
+  ft <- hv_man_table(cmp_tbl(), style = s)
   sec <- which(ft$body$dataset$is_section)
   expect_length(sec, 1L)
   expect_equal(unname(ft$body$spans$rows[sec, ]),
                c(length(ft$col_keys), rep(0, length(ft$col_keys) - 1L)))
   expect_true(all(ft$body$styles$cells$background.color$data[sec, ] ==
-                    "#A5C9EB"))
+                    s$fill))
 })
 
-test_that("compare: a full grid, no font set, rows of 300 twips kept whole", {
+test_that("compare: a full grid, no font set, rows at the style height", {
   ft <- cmp()
   for (side in c("top", "bottom", "left", "right"))
     expect_true(all(ft$body$styles$cells[[paste0("border.width.", side)]]$data
@@ -71,7 +71,8 @@ test_that("compare: a full grid, no font set, rows of 300 twips kept whole", {
   expect_true(all(ft$body$styles$text$bold$data[!ft$body$dataset$is_section, ]
                   == FALSE))
   expect_true(all(ft$header$styles$text$bold$data == TRUE))
-  expect_true(all(abs(ft$body$rowheights - 300 / 1440) < 1e-9))
+  h <- hv_table_style("manuscript")$row_height
+  expect_true(all(abs(ft$body$rowheights - h / 1440) < 1e-9))
   expect_false(ft$properties$opts_word$split)
   expect_true(ft$properties$opts_word$repeat_headers)
 })
@@ -87,9 +88,10 @@ test_that("compare: manuscript notes, and the marks the cells carry", {
   ft <- cmp(tbl)
   notes <- attr(ft, "hv_footnotes")
   expect_identical(names(notes), c("*", "†", "‡", "¶"))
-  expect_identical(notes[["*"]], "Patients with non-missing data.")
+  ms <- hv_table_style("manuscript")
+  expect_identical(notes[["*"]], ms$count_note)
   expect_identical(notes[["†"]],
-                   paste0("Values are No. (%) or median [15th, 85th ",
+                   paste0(ms$stat_lead, "No. (%) or median [15th, 85th ",
                           "percentiles]; P values from the Wilcoxon rank ",
                           "sum test."))
   expect_identical(names(attr(ft, "hv_body_marks")), c("‡", "¶"))

@@ -71,7 +71,8 @@ test_that("display and .docx carry the same marks, notes and key", {
   expect_true(any(grepl("\\*$", saved$header)))
   expect_true(any(grepl("†$", saved$header)))
   expect_false(any(grepl("‡", saved$header)))
-  expect_identical(saved$notes[1], "* Number of non-missing values.")
+  expect_identical(saved$notes[1],
+                   paste("*", hv_table_style("report")$count_note))
   expect_identical(saved$notes[3], "‡ Fisher exact test.")
   expect_identical(
     saved$notes[4],
@@ -155,7 +156,7 @@ test_that("display shows the deprecated JTCVS call's describe table", {
   foot <- flextable::information_data_chunk(shown)
   foot <- foot[foot$.part == "footer" & foot$.row_id == 1, ]
   expect_identical(paste(foot$txt, collapse = ""),
-                   "*Patients with non-missing data.")
+                   paste0("*", hv_table_style("manuscript")$count_note))
 })
 
 test_that("display refuses its own result rather than marking it twice", {
@@ -215,7 +216,7 @@ test_that("a manuscript display writes its notes in the manuscript's words", {
   foot <- foot[foot$.part == "footer", ]
   first <- foot[foot$.row_id == 1, ]
   expect_identical(paste(first$txt, collapse = ""),
-                   "*Patients with non-missing data.")
+                   paste0("*", hv_table_style("manuscript")$count_note))
   expect_false(any(first$vertical.align == "superscript"))
 })
 

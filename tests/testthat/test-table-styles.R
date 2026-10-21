@@ -56,7 +56,7 @@ st_tbl <- function(by = "trt") {
     continuous = c("age", "marker"), categorical = c("stage", "grade")
   )
 }
-st_save <- function(name, fill = "#CAEDFB", tbl = st_tbl()) {
+st_save <- function(name, fill = hv_table_style(name)$fill, tbl = st_tbl()) {
   ft <- hv_man_table(tbl, style = hv_table_style(name, fill = fill))
   f <- tempfile(fileext = ".docx")
   caption <- if (name == "manuscript") "Table 1. Baseline characteristics"
@@ -74,13 +74,18 @@ test_that("rows 1-2: shaded section rows, unmerged or spanned", {
   tcs <- xq(sec_row(r), "./w:tc")
   expect_length(tcs, ncols(r))
   fills <- xml2::xml_attr(xml2::xml_find_first(tcs, ".//w:shd", wx_ns), "fill")
-  expect_true(all(fills == "CAEDFB"))
-  m <- wx_doc(st_save("manuscript", fill = "#A5C9EB"))
+  expect_true(all(fills == sub("^#", "", hv_table_style("report")$fill)))
+  # A changed style reaches Word: the fill below is read through the style
+  # that built the table, and differs from the default.
+  s <- hv_table_style("manuscript", fill = "#A5C9EB")
+  expect_false(identical(s$fill, hv_table_style("manuscript")$fill))
+  m <- wx_doc(st_save("manuscript", fill = s$fill))
   tc <- xq(sec_row(m), "./w:tc")
   expect_length(tc, 1L)
   expect_identical(xml2::xml_attr(xq(tc, ".//w:gridSpan"), "val"),
                    as.character(ncols(m)))
-  expect_identical(xml2::xml_attr(xq(tc, ".//w:shd"), "fill"), "A5C9EB")
+  expect_identical(xml2::xml_attr(xq(tc, ".//w:shd"), "fill"),
+                   sub("^#", "", s$fill))
 })
 
 test_that("row 3: rules in the report, a full grid in the manuscript", {
@@ -115,14 +120,17 @@ test_that("rows 8-10: note markers and wording", {
   after <- function(x) {
     vapply(xq(x, "//w:tbl/following-sibling::w:p"), wx_text, character(1))
   }
+  rs <- hv_table_style("report")
+  ms <- hv_table_style("manuscript")
   r <- wx_doc(st_save("report"))
-  expect_identical(after(r)[1], "* Number of non-missing values.")
+  expect_identical(after(r)[1], paste("*", rs$count_note))
   first <- xq(r, "//w:tbl/following-sibling::w:p[1]/w:r[1]")
   expect_length(xq(first[[1]], ".//w:vertAlign[@w:val='superscript']"), 1L)
   m <- wx_doc(st_save("manuscript"))
   expect_identical(after(m)[1:2], c(
-    "*Patients with non-missing data.",
-    paste0("\u2020Values are No. (%) or median [15th, 85th percentiles]; ",
+    paste0("*", ms$count_note),
+    paste0("\u2020", ms$stat_lead,
+           "No. (%) or median [15th, 85th percentiles]; ",
            "P values from the Wilcoxon rank sum test and Pearson's ",
            "chi-square test.")
   ))
@@ -130,7 +138,8 @@ test_that("rows 8-10: note markers and wording", {
 
 test_that("rows 12-13: the font and the caption", {
   r <- wx_doc(st_save("report"))
-  expect_gt(length(xq(r, "//w:tbl//w:rFonts[@w:ascii='Times New Roman']")),
+  font <- hv_table_style("report")$font
+  expect_gt(length(xq(r, sprintf("//w:tbl//w:rFonts[@w:ascii='%s']", font))),
             0L)
   expect_identical(xml2::xml_name(xq(r, "//w:body/*[1]")[[1]]), "tbl")
   m <- wx_doc(st_save("manuscript"))
@@ -153,8 +162,11 @@ test_that("rows 14-16: weight, row height, rows kept whole, header repeated", {
   }
   m <- wx_doc(st_save("manuscript"))
   n_tr <- length(xq(m, "//w:tr"))
-  expect_length(xq(m, "//w:trHeight[@w:val='300' and @w:hRule='atLeast']"),
-                n_tr)
+  h <- hv_table_style("manuscript")$row_height
+  expect_length(
+    xq(m, sprintf("//w:trHeight[@w:val='%s' and @w:hRule='atLeast']", h)),
+    n_tr
+  )
   expect_length(xq(m, "//w:trPr/w:cantSplit"), n_tr)
   r <- wx_doc(st_save("report"))
   expect_length(xq(r, "//w:trPr/w:cantSplit"), 0L)
@@ -258,6 +270,7 @@ test_that("replicas of the two submissions' Table 1 shapes", {
 
 test_that("the manuscript names the tests in its dagger note and marks P", {
   skip_if_not_installed("broom")
+  ms <- hv_table_style("manuscript")
   after <- function(x) {
     vapply(xq(x, "//w:tbl/following-sibling::w:p"), wx_text, character(1))
   }
@@ -276,7 +289,8 @@ test_that("the manuscript names the tests in its dagger note and marks P", {
     if (cmp == "smd") {
       expect_identical(
         note,
-        paste0("\u2020Values are No. (%) or median [15th, 85th ",
+        paste0("\u2020", ms$stat_lead,
+               "No. (%) or median [15th, 85th ",
                "percentiles]; Std. Diff. is the standardized mean ",
                "difference."),
         info = cmp
@@ -285,7 +299,8 @@ test_that("the manuscript names the tests in its dagger note and marks P", {
     } else if (cmp == "both") {
       expect_identical(
         note,
-        paste0("\u2020Values are No. (%) or median [15th, 85th ",
+        paste0("\u2020", ms$stat_lead,
+               "No. (%) or median [15th, 85th ",
                "percentiles]; P values from the Wilcoxon rank sum test ",
                "and Pearson's chi-square test; SMD is the standardized ",
                "mean difference."),
@@ -295,7 +310,8 @@ test_that("the manuscript names the tests in its dagger note and marks P", {
     } else {
       expect_identical(
         note,
-        paste0("†Values are No. (%) or median [15th, 85th ",
+        paste0("\u2020", ms$stat_lead,
+               "No. (%) or median [15th, 85th ",
                "percentiles]; P values from the Wilcoxon rank sum test and ",
                "Pearson's chi-square test."),
         info = cmp
@@ -312,7 +328,8 @@ test_that("the manuscript names the tests in its dagger note and marks P", {
 
 # -- the manuscript's describe layout, saved ------------------------------
 
-dsc_save <- function(tbl = st_tbl(), fill = "#CAEDFB") {
+dsc_save <- function(tbl = st_tbl(),
+                     fill = hv_table_style("manuscript")$fill) {
   ft <- hv_man_table(tbl, style = hv_table_style("manuscript", fill = fill),
                      layout = "describe")
   f <- tempfile(fileext = ".docx")
@@ -351,8 +368,10 @@ test_that("describe, rows 8-10: the notes, as compare writes them", {
   x <- wx_doc(dsc_save())
   notes <- vapply(xq(x, "//w:tbl/following-sibling::w:p"), wx_text,
                   character(1))
-  expect_identical(notes[1], "*Patients with non-missing data.")
-  expect_match(notes[2], "^†Values are No\\. \\(%\\) or median")
+  ms <- hv_table_style("manuscript")
+  expect_identical(notes[1], paste0("*", ms$count_note))
+  expect_match(notes[2], paste0("^\u2020", ms$stat_lead,
+                                "No\\. \\(%\\) or median"))
   sup <- xq(x, paste0("//w:tbl/following-sibling::w:p//",
                       "w:vertAlign[@w:val='superscript']"))
   expect_length(sup, 0L)
@@ -397,7 +416,7 @@ test_that("a describe table displays with its marks where Word has them", {
   expect_true(all(marks$.row_id[marks$txt == "*"] == 2L))
   foot <- ch[ch$.part == "footer" & ch$.row_id == 1, ]
   expect_identical(paste(foot$txt, collapse = ""),
-                   "*Patients with non-missing data.")
+                   paste0("*", hv_table_style("manuscript")$count_note))
 })
 
 test_that("describe marks the groups it was built with, whatever their names", {

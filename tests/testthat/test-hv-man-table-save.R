@@ -437,9 +437,11 @@ test_that("a manuscript note begins with its plain symbol", {
   x <- ms_doc(caption = "Table 1. Test")
   ps <- xml2::xml_find_all(x, "//w:tbl/following-sibling::w:p")
   text <- vapply(ps, xml2::xml_text, character(1))
-  expect_identical(text[1], "*Patients with non-missing data.")
+  ms <- hv_table_style("manuscript")
+  expect_identical(text[1], paste0("*", ms$count_note))
   expect_match(text[2], paste0(
-    "^†Values are No. \\(%\\) or median \\[15th, 85th percentiles\\]; ",
+    "^\u2020", ms$stat_lead,
+    "No. \\(%\\) or median \\[15th, 85th percentiles\\]; ",
     "P values from the "
   ))
   sup <- xml2::xml_find_all(ps[[1]], ".//w:vertAlign[@w:val='superscript']")
@@ -491,7 +493,7 @@ test_that("the caption takes the table's font", {
   x <- officer::read_docx(f)$doc_obj$get()
   xp <- "(//w:body/*[1]//w:r)[1]/w:rPr/w:rFonts/@w:ascii"
   expect_identical(xml2::xml_text(xml2::xml_find_all(x, xp)),
-                   "Times New Roman")
+                   hv_table_style("report")$font)
   x <- ms_doc(caption = "Table 1. Baseline characteristics")
   expect_length(xml2::xml_find_all(x, "//w:body/*[1]//w:rFonts[@w:ascii]"),
                 0L)

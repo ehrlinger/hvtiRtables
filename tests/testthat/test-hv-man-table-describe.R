@@ -61,22 +61,23 @@ test_that("describe: the grid, the shaded spanning sections, no font", {
     groups = list(Demography = "age", Disease = "grade"),
     continuous = "age", categorical = "grade", show_variable = FALSE
   )
-  ft <- hv_man_table(tbl, layout = "describe",
-                     style = hv_table_style("manuscript", fill = "#A5C9EB"))
+  s <- hv_table_style("manuscript", fill = "#A5C9EB")
+  ft <- hv_man_table(tbl, layout = "describe", style = s)
   sec <- which(ft$body$dataset$is_section)
   n <- length(ft$col_keys)
   expect_length(sec, 2L)
   for (i in sec) {
     expect_equal(unname(ft$body$spans$rows[i, ]), c(n, rep(0, n - 1L)))
     expect_true(all(ft$body$styles$cells$background.color$data[i, ] ==
-                      "#A5C9EB"))
+                      s$fill))
   }
   for (side in c("top", "bottom", "left", "right"))
     expect_true(all(ft$body$styles$cells[[paste0("border.width.", side)]]$data
                     == 0.5), info = side)
   expect_true(all(is.na(ft$body$styles$text$font.family$data)))
   expect_true(all(ft$header$styles$text$bold$data))
-  expect_true(all(abs(ft$body$rowheights - 300 / 1440) < 1e-9))
+  h <- hv_table_style("manuscript")$row_height
+  expect_true(all(abs(ft$body$rowheights - h / 1440) < 1e-9))
   expect_false(ft$properties$opts_word$split)
 })
 
@@ -100,9 +101,11 @@ test_that("describe: the manuscript's notes and the marks on cells", {
   ft <- ds(tbl)
   notes <- attr(ft, "hv_footnotes")
   expect_identical(names(notes), c("*", "\u2020", "\u2021", "\u00B6"))
-  expect_identical(notes[["*"]], "Patients with non-missing data.")
+  ms <- hv_table_style("manuscript")
+  expect_identical(notes[["*"]], ms$count_note)
   expect_match(notes[["\u2020"]],
-               "^Values are No\\. \\(%\\) or median \\[15th, 85th")
+               paste0("^", ms$stat_lead,
+                      "No\\. \\(%\\) or median \\[15th, 85th"))
   expect_identical(names(attr(ft, "hv_body_marks")), c("\u2021", "\u00B6"))
   ch <- flextable::information_data_chunk(ft)
   body <- ft$body$dataset
