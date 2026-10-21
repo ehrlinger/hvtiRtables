@@ -155,6 +155,7 @@ mk_markup_tbl <- function() {
   d <- gtsummary::trial
   attr(d$age, "label") <- "BSA (m^2^)"
   levels(d$grade)[1] <- "HbA~1c~"
+  levels(d$grade)[2] <- "~2~"
   d$trt <- factor(d$trt, labels = c("Arm^a^", "Arm^b^"))
   hv_tbl_summary(d, by = "trt", groups = list("Size m^2^" = c("age", "grade")),
                  continuous = "age", categorical = "grade", compare = "p")
@@ -181,6 +182,9 @@ test_that(".markup_pieces() follows the pair rule", {
                    c("PaO:baseline", "2:subscript", " (mm Hg):baseline"))
   expect_identical(pieces("m^2^~a~"),
                    c("m:baseline", "2:superscript", "a:subscript"))
+  # A text that is all markup is one piece, raised or lowered.
+  expect_identical(pieces("^2^"), "2:superscript")
+  expect_identical(pieces("~2~"), "2:subscript")
   # As typed: no closing marker, whitespace inside, an empty pair.
   expect_identical(pieces("~5 years"), "~5 years:baseline")
   expect_identical(pieces("x ^ y ^ z"), "x ^ y ^ z:baseline")
@@ -201,6 +205,8 @@ test_that("each table path raises and lowers label, level and header text", {
     header <- chunk_aligns(paths[[name]], "header")
     expect_true("2:superscript" %in% body, info = name)
     expect_true("1c:subscript" %in% body, info = name)
+    # A cell that is all markup (the level "~2~") is lowered too.
+    expect_true("2:subscript" %in% body, info = name)
     expect_true(all(c("a:superscript", "b:superscript") %in% header),
                 info = name)
     expect_false(any(grepl("\\^|~", c(body, header))), info = name)
@@ -291,7 +297,7 @@ test_that("a table without markup is unchanged", {
   out <- lapply(seq_len(nrow(chunks)), function(k) {
     row <- chunks[k, , drop = FALSE]
     pieces <- .markup_pieces(row$txt)
-    if (nrow(pieces) == 1L) return(row)
+    if (nrow(pieces) == 1L && pieces$align == "baseline") return(row)
     rows <- row[rep(1L, nrow(pieces)), , drop = FALSE]
     rows$txt <- pieces$text
     moved <- pieces$align != "baseline"
@@ -762,6 +768,7 @@ git commit -m "docs(markup): the markup in hv_man_table, the savers and the Tabl
 | M10 | `raise` compares to `"~"`, not `"^"` | the parser and three-path tests |
 | M11 | `.runs_paragraph()` draws `sub` with `as_sup()` | the display test |
 | M12 | `.expand_markup()` adds `rows$italic <- FALSE` | the key and caption test |
+| M13 | `.split_chunks()` returns any one-piece result unchanged (`if (nrow(pieces) == 1L) return(row)`) | the three-path test (the all-markup level) |
 
 - [ ] **Step 5: Look at the output.** Save one manuscript table with markup in a label, a
   level, a group level, a definition and the caption. Convert it with
@@ -776,6 +783,13 @@ git commit -m "docs(markup): the markup in hv_man_table, the savers and the Tabl
   - that a local review stood in for Copilot if its quota notice appears.
 
 ## Self-review
+
+- **Corrected after #97 merged (review finding, 2026-10-21).** `.split_chunks()` returned the
+  chunk unchanged whenever the parser gave back one piece. A cell that is all markup, such as
+  `^2^` or the level `~2~`, is one raised or lowered piece, so it stayed literal. It now
+  returns early only for a single baseline piece. The parser test covers `^2^` and `~2~`
+  alone, the three-path test covers an all-markup level, and M13 is the mutation. The
+  prototype had no all-markup cell, so the gap did not show.
 
 - **Spec coverage.**
   - Section 3, the rule: Task 1 parser test.
