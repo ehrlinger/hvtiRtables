@@ -10,6 +10,7 @@ hv_man_table_save(
   footnotes = NULL,
   abbreviations = NULL,
   caption = NULL,
+  orientation = c("auto", "portrait", "landscape"),
   ...
 )
 }
@@ -63,6 +64,12 @@ with the table and not typed in later; a report table takes one when
 given and writes none otherwise.
 It may carry \verb{^2^} or \verb{~2~} markup, as a label does.}
 
+\item{orientation}{The page the table is written on. \code{"auto"}, the
+default, turns it landscape when the table is too wide for portrait,
+as described above. \code{"portrait"} or \code{"landscape"} always wins; a
+table too wide for the chosen page has its columns narrowed in
+proportion to fit it.}
+
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.}
 }
@@ -99,7 +106,10 @@ to 6.5 inches and stay portrait. Any table wider than a portrait page's
 text block (6.53 inches on US Letter) is written landscape. A table
 wider than landscape's (9.0 inches), as a \code{continuous_stat = "both"}
 table with an Overall column can be, has its columns narrowed in
-proportion to fit; the font size is not changed.
+proportion to fit; the font size is not changed. Pass \code{orientation} to
+choose the page yourself: \code{"landscape"} turns even a narrow table, and
+\code{"portrait"} keeps a wide one upright with its columns narrowed to the
+portrait text block.
 
 In every style the saver drops the "Variable" column
 \code{\link[=hv_tbl_summary]{hv_tbl_summary()}}'s \code{show_variable} adds for the report view before
