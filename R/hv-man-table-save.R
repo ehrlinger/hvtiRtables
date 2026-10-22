@@ -28,7 +28,10 @@
 #' text block (6.53 inches on US Letter) is written landscape. A table
 #' wider than landscape's (9.0 inches), as a `continuous_stat = "both"`
 #' table with an Overall column can be, has its columns narrowed in
-#' proportion to fit; the font size is not changed.
+#' proportion to fit; the font size is not changed. Pass `orientation` to
+#' choose the page yourself: `"landscape"` turns even a narrow table, and
+#' `"portrait"` keeps a wide one upright with its columns narrowed to the
+#' portrait text block.
 #'
 #' In every style the saver drops the "Variable" column
 #' [hv_tbl_summary()]'s `show_variable` adds for the report view before
@@ -107,6 +110,11 @@
 #'   with the table and not typed in later; a report table takes one when
 #'   given and writes none otherwise.
 #'   It may carry `^2^` or `~2~` markup, as a label does.
+#' @param orientation The page the table is written on. `"auto"`, the
+#'   default, turns it landscape when the table is too wide for portrait,
+#'   as described above. `"portrait"` or `"landscape"` always wins; a
+#'   table too wide for the chosen page has its columns narrowed in
+#'   proportion to fit it.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
@@ -125,9 +133,12 @@
 #'
 #' @export
 hv_man_table_save <- function(ft, file, footnotes = NULL,
-                              abbreviations = NULL, caption = NULL, ...) {
+                              abbreviations = NULL, caption = NULL,
+                              orientation = c("auto", "portrait",
+                                              "landscape"), ...) {
   use_default_footnotes <- missing(footnotes)
   .check_sas_args(list(...), "hv_man_table_save")
+  orientation <- match.arg(orientation)
   .check_flextable(ft)
   .check_not_display(ft)
   .check_file(file)
@@ -138,19 +149,24 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   # Hoisted out of .add_abbreviations_key() so it fires at entry
   # rather than mid-render: no partial .docx on a bad argument.
   .check_abbreviations(abbreviations)
-  .write_man_docx(ft, file, footnotes, abbreviations, caption, style)
+  .write_man_docx(ft, file, footnotes, abbreviations, caption, style,
+                  orientation = orientation)
 }
 
 # The document from a checked table: the caption, the table, its notes,
 # the key and the page. `lettered` holds the deprecated JTCVS saver's
 # positional notes, as runs, written after the table's own.
 .write_man_docx <- function(ft, file, footnotes, abbreviations, caption,
-                            style, lettered = list()) {
+                            style, lettered = list(), orientation = "auto") {
   abbreviations <- .with_table_abbreviations(ft, abbreviations)
   footnotes <- .resolve_footnotes(ft, footnotes)
   ft <- .mark_header(ft, footnotes)
 
-  fit <- .fit_page(ft, landscape = .is_wide(ft))
+  fit <- switch(orientation,
+    auto = .fit_page(ft, landscape = .is_wide(ft)),
+    portrait = .fit_page(ft, landscape = FALSE, turn = FALSE),
+    landscape = .fit_page(ft, landscape = TRUE)
+  )
   ft <- fit$ft
 
   doc <- officer::read_docx()
@@ -205,17 +221,21 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 # caller already wants landscape); narrow every column in proportion, not
 # the house font, when it does not fit landscape either. Landscape alone
 # used to clip the label and p-value columns of a 13-inch table.
-.fit_page <- function(ft, landscape = FALSE) {
+# `turn = FALSE` keeps the page as given, for a caller who chose it, and
+# narrows to that page instead.
+.fit_page <- function(ft, landscape = FALSE, turn = TRUE) {
   wide <- sum(ft$body$colwidths)
+  landscape <- landscape ||
+    (turn && wide > .text_width(landscape = FALSE))
   # Narrowed to 0.01 in inside the margins: Word stores each column in
   # whole twips, and rounding every column up could otherwise put the
   # grid a twip or two past the text block.
-  room <- .text_width(landscape = TRUE) - 0.01
+  room <- .text_width(landscape = landscape || turn) - 0.01
   if (wide > room)
     ft <- flextable::width(
       ft, j = ft$col_keys, width = ft$body$colwidths * room / wide
     )
-  list(ft = ft, landscape = landscape || wide > .text_width(landscape = FALSE))
+  list(ft = ft, landscape = landscape)
 }
 
 # officer swaps width and height itself for a landscape orientation.

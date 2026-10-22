@@ -393,6 +393,50 @@ test_that("a table just inside the landscape text block is still narrowed", {
   expect_true(fit$landscape)
 })
 
+test_that("orientation overrides the page the table's width would pick", {
+  narrow <- hv_man_table(gtsummary::tbl_summary(gtsummary::trial,
+                                                include = age))
+  f <- tempfile(fileext = ".docx")
+  hv_man_table_save(narrow, f, orientation = "landscape")
+  expect_true(fit_geometry(f)$landscape)
+  # Four statistic columns would turn the page; "portrait" keeps it and
+  # narrows the columns to the portrait text block instead of clipping.
+  wide <- hv_man_table(hv_tbl_summary(
+    gtsummary::trial, by = "grade", groups = list(A = "age"),
+    continuous = "age", compare = "none", show_variable = FALSE
+  ))
+  f <- tempfile(fileext = ".docx")
+  hv_man_table_save(wide, f, orientation = "portrait")
+  g <- fit_geometry(f)
+  expect_false(g$landscape)
+  expect_lte(g$table, g$text)
+  expect_identical(nrow(hv_check_docx(f)), 0L)
+})
+
+test_that("a table kept portrait is narrowed to the portrait text block", {
+  ft <- hv_man_table(gtsummary::tbl_summary(gtsummary::trial,
+                                            include = age))
+  ft <- flextable::width(ft, j = "label", width = 8)
+  expect_gt(sum(ft$body$colwidths), .text_width(landscape = FALSE))
+  fit <- .fit_page(ft, landscape = FALSE, turn = FALSE)
+  expect_false(fit$landscape)
+  expect_lte(sum(fit$ft$body$colwidths),
+             .text_width(landscape = FALSE) - 0.01)
+})
+
+test_that("orientation = 'auto' is the width rule, and a bad value errors", {
+  ft <- hv_man_table(gtsummary::tbl_summary(gtsummary::trial,
+                                            include = age))
+  f1 <- tempfile(fileext = ".docx")
+  f2 <- tempfile(fileext = ".docx")
+  hv_man_table_save(ft, f1)
+  hv_man_table_save(ft, f2, orientation = "auto")
+  expect_identical(pg_size(f1), pg_size(f2))
+  expect_error(hv_man_table_save(ft, tempfile(fileext = ".docx"),
+                                 orientation = "sideways"),
+               "should be one of")
+})
+
 test_that("a saved table is on a US Letter page, portrait or landscape", {
   narrow <- hv_man_table(gtsummary::tbl_summary(gtsummary::trial,
                                                 include = age))
