@@ -12,6 +12,7 @@ hv_man_table_save(
   footnotes = NULL,
   abbreviations = NULL,
   caption = NULL,
+  orientation = c("auto", "portrait", "landscape"),
   ...
 )
 ```
@@ -85,6 +86,13 @@ hv_man_table_save(
   not typed in later; a report table takes one when given and writes
   none otherwise. It may carry `^2^` or `~2~` markup, as a label does.
 
+- orientation:
+
+  The page the table is written on. `"auto"`, the default, turns it
+  landscape when the table is too wide for portrait, as described above.
+  `"portrait"` or `"landscape"` always wins; a table too wide for the
+  chosen page has its columns narrowed in proportion to fit it.
+
 - ...:
 
   Not used. Present so that `%summarytable` parameter names produce an
@@ -124,7 +132,10 @@ has one overall `n` column: Overall, two groups and a P value come to
 text block (6.53 inches on US Letter) is written landscape. A table
 wider than landscape's (9.0 inches), as a `continuous_stat = "both"`
 table with an Overall column can be, has its columns narrowed in
-proportion to fit; the font size is not changed.
+proportion to fit; the font size is not changed. Pass `orientation` to
+choose the page yourself: `"landscape"` turns even a narrow table, and
+`"portrait"` keeps a wide one upright with its columns narrowed to the
+portrait text block.
 
 In every style the saver drops the "Variable" column
 [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)'s
