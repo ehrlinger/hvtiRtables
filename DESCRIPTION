@@ -1,6 +1,6 @@
 Package: hvtiRtables
 Title: Manuscript-Compliant Table Construction for HVTI CORR Group
-Version: 1.0.10
+Version: 1.0.11
 Authors@R:
     person("John", "Ehrlinger", , "ehrlinj@ccf.org", role = c("aut", "cre"))
 Description: Turns 'gtsummary' table objects into 'MS Word' tables that
