@@ -1,3 +1,11 @@
+# hvtiRtables 1.0.11
+
+* `hv_man_table_save()` takes `orientation = c("auto", "portrait",
+  "landscape")`. `"auto"`, the default, is the width rule it already
+  followed: a table too wide for a portrait page is written landscape.
+  `"portrait"` or `"landscape"` always wins, and a table too wide for the
+  chosen page has its columns narrowed in proportion to fit it.
+
 # hvtiRtables 1.0.10
 
 * Study-supplied text can carry superscripts and subscripts, written as in
