@@ -68,8 +68,8 @@ Returns an empty list when there is nothing to mark: `by = NULL`,
 difference is not a test. An empty list concatenates and renders
 harmlessly, so no conditional is needed at the call site.
 
-With `compare = "both"` the cell reads e.g. `0.7 (SMD -0.03)` and the
-letter marks the p-value portion of it. Note also that
+With `compare = "both"` the cell reads e.g. `0.7 (-0.03)` and the letter
+is appended to the cell, after the SMD. Note also that
 [`gtsummary::add_difference()`](https://www.danieldsjoberg.com/gtsummary/reference/add_difference.html)
 requires exactly two groups, so `compare = "smd"` and `compare = "both"`
 are unavailable for a 3-group table; `compare = "pvalue"` is.

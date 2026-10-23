@@ -110,8 +110,8 @@ variable order. Every row sharing a test collapses onto one letter.</p>
 <code>compare = "none"</code>, or <code>compare = "smd"</code>, since a standardized
 difference is not a test. An empty list concatenates and renders
 harmlessly, so no conditional is needed at the call site.</p>
-<p>With <code>compare = "both"</code> the cell reads e.g. <code>0.7 (SMD -0.03)</code> and the
-letter marks the p-value portion of it. Note also that
+<p>With <code>compare = "both"</code> the cell reads e.g. <code>0.7 (-0.03)</code> and the
+letter is appended to the cell, after the SMD. Note also that
 <code><a href="https://www.danieldsjoberg.com/gtsummary/reference/add_difference.html" class="external-link">gtsummary::add_difference()</a></code> requires exactly two groups, so
 <code>compare = "smd"</code> and <code>compare = "both"</code> are unavailable for a 3-group
 table; <code>compare = "pvalue"</code> is.</p>
