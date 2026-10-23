@@ -219,3 +219,22 @@ test_that("the dagger note names the tests only where the column is shown", {
     "col_keys|not a column|`footnotes\\[\\[1\\]\\]\\$col`"
   )
 })
+
+test_that("describe: under 'both' Fisher's mark follows the P, not the SMD", {
+  # The describe layout marks its comparison column with the compare
+  # layout's code, so it must place the mark the same way.
+  d <- gtsummary::trial
+  d$rare <- factor(ifelse(seq_len(nrow(d)) <= 3, "yes", "no"))
+  tbl <- hv_tbl_summary(d, by = "trt", groups = list(A = c("age", "rare")),
+                        continuous = "age", categorical = "rare",
+                        show_variable = FALSE, compare = "both")
+  ft <- ds(tbl)
+  body <- ft$body$dataset
+  i <- which(body$row_type == "label" & body$variable == "rare")
+  cell <- body$hv_compare_col[i]
+  ch <- flextable::information_data_chunk(ft)
+  ch <- ch[ch$.part == "body" & ch$.row_id == i &
+             ch$.col_id == "hv_compare_col" & nzchar(ch$txt), ]
+  expect_identical(ch$txt, c(sub(" .*$", "", cell), "‡",
+                             sub("^[^ ]*", "", cell)))
+})
