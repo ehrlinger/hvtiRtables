@@ -637,7 +637,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
         is.na(tb$estimate),
         .format_p(tb$p.value),
         sprintf(
-          "%s (SMD %s)",
+          "%s (%s)",
           .format_p(tb$p.value),
           gtsummary::style_sigfig(tb$estimate)
         )

@@ -127,7 +127,7 @@ test_that("hv_test_footnotes_jtcvs returns list() when there is no p-value", {
 })
 
 test_that("hv_test_footnotes_jtcvs still marks tests when compare = 'both'", {
-  # "both" renders "0.7 (SMD -0.03)" in one cell; the letter marks the
+  # "both" renders "0.7 (-0.03)" in one cell; the letter marks the
   # p-value portion. This works only because hv_tbl_summary() calls
   # add_difference() before add_p(); the reverse order overwrites
   # test_name with "smd". See NEWS 0.9.2.

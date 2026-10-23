@@ -378,7 +378,10 @@ test_that("hv_tbl_summary compare 'both' puts p and SMD in one column", {
     dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
     compare = "both"
   )
-  expect_true(grepl("SMD", tbl$table_body$hv_compare_col))
+  # The header names the SMD, as it names percent, so the cell does not.
+  cell <- tbl$table_body$hv_compare_col[tbl$table_body$row_type == "label"]
+  expect_match(cell, "^(<)?[0-9.]+ \\(-?[0-9.]+\\)$")
+  expect_false(grepl("SMD", cell))
   expect_identical(attr(tbl, "hv_trailing"), c(hv_compare_col = "P (SMD)"))
 })
 
@@ -474,7 +477,7 @@ test_that("hv_tbl_summary compare 'both' reports an SMD for every type", {
   for (v in c("age", "flag", "race")) {
     val <- tb$hv_compare_col[tb$variable == v & tb$row_type == "label"]
     expect_false(is.na(val), info = v)
-    expect_match(val, "^(<)?[0-9.]+ \\(SMD -?[0-9.]+\\)$", info = v)
+    expect_match(val, "^(<)?[0-9.]+ \\(-?[0-9.]+\\)$", info = v)
   }
 
   race_level_vals <- tb$hv_compare_col[
