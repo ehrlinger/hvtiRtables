@@ -54,8 +54,8 @@ Returns an empty list when there is nothing to mark: \code{by = NULL},
 difference is not a test. An empty list concatenates and renders
 harmlessly, so no conditional is needed at the call site.
 
-With \code{compare = "both"} the cell reads e.g. \code{0.7 (SMD -0.03)} and the
-letter marks the p-value portion of it. Note also that
+With \code{compare = "both"} the cell reads e.g. \code{0.7 (-0.03)} and the
+letter is appended to the cell, after the SMD. Note also that
 \code{\link[gtsummary:add_difference]{gtsummary::add_difference()}} requires exactly two groups, so
 \code{compare = "smd"} and \code{compare = "both"} are unavailable for a 3-group
 table; \code{compare = "pvalue"} is.

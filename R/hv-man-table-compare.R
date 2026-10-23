@@ -129,8 +129,8 @@
   smd <- if (shown) attr(tbl, "hv_smd", exact = TRUE)
   notes[["\u2020"]] <- .stat_note(stat_label, style)
   notes[["\u2020"]] <- .append_note(notes[["\u2020"]], tests)
-  # Under "both" the cells read "(SMD 0.1)"; under "smd" the header says
-  # "Std. Diff.".
+  # Under "both" the header reads "P (SMD)" and the cells "0.5 (0.1)";
+  # under "smd" the header says "Std. Diff.".
   if (!is.null(smd))
     notes[["\u2020"]] <- .append_note(
       notes[["\u2020"]],
@@ -154,8 +154,16 @@
     }
     i <- rows(fisher)
     if (length(i) > 0L) {
-      ft <- flextable::append_chunks(ft, i = i, j = "hv_compare_col",
-                                     part = "body", flextable::as_sup(ddag))
+      # The mark annotates the test, so it goes on the P. Under "both" a
+      # cell reads "0.5 (0.1)", the P then its SMD, and appended the mark
+      # would follow the SMD; a cell with no SMD takes it at its end.
+      cells <- body$hv_compare_col[i]
+      p <- sub(" \\(.*$", "", cells)
+      ft <- flextable::compose(
+        ft, i = i, j = "hv_compare_col", part = "body",
+        value = flextable::as_paragraph(p, flextable::as_sup(ddag),
+                                        substring(cells, nchar(p) + 1L))
+      )
       marks[[ddag]] <- notes[[ddag]]
     } else {
       # No cell carries the mark, so the note would have nothing to

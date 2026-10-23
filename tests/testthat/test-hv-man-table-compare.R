@@ -107,6 +107,30 @@ test_that("compare: manuscript notes, and the marks the cells carry", {
   expect_false(any(sup & ch$.row_id == row_of("marker")))
 })
 
+test_that("compare: under 'both' Fisher's mark follows the P, not the SMD", {
+  # The double dagger annotates the test, so it belongs on the P. Appended
+  # to the cell it read ".5 (0.47)‡", as though it marked the difference.
+  d <- gtsummary::trial
+  d$rare <- factor(ifelse(seq_len(nrow(d)) <= 3, "yes", "no"))
+  tbl <- hv_tbl_summary(d, by = "trt", groups = list(A = c("age", "rare")),
+                        continuous = "age", categorical = "rare",
+                        show_variable = FALSE, compare = "both")
+  ft <- cmp(tbl)
+  body <- ft$body$dataset
+  i <- which(body$row_type == "label" & body$variable == "rare")
+  cell <- body$hv_compare_col[i]
+  expect_match(cell, "^[<.0-9]+ \\(-?[.0-9]+\\)$")
+  ch <- flextable::information_data_chunk(ft)
+  ch <- ch[ch$.part == "body" & ch$.row_id == i &
+             ch$.col_id == "hv_compare_col" & nzchar(ch$txt), ]
+  expect_identical(ch$txt, c(sub(" .*$", "", cell), "‡",
+                             sub("^[^ ]*", "", cell)))
+  expect_identical(ch$vertical.align == "superscript", c(FALSE, TRUE, FALSE))
+  # Composing the cell must not set a font the table otherwise leaves to
+  # the document.
+  expect_true(all(is.na(ch$font.family)))
+})
+
 test_that("compare: a Fisher test that returned no P leaves no mark", {
   d <- gtsummary::trial
   d$rare <- factor(ifelse(seq_len(nrow(d)) <= 3, "yes", "no"))
