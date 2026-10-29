@@ -99,7 +99,7 @@
       "`9.9 [8.5, 11]`, `63\u00B113`: the house standard"
     }),
     .mrow("Categorical values", character(0), function(s, layout) {
-      "`30 (42)`: the house standard"
+      "`30(42)`: the house standard"
     }),
     .mrow("Note markers", "marker", function(s, layout) {
       .say("marker", s$marker,

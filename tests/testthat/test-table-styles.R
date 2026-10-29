@@ -258,7 +258,7 @@ test_that("replicas of the two submissions' Table 1 shapes", {
     cells <- vapply(xq(x, "//w:tr[not(w:trPr/w:tblHeader)]/w:tc"), wx_text,
                     character(1))
     expect_true(any(grepl("^[0-9.]+ \\[[0-9.]+, [0-9.]+\\]$", cells)))
-    expect_true(any(grepl("^[0-9]+ \\([0-9.]+\\)$", cells)))
+    expect_true(any(grepl("^[0-9]+\\([0-9.]+\\)$", cells)))
     expect_false(any(grepl("[0-9]\\[", cells))) # a space before brackets
     head <- vapply(xq(x, "//w:tr[2]/w:tc"), wx_text, character(1))
     expect_true(all(grepl("\\(N = [0-9]+\\)$", head[nzchar(head)])))
@@ -456,7 +456,7 @@ test_that("the style matrix states the design's matrix", {
     "`#CAEDFB`; `hv_table_style(fill =)` sets it",
     "shown when the table carries them",
     "`9.9 [8.5, 11]`, `63\u00B113`: the house standard",
-    "`30 (42)`: the house standard",
+    "`30(42)`: the house standard",
     "`Key: A, \u2026; B, \u2026`",
     "header bold; first column left, others centered",
     "yes", "US Letter, landscape when wide, else portrait"
