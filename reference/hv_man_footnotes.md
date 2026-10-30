@@ -54,7 +54,7 @@ re-type them at every
 call site: a `*` for the non-missing-value count (house rule 8, exact
 wording required) and a `†` explaining the statistic in each group
 column, e.g. `"No. (%) or Median [15th, 85th percentiles]."` The
-categorical half is part of it because the cells print `12 (39)` with no
+categorical half is part of it because the cells print `12(39)` with no
 `%` sign (house rules 10/12), and the flat CORR header names only the
 group.
 

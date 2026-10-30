@@ -126,8 +126,9 @@ and
 [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md).
 A mean table therefore says `No. (%) or Mean±SD`; a table showing both
 statistics names both. The `(%)` lives there and in the describe
-layout’s second header row, not in the cells, which print `12 (39)` as
-the SAS macro does.
+layout’s second header row, not in the cells, which print `12(39)`: no
+sign, as the SAS macro does, and no space, so a count and its percent
+are one word toward a journal’s limit.
 
 Mean±SD cells follow Eugene H. Blackstone’s (EHB’s) paired rounding
 rule. The mean is rounded to the SD’s first-significant-digit place and

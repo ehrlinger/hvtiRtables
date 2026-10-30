@@ -76,14 +76,14 @@ hv_man_table_save(compare, "table-styles-compare.docx",
 | Marker Level (ng/mL) | 190 | 0.64 \[0.12, 1.9\] | 0.84 \[0.15, 2.1\] | 0.52 \[0.10, 1.7\] | .085 |
 | Disease |  |  |  |  |  |
 | T Stage | 200 |  |  |  | .9 |
-| T1 |  | 53 (27) | 28 (29) | 25 (25) |  |
-| T2 |  | 54 (27) | 25 (26) | 29 (28) |  |
-| T3 |  | 43 (22) | 22 (22) | 21 (21) |  |
-| T4 |  | 50 (25) | 23 (23) | 27 (26) |  |
+| T1 |  | 53(27) | 28(29) | 25(25) |  |
+| T2 |  | 54(27) | 25(26) | 29(28) |  |
+| T3 |  | 43(22) | 22(22) | 21(21) |  |
+| T4 |  | 50(25) | 23(23) | 27(26) |  |
 | Grade | 200 |  |  |  | .9 |
-| I |  | 68 (34) | 35 (36) | 33 (32) |  |
-| II |  | 68 (34) | 32 (33) | 36 (35) |  |
-| III |  | 64 (32) | 31 (32) | 33 (32) |  |
+| I |  | 68(34) | 35(36) | 33(32) |  |
+| II |  | 68(34) | 32(33) | 36(35) |  |
+| III |  | 64(32) | 31(32) | 33(32) |  |
 | \*Patients with non-missing data. |  |  |  |  |  |
 | †Values are No. (%) or median \[15th, 85th percentiles\]; P values from the Wilcoxon rank sum test and Pearson's chi-square test. |  |  |  |  |  |
 | ¶Mean±SD. |  |  |  |  |  |
@@ -112,14 +112,14 @@ hv_man_table_save(describe, "table-styles-describe.docx",
 | Marker Level (ng/mL) | 190 | 0.64 \[0.12, 1.9\] | 92 | 0.84 \[0.15, 2.1\] | 98 | 0.52 \[0.10, 1.7\] | .085 |
 | Disease |  |  |  |  |  |  |  |
 | T Stage |  |  |  |  |  |  | .9 |
-| T1 | 200 | 53 (27) | 98 | 28 (29) | 102 | 25 (25) |  |
-| T2 | 200 | 54 (27) | 98 | 25 (26) | 102 | 29 (28) |  |
-| T3 | 200 | 43 (22) | 98 | 22 (22) | 102 | 21 (21) |  |
-| T4 | 200 | 50 (25) | 98 | 23 (23) | 102 | 27 (26) |  |
+| T1 | 200 | 53(27) | 98 | 28(29) | 102 | 25(25) |  |
+| T2 | 200 | 54(27) | 98 | 25(26) | 102 | 29(28) |  |
+| T3 | 200 | 43(22) | 98 | 22(22) | 102 | 21(21) |  |
+| T4 | 200 | 50(25) | 98 | 23(23) | 102 | 27(26) |  |
 | Grade |  |  |  |  |  |  | .9 |
-| I | 200 | 68 (34) | 98 | 35 (36) | 102 | 33 (32) |  |
-| II | 200 | 68 (34) | 98 | 32 (33) | 102 | 36 (35) |  |
-| III | 200 | 64 (32) | 98 | 31 (32) | 102 | 33 (32) |  |
+| I | 200 | 68(34) | 98 | 35(36) | 102 | 33(32) |  |
+| II | 200 | 68(34) | 98 | 32(33) | 102 | 36(35) |  |
+| III | 200 | 64(32) | 98 | 31(32) | 102 | 33(32) |  |
 | \*Patients with non-missing data. |  |  |  |  |  |  |  |
 | †Values are No. (%) or median \[15th, 85th percentiles\]; P values from the Wilcoxon rank sum test and Pearson's chi-square test. |  |  |  |  |  |  |  |
 | ¶Mean±SD. |  |  |  |  |  |  |  |
@@ -214,7 +214,7 @@ What every style shares:
 | Fill color | `#CAEDFB`; `hv_table_style(fill =)` sets it |
 | Overall and comparison columns | shown when the table carries them |
 | Continuous values | `9.9 [8.5, 11]`, `63±13`: the house standard |
-| Categorical values | `30 (42)`: the house standard |
+| Categorical values | `30(42)`: the house standard |
 | Abbreviations | `Key: A, …; B, …` |
 | Alignment and weight | header bold; first column left, others centered |
 | Header repeated on a new page | yes |
