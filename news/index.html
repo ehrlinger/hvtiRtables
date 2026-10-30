@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,6 +45,12 @@
       <small>Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.12" id="hvtirtables-1012">hvtiRtables 1.0.12<a class="anchor" aria-label="anchor" href="#hvtirtables-1012"></a></h2>
+<ul><li><p>Under <code>compare = "both"</code>, the comparison cell reads <code>0.5 (0.1)</code>, not <code>0.5 (SMD 0.1)</code>. The column header, <code>P (SMD)</code>, already says what the second number is, the way a header carries the percent sign and the cells do not.</p></li>
+<li><p>In the manuscript style, Fisher’s exact test’s double dagger now follows the P it annotates, <code>.7‡ (-0.22)</code>, rather than the end of the cell, where it read as a mark on the SMD. The report style, which shows P and the SMD in separate columns, already marked the P. The deprecated JTCVS saver still appends its letters to the end of the cell.</p></li>
+<li><p>A categorical cell reads <code>30(42)</code>, not <code>30 (42)</code>. Journals count table entries toward the word limit, and the space made every count and percent two words, the reason <code>63±13</code> already has no spaces around the plus-minus.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.11" id="hvtirtables-1011">hvtiRtables 1.0.11<a class="anchor" aria-label="anchor" href="#hvtirtables-1011"></a></h2>
 <ul><li>

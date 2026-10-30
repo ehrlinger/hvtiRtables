@@ -1,5 +1,24 @@
 # Changelog
 
+## hvtiRtables 1.0.12
+
+- Under `compare = "both"`, the comparison cell reads `0.5 (0.1)`, not
+  `0.5 (SMD 0.1)`. The column header, `P (SMD)`, already says what the
+  second number is, the way a header carries the percent sign and the
+  cells do not.
+
+- In the manuscript style, Fisher’s exact test’s double dagger now
+  follows the P it annotates, `.7‡ (-0.22)`, rather than the end of the
+  cell, where it read as a mark on the SMD. The report style, which
+  shows P and the SMD in separate columns, already marked the P. The
+  deprecated JTCVS saver still appends its letters to the end of the
+  cell.
+
+- A categorical cell reads `30(42)`, not `30 (42)`. Journals count table
+  entries toward the word limit, and the space made every count and
+  percent two words, the reason `63±13` already has no spaces around the
+  plus-minus.
+
 ## hvtiRtables 1.0.11
 
 - [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)
