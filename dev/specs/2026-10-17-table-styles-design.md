@@ -174,7 +174,7 @@ generated matrix to its facts, and a change to a style updates both in one PR.
 | 4 | Header | one row; `No.*`, then `<group> N = n†` per group | two rows: `Characteristic` and `n*` merged down, the grouping label with † spanning its levels; row 2 `<level> (N = n)` | two rows; each group spans its (n, statistic) pair |
 | 5 | Non-missing count | one column per group | **one overall `n*` column** (needs `hv_tbl_summary()`, section 7) | one column per group |
 | 6 | Continuous values | `9.9 [8.5, 11]`, `63±13`: the standard (section 5.2) † | `9.9 [8.5, 11]`, `63±13`: the standard (section 5.2) | as `"report"` |
-| 7 | Categorical values | `3 (6.8)`, the standard | `30 (42)`, the standard | `3 (6.8)` |
+| 7 | Categorical values | `3(6.8)`, the standard | `30(42)`, the standard | `3 (6.8)` |
 | 8 | Note markers | the standard's symbols by meaning (section 5.2), superscript | the standard's symbols by meaning (section 5.2), at the start of the note, not superscript | lettered `a.`, `b.` |
 | 9 | Count note | `Number of non-missing values.` (house rule 8) | `Patients with non-missing data.` | `Patients with data available.` |
 | 10 | Statistic note | `No. (%) or Median [15th, 85th percentiles].` | `Values are No. (%) or median [15th, 85th percentiles].` | named in the header row |
@@ -227,7 +227,7 @@ requires otherwise overrides a property; it does not get a new style.
 
 | element | standard | reason |
 |---|---|---|
-| Counts | `30 (42)`: a space, no `%` sign | the most common form; "%" is said once, in the note |
+| Counts | `30(42)`: **unspaced**, no `%` sign | "%" is said once, in the note. Revised 2026-10-30 from `30 (42)`, the most common form: Word counts `30 (42)` as two words toward table word limits and `30(42)` as one, the reason `63±13` is unspaced |
 | Mean and SD | `63±13`: **unspaced**, rounded by the EHB paired rule | today's form, kept on purpose: journals count `63 ± 13` as three words toward table word limits. A journal that typesets spaces it itself (JTCVS did). Revised 2026-10-17 in the plan |
 | Median | `9.9 [8.5, 11]`: brackets, a space before them | brackets keep percentiles distinct from `n (%)` parentheses in the same table |
 | Median digits | each number to **2 significant digits**, and a value of 10 or more to the units place, never coarser: `102 [63, 170]`, `0.31 [0.21, 0.39]` | revised 2026-10-17: the spread rule first proposed here coarsened skewed variables (`102 [63, 170]` became `100 [60, 170]`); the check is in the plan, `2026-10-17-table-styles-plan.md` |
