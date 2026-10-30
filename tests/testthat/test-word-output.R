@@ -87,7 +87,7 @@ test_that("CORR: no % sign in any body cell", {
   f <- wx_save_corr()
   on.exit(unlink(f), add = TRUE)
   body <- unlist(lapply(wx_rows(wx_doc(f))[-1], cell_text))
-  expect_true(any(grepl("^[0-9]+ \\([0-9.]+\\)$", body)))
+  expect_true(any(grepl("^[0-9]+\\([0-9.]+\\)$", body)))
   expect_false(any(grepl("%", body, fixed = TRUE)))
 })
 
@@ -241,7 +241,7 @@ test_that("describe: no % sign in any body cell, label column left", {
   on.exit(unlink(f), add = TRUE)
   rows <- wx_rows(wx_doc(f))
   body <- unlist(lapply(rows[-(1:2)], cell_text))
-  expect_true(any(grepl("^[0-9]+ \\([0-9.]+\\)$", body)))
+  expect_true(any(grepl("^[0-9]+\\([0-9.]+\\)$", body)))
   expect_false(any(grepl("%", body, fixed = TRUE)))
   jc <- vapply(rows, function(r) r[[1]]$jc, "")
   expect_true(all(jc %in% c("left", "start")))

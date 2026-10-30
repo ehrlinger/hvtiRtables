@@ -370,9 +370,10 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   cont_type <- "continuous"
 
   # No "%" in the cell: the header or dagger says "No. (%)" once, as the
-  # SAS macro does ("12 (39)"), and a repeated sign costs width and
-  # counts toward journal word limits.
-  cat_stat <- "{N_nonmiss} ||| {n} ({p})"
+  # SAS macro does, and a repeated sign costs width and counts toward
+  # journal word limits. No space before the parenthesis either, for the
+  # same reason: "12 (39)", the SAS form, is two words, "12(39)" one.
+  cat_stat <- "{N_nonmiss} ||| {n}({p})"
 
   # SAS CON1=: a `normal` variable is mean +/- SD whatever
   # continuous_stat says, on one row, tested with one-way ANOVA below.

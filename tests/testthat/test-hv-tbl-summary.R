@@ -264,7 +264,7 @@ test_that("hv_tbl_summary summarizes a binary variable as a single n (%) row", {
   expect_identical(tbl$table_body$variable, "flag")
   expect_identical(tbl$table_body$row_type, "label")
   expect_true(
-    grepl("^[0-9]+ \\|\\|\\| [0-9]+ \\([0-9.]+\\)$", tbl$table_body$stat_0)
+    grepl("^[0-9]+ \\|\\|\\| [0-9]+\\([0-9.]+\\)$", tbl$table_body$stat_0)
   )
 })
 
@@ -518,8 +518,8 @@ test_that("hv_tbl_summary + jtcvs reproduce the stratified example", {
 
   expect_identical(as.integer(table(dta$tissue)), c(4190L, 3758L))
   female_row <- tbl$table_body[tbl$table_body$variable == "female", ]
-  expect_true(grepl("^4190 \\|\\|\\| 964 ", female_row$stat_1))
-  expect_true(grepl("^3758 \\|\\|\\| 1363 ", female_row$stat_2))
+  expect_true(grepl("^4190 \\|\\|\\| 964\\(", female_row$stat_1))
+  expect_true(grepl("^3758 \\|\\|\\| 1363\\(", female_row$stat_2))
 
   ft <- jtcvs_quiet(hv_man_table_jtcvs(
     tbl,
@@ -858,7 +858,7 @@ test_that("every accepted binary shape counts the right event", {
   # The split is deliberately uneven -- 15 events in each group of 20 --
   # because a 50/50 split renders identically whichever level is
   # counted, so it could not tell a correct event from an inverted one.
-  # Correct is "15 (75%)"; counting the wrong side gives "5 (25%)".
+  # Correct is "15(75)"; counting the wrong side gives "5(25)".
   ev <- c(TRUE, TRUE, TRUE, FALSE)
   shapes <- list(
     integer = as.integer(rep(ev, 10)),
@@ -872,7 +872,7 @@ test_that("every accepted binary shape counts the right event", {
                     flag = shapes[[nm]])
     tbl <- hv_tbl_summary(d, by = "grp", groups = list(G = "flag"),
                           binary = "flag", compare = "none")
-    expect_identical(tbl$table_body$stat_1[1], "20 ||| 15 (75)",
+    expect_identical(tbl$table_body$stat_1[1], "20 ||| 15(75)",
                      info = nm)
   }
 })
@@ -1739,7 +1739,7 @@ test_that("a categorical missing in every grouped row is tested, not fatal", {
   ))
   tb <- tbl$table_body
   levels_1 <- tb$stat_1[tb$variable == "cat" & tb$row_type == "level"]
-  expect_identical(levels_1, c("0 ||| 0 (NA)", "0 ||| 0 (NA)"))
+  expect_identical(levels_1, c("0 ||| 0(NA)", "0 ||| 0(NA)"))
   expect_true(is.na(tb$p.value[tb$variable == "cat"][1]))
 })
 

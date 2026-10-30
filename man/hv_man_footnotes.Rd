@@ -41,7 +41,7 @@ re-type them at every \code{\link[=hv_man_table_save]{hv_man_table_save()}} call
 non-missing-value count (house rule 8, exact wording required) and a
 \verb{†} explaining the statistic in each group column, e.g.
 \code{"No. (\%) or Median [15th, 85th percentiles]."} The categorical half is
-part of it because the cells print \code{12 (39)} with no \verb{\%} sign (house
+part of it because the cells print \code{12(39)} with no \verb{\%} sign (house
 rules 10/12), and the flat CORR header names only the group.
 
 \code{\link[=hv_man_table_save]{hv_man_table_save()}}'s \code{footnotes} parameter defaults to calling

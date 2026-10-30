@@ -8,7 +8,7 @@
 #' non-missing-value count (house rule 8, exact wording required) and a
 #' `†` explaining the statistic in each group column, e.g.
 #' `"No. (%) or Median [15th, 85th percentiles]."` The categorical half is
-#' part of it because the cells print `12 (39)` with no `%` sign (house
+#' part of it because the cells print `12(39)` with no `%` sign (house
 #' rules 10/12), and the flat CORR header names only the group.
 #'
 #' [hv_man_table_save()]'s `footnotes` parameter defaults to calling
@@ -87,7 +87,7 @@ hv_man_footnotes <- function(
 # (hv_tbl_summary()'s `hv_stat_label` attribute) and the CORR dagger
 # footnote, so the two renderers describe a table in the same words.
 # It names "No. (%)" because the cells carry no "%" sign (house rules
-# 10/12; the SAS macro prints "12 (39)" too), so the description is the
+# 10/12; the SAS macro omits it too), so the description is the
 # only place the reader learns the parenthesized number is a percent.
 .stat_label <- function(continuous_stat, percentiles) {
   ordinal <- .format_ordinal(percentiles)
