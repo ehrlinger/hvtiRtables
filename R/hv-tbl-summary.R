@@ -200,6 +200,26 @@
 #'   and Pearson's chi-square test.", and the CORR table puts the dagger
 #'   on the p-value header too. `compare = "smd"` or `"both"` names the
 #'   difference column "Std. Diff." and the same note says what it is.
+#' @param prop_ci One of `"none"` (default), `"wilson"`, or `"exact"`:
+#'   whether each group's binary and categorical cells get a confidence
+#'   interval for the percentage, in a column of its own beside the
+#'   group's statistic. The interval is on the proportion `n / N`, not
+#'   the count, shown in percent like the cell, to the house precision
+#'   of the medians (`3.7, 27`). `"wilson"` is the Wilson score interval,
+#'   except at a count of 0 or `N`, where it takes the exact
+#'   (Clopper-Pearson) bound; `"exact"` is Clopper-Pearson in every cell.
+#'   A zero count has an interval too, `0` to the exact upper bound,
+#'   where a Wald interval would collapse to a point because its SE is 0.
+#'   When requested, every cell gets one: no "small proportion" cut-off
+#'   is applied. A table with no binary or categorical variables has no
+#'   proportions, and gets neither the column nor the note. The method
+#'   and level are named in the dagger note. The
+#'   report style shows the column; the manuscript style and
+#'   [hv_man_table_jtcvs()] refuse a table carrying it, since where it
+#'   belongs in a manuscript table is not settled. Last in the signature
+#'   so positional calls keep working.
+#' @param prop_ci_level The confidence level for `prop_ci`, a single
+#'   number strictly between 0 and 1. Default `0.95`.
 #' @param ... Not used. Present so that `%summarytable` parameter names
 #'   produce an error naming the argument to use instead.
 #'
@@ -244,10 +264,13 @@ hv_tbl_summary <- function(data, by = NULL, groups,
                            mean_sd = character(0),
                            show_variable = TRUE,
                            cutexact = "any",
+                           prop_ci = c("none", "wilson", "exact"),
+                           prop_ci_level = 0.95,
                            ...) {
   .check_sas_args(list(...), "hv_tbl_summary")
   compare <- match.arg(compare)
   continuous_stat <- match.arg(continuous_stat)
+  prop_ci <- match.arg(prop_ci)
 
   if (!is.data.frame(data))
     stop("`data` must be a data frame.", call. = FALSE)
@@ -304,6 +327,11 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     stop("`cutexact` must be \"any\" or a single number from 0 up, a ",
          "percentage of cells (e.g. 50, the macro's CUTEXACT=). Received: ",
          .describe(cutexact), ".", call. = FALSE)
+  if (!is.numeric(prop_ci_level) || length(prop_ci_level) != 1L ||
+        is.na(prop_ci_level) || prop_ci_level <= 0 || prop_ci_level >= 1)
+    stop("`prop_ci_level` must be a single number strictly between 0 and ",
+         "1, e.g. 0.95. Received: ", .describe(prop_ci_level), ".",
+         call. = FALSE)
   # With no `by` the single column already is the overall one, so
   # `overall` is ignored there, the way `compare` is. It errored while
   # the default was FALSE; with TRUE the default, an error would break
@@ -493,12 +521,28 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     attr(tbl, "hv_median_label") <- median_label
   }
 
+  # A table with no binary or categorical rows has no proportions: no
+  # column, no note, and nothing for the manuscript renderers to refuse.
+  # A template may pass `prop_ci` to every table, continuous-only too.
+  show_ci <- prop_ci != "none" && length(c(binary, categorical)) > 0L
+  if (show_ci) {
+    tbl <- .add_prop_ci(tbl, c(binary, categorical), prop_ci, prop_ci_level,
+                        grouped = !is.null(by))
+  }
+
   attr(tbl, "hv_stat_label") <- .stat_label(label_stat, percentiles)
   attr(tbl, "hv_footnotes") <- stats::setNames(
     list("Number of non-missing values.",
          paste0(attr(tbl, "hv_stat_label"), ".")),
     c("*", "\u2020")
   )
+  if (show_ci) {
+    attr(tbl, "hv_prop_ci") <- prop_ci
+    attr(tbl, "hv_footnotes")[["\u2020"]] <- .append_note(
+      attr(tbl, "hv_footnotes")[["\u2020"]],
+      .prop_ci_sentence(prop_ci, prop_ci_level)
+    )
+  }
   if (!is.null(cell_marks)) {
     attr(tbl, "hv_cell_marks") <- cell_marks
     attr(tbl, "hv_footnotes")[[cell_marks$symbol]] <-
@@ -697,6 +741,100 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     tbl <- do.call(
       gtsummary::modify_header,
       c(list(tbl), stats::setNames(list(label), med))
+    )
+  }
+  tbl
+}
+
+# A confidence interval for a proportion x / n at level `level`.
+# Clopper-Pearson ("exact") inverts the binomial test through the beta
+# quantiles. Wilson ("wilson") inverts the score test; at x = 0 or x = n
+# it takes the Clopper-Pearson bound instead, so a zero count's upper
+# limit is the exact one, 1 - (alpha / 2)^(1 / n). A Wald interval is
+# unusable there: its SE, sqrt(p (1 - p) / n), is 0. Base R only, so the
+# method is easy to read and to change. Returns a two-column matrix of
+# proportions, NA where n is 0 or missing.
+.prop_ci <- function(x, n, method, level) {
+  alpha <- 1 - level
+  ok <- !is.na(x) & !is.na(n) & n > 0
+  lo <- hi <- rep(NA_real_, length(x))
+  cp_lo <- ifelse(x == 0, 0, stats::qbeta(alpha / 2, x, n - x + 1))
+  cp_hi <- ifelse(x == n, 1, stats::qbeta(1 - alpha / 2, x + 1, n - x))
+  if (identical(method, "exact")) {
+    lo[ok] <- cp_lo[ok]
+    hi[ok] <- cp_hi[ok]
+  } else {
+    z <- stats::qnorm(1 - alpha / 2)
+    centre <- (x + z^2 / 2) / (n + z^2)
+    half <- z * sqrt(x * (n - x) / n + z^2 / 4) / (n + z^2)
+    edge <- x == 0 | x == n
+    lo[ok] <- ifelse(edge, cp_lo, centre - half)[ok]
+    hi[ok] <- ifelse(edge, cp_hi, centre + half)[ok]
+  }
+  cbind(lower = lo, upper = hi)
+}
+
+# What the interval column is, for the dagger note.
+.prop_ci_sentence <- function(method, level) {
+  how <- switch(
+    method,
+    wilson = paste0("Wilson score intervals, with the exact ",
+                    "(Clopper-Pearson) bound at 0% and 100%"),
+    exact = "exact (Clopper-Pearson) intervals"
+  )
+  paste0(format(100 * level), "% CIs for the percentages are ", how, ".")
+}
+
+# A column of intervals beside each statistic column, hv_ci_<stat col>,
+# after the median column when continuous_stat = "both" made one. Only
+# rows of `vars` (binary and categorical) get an interval. Each is
+# computed from the counts the cell itself shows, "N ||| n(p)": N is the
+# non-missing count, the percentage's own denominator, and both are
+# whole numbers, so nothing is lost to rounding, and the interval always
+# belongs to the count beside it.
+.add_prop_ci <- function(tbl, vars, method, level, grouped) {
+  stat_cols <- grep("^stat_[0-9]+$", names(tbl$table_body), value = TRUE)
+  hdr <- tbl$table_styling$header
+  ci_label <- paste0(format(100 * level), "% CI")
+  for (col in stat_cols) {
+    ci_col <- paste0("hv_ci_", col)
+    tbl <- gtsummary::modify_table_body(tbl, function(tb) {
+      cells <- tb[[col]]
+      # Every binary and categorical cell, whatever its count. A
+      # "small proportion" threshold, once Blackstone has said what
+      # counts as small (#106), would narrow `rows` here.
+      rows <- tb$variable %in% vars & !is.na(cells)
+      pattern <- "^([0-9]+) \\|\\|\\| ([0-9]+)\\(.*\\)$"
+      bad <- rows & !grepl(pattern, cells)
+      if (any(bad))
+        stop("Could not read the count in `", col, "` for `",
+             tb$variable[bad][1], "` to compute its confidence interval: ",
+             "\"", cells[bad][1], "\".", call. = FALSE)
+      n <- x <- rep(NA_real_, nrow(tb))
+      n[rows] <- as.numeric(sub(pattern, "\\1", cells[rows]))
+      x[rows] <- as.numeric(sub(pattern, "\\2", cells[rows]))
+      ci <- .prop_ci(x, n, method, level)
+      tb[[ci_col]] <- ifelse(
+        is.na(ci[, "lower"]), NA_character_,
+        paste0(.format_sig2(100 * ci[, "lower"]), ", ",
+               .format_sig2(100 * ci[, "upper"]))
+      )
+      after <- paste0("hv_median_", col)
+      if (!after %in% names(tb)) after <- col
+      keep <- setdiff(names(tb), ci_col)
+      tb[, append(keep, ci_col, after = match(after, keep)), drop = FALSE]
+    })
+    # As for the median column: ungrouped, the statistic header is only
+    # "N = <n>", which would read as the interval's own count.
+    label <- if (grouped) {
+      paste0(sub("\\s*\\n.*$", "", hdr$label[hdr$column == col]), "  \n",
+             ci_label)
+    } else {
+      paste0("**", ci_label, "**")
+    }
+    tbl <- do.call(
+      gtsummary::modify_header,
+      c(list(tbl), stats::setNames(list(label), ci_col))
     )
   }
   tbl

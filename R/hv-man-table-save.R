@@ -200,7 +200,7 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 # with its No. column overflow a portrait page; Word clips the right
 # edge rather than wrapping.
 .is_wide <- function(ft) {
-  sum(grepl("^(hv_median_)?stat_[0-9]+$", ft$col_keys)) >= 3L
+  sum(grepl("^(hv_median_|hv_ci_)?stat_[0-9]+$", ft$col_keys)) >= 3L
 }
 
 # US Letter for every style (design question 4), with the margins the
@@ -528,7 +528,7 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
         cols <- c(cols, intersect("hv_compare_col", ft$col_keys))
       return(cols)
     }
-    stat <- grep("^stat_[0-9]+$", ft$col_keys, value = TRUE)
+    stat <- grep("^(hv_ci_)?stat_[0-9]+$", ft$col_keys, value = TRUE)
     # The dagger note also names the tests behind the p-values, so the
     # p-value header carries it too.
     if (!is.null(attr(ft, "hv_test_note", exact = TRUE)))

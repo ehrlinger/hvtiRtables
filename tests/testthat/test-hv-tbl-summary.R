@@ -1607,9 +1607,15 @@ test_that("the \"any\" default leaves categorical tests as gtsummary chose", {
   expect_equal(first(ours)$p.value, first(theirs)$p.value)
 })
 
-test_that("cutexact is last in the signature", {
-  f <- names(formals(hv_tbl_summary))
-  expect_identical(f[length(f) - 1L], "cutexact")
+test_that("new arguments are appended, so positional calls keep working", {
+  # cutexact was last until prop_ci and prop_ci_level (#106) followed it.
+  expect_identical(
+    names(formals(hv_tbl_summary)),
+    c("data", "by", "groups", "continuous", "binary", "categorical",
+      "compare", "percentiles", "overall", "continuous_stat", "normal",
+      "mean_sd", "show_variable", "cutexact", "prop_ci", "prop_ci_level",
+      "...")
+  )
 })
 
 test_that("a Fisher p-value is marked ‡ in the CORR table and footnoted", {
