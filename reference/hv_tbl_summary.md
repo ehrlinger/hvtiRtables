@@ -28,6 +28,8 @@ hv_tbl_summary(
   mean_sd = character(0),
   show_variable = TRUE,
   cutexact = "any",
+  prop_ci = c("none", "wilson", "exact"),
+  prop_ci_level = 0.95,
   ...
 )
 ```
@@ -192,6 +194,32 @@ hv_tbl_summary(
   Pearson's chi-square test.", and the CORR table puts the dagger on the
   p-value header too. `compare = "smd"` or `"both"` names the difference
   column "Std. Diff." and the same note says what it is.
+
+- prop_ci:
+
+  One of `"none"` (default), `"wilson"`, or `"exact"`: whether each
+  group's binary and categorical cells get a confidence interval for the
+  percentage, in a column of its own beside the group's statistic. The
+  interval is on the proportion `n / N`, not the count, shown in percent
+  like the cell, to the house precision of the medians (`3.7, 27`).
+  `"wilson"` is the Wilson score interval, except at a count of 0 or
+  `N`, where it takes the exact (Clopper-Pearson) bound; `"exact"` is
+  Clopper-Pearson in every cell. A zero count has an interval too, `0`
+  to the exact upper bound, where a Wald interval would collapse to a
+  point because its SE is 0. When requested, every cell gets one: no
+  "small proportion" cut-off is applied. A table with no binary or
+  categorical variables has no proportions, and gets neither the column
+  nor the note. The method and level are named in the dagger note. The
+  report style shows the column; the manuscript style and
+  [`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md)
+  refuse a table carrying it, since where it belongs in a manuscript
+  table is not settled. Last in the signature so positional calls keep
+  working.
+
+- prop_ci_level:
+
+  The confidence level for `prop_ci`, a single number strictly between 0
+  and 1. Default `0.95`.
 
 - ...:
 
