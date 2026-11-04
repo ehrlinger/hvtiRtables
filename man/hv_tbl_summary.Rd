@@ -19,6 +19,8 @@ hv_tbl_summary(
   mean_sd = character(0),
   show_variable = TRUE,
   cutexact = "any",
+  prop_ci = c("none", "wilson", "exact"),
+  prop_ci_level = 0.95,
   ...
 )
 }
@@ -149,6 +151,26 @@ the dagger note instead, as "P values from the Wilcoxon rank sum test
 and Pearson's chi-square test.", and the CORR table puts the dagger
 on the p-value header too. \code{compare = "smd"} or \code{"both"} names the
 difference column "Std. Diff." and the same note says what it is.}
+
+\item{prop_ci}{One of \code{"none"} (default), \code{"wilson"}, or \code{"exact"}:
+whether each group's binary and categorical cells get a confidence
+interval for the percentage, in a column of its own beside the
+group's statistic. The interval is on the proportion \code{n / N}, not
+the count, shown in percent like the cell, to the house precision
+of the medians (\verb{3.7, 27}). \code{"wilson"} is the Wilson score interval,
+except at a count of 0 or \code{N}, where it takes the exact
+(Clopper-Pearson) bound; \code{"exact"} is Clopper-Pearson in every cell.
+A zero count has an interval too, \code{0} to the exact upper bound,
+where a Wald interval would collapse to a point because its SE is 0.
+When requested, every cell gets one: no "small proportion" cut-off
+is applied. The method and level are named in the dagger note. The
+report style shows the column; the manuscript style and
+\code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} refuse a table carrying it, since where it
+belongs in a manuscript table is not settled. Last in the signature
+so positional calls keep working.}
+
+\item{prop_ci_level}{The confidence level for \code{prop_ci}, a single
+number strictly between 0 and 1. Default \code{0.95}.}
 
 \item{...}{Not used. Present so that \verb{\%summarytable} parameter names
 produce an error naming the argument to use instead.}

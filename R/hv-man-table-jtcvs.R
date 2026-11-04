@@ -18,6 +18,13 @@
 
 .reshape_jtcvs_body <- function(tbl, groups, trailing = NULL) {
   tb <- tbl$table_body
+  # hv_tbl_summary(prop_ci = ) intervals. Where they go in a manuscript
+  # table is not settled (#106), and dropping them would leave a table
+  # without the intervals asked for, and a note describing them.
+  if (any(grepl("^hv_ci_stat_[0-9]+$", names(tb))))
+    stop("The manuscript tables do not show the `prop_ci` intervals yet. ",
+         "Use the report style, or build the table with ",
+         "prop_ci = \"none\".", call. = FALSE)
   has_sections <- "groupname_col" %in% names(tb)
 
   out <- data.frame(
