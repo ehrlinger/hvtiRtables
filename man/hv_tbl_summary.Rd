@@ -163,7 +163,9 @@ except at a count of 0 or \code{N}, where it takes the exact
 A zero count has an interval too, \code{0} to the exact upper bound,
 where a Wald interval would collapse to a point because its SE is 0.
 When requested, every cell gets one: no "small proportion" cut-off
-is applied. The method and level are named in the dagger note. The
+is applied. A table with no binary or categorical variables has no
+proportions, and gets neither the column nor the note. The method
+and level are named in the dagger note. The
 report style shows the column; the manuscript style and
 \code{\link[=hv_man_table_jtcvs]{hv_man_table_jtcvs()}} refuse a table carrying it, since where it
 belongs in a manuscript table is not settled. Last in the signature

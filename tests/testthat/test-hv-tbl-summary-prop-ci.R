@@ -165,3 +165,17 @@ test_that("the manuscript tables refuse the intervals, in one sentence", {
   expect_identical(m1, m2)
   expect_identical(m1, m3)
 })
+
+test_that("a continuous-only table gets no interval column or note", {
+  build <- function(prop_ci) {
+    hv_tbl_summary(prop_ci_data(), by = "arm", groups = list(S = "age"),
+                   continuous = "age", compare = "none", prop_ci = prop_ci)
+  }
+  tbl <- build("wilson")
+  expect_identical(tbl$table_body, build("none")$table_body)
+  expect_identical(attr(tbl, "hv_footnotes"),
+                   attr(build("none"), "hv_footnotes"))
+  expect_null(attr(tbl, "hv_prop_ci", exact = TRUE))
+  # So the manuscript style draws it rather than refusing.
+  expect_s3_class(hv_man_table(tbl, style = "manuscript"), "flextable")
+})

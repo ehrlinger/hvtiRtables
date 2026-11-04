@@ -211,7 +211,9 @@
 #'   A zero count has an interval too, `0` to the exact upper bound,
 #'   where a Wald interval would collapse to a point because its SE is 0.
 #'   When requested, every cell gets one: no "small proportion" cut-off
-#'   is applied. The method and level are named in the dagger note. The
+#'   is applied. A table with no binary or categorical variables has no
+#'   proportions, and gets neither the column nor the note. The method
+#'   and level are named in the dagger note. The
 #'   report style shows the column; the manuscript style and
 #'   [hv_man_table_jtcvs()] refuse a table carrying it, since where it
 #'   belongs in a manuscript table is not settled. Last in the signature
@@ -519,7 +521,11 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     attr(tbl, "hv_median_label") <- median_label
   }
 
-  if (prop_ci != "none") {
+  # A table with no binary or categorical rows has no proportions: no
+  # column, no note, and nothing for the manuscript renderers to refuse.
+  # A template may pass `prop_ci` to every table, continuous-only too.
+  show_ci <- prop_ci != "none" && length(c(binary, categorical)) > 0L
+  if (show_ci) {
     tbl <- .add_prop_ci(tbl, c(binary, categorical), prop_ci, prop_ci_level,
                         grouped = !is.null(by))
   }
@@ -530,7 +536,7 @@ hv_tbl_summary <- function(data, by = NULL, groups,
          paste0(attr(tbl, "hv_stat_label"), ".")),
     c("*", "\u2020")
   )
-  if (prop_ci != "none") {
+  if (show_ci) {
     attr(tbl, "hv_prop_ci") <- prop_ci
     attr(tbl, "hv_footnotes")[["\u2020"]] <- .append_note(
       attr(tbl, "hv_footnotes")[["\u2020"]],
