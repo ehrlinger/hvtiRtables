@@ -186,7 +186,10 @@ rows mix mean and median also carries \code{hv_cell_marks}, a list with
 carry it); the attribute is \code{NULL} otherwise. The manuscript style
 also reads \code{hv_by_label}, the grouping's name (the variable's label
 when the data carry one), and the hidden \code{hv_n} column of
-\code{table_body}, each variable's overall non-missing count.
+\code{table_body}, each variable's overall non-missing count. A p-value
+comparison without the 'broom' package is an error of class
+\code{hvtiRtables_missing_package}, so a runner can catch it and fall back
+to \code{compare = "smd"}.
 }
 \description{
 Thin wrapper over \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} modeled on the interface

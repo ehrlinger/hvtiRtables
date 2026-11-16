@@ -335,7 +335,7 @@ test_that("hv_tbl_summary compare 'pvalue'/'both' fail loudly without broom", {
         dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
         compare = cmp
       ),
-      "needs the 'broom' package"
+      "needs the 'broom' package", class = "hvtiRtables_missing_package"
     )
   }
   # SMD and none never call add_p(), so they still work without broom.

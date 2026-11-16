@@ -231,7 +231,10 @@
 #'   carry it); the attribute is `NULL` otherwise. The manuscript style
 #'   also reads `hv_by_label`, the grouping's name (the variable's label
 #'   when the data carry one), and the hidden `hv_n` column of
-#'   `table_body`, each variable's overall non-missing count.
+#'   `table_body`, each variable's overall non-missing count. A p-value
+#'   comparison without the 'broom' package is an error of class
+#'   `hvtiRtables_missing_package`, so a runner can catch it and fall back
+#'   to `compare = "smd"`.
 #'
 #' @seealso [hv_man_table()] to render the result. [hv_man_footnotes()] for
 #'   the percentile-footnote house convention.
@@ -600,9 +603,12 @@ hv_tbl_summary <- function(data, by = NULL, groups,
   # The book published blank p-values for a week that way (2026-10-05 to
   # 2026-10-12), so fail here instead.
   if (effective_compare %in% c("pvalue", "both") && !.has_broom()) {
-    stop("`compare = \"", effective_compare, "\"` needs the 'broom' ",
-         "package for its p-values, and it is not installed. ",
-         "Install it with install.packages(\"broom\").", call. = FALSE)
+    # Classed so a runner can catch it and fall back to compare = "smd".
+    stop(errorCondition(paste0(
+      "hv_tbl_summary(): `compare = \"", effective_compare, "\"` needs ",
+      "the 'broom' package for its p-values, and it is not installed. ",
+      "Install it with install.packages(\"broom\")."
+    ), class = "hvtiRtables_missing_package", call = NULL))
   }
 
   # Order matters for compare = "both": add_difference() must run first.

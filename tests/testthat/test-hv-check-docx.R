@@ -85,10 +85,43 @@ splice_docx_xml <- function(src, dest, mutate) {
 }
 
 test_that("hv_check_docx rejects a missing or non-docx path", {
-  expect_error(hv_check_docx(tempfile(fileext = ".docx")), "does not exist")
+  expect_error(hv_check_docx(tempfile(fileext = ".docx")), "does not exist",
+               class = "hvtiRtables_invalid_docx")
   bad <- tempfile(fileext = ".docx")
   writeLines("not a zip archive", bad)
-  expect_error(hv_check_docx(bad), "valid .docx")
+  expect_error(hv_check_docx(bad), "valid .docx",
+               class = "hvtiRtables_invalid_docx")
+})
+
+# A ZIP holding word/document.xml with the given text, and nothing else.
+fake_docx <- function(xml) {
+  root <- tempfile()
+  dir.create(file.path(root, "word"), recursive = TRUE)
+  writeLines(xml, file.path(root, "word", "document.xml"))
+  dest <- tempfile(fileext = ".docx")
+  old <- setwd(root)
+  on.exit(setwd(old), add = TRUE)
+  utils::zip(dest, "word/document.xml", flags = "-q")
+  unlink(root, recursive = TRUE)
+  dest
+}
+
+test_that("hv_check_docx classes malformed document XML as invalid", {
+  # A batch catching hvtiRtables_invalid_docx must not be stopped by a
+  # truncated document; the parser's own reason stays in the message.
+  bad <- fake_docx("<broken")
+  on.exit(unlink(bad), add = TRUE)
+  expect_error(hv_check_docx(bad), "not a valid .docx",
+               class = "hvtiRtables_invalid_docx")
+})
+
+test_that("hv_check_docx refuses well-formed XML that is not a Word body", {
+  # Without this, every check finds nothing under w: and the file is
+  # reported clean.
+  other <- fake_docx("<root/>")
+  on.exit(unlink(other), add = TRUE)
+  expect_error(hv_check_docx(other), "not a WordprocessingML document",
+               class = "hvtiRtables_invalid_docx")
 })
 
 test_that("hv_check_docx rejects an empty string or NA path", {
