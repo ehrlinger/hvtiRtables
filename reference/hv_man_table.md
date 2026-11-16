@@ -45,10 +45,11 @@ hv_man_table(
 
 - digits:
 
-  Kept for interface symmetry with future callers; currently unused
-  (rounding is controlled upstream via `tbl_summary(digits = ...)`).
-  Reserved so a future version can enforce sig-fig rounding centrally
-  without a breaking signature change.
+  Deprecated, and never used: the table keeps the rounding it was built
+  with, set upstream by
+  [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md)
+  or `tbl_summary(digits = ...)`. Passing it warns once per session; it
+  goes in the next minor release.
 
 - style:
 

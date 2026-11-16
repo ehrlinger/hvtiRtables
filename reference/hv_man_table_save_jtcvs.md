@@ -2,7 +2,8 @@
 
 **Deprecated.** Use `hv_man_table_save(ft, file, caption = )` on a table
 from `hv_man_table(tbl, style = "manuscript", layout = "describe")`.
-This function warns on every call and goes in the next release.
+This function, deprecated in 1.0.8, warns on every call and goes in the
+next minor release.
 
 ## Usage
 

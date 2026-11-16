@@ -3,7 +3,8 @@
 **Deprecated.** Use
 `hv_man_table(tbl, style = "manuscript", layout = "describe")`, the
 manuscript style's describe layout, which this layout became. This
-function warns on every call and goes in the next release.
+function, deprecated in 1.0.8, warns on every call and goes in the next
+minor release.
 
 ## Usage
 

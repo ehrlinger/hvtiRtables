@@ -40,11 +40,13 @@ hv_man_table_save(
   so the dagger follows that table's `continuous_stat` and
   `percentiles`. Other flextables fall back to
   [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)'s
-  median/15th-85th house defaults. Pass `NULL` to suppress both, or
-  compose with
+  median/15th-85th house defaults. Pass `NULL` to suppress those
+  defaults, or compose with
   [`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
-  to override or extend. A note's text may carry `^2^` or `~2~` markup,
-  as a label does. Symbols must be drawn from
+  to override or extend. `NULL` is refused on a table whose body cells
+  carry a mark (`‡` on a Fisher exact p-value, `§` or `¶` on a minority
+  statistic): a marked cell needs its note. A note's text may carry
+  `^2^` or `~2~` markup, as a label does. Symbols must be drawn from
   `c("*", "†", "‡", "§", "¶", "||")`. `†` describes the statistic, so it
   is appended as a superscript reference mark to every statistic-column
   header (`stat_<k>`), and to the count column only when the table has
