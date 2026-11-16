@@ -7,25 +7,49 @@
 # deliberate and must not be flagged). 144 sits 5x below that floor.
 .hidden_col_dxa <- 144
 
+# Every way a path can fail to be a Word document raises one class, so a
+# batch catching hvtiRtables_invalid_docx is never stopped by a file it
+# could have skipped.
+.invalid_docx <- function(reason, path) {
+  stop(errorCondition(
+    paste0("hv_check_docx(): ", reason, ": ", path),
+    class = "hvtiRtables_invalid_docx", call = NULL
+  ))
+}
+
+# The WordprocessingML body namespaces: transitional, which Word writes by
+# default, and ISO strict.
+.w_main_ns <- c("http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+                "http://purl.oclc.org/ooxml/wordprocessingml/main")
+
 .docx_body_xml <- function(path) {
-  if (!file.exists(path))
-    stop(errorCondition(
-      paste0("hv_check_docx(): file does not exist: ", path),
-      class = "hvtiRtables_invalid_docx", call = NULL
-    ))
+  if (!file.exists(path)) .invalid_docx("file does not exist", path)
   xdir <- tempfile()
   on.exit(unlink(xdir, recursive = TRUE), add = TRUE)
   ok <- tryCatch({
     utils::unzip(path, files = "word/document.xml", exdir = xdir)
     file.exists(file.path(xdir, "word", "document.xml"))
   }, warning = function(w) FALSE, error = function(e) FALSE)
-  if (!ok)
-    stop(errorCondition(
-      paste0("hv_check_docx(): not a valid .docx (no word/document.xml): ",
-             path),
-      class = "hvtiRtables_invalid_docx", call = NULL
-    ))
-  xml2::read_xml(file.path(xdir, "word", "document.xml"))
+  if (!ok) .invalid_docx("not a valid .docx (no word/document.xml)", path)
+  doc <- tryCatch(
+    xml2::read_xml(file.path(xdir, "word", "document.xml")),
+    error = function(e) {
+      .invalid_docx(paste0(
+        "not a valid .docx (word/document.xml does not parse: ",
+        conditionMessage(e), ")"
+      ), path)
+    }
+  )
+  # Well-formed XML that is not a Word body would pass every check below
+  # (none finds a w: element) and be reported clean.
+  is_body <- xml2::xml_find_lgl(doc, sprintf(
+    "boolean(/*[local-name() = 'document' and (%s)])",
+    paste0("namespace-uri() = '", .w_main_ns, "'", collapse = " or ")
+  ))
+  if (!is_body)
+    .invalid_docx(paste0("not a valid .docx (word/document.xml is not a ",
+                         "WordprocessingML document)"), path)
+  doc
 }
 
 .finding <- function(type, table, location, detail) {
