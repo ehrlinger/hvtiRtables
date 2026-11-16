@@ -20,8 +20,8 @@ argument. \code{list()} when there is nothing to mark.
 \strong{Deprecated.} A table from
 \code{hv_man_table(tbl, style = "manuscript", layout = "describe")} names its
 tests in its dagger note and marks Fisher's exact test on its P values,
-so it needs no test footnotes. This function warns on every call and goes
-in the next release.
+so it needs no test footnotes. This function, deprecated in 1.0.8, warns
+on every call and goes in the next minor release.
 }
 \details{
 Reproduces the macro's lettered test footnotes. The letters differ by

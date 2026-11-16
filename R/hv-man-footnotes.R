@@ -18,7 +18,8 @@
 #' what the table shows. Call this function directly with the same arguments
 #' when composing footnotes yourself. Override with ordinary list operations,
 #' no special sentinel values needed:
-#' - Suppress both: `footnotes = NULL`
+#' - Suppress both: `footnotes = NULL`. Refused on a table whose body cells
+#'   carry `‡`, `§` or `¶`, since those marks need their notes.
 #' - Change one: `modifyList(hv_man_footnotes(), list(...))` with
 #'   `` `†` `` = "custom text"
 #' - Add a study-specific one alongside: `c(hv_man_footnotes(), list(...))`

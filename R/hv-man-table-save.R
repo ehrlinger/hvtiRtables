@@ -73,8 +73,11 @@
 #'   uses the `hv_footnotes` attribute carried from [hv_tbl_summary()] through
 #'   [hv_man_table()], so the dagger follows that table's `continuous_stat`
 #'   and `percentiles`. Other flextables fall back to [hv_man_footnotes()]'s
-#'   median/15th-85th house defaults. Pass `NULL` to suppress both, or
-#'   compose with [hv_man_footnotes()] to override or extend. A note's
+#'   median/15th-85th house defaults. Pass `NULL` to suppress those
+#'   defaults, or compose with [hv_man_footnotes()] to override or extend.
+#'   `NULL` is refused on a table whose body cells carry a mark (`‡` on a
+#'   Fisher exact p-value, `§` or `¶` on a minority statistic): a marked
+#'   cell needs its note. A note's
 #'   text may carry `^2^` or `~2~` markup, as a label does.
 #'   Symbols must be drawn from `c("*", "†", "‡", "§", "¶", "||")`. `†`
 #'   describes the statistic, so it is appended as a superscript reference
@@ -335,6 +338,13 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
   # a different text under the same symbol would explain it wrongly.
   body_marks <- attr(ft, "hv_body_marks", exact = TRUE)
   for (sym in names(body_marks)) {
+    if (length(footnotes) == 0L)
+      stop("`footnotes = NULL` (or an empty list) suppresses only the ",
+           "default notes. The ",
+           "table marks cells with ", sym, " for \"", body_marks[[sym]],
+           "\", and a marked cell needs its note. Omit `footnotes`, or ",
+           "pass a list that carries ", sym, " with that text.",
+           call. = FALSE)
     if (!identical(footnotes[[sym]], body_marks[[sym]]))
       stop("The table marks cells with ", sym, " for \"",
            body_marks[[sym]], "\", so `footnotes` must carry ", sym,
@@ -405,7 +415,11 @@ hv_man_table_save <- function(ft, file, footnotes = NULL,
 # there is nothing to key.
 .key_runs <- function(abbreviations) {
   if (is.null(abbreviations) || length(abbreviations) == 0) return(NULL)
-  ordered <- abbreviations[order(names(abbreviations))]
+  # Radix, not the session collation, so a Mac and lri write the same
+  # key. Case folded first, so "eGFR" files under e, as a reader expects,
+  # rather than after every capital as the C order alone would put it.
+  key <- names(abbreviations)
+  ordered <- abbreviations[order(tolower(key), key, method = "radix")]
   n <- length(ordered)
   suffix <- paste0(", ", unname(ordered), c(rep("; ", n - 1L), ""))
   text <- c("Key: ", as.vector(rbind(names(ordered), suffix)))

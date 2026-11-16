@@ -1048,13 +1048,29 @@ hv_tbl_summary <- function(data, by = NULL, groups,
     mean <- pair$stat[pair$stat_name == "mean"]
     sd <- pair$stat[pair$stat_name == "sd"]
     if (length(mean) != 1L || length(sd) != 1L) next
+    # A group with no data: gtsummary already shows NA there, so no
+    # unrounded number is hidden. Leave the cell, as the median path does.
+    if (!is.finite(mean)) next
     formatted <- .format_blackstone_pair(mean, sd)
-    if (is.null(formatted) || !column %in% names(tbl$table_body)) next
-
-    cells <- tbl$table_body[[column]]
-    target <- tbl$table_body$variable == variable & !is.na(cells) &
-      grepl("\u00B1", cells, fixed = TRUE)
-    if (sum(target) != 1L) next
+    target <- if (column %in% names(tbl$table_body)) {
+      cells <- tbl$table_body[[column]]
+      tbl$table_body$variable == variable & !is.na(cells) &
+        grepl("\u00B1", cells, fixed = TRUE)
+    } else {
+      FALSE
+    }
+    if (is.null(formatted) || sum(target) != 1L) {
+      # Failing loud, as the median path does: a mean left in gtsummary's
+      # own digits would pass for the standard's. An SD of zero (every
+      # value equal) or NA (one patient) has no first significant digit
+      # to round to.
+      why <- if (is.null(formatted)) paste0(" (SD ", format(sd), ")")
+      else ""
+      warning("Could not apply the house mean format to `", variable,
+              "` in column `", column, "`", why, "; the cell keeps ",
+              "gtsummary's text.", call. = FALSE)
+      next
+    }
     prefix <- strsplit(cells[target], " ||| ", fixed = TRUE)[[1]][1]
     tbl$table_body[[column]][target] <- paste(prefix, formatted, sep = " ||| ")
   }

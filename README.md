@@ -90,7 +90,7 @@ hv_man_table_save(ft, "table2.docx", caption = "Table 2. Cohorts")
 ```
 
 `hv_man_table_jtcvs()`, `hv_man_table_save_jtcvs()` and
-`hv_test_footnotes_jtcvs()` are deprecated and go in the next release;
+`hv_test_footnotes_jtcvs()` were deprecated in 1.0.8 and go in the next minor release;
 their layout is this one.
 
 ## Migrating from the `%summarytable` SAS macro

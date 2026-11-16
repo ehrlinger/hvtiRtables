@@ -52,7 +52,8 @@ Invisibly, the \code{file} path.
 \strong{Deprecated.} Use
 \code{hv_man_table_save(ft, file, caption = )} on a table from
 \code{hv_man_table(tbl, style = "manuscript", layout = "describe")}. This
-function warns on every call and goes in the next release.
+function, deprecated in 1.0.8, warns on every call and goes in the next
+minor release.
 }
 \details{
 Stage 3 of the \verb{\%summarytable} split: writes the document. Replaces

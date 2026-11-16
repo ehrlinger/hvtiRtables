@@ -21,13 +21,22 @@ test_that("Pearson CI matches cor.test at the default 68% level", {
   expect_equal(attr(out, "conf_level"), 0.68)
 })
 
-test_that("Spearman estimate and Fisher p-value are computed by hand", {
-  d <- mk_corr_data()
-  out <- hv_correlation_table(d, vars = "alb", with = "a1c",
-                              method = "spearman")
-  r <- stats::cor(d$alb, d$a1c, method = "spearman")
-  expect_equal(out$estimate, r)
-  expect_equal(out$p.value, 2 * stats::pnorm(-abs(atanh(r)) * sqrt(80 - 3)))
+test_that("Spearman estimate, Fisher interval and p-value match fixed values", {
+  # Reference values computed outside this package and outside R, so a
+  # wrong formula in .fisher_interval() cannot agree with itself. No SAS
+  # output for proc corr exists in the repo. By hand: y is its own rank
+  # (no ties), the rank differences y - x are 2 -1 1 -2 1 3 -2 2 -1 -3,
+  # their squares sum to 38, so rho = 1 - 6 * 38 / (10 * 99) = 127 / 165.
+  # Then, in Python 3 (math.atanh/tanh, statistics.NormalDist), as SAS's
+  # fisher(biasadj=no alpha=.32): z = atanh(rho), se = 1 / sqrt(10 - 3),
+  # q = NormalDist().inv_cdf(0.84), limits tanh(z -/+ q * se), and
+  # p = 2 * NormalDist().cdf(-|z| / se).
+  d <- data.frame(x = 1:10, y = c(3, 1, 4, 2, 6, 9, 5, 10, 8, 7))
+  out <- hv_correlation_table(d, vars = "y", with = "x", method = "spearman")
+  expect_equal(out$estimate, 127 / 165, tolerance = 1e-12)
+  expect_equal(out$conf.low, 0.5674231151776917, tolerance = 1e-12)
+  expect_equal(out$conf.high, 0.8843649615990348, tolerance = 1e-12)
+  expect_equal(out$p.value, 0.006984859837794653, tolerance = 1e-12)
 })
 
 test_that("both methods by default, spearman first", {

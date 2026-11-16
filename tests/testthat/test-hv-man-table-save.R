@@ -542,3 +542,40 @@ test_that("the caption takes the table's font", {
   expect_length(xml2::xml_find_all(x, "//w:body/*[1]//w:rFonts[@w:ascii]"),
                 0L)
 })
+
+test_that("footnotes = NULL is refused, saying why, where cells carry marks", {
+  ft <- mk_ft()
+  attr(ft, "hv_body_marks") <- c("‡" = "Fisher exact test.")
+  f <- tempfile(fileext = ".docx")
+  on.exit(unlink(f), add = TRUE)
+  expect_error(
+    hv_man_table_save(ft, f, footnotes = NULL),
+    "suppresses only the default notes", fixed = TRUE
+  )
+  expect_error(hv_man_table_save(ft, f, footnotes = NULL),
+               "a marked cell needs its note", fixed = TRUE)
+  expect_false(file.exists(f))
+  # Without cell marks, NULL still suppresses every note.
+  expect_no_error(hv_man_table_save(mk_ft(), f, footnotes = NULL))
+})
+
+test_that("the abbreviation key sorts the same in every locale", {
+  abbr <- c(SD = "standard deviation", eGFR = "estimated GFR",
+            CI = "confidence interval", Hb = "hemoglobin")
+  sorted <- function() .key_runs(abbr)$text[c(2, 4, 6, 8)]
+  want <- c("CI", "eGFR", "Hb", "SD")
+  expect_identical(sorted(), want)
+  # The C collation puts every capital before every lower-case letter;
+  # the key must not follow it.
+  old <- Sys.getlocale("LC_COLLATE")
+  on.exit(Sys.setlocale("LC_COLLATE", old), add = TRUE)
+  Sys.setlocale("LC_COLLATE", "C")
+  expect_identical(sorted(), want)
+})
+
+test_that("the file must end in .docx", {
+  for (bad in c("t1.doc", "t1.rtf", "t1")) {
+    expect_error(hv_man_table_save(mk_ft(), file.path(tempdir(), bad)),
+                 "`file` must end in .docx", fixed = TRUE)
+  }
+})

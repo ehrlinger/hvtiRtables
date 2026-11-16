@@ -78,6 +78,9 @@
   if (!is.character(x) || length(x) != 1L || is.na(x) || !nzchar(x))
     stop("`", arg, "` must be a single non-empty file path. Received: ",
          .describe(x), ".", call. = FALSE)
+  if (!grepl("\\.docx$", x, ignore.case = TRUE))
+    stop("`", arg, "` must end in .docx: the file is always written as ",
+         "Word. Received: \"", x, "\".", call. = FALSE)
   out_dir <- dirname(x)
   if (!dir.exists(out_dir))
     stop("Output directory does not exist: ", out_dir, call. = FALSE)

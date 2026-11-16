@@ -295,3 +295,17 @@ test_that("the report style is the default, and an unknown style errors", {
                    hv_table_style("report"))
   expect_error(hv_man_table(fx_hv_tbl(), style = "jtcvs"), "hv_table_style")
 })
+
+test_that("digits is deprecated: warns once per session, changes nothing", {
+  # Reset the once-per-session flag, and put it back afterwards.
+  was <- .hv_warned$digits
+  .hv_warned$digits <- NULL
+  on.exit(.hv_warned$digits <- was, add = TRUE)
+  tbl <- gtsummary::tbl_summary(
+    data.frame(age = c(50, 60, 70), grp = c("a", "b", "a")), by = "grp"
+  )
+  expect_warning(ft <- hv_man_table(tbl, digits = 3),
+                 "`digits` is deprecated and does nothing", fixed = TRUE)
+  expect_no_warning(hv_man_table(tbl, digits = 3))
+  expect_identical(ft$body$dataset, hv_man_table(tbl)$body$dataset)
+})
