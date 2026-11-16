@@ -30,7 +30,9 @@ hv_check_docx(path, style = NULL)
 A `data.frame` with one row per finding and columns `type`, `table`
 (1-indexed table number, `NA` when document-level), `location`
 (row/column detail where applicable, `NA` otherwise), and `detail`
-(human-readable description). Zero rows means clean.
+(human-readable description). Zero rows means clean. A path that does
+not exist, or is not a Word document, is an error of class
+`hvtiRtables_invalid_docx`, so a batch check can catch it and go on.
 
 ## Details
 

@@ -86,7 +86,9 @@ report style merges no cells at all.</p></dd>
     <p>A <code>data.frame</code> with one row per finding and columns <code>type</code>,
 <code>table</code> (1-indexed table number, <code>NA</code> when document-level),
 <code>location</code> (row/column detail where applicable, <code>NA</code> otherwise), and
-<code>detail</code> (human-readable description). Zero rows means clean.</p>
+<code>detail</code> (human-readable description). Zero rows means clean. A path
+that does not exist, or is not a Word document, is an error of class
+<code>hvtiRtables_invalid_docx</code>, so a batch check can catch it and go on.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

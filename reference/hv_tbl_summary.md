@@ -236,7 +236,10 @@ renderer attributes. A table whose rows mix mean and median also carries
 (the names whose cells carry it); the attribute is `NULL` otherwise. The
 manuscript style also reads `hv_by_label`, the grouping's name (the
 variable's label when the data carry one), and the hidden `hv_n` column
-of `table_body`, each variable's overall non-missing count.
+of `table_body`, each variable's overall non-missing count. A p-value
+comparison without the 'broom' package is an error of class
+`hvtiRtables_missing_package`, so a runner can catch it and fall back to
+`compare = "smd"`.
 
 ## Details
 
