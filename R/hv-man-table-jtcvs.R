@@ -92,7 +92,8 @@
 #' **Deprecated.** Use
 #' `hv_man_table(tbl, style = "manuscript", layout = "describe")`, the
 #' manuscript style's describe layout, which this layout became. This
-#' function warns on every call and goes in the next release.
+#' function, deprecated in 1.0.8, warns on every call and goes in the next
+#' minor release.
 #'
 #' Stage 2 of the `%summarytable` split: shapes the table. The macro
 #' controlled this with `STYLE=` and `PAGE=`. This renderer is the
@@ -225,7 +226,9 @@ hv_man_table_jtcvs <- function(tbl, groups, trailing = NULL,
 }
 
 # The deprecation every JTCVS function raises (design D3): it names the
-# call that replaces it and says when the function goes.
+# call that replaces it and says when the function goes. Patch releases
+# since 1.0.8 have kept it, so "the next release" would not be true.
 .jtcvs_deprecated <- function(old, instead) {
-  paste0(old, "() is deprecated and goes in the next release. ", instead)
+  paste0(old, "() is deprecated since hvtiRtables 1.0.8 and goes in ",
+         "the next minor release. ", instead)
 }

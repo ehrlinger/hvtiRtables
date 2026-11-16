@@ -52,7 +52,8 @@ what the table shows. Call this function directly with the same arguments
 when composing footnotes yourself. Override with ordinary list operations,
 no special sentinel values needed:
 \itemize{
-\item Suppress both: \code{footnotes = NULL}
+\item Suppress both: \code{footnotes = NULL}. Refused on a table whose body cells
+carry \verb{‡}, \verb{§} or \verb{¶}, since those marks need their notes.
 \item Change one: \code{modifyList(hv_man_footnotes(), list(...))} with
 \code{`†`} = "custom text"
 \item Add a study-specific one alongside: \code{c(hv_man_footnotes(), list(...))}

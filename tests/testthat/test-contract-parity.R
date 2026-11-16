@@ -32,7 +32,8 @@ test_that("font contract is identical across both renderers", {
 test_that("file contract is identical across both savers", {
   ft_corr <- hv_man_table(fx_plain_tbl())
   ft_jt <- fx_jtcvs_ft()
-  for (bad in list(1, NA_character_, "", character(0))) {
+  for (bad in list(1, NA_character_, "", character(0),
+                   file.path(tempdir(), "t1.doc"))) {
     m1 <- tryCatch(hv_man_table_save(ft_corr, bad),
                    error = conditionMessage)
     m2 <- tryCatch(

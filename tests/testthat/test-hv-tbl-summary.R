@@ -1024,12 +1024,12 @@ test_that("paired rounding changes only the mean column under both", {
   expect_identical(tbl$table_body$hv_median_stat_0, "120 [100, 150]")
 })
 
-test_that("zero or unavailable SD keeps gtsummary's rendering", {
-  zero_sd <- hv_tbl_summary(
+test_that("zero or unavailable SD keeps gtsummary's rendering, and warns", {
+  expect_warning(zero_sd <- hv_tbl_summary(
     data.frame(value = rep(123.456, 4)),
     groups = list(D = "value"), continuous = "value",
     continuous_stat = "mean"
-  )
+  ), "Could not apply the house mean format", fixed = TRUE)
   missing_sd <- suppressWarnings(hv_tbl_summary(
     data.frame(value = 123.456),
     groups = list(D = "value"), continuous = "value",
@@ -1582,6 +1582,11 @@ test_that("cutexact defaults to \"any\", Fisher when any cell expects < 5", {
   expect_identical(ce_test(tbl, "common"), "chisq.test.no.correct")
   expect_identical(ce_test(ce_tbl(cutexact = 50), "tri"),
                    "chisq.test.no.correct")
+  # gtsummary 2.6.1's own default for a categorical variable whose cells
+  # all expect 5 or more is chisq.test.no.correct. The dagger note must
+  # name it, or a chi-square p-value prints with no test behind it.
+  expect_identical(attr(tbl, "hv_test_note"),
+                   "P values from the Pearson's chi-square test.")
 })
 
 test_that("the \"any\" default leaves categorical tests as gtsummary chose", {
@@ -2108,4 +2113,26 @@ test_that("objects named like statistics never shadow them", {
   clean <- normal()
   shadowed <- with_global(list(sd = data.frame(x = 1), median = "a"), normal())
   expect_identical(shadowed, clean)
+})
+
+test_that("a mean/SD cell the house rule cannot round warns, as medians do", {
+  # Group A: every value equal, SD 0. Group B: one patient, SD NA. Neither
+  # SD has a first significant digit, so the cell keeps gtsummary's text,
+  # and that must not pass silently for the house precision.
+  dta <- data.frame(grp = factor(rep(c("A", "B"), c(4, 1))),
+                    value = c(5, 5, 5, 5, 3))
+  warnings <- character()
+  withCallingHandlers(
+    hv_tbl_summary(dta, by = "grp", groups = list(D = "value"),
+                   continuous = "value", continuous_stat = "mean",
+                   overall = FALSE),
+    warning = function(w) {
+      warnings <<- c(warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_length(grep("Could not apply the house mean format to `value`",
+                     warnings, fixed = TRUE), 2L)
+  expect_match(warnings, "(SD 0)", all = FALSE, fixed = TRUE)
+  expect_match(warnings, "(SD NA)", all = FALSE, fixed = TRUE)
 })

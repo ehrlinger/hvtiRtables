@@ -123,10 +123,10 @@
 #'   unnoticed, while a deliberate override is legitimate.
 #' @param font_size Font size in points. Default `12`; pass `11` for wide
 #'   tables, per house rule 5. No other values are permitted.
-#' @param digits Kept for interface symmetry with future callers; currently
-#'   unused (rounding is controlled upstream via `tbl_summary(digits = ...)`).
-#'   Reserved so a future version can enforce sig-fig rounding centrally
-#'   without a breaking signature change.
+#' @param digits Deprecated, and never used: the table keeps the rounding
+#'   it was built with, set upstream by [hv_tbl_summary()] or
+#'   `tbl_summary(digits = ...)`. Passing it warns once per session; it goes
+#'   in the next minor release.
 #' @param style A style name, `"report"` (default) or `"manuscript"`, or a
 #'   style from [hv_table_style()]. `"manuscript"` needs an
 #'   [hv_tbl_summary()] table, refuses `font` and `font_size`, and in the
@@ -168,6 +168,7 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
                          digits = 2, style = "report", layout = "compare",
                          ...) {
   .check_sas_args(list(...), "hv_man_table")
+  if (!missing(digits)) .warn_digits_deprecated()
   .check_gtsummary(tbl)
   style <- .as_style(style)
   .check_layout(layout, style, given = !missing(layout))
@@ -415,4 +416,16 @@ hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,
     )
   }
   tbl
+}
+
+# `digits` never did anything: the cells arrive already rounded. Warned
+# once per session, as the family rubric deprecates an argument, so a
+# job building forty tables reads it once.
+.hv_warned <- new.env(parent = emptyenv())
+.warn_digits_deprecated <- function() {
+  if (isTRUE(.hv_warned$digits)) return(invisible())
+  .hv_warned$digits <- TRUE
+  warning("hv_man_table(): `digits` is deprecated and does nothing; the ",
+          "table keeps the rounding it was built with. Drop the argument. ",
+          "This warning is shown once per session.", call. = FALSE)
 }

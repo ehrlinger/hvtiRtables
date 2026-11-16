@@ -27,10 +27,10 @@ unnoticed, while a deliberate override is legitimate.}
 \item{font_size}{Font size in points. Default \code{12}; pass \code{11} for wide
 tables, per house rule 5. No other values are permitted.}
 
-\item{digits}{Kept for interface symmetry with future callers; currently
-unused (rounding is controlled upstream via \code{tbl_summary(digits = ...)}).
-Reserved so a future version can enforce sig-fig rounding centrally
-without a breaking signature change.}
+\item{digits}{Deprecated, and never used: the table keeps the rounding
+it was built with, set upstream by \code{\link[=hv_tbl_summary]{hv_tbl_summary()}} or
+\code{tbl_summary(digits = ...)}. Passing it warns once per session; it goes
+in the next minor release.}
 
 \item{style}{A style name, \code{"report"} (default) or \code{"manuscript"}, or a
 style from \code{\link[=hv_table_style]{hv_table_style()}}. \code{"manuscript"} needs an
