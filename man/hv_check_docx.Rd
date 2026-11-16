@@ -17,7 +17,9 @@ report style merges no cells at all.}
 A \code{data.frame} with one row per finding and columns \code{type},
 \code{table} (1-indexed table number, \code{NA} when document-level),
 \code{location} (row/column detail where applicable, \code{NA} otherwise), and
-\code{detail} (human-readable description). Zero rows means clean.
+\code{detail} (human-readable description). Zero rows means clean. A path
+that does not exist, or is not a Word document, is an error of class
+\code{hvtiRtables_invalid_docx}, so a batch check can catch it and go on.
 }
 \description{
 Read-only inspection of any Word document, whether written by this

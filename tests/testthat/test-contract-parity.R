@@ -97,7 +97,17 @@ test_that("footnote-text contract shares its tail across both savers", {
   }
 })
 
-test_that("every stop() in the package passes call. = FALSE", {
+test_that("every stop() in the package hides its call", {
+  # call. = FALSE, or, for a classed error (the family rubric's
+  # <package>_<condition>), stop(errorCondition(..., call = NULL)): a
+  # condition object ignores call., so it carries call = NULL itself.
+  classed_without_call <- function(args) {
+    length(args) == 1L && is.call(args[[1]]) &&
+      identical(args[[1]][[1]], as.name("errorCondition")) &&
+      "call" %in% names(args[[1]]) && is.null(args[[1]][["call"]]) &&
+      is.character(args[[1]][["class"]]) &&
+      all(startsWith(args[[1]][["class"]], "hvtiRtables_"))
+  }
   ns <- asNamespace("hvtiRtables")
   offenders <- character(0)
   for (nm in ls(ns, all.names = TRUE)) {
@@ -105,8 +115,9 @@ test_that("every stop() in the package passes call. = FALSE", {
     if (!is.function(obj) || is.null(body(obj))) next
     for (cl in .fx_stop_calls(body(obj))) {
       args <- as.list(cl)[-1]
-      ok <- "call." %in% names(args) &&
-        identical(args[["call."]], FALSE)
+      ok <- ("call." %in% names(args) &&
+               identical(args[["call."]], FALSE)) ||
+        classed_without_call(args)
       if (!ok) offenders <- c(offenders, nm)
     }
   }

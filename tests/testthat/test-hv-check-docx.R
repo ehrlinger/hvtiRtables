@@ -85,10 +85,12 @@ splice_docx_xml <- function(src, dest, mutate) {
 }
 
 test_that("hv_check_docx rejects a missing or non-docx path", {
-  expect_error(hv_check_docx(tempfile(fileext = ".docx")), "does not exist")
+  expect_error(hv_check_docx(tempfile(fileext = ".docx")), "does not exist",
+               class = "hvtiRtables_invalid_docx")
   bad <- tempfile(fileext = ".docx")
   writeLines("not a zip archive", bad)
-  expect_error(hv_check_docx(bad), "valid .docx")
+  expect_error(hv_check_docx(bad), "valid .docx",
+               class = "hvtiRtables_invalid_docx")
 })
 
 test_that("hv_check_docx rejects an empty string or NA path", {

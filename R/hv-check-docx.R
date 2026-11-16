@@ -9,7 +9,10 @@
 
 .docx_body_xml <- function(path) {
   if (!file.exists(path))
-    stop("File does not exist: ", path, call. = FALSE)
+    stop(errorCondition(
+      paste0("hv_check_docx(): file does not exist: ", path),
+      class = "hvtiRtables_invalid_docx", call = NULL
+    ))
   xdir <- tempfile()
   on.exit(unlink(xdir, recursive = TRUE), add = TRUE)
   ok <- tryCatch({
@@ -17,7 +20,11 @@
     file.exists(file.path(xdir, "word", "document.xml"))
   }, warning = function(w) FALSE, error = function(e) FALSE)
   if (!ok)
-    stop("Not a valid .docx (no word/document.xml): ", path, call. = FALSE)
+    stop(errorCondition(
+      paste0("hv_check_docx(): not a valid .docx (no word/document.xml): ",
+             path),
+      class = "hvtiRtables_invalid_docx", call = NULL
+    ))
   xml2::read_xml(file.path(xdir, "word", "document.xml"))
 }
 
@@ -359,7 +366,9 @@
 #' @return A `data.frame` with one row per finding and columns `type`,
 #'   `table` (1-indexed table number, `NA` when document-level),
 #'   `location` (row/column detail where applicable, `NA` otherwise), and
-#'   `detail` (human-readable description). Zero rows means clean.
+#'   `detail` (human-readable description). Zero rows means clean. A path
+#'   that does not exist, or is not a Word document, is an error of class
+#'   `hvtiRtables_invalid_docx`, so a batch check can catch it and go on.
 #'
 #' @seealso [hv_man_table_save()], which writes the files this checks. It does
 #'   not run the check on its own
