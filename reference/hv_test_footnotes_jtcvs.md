@@ -123,13 +123,16 @@ not to this function's JTCVS output.
 ## Examples
 
 ``` r
-# Instead of hv_test_footnotes_jtcvs():
-tbl <- hv_tbl_summary(
-  gtsummary::trial, by = "trt",
-  groups = list(Demography = c("age", "grade")),
-  continuous = "age", categorical = "grade", compare = "pvalue"
-)
-ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
-attr(ft, "hv_footnotes")[["\u2020"]]
+# p-values need the 'broom' package, which is suggested, not imported.
+if (requireNamespace("broom", quietly = TRUE)) {
+  # Instead of hv_test_footnotes_jtcvs():
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = c("age", "grade")),
+    continuous = "age", categorical = "grade", compare = "pvalue"
+  )
+  ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
+  attr(ft, "hv_footnotes")[["\u2020"]]
+}
 #> [1] "Values are No. (%) or median [15th, 85th percentiles]; P values from the Wilcoxon rank sum test and Pearson's chi-square test."
 ```
