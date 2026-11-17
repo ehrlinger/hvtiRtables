@@ -92,14 +92,17 @@ equivalent is \code{\link[=hv_man_footnotes]{hv_man_footnotes()}}.
 }
 
 \examples{
-# Instead of hv_test_footnotes_jtcvs():
-tbl <- hv_tbl_summary(
-  gtsummary::trial, by = "trt",
-  groups = list(Demography = c("age", "grade")),
-  continuous = "age", categorical = "grade", compare = "pvalue"
-)
-ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
-attr(ft, "hv_footnotes")[["\u2020"]]
+# p-values need the 'broom' package, which is suggested, not imported.
+if (requireNamespace("broom", quietly = TRUE)) {
+  # Instead of hv_test_footnotes_jtcvs():
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = c("age", "grade")),
+    continuous = "age", categorical = "grade", compare = "pvalue"
+  )
+  ft <- hv_man_table(tbl, style = "manuscript", layout = "describe")
+  attr(ft, "hv_footnotes")[["\u2020"]]
+}
 
 }
 \seealso{
