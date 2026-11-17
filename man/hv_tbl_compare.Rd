@@ -54,20 +54,23 @@ variable dropped from \code{groups}.
 }
 
 \examples{
-tbl <- hv_tbl_summary(
-  gtsummary::trial, by = "trt",
-  groups = list(Demography = c("age", "grade")),
-  continuous = "age", categorical = "grade",
-  compare = "pvalue", show_variable = FALSE
-)
-# Standardized differences computed elsewhere, e.g. by
-# hvtiRpropensity::ps_stddiff(), as proportions.
-d <- c(age = 0.031, grade = 0.120)
-tbl <- hv_tbl_compare(
-  tbl, stats::setNames(sprintf("\%.1f", 100 * d), names(d)),
-  label = "Std. Diff. (\%)"
-)
-hv_man_table(tbl)
+# p-values need the 'broom' package, which is suggested, not imported.
+if (requireNamespace("broom", quietly = TRUE)) {
+  tbl <- hv_tbl_summary(
+    gtsummary::trial, by = "trt",
+    groups = list(Demography = c("age", "grade")),
+    continuous = "age", categorical = "grade",
+    compare = "pvalue", show_variable = FALSE
+  )
+  # Standardized differences computed elsewhere, e.g. by
+  # hvtiRpropensity::ps_stddiff(), as proportions.
+  d <- c(age = 0.031, grade = 0.120)
+  tbl <- hv_tbl_compare(
+    tbl, stats::setNames(sprintf("\%.1f", 100 * d), names(d)),
+    label = "Std. Diff. (\%)"
+  )
+  hv_man_table(tbl)
+}
 
 }
 \seealso{
