@@ -1,3 +1,31 @@
+# hvtiRtables 1.0.14
+
+* `hv_man_table_save()` and `hv_man_table_display()`: `footnotes = NULL` suppresses the
+  default notes only. On a table whose cells carry `‡`, `§` or `¶` it is refused, as before,
+  and the error now says so instead of asking for a list the caller meant not to pass. The
+  help says the same.
+* `hv_tbl_summary()`: a mean ± SD cell the EHB/Blackstone rule cannot round (an SD of zero,
+  or a single patient's NA) still keeps gtsummary's text, and now warns, as a median cell
+  already did.
+* The abbreviation key is sorted the same in every locale (case folded, then radix), so a Mac
+  and lri write the same `.docx`.
+* Both savers refuse a `file` that does not end in `.docx`.
+* `hv_man_table()`'s `digits`, which never did anything, is deprecated: passing it warns once
+  per session.
+* The deprecated JTCVS functions now say when they go: deprecated in 1.0.8, removed in the
+  next minor release.
+
+* Errors a caller may want to catch now carry a class, as the hvtiR API rubric asks:
+  `hv_check_docx()` on a missing or non-Word file signals `hvtiRtables_invalid_docx` (now
+  also for a `word/document.xml` that does not parse or is not a WordprocessingML body, which
+  was reported clean), and
+  `hv_tbl_summary()` asked for p-values without 'broom' signals
+  `hvtiRtables_missing_package`. Their messages now begin with the function's name.
+
+* The examples for `hv_tbl_compare()` and `hv_test_footnotes_jtcvs()` ask for p-values,
+  which need the suggested 'broom' package. They now run only when 'broom' is installed,
+  instead of stopping where it is not.
+
 # hvtiRtables 1.0.13
 
 - `hv_tbl_summary()` takes `prop_ci = c("none", "wilson", "exact")` and
