@@ -24,7 +24,6 @@ Suggests:
     haven,
     knitr,
     quarto,
-    rmarkdown,
     smd (>= 0.6.6),
     testthat (>= 3.1.7)
 Config/testthat/edition: 3
