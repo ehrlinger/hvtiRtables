@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.14</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,6 +45,17 @@
       <small>Source: <a href="https://github.com/ehrlinger/hvtiRtables/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.14" id="hvtirtables-1014">hvtiRtables 1.0.14<a class="anchor" aria-label="anchor" href="#hvtirtables-1014"></a></h2>
+<ul><li><p><code><a href="../reference/hv_man_table_save.html">hv_man_table_save()</a></code> and <code><a href="../reference/hv_man_table_display.html">hv_man_table_display()</a></code>: <code>footnotes = NULL</code> suppresses the default notes only. On a table whose cells carry <code>‡</code>, <code>§</code> or <code>¶</code> it is refused, as before, and the error now says so instead of asking for a list the caller meant not to pass. The help says the same.</p></li>
+<li><p><code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code>: a mean ± SD cell the EHB/Blackstone rule cannot round (an SD of zero, or a single patient’s NA) still keeps gtsummary’s text, and now warns, as a median cell already did.</p></li>
+<li><p>The abbreviation key is sorted the same in every locale (case folded, then radix), so a Mac and lri write the same <code>.docx</code>.</p></li>
+<li><p>Both savers refuse a <code>file</code> that does not end in <code>.docx</code>.</p></li>
+<li><p><code><a href="../reference/hv_man_table.html">hv_man_table()</a></code>’s <code>digits</code>, which never did anything, is deprecated: passing it warns once per session.</p></li>
+<li><p>The deprecated JTCVS functions now say when they go: deprecated in 1.0.8, removed in the next minor release.</p></li>
+<li><p>Errors a caller may want to catch now carry a class, as the hvtiR API rubric asks: <code><a href="../reference/hv_check_docx.html">hv_check_docx()</a></code> on a missing or non-Word file signals <code>hvtiRtables_invalid_docx</code> (now also for a <code>word/document.xml</code> that does not parse or is not a WordprocessingML body, which was reported clean), and <code><a href="../reference/hv_tbl_summary.html">hv_tbl_summary()</a></code> asked for p-values without ‘broom’ signals <code>hvtiRtables_missing_package</code>. Their messages now begin with the function’s name.</p></li>
+<li><p>The examples for <code><a href="../reference/hv_tbl_compare.html">hv_tbl_compare()</a></code> and <code><a href="../reference/hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code> ask for p-values, which need the suggested ‘broom’ package. They now run only when ‘broom’ is installed, instead of stopping where it is not.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.13" id="hvtirtables-1013">hvtiRtables 1.0.13<a class="anchor" aria-label="anchor" href="#hvtirtables-1013"></a></h2>
 <ul><li>
