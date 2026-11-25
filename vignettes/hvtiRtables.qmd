@@ -10,7 +10,9 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+# The p-values below need 'broom', which is suggested, not imported.
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>",
+                      eval = requireNamespace("broom", quietly = TRUE))
 ```
 
 ```{r setup}

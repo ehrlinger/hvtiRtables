@@ -70,6 +70,7 @@ sec_row <- function(x) {
 }
 
 test_that("rows 1-2: shaded section rows, unmerged or spanned", {
+  skip_if_not_installed("broom")
   r <- wx_doc(st_save("report"))
   tcs <- xq(sec_row(r), "./w:tc")
   expect_length(tcs, ncols(r))
@@ -89,6 +90,7 @@ test_that("rows 1-2: shaded section rows, unmerged or spanned", {
 })
 
 test_that("row 3: rules in the report, a full grid in the manuscript", {
+  skip_if_not_installed("broom")
   r <- wx_doc(st_save("report"))
   expect_length(xq(r, "//w:tcBorders/w:left[@w:val='single']"), 0L)
   rules <- xq(r, paste0("//w:tcBorders/w:top[@w:val='single'] | ",
@@ -103,6 +105,7 @@ test_that("row 3: rules in the report, a full grid in the manuscript", {
 })
 
 test_that("rows 4-5: the header and the count column", {
+  skip_if_not_installed("broom")
   r <- wx_doc(st_save("report"))
   expect_length(xq(r, "//w:tr[w:trPr/w:tblHeader]"), 1L)
   r_head <- vapply(xq(r, "//w:tr[1]/w:tc"), wx_text, character(1))
@@ -117,6 +120,7 @@ test_that("rows 4-5: the header and the count column", {
 })
 
 test_that("rows 8-10: note markers and wording", {
+  skip_if_not_installed("broom")
   after <- function(x) {
     vapply(xq(x, "//w:tbl/following-sibling::w:p"), wx_text, character(1))
   }
@@ -137,6 +141,7 @@ test_that("rows 8-10: note markers and wording", {
 })
 
 test_that("rows 12-13: the font and the caption", {
+  skip_if_not_installed("broom")
   r <- wx_doc(st_save("report"))
   font <- hv_table_style("report")$font
   expect_gt(length(xq(r, sprintf("//w:tbl//w:rFonts[@w:ascii='%s']", font))),
@@ -150,6 +155,7 @@ test_that("rows 12-13: the font and the caption", {
 })
 
 test_that("rows 14-16: weight, row height, rows kept whole, header repeated", {
+  skip_if_not_installed("broom")
   # Every header text run is bold in both styles, the "N = n" lines and
   # the marks the saver appends included (design row 14, "header bold").
   for (name in c("report", "manuscript")) {
@@ -174,6 +180,7 @@ test_that("rows 14-16: weight, row height, rows kept whole, header repeated", {
 })
 
 test_that("row 14: labels are left-justified and statistics centered", {
+  skip_if_not_installed("broom")
   for (name in c("report", "manuscript")) {
     rows <- wx_rows(wx_doc(st_save(name)))
     # Rows that carry a statistic, past the header: the section rows and
@@ -192,6 +199,7 @@ test_that("row 14: labels are left-justified and statistics centered", {
 })
 
 test_that("the manuscript's default Table 1 is on a portrait Letter page", {
+  skip_if_not_installed("broom")
   # Overall, two groups and P: 2.0 + 0.6 + 1.1 * 3 + 0.6 = 6.5 inches,
   # inside Letter's 6.53-inch text block. At a 2.5-inch label it turned
   # landscape.
@@ -211,6 +219,7 @@ test_that("the manuscript's default Table 1 is on a portrait Letter page", {
 })
 
 test_that("rows 17-19: Letter, no Variable column, merges where allowed", {
+  skip_if_not_installed("broom")
   for (name in c("report", "manuscript")) {
     x <- wx_doc(st_save(name))
     sz <- xq(x, "//w:sectPr/w:pgSz")[[1]]
@@ -233,12 +242,14 @@ test_that("rows 17-19: Letter, no Variable column, merges where allowed", {
 })
 
 test_that("hv_check_docx() passes on every style, checked as that style", {
+  skip_if_not_installed("broom")
   for (name in c("report", "manuscript"))
     expect_identical(nrow(hv_check_docx(st_save(name), style = name)), 0L,
                      info = name)
 })
 
 test_that("replicas of the two submissions' Table 1 shapes", {
+  skip_if_not_installed("broom")
   # ms.1264: two groups, fill #CAEDFB. BVR rv3: three clusters, #A5C9EB.
   for (case in list(list(by = "trt", fill = "#CAEDFB", span = "2"),
                     list(by = "grade", fill = "#A5C9EB", span = "3"))) {
@@ -338,6 +349,7 @@ dsc_save <- function(tbl = st_tbl(),
 }
 
 test_that("describe, rows 1-3: spanning shaded sections and a full grid", {
+  skip_if_not_installed("broom")
   x <- wx_doc(dsc_save(fill = "#A5C9EB"))
   tc <- xq(sec_row(x), "./w:tc")
   expect_length(tc, 1L)
@@ -352,6 +364,7 @@ test_that("describe, rows 1-3: spanning shaded sections and a full grid", {
 })
 
 test_that("describe, rows 4-5: each group spans its pair; n* on each", {
+  skip_if_not_installed("broom")
   x <- wx_doc(dsc_save())
   expect_length(xq(x, "//w:tr[w:trPr/w:tblHeader]"), 2L)
   top <- vapply(xq(x, "//w:tr[1]/w:tc"), wx_text, character(1))
@@ -365,6 +378,7 @@ test_that("describe, rows 4-5: each group spans its pair; n* on each", {
 })
 
 test_that("describe, rows 8-10: the notes, as compare writes them", {
+  skip_if_not_installed("broom")
   x <- wx_doc(dsc_save())
   notes <- vapply(xq(x, "//w:tbl/following-sibling::w:p"), wx_text,
                   character(1))
@@ -378,6 +392,7 @@ test_that("describe, rows 8-10: the notes, as compare writes them", {
 })
 
 test_that("describe: no font, a caption, Letter, and hv_check_docx() passes", {
+  skip_if_not_installed("broom")
   f <- dsc_save()
   x <- wx_doc(f)
   expect_length(xq(x, "//w:tbl//w:rFonts[@w:ascii]"), 0L)
@@ -406,6 +421,7 @@ test_that("a replica of a two-cohort describe table: no Overall, no P", {
 })
 
 test_that("a describe table displays with its marks where Word has them", {
+  skip_if_not_installed("broom")
   shown <- hv_man_table_display(hv_man_table(
     st_tbl(), style = "manuscript", layout = "describe"
   ))
@@ -548,6 +564,7 @@ test_that("a property value with no words errors naming the row", {
 })
 
 test_that("the matrix's notes and key are the words the saver writes", {
+  skip_if_not_installed("broom")
   m <- .style_matrix()
   cell <- function(col, prop) gsub("`", "", m[[col]][m$property == prop])
   after <- function(f) {

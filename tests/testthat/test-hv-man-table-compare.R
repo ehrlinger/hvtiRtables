@@ -15,6 +15,7 @@ hdr_text <- function(ft, i) {
 }
 
 test_that("compare: one overall n column, the statistic without its count", {
+  skip_if_not_installed("broom")
   tbl <- cmp_tbl()
   ft <- cmp(tbl)
   expect_identical(
@@ -33,6 +34,7 @@ test_that("compare: one overall n column, the statistic without its count", {
 })
 
 test_that("compare: a two-row header, the grouping spanning its levels", {
+  skip_if_not_installed("broom")
   ft <- cmp()
   expect_identical(flextable::nrow_part(ft, "header"), 2L)
   top <- hdr_text(ft, 1)
@@ -51,6 +53,7 @@ test_that("compare: a two-row header, the grouping spanning its levels", {
 })
 
 test_that("compare: section rows span the table and are shaded", {
+  skip_if_not_installed("broom")
   s <- hv_table_style("manuscript", fill = "#A5C9EB")
   ft <- hv_man_table(cmp_tbl(), style = s)
   sec <- which(ft$body$dataset$is_section)
@@ -62,6 +65,7 @@ test_that("compare: section rows span the table and are shaded", {
 })
 
 test_that("compare: a full grid, no font set, rows at the style height", {
+  skip_if_not_installed("broom")
   ft <- cmp()
   for (side in c("top", "bottom", "left", "right"))
     expect_true(all(ft$body$styles$cells[[paste0("border.width.", side)]]$data
@@ -78,6 +82,7 @@ test_that("compare: a full grid, no font set, rows at the style height", {
 })
 
 test_that("compare: manuscript notes, and the marks the cells carry", {
+  skip_if_not_installed("broom")
   d <- gtsummary::trial
   d$rare <- factor(ifelse(seq_len(nrow(d)) <= 3, "yes", "no"))
   tbl <- hv_tbl_summary(
@@ -108,6 +113,7 @@ test_that("compare: manuscript notes, and the marks the cells carry", {
 })
 
 test_that("compare: under 'both' Fisher's mark follows the P, not the SMD", {
+  skip_if_not_installed("broom")
   # The double dagger annotates the test, so it belongs on the P. Appended
   # to the cell it read ".5 (0.47)‡", as though it marked the difference.
   d <- gtsummary::trial
@@ -132,6 +138,7 @@ test_that("compare: under 'both' Fisher's mark follows the P, not the SMD", {
 })
 
 test_that("compare: a Fisher test that returned no P leaves no mark", {
+  skip_if_not_installed("broom")
   d <- gtsummary::trial
   d$rare <- factor(ifelse(seq_len(nrow(d)) <= 3, "yes", "no"))
   tbl <- hv_tbl_summary(d, by = "trt", groups = list(A = c("age", "rare")),
@@ -161,6 +168,7 @@ test_that("compare: an ungrouped table keeps its count column", {
 })
 
 test_that("compare refuses what it cannot draw", {
+  skip_if_not_installed("broom")
   expect_error(
     hv_man_table(gtsummary::tbl_summary(gtsummary::trial, include = age),
                  style = "manuscript"),
@@ -182,5 +190,6 @@ test_that("the statistic note in each style's words", {
 })
 
 test_that("compare: the flextable records its layout", {
+  skip_if_not_installed("broom")
   expect_identical(attr(cmp(), "hv_layout"), "compare")
 })

@@ -187,9 +187,10 @@ carry it); the attribute is \code{NULL} otherwise. The manuscript style
 also reads \code{hv_by_label}, the grouping's name (the variable's label
 when the data carry one), and the hidden \code{hv_n} column of
 \code{table_body}, each variable's overall non-missing count. A p-value
-comparison without the 'broom' package is an error of class
+comparison without the 'broom' package, or a standardized difference
+without the 'smd' package, is an error of class
 \code{hvtiRtables_missing_package}, so a runner can catch it and fall back
-to \code{compare = "smd"}.
+to the comparison it can still make.
 }
 \description{
 Thin wrapper over \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}} modeled on the interface
@@ -285,17 +286,20 @@ never mentioned \code{by}. Remove the variable from \code{groups}.
 \examples{
 # A baseline-characteristics table of the kind a study manuscript
 # actually carries: demography and disease sections, compared
-# across treatment arms.
-hv_tbl_summary(
-  gtsummary::trial,
-  by = "trt",
-  groups = list(
-    Demography = c("age", "marker"),
-    Disease = c("stage", "grade")
-  ),
-  continuous = c("age", "marker"),
-  categorical = c("stage", "grade")
-)
+# across treatment arms. The p-values need the 'broom' package, which
+# is suggested, not imported.
+if (requireNamespace("broom", quietly = TRUE)) {
+  hv_tbl_summary(
+    gtsummary::trial,
+    by = "trt",
+    groups = list(
+      Demography = c("age", "marker"),
+      Disease = c("stage", "grade")
+    ),
+    continuous = c("age", "marker"),
+    categorical = c("stage", "grade")
+  )
+}
 
 }
 \seealso{

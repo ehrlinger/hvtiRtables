@@ -92,6 +92,7 @@ test_that("CORR: no % sign in any body cell", {
 })
 
 test_that("CORR: gtsummary's own footnotes never reach the table", {
+  skip_if_not_installed("broom")
   # add_p() footnotes the test names on the p-value header, and
   # add_difference() footnotes the SMD and defines CI; as_flex_table()
   # writes all of them as rows and superscripts inside the w:tbl. House

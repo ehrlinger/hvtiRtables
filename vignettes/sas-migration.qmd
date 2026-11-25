@@ -193,7 +193,7 @@ tbl <- hv_tbl_summary(
   gtsummary::trial, by = "trt",
   groups = list(Demography = c("age", "marker")),
   continuous = c("age", "marker"),
-  percentiles = c(16, 84)
+  percentiles = c(16, 84), compare = "none"
 )
 attr(tbl, "hv_stat_label")
 ```

@@ -17,6 +17,7 @@ ds_hdr <- function(ft, i) {
 }
 
 test_that("describe: a count beside each group, Overall and P when carried", {
+  skip_if_not_installed("broom")
   ft <- ds()
   expect_identical(
     ft$col_keys,
@@ -36,6 +37,7 @@ test_that("describe: a count beside each group, Overall and P when carried", {
 })
 
 test_that("describe: each group spans its pair; row 2 names them", {
+  skip_if_not_installed("broom")
   ft <- ds()
   expect_identical(flextable::nrow_part(ft, "header"), 2L)
   top <- ds_hdr(ft, 1)
@@ -56,6 +58,7 @@ test_that("describe: each group spans its pair; row 2 names them", {
 })
 
 test_that("describe: the grid, the shaded spanning sections, no font", {
+  skip_if_not_installed("broom")
   tbl <- hv_tbl_summary(
     gtsummary::trial, by = "trt",
     groups = list(Demography = "age", Disease = "grade"),
@@ -82,6 +85,7 @@ test_that("describe: the grid, the shaded spanning sections, no font", {
 })
 
 test_that("describe: the manuscript's widths, so two groups and P fit", {
+  skip_if_not_installed("broom")
   ft <- ds(ds_tbl(overall = FALSE))
   w <- ft$body$colwidths
   names(w) <- ft$col_keys
@@ -91,6 +95,7 @@ test_that("describe: the manuscript's widths, so two groups and P fit", {
 })
 
 test_that("describe: the manuscript's notes and the marks on cells", {
+  skip_if_not_installed("broom")
   d <- gtsummary::trial
   d$rare <- factor(ifelse(seq_len(nrow(d)) <= 3, "yes", "no"))
   tbl <- hv_tbl_summary(
@@ -140,6 +145,7 @@ test_that("describe: a table with no grouping keeps its count", {
 })
 
 test_that("a layout is the manuscript style's choice, and one of two", {
+  skip_if_not_installed("broom")
   expect_error(hv_man_table(ds_tbl(), layout = "describe"),
                "manuscript style's layouts")
   expect_error(
@@ -167,6 +173,7 @@ test_that("a layout is the manuscript style's choice, and one of two", {
 # The dagger note names the tests and defines the SMD only when the table
 # shows the column those sentences explain.
 test_that("the dagger note names the tests only where the column is shown", {
+  skip_if_not_installed("broom")
   dagger <- function(ft) attr(ft, "hv_footnotes")[["\u2020"]]
   names_tests <- function(note) {
     grepl("P values", note, fixed = TRUE) ||
@@ -221,6 +228,7 @@ test_that("the dagger note names the tests only where the column is shown", {
 })
 
 test_that("describe: under 'both' Fisher's mark follows the P, not the SMD", {
+  skip_if_not_installed("broom")
   # The describe layout marks its comparison column with the compare
   # layout's code, so it must place the mark the same way.
   d <- gtsummary::trial

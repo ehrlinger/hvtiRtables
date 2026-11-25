@@ -48,6 +48,7 @@ test_that("hv_test_footnotes_jtcvs rejects a non-gtsummary object", {
 })
 
 test_that("hv_test_footnotes_jtcvs orders tests canonically, not by row", {
+  skip_if_not_installed("broom")
   # sex (chi-square) is body row 1 and age (Wilcoxon) is body row 4, yet
   # Wilcoxon takes letter a. Order of first appearance would invert this.
   fns <- jtcvs_quiet(hv_test_footnotes_jtcvs(mk_footnote_tbl_2grp()))
@@ -60,12 +61,14 @@ test_that("hv_test_footnotes_jtcvs orders tests canonically, not by row", {
 })
 
 test_that("hv_test_footnotes_jtcvs targets the comparison column", {
+  skip_if_not_installed("broom")
   fns <- jtcvs_quiet(hv_test_footnotes_jtcvs(mk_footnote_tbl_2grp()))
   expect_true(all(vapply(fns, function(f) f$col, character(1)) ==
                     "hv_compare_col"))
 })
 
 test_that("hv_test_footnotes_jtcvs points at rendered rows, not body rows", {
+  skip_if_not_installed("broom")
   # Rendered layout, with section headers interleaved:
   #   1 Demography  2 sex  3 F  4 M  5 age  6 Other  7 rare  8 n  9 y
   # Rows are deliberately non-monotonic across footnotes (5, 2, 7),
@@ -77,6 +80,7 @@ test_that("hv_test_footnotes_jtcvs points at rendered rows, not body rows", {
 })
 
 test_that("hv_test_footnotes_jtcvs uses Kruskal-Wallis for 3+ groups", {
+  skip_if_not_installed("broom")
   fns <- jtcvs_quiet(hv_test_footnotes_jtcvs(mk_footnote_tbl_3grp()))
   expect_identical(
     vapply(fns, function(f) f$text, character(1)),
@@ -86,6 +90,7 @@ test_that("hv_test_footnotes_jtcvs uses Kruskal-Wallis for 3+ groups", {
 })
 
 test_that("hv_test_footnotes_jtcvs collapses shared tests onto one letter", {
+  skip_if_not_installed("broom")
   # Two categorical variables both tested by chi-square must produce ONE
   # footnote with two row indices, not two footnotes.
   set.seed(21)
@@ -122,11 +127,13 @@ test_that("hv_test_footnotes_jtcvs returns list() when there is no p-value", {
   none <- do.call(hv_tbl_summary, c(args, list(by = "grp", compare = "none")))
   expect_identical(jtcvs_quiet(hv_test_footnotes_jtcvs(none)), list())
 
+  skip_if_not_installed("smd")
   smd <- do.call(hv_tbl_summary, c(args, list(by = "grp", compare = "smd")))
   expect_identical(jtcvs_quiet(hv_test_footnotes_jtcvs(smd)), list())
 })
 
 test_that("hv_test_footnotes_jtcvs still marks tests when compare = 'both'", {
+  skip_if_not_installed("broom")
   # "both" renders "0.7 (-0.03)" in one cell; the letter marks the
   # p-value portion. This works only because hv_tbl_summary() calls
   # add_difference() before add_p(); the reverse order overwrites
@@ -147,6 +154,7 @@ test_that("hv_test_footnotes_jtcvs still marks tests when compare = 'both'", {
 })
 
 test_that("hv_test_footnotes_jtcvs warns on an unmapped test_name", {
+  skip_if_not_installed("broom")
   tbl <- mk_footnote_tbl_2grp()
   tbl <- gtsummary::modify_table_body(tbl, function(tb) {
     tb$test_name[tb$variable == "age"] <- "mcnemar.test"
@@ -164,6 +172,7 @@ test_that("hv_test_footnotes_jtcvs warns on an unmapped test_name", {
 })
 
 test_that("hv_test_footnotes_jtcvs round-trips through a saved .docx", {
+  skip_if_not_installed("broom")
   # Characterization against the SAS example's shape: a stratified table
   # whose letters are Kruskal-Wallis, chi-square, and Fisher. ANOVA is
   # absent by design, since this package tests continuous variables

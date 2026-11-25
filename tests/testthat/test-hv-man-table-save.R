@@ -146,6 +146,7 @@ test_that("default footnotes follow custom percentiles", {
 })
 
 test_that("default footnotes survive grouped p-value processing", {
+  skip_if_not_installed("broom")
   dta <- data.frame(
     age = c(10, 20, 30, 40, 50, 60),
     arm = factor(rep(c("A", "B"), each = 3))
@@ -469,6 +470,7 @@ ms_doc <- function(ft = ms_ft(), ...) {
 }
 
 test_that("a manuscript table is saved with its caption above it, in bold", {
+  skip_if_not_installed("broom")
   x <- ms_doc(caption = "Table 1. Baseline characteristics")
   first <- xml2::xml_find_first(x, "//w:body/*[1]")
   expect_identical(xml2::xml_name(first), "p")
@@ -478,6 +480,7 @@ test_that("a manuscript table is saved with its caption above it, in bold", {
 })
 
 test_that("a manuscript note begins with its plain symbol", {
+  skip_if_not_installed("broom")
   x <- ms_doc(caption = "Table 1. Test")
   ps <- xml2::xml_find_all(x, "//w:tbl/following-sibling::w:p")
   text <- vapply(ps, xml2::xml_text, character(1))
@@ -493,6 +496,7 @@ test_that("a manuscript note begins with its plain symbol", {
 })
 
 test_that("manuscript header marks: * on n, the dagger on the grouping", {
+  skip_if_not_installed("broom")
   x <- ms_doc(caption = "Table 1. Test")
   top <- xml2::xml_find_first(x, "//w:tbl/w:tr[1]")
   cells <- vapply(xml2::xml_find_all(top, "./w:tc"), xml2::xml_text,
@@ -502,6 +506,7 @@ test_that("manuscript header marks: * on n, the dagger on the grouping", {
 })
 
 test_that("the manuscript requires a caption; the report takes one if given", {
+  skip_if_not_installed("broom")
   expect_error(ms_doc(), "caption")
   first <- function(f) {
     xml2::xml_find_first(officer::read_docx(f)$doc_obj$get(), "//w:body/*[1]")
@@ -520,6 +525,7 @@ test_that("the manuscript requires a caption; the report takes one if given", {
 })
 
 test_that("an empty caption is refused before anything is written", {
+  skip_if_not_installed("broom")
   f <- tempfile(fileext = ".docx")
   expect_error(hv_man_table_save(hv_man_table(fx_hv_tbl()), f, caption = ""),
                "non-empty string")
@@ -531,6 +537,7 @@ test_that("an empty caption is refused before anything is written", {
 })
 
 test_that("the caption takes the table's font", {
+  skip_if_not_installed("broom")
   f <- tempfile(fileext = ".docx")
   hv_man_table_save(hv_man_table(fx_hv_tbl()), f,
                     caption = "Table 2. Report")

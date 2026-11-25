@@ -88,6 +88,7 @@ test_that("hv_tbl_summary rejects non-string variable names in groups", {
 })
 
 test_that("hv_tbl_summary sets hv_stat_label on every compare path", {
+  skip_if_not_installed("broom")
   # The attribute is assigned once, before the compare handling, and must
   # survive the add_p()/add_difference()/modify_table_body() chain rather
   # than being re-set afterwards.
@@ -172,6 +173,7 @@ test_that("hv_tbl_summary builds a continuous, ungrouped (by = NULL) table", {
 })
 
 test_that("hv_tbl_summary builds a continuous, grouped (by given) table", {
+  skip_if_not_installed("broom")
   dta <- mk_tbl_summary_data()
   tbl <- hv_tbl_summary(
     dta, by = "grp", groups = list(Vitals = "age"), continuous = "age"
@@ -194,6 +196,7 @@ test_that("hv_tbl_summary does not comma-format large N", {
 })
 
 test_that("hv_tbl_summary's N column counts non-missing values only", {
+  skip_if_not_installed("broom")
   # The N column is footnoted "Number of non-missing values." and the
   # SAS tables count that way (bsa: 7947 of 7948). gtsummary's {N_obs}
   # counts every row, so a variable with missing data used to report the
@@ -314,6 +317,7 @@ test_that("hv_tbl_summary compare = 'none' adds no comparison column", {
 })
 
 test_that("hv_tbl_summary compare = 'pvalue' adds a formatted p-value column", {
+  skip_if_not_installed("broom")
   dta <- mk_tbl_summary_data()
   tbl <- hv_tbl_summary(
     dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
@@ -327,7 +331,9 @@ test_that("hv_tbl_summary compare = 'pvalue' adds a formatted p-value column", {
 test_that("hv_tbl_summary compare 'pvalue'/'both' fail loudly without broom", {
   # Without broom, gtsummary's add_p() only warns and leaves every p-value
   # blank. The book shipped a week of blank p-values that way.
-  local_mocked_bindings(.has_broom = function() FALSE)
+  # smd present, so "both" reaches the broom check.
+  local_mocked_bindings(.has_broom = function() FALSE,
+                        .has_smd = function() TRUE)
   dta <- mk_tbl_summary_data()
   for (cmp in c("pvalue", "both")) {
     expect_error(
@@ -339,10 +345,27 @@ test_that("hv_tbl_summary compare 'pvalue'/'both' fail loudly without broom", {
     )
   }
   # SMD and none never call add_p(), so they still work without broom.
+  skip_if_not_installed("smd")
   expect_no_error(hv_tbl_summary(
     dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
     compare = "smd"
   ))
+})
+
+test_that("hv_tbl_summary compare 'smd'/'both' fail loudly without smd", {
+  # Without smd, gtsummary's add_difference() only reports the error and
+  # leaves every Std. Diff. cell blank, as add_p() does without broom.
+  local_mocked_bindings(.has_smd = function() FALSE)
+  dta <- mk_tbl_summary_data()
+  for (cmp in c("smd", "both")) {
+    expect_error(
+      hv_tbl_summary(
+        dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
+        compare = cmp
+      ),
+      "needs the 'smd' package", class = "hvtiRtables_missing_package"
+    )
+  }
 })
 
 test_that("hv_tbl_summary p-values and test_name are filled, not blank", {
@@ -363,6 +386,7 @@ test_that("hv_tbl_summary p-values and test_name are filled, not blank", {
 })
 
 test_that("hv_tbl_summary compare = 'smd' adds a formatted std. diff. column", {
+  skip_if_not_installed("smd")
   dta <- mk_tbl_summary_data()
   tbl <- hv_tbl_summary(
     dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
@@ -373,6 +397,7 @@ test_that("hv_tbl_summary compare = 'smd' adds a formatted std. diff. column", {
 })
 
 test_that("hv_tbl_summary compare 'both' puts p and SMD in one column", {
+  skip_if_not_installed("broom")
   dta <- mk_tbl_summary_data()
   tbl <- hv_tbl_summary(
     dta, by = "grp", groups = list(Vitals = "age"), continuous = "age",
@@ -386,6 +411,7 @@ test_that("hv_tbl_summary compare 'both' puts p and SMD in one column", {
 })
 
 test_that("hv_tbl_summary compare 'both' reports a true SMD", {
+  skip_if_not_installed("broom")
   # Regression: add_difference() must run BEFORE add_p(). In the reverse
   # order gtsummary overwrites `estimate` with a raw mean difference, so
   # the table rendered a wildly wrong number under a header saying SMD
@@ -419,6 +445,7 @@ test_that("hv_tbl_summary compare 'both' reports a true SMD", {
 })
 
 test_that("hv_tbl_summary compare 'both' preserves add_p()'s test_name", {
+  skip_if_not_installed("broom")
   # Same root cause as the SMD regression above, different casualty:
   # add_difference() running second also overwrites `test_name` with
   # "smd", losing the record of which test produced the p-value.
@@ -455,6 +482,7 @@ test_that("hv_tbl_summary compare 'both' preserves add_p()'s test_name", {
 })
 
 test_that("hv_tbl_summary compare 'both' reports an SMD for every type", {
+  skip_if_not_installed("broom")
   # This test previously asserted the opposite, that nominal categoricals
   # get no SMD. That was not a gtsummary limitation but the
   # add_p()-before-add_difference() ordering bug showing through: called
@@ -487,6 +515,7 @@ test_that("hv_tbl_summary compare 'both' reports an SMD for every type", {
 })
 
 test_that("hv_tbl_summary + jtcvs reproduce the stratified example", {
+  skip_if_not_installed("broom")
   # Group and `female`/`race_gp` counts taken directly from
   # summarytable_stratified_grp_res.docx (PERIMOUNT n=4190, Resilia
   # n=3758; female: 964 of 4190 PERIMOUNT, 1363 of 3758 Resilia; race_gp
@@ -596,6 +625,7 @@ test_that("hv_tbl_summary rejects an unused by level for compare = 'smd'", {
 })
 
 test_that("hv_tbl_summary still allows pvalue and none with 3+ groups", {
+  skip_if_not_installed("broom")
   # The guard must not touch the modes that work at 3+ groups.
   set.seed(1)
   n <- 90
@@ -878,6 +908,7 @@ test_that("every accepted binary shape counts the right event", {
 })
 
 test_that("overall = TRUE adds exactly one column", {
+  skip_if_not_installed("broom")
   base <- hv_tbl_summary(
     gtsummary::trial, by = "trt",
     groups = list(Demography = "age"), continuous = "age",
@@ -895,6 +926,7 @@ test_that("overall = TRUE adds exactly one column", {
 })
 
 test_that("overall = FALSE matches gtsummary's layout, in house notation", {
+  skip_if_not_installed("broom")
   # A real comparison against a table built directly from gtsummary
   # primitives with the same statistic/type/digits arguments
   # hv_tbl_summary() itself uses -- not just the absence of stat_0, which
@@ -944,6 +976,7 @@ test_that("overall = FALSE matches gtsummary's layout, in house notation", {
 })
 
 test_that("overall keeps its position for positional callers", {
+  skip_if_not_installed("broom")
   # The ninth positional argument has always been `overall`;
   # continuous_stat goes after it, so FALSE there still means "no
   # Overall column" rather than failing in match.arg() (Copilot, #49).
@@ -955,6 +988,7 @@ test_that("overall keeps its position for positional callers", {
 })
 
 test_that("overall defaults to TRUE, the macro's TOTALCOL=1", {
+  skip_if_not_installed("broom")
   tbl <- hv_tbl_summary(
     gtsummary::trial, by = "trt",
     groups = list(Demography = "age"), continuous = "age"
@@ -985,6 +1019,7 @@ test_that("continuous_stat = \"mean\" gives mean+/-SD without spaces", {
 })
 
 test_that("mean/SD cells follow the paired EHB/Blackstone rule", {
+  skip_if_not_installed("broom")
   dta <- data.frame(
     grp = factor(rep(c("A", "B"), c(4, 2))),
     value = c(100, 110, 130, 150, 113.5, 131.5)
@@ -1041,6 +1076,7 @@ test_that("zero or unavailable SD keeps gtsummary's rendering, and warns", {
 })
 
 test_that("continuous_stat = \"both\" puts mean and median side by side", {
+  skip_if_not_installed("broom")
   dta <- data.frame(age = c(10, 20, 30, NA, 40, 50), g = c(0, 0, 0, 1, 1, 1))
   tbl <- hv_tbl_summary(
     dta, by = "g", groups = list(D = "age"), continuous = "age",
@@ -1065,6 +1101,7 @@ test_that("continuous_stat = \"both\" puts mean and median side by side", {
 })
 
 test_that("under 'both' the median column is blank on other rows", {
+  skip_if_not_installed("broom")
   tbl <- hv_tbl_summary(
     gtsummary::trial, by = "trt",
     groups = list(D = c("age", "marker", "grade", "response")),
@@ -1079,6 +1116,7 @@ test_that("under 'both' the median column is blank on other rows", {
 })
 
 test_that("continuous_stat = \"both\" renders through both renderers", {
+  skip_if_not_installed("broom")
   tbl <- hv_tbl_summary(
     gtsummary::trial, by = "trt", groups = list(D = c("age", "grade")),
     continuous = "age", categorical = "grade", continuous_stat = "both"
@@ -1121,6 +1159,7 @@ test_that("overall must be a single TRUE or FALSE", {
 })
 
 test_that("overall = TRUE does not break the two-group guard for smd", {
+  skip_if_not_installed("smd")
   # stat_0 (Overall) must not be counted as one of the compared groups --
   # `trial$trt` genuinely has two levels, so this must not error.
   tbl <- hv_tbl_summary(
@@ -1142,6 +1181,7 @@ test_that("overall = TRUE does not break the two-group guard for smd", {
 })
 
 test_that("overall = TRUE does not break the two-group guard for both", {
+  skip_if_not_installed("broom")
   tbl <- hv_tbl_summary(
     gtsummary::trial, by = "trt",
     groups = list(Demography = "age"), continuous = "age",
@@ -1338,6 +1378,7 @@ sv_tbl <- function(...) {
 }
 
 test_that("show_variable puts the column name on each variable's first row", {
+  skip_if_not_installed("broom")
   tb <- sv_tbl()$table_body
   expect_identical(names(tb)[match("label", names(tb)) + 1L], "hv_variable")
   expect_identical(tb$hv_variable[tb$row_type == "label"], c("age", "grade"))
@@ -1345,6 +1386,7 @@ test_that("show_variable puts the column name on each variable's first row", {
 })
 
 test_that("show_variable's column is visible and headed Variable", {
+  skip_if_not_installed("broom")
   st <- sv_tbl()$table_styling$header
   row <- st[st$column == "hv_variable", ]
   expect_false(row$hide)
@@ -1352,6 +1394,7 @@ test_that("show_variable's column is visible and headed Variable", {
 })
 
 test_that("show_variable = FALSE leaves the table as it was", {
+  skip_if_not_installed("broom")
   tbl <- sv_tbl(show_variable = FALSE)
   expect_false("hv_variable" %in% names(tbl$table_body))
 })
@@ -1369,6 +1412,7 @@ test_that("show_variable follows mean_sd for positional callers", {
 })
 
 test_that("the report view shows the variable column beside the label", {
+  skip_if_not_installed("broom")
   tbl <- sv_tbl()
   ft <- hv_man_table(tbl)
   expect_identical(ft$col_keys[2], "hv_variable")
@@ -1385,6 +1429,7 @@ test_that("the report view shows the variable column beside the label", {
 })
 
 test_that("a JTCVS table, always a manuscript, never shows the column", {
+  skip_if_not_installed("broom")
   tbl <- sv_tbl()
   jt <- jtcvs_quiet(hv_man_table_jtcvs(
     tbl, groups = c(stat_1 = "A", stat_2 = "B")
@@ -1402,6 +1447,7 @@ sv_cells <- function(path) {
 }
 
 test_that("a saved CORR table never has the variable column", {
+  skip_if_not_installed("broom")
   path <- tempfile(fileext = ".docx")
   hv_man_table_save(hv_man_table(sv_tbl()), path)
   cells <- sv_cells(path)
@@ -1427,6 +1473,7 @@ test_that("a saved JTCVS table never has the variable column", {
 })
 
 test_that("the JTCVS saver drops the column from any flextable", {
+  skip_if_not_installed("broom")
   # hv_man_table_jtcvs() no longer builds it, so the saver's drop is the
   # guard for a flextable that carries it some other way.
   path <- tempfile(fileext = ".docx")
@@ -1672,6 +1719,7 @@ test_that("saving a ‡-marked table with footnotes lacking ‡ fails loud", {
 })
 
 test_that("a two-group 'both' table counts its median columns as wide", {
+  skip_if_not_installed("broom")
   tbl <- hv_tbl_summary(
     gtsummary::trial, by = "trt", groups = list(D = "age"),
     continuous = "age", continuous_stat = "both", overall = FALSE
@@ -2086,6 +2134,7 @@ with_global <- function(values, code) {
 }
 
 test_that("objects named like statistics never shadow them", {
+  skip_if_not_installed("broom")
   build <- function(continuous, ...) {
     hv_tbl_summary(gtsummary::trial, by = "trt",
                    groups = list(D = c(continuous, "stage")),
@@ -2116,6 +2165,7 @@ test_that("objects named like statistics never shadow them", {
 })
 
 test_that("a mean/SD cell the house rule cannot round warns, as medians do", {
+  skip_if_not_installed("broom")
   # Group A: every value equal, SD 0. Group B: one patient, SD NA. Neither
   # SD has a first significant digit, so the cell keeps gtsummary's text,
   # and that must not pass silently for the house precision.
