@@ -1,5 +1,19 @@
 # Changelog
 
+## hvtiRtables 1.0.15
+
+- [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md):
+  `compare = "smd"` or `"both"` without the ‘smd’ package is now an
+  error of class `hvtiRtables_missing_package`, as a p-value comparison
+  without ‘broom’ already was. gtsummary only reported the failure and
+  left every Std. Diff. cell blank.
+- Examples, tests and vignettes that need ‘broom’ or ‘smd’, both
+  suggested rather than imported, now run only when the package is
+  installed.
+- `rmarkdown` is no longer in `Suggests`. Nothing in the package, its
+  tests or its vignettes called it. The Quarto vignette engine still
+  reaches `rmarkdown` through the `quarto` package, which imports it.
+
 ## hvtiRtables 1.0.14
 
 - [`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md)

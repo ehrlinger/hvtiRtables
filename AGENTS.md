@@ -1,18 +1,22 @@
 # hvtiRtables
 
-Manuscript table builders for the HVTI CORR group. Eight exports across
+Manuscript table builders for the HVTI CORR group. Twelve exports across
 two renderer families: the house tables
 ([`hv_man_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table.md),
-[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md))
+[`hv_man_table_save()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save.md),
+[`hv_man_table_display()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_display.md),
+[`hv_table_style()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_table_style.md))
 and the JTCVS journal variants
 ([`hv_man_table_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_jtcvs.md),
-[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md)),
-plus
+[`hv_man_table_save_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_table_save_jtcvs.md),
+[`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md),
+deprecated in 1.0.8), plus
 [`hv_tbl_summary()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_summary.md),
-[`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md),
-[`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md)
+[`hv_tbl_compare()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_tbl_compare.md),
+[`hv_correlation_table()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_correlation_table.md),
+[`hv_man_footnotes()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_man_footnotes.md)
 and
-[`hv_test_footnotes_jtcvs()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_test_footnotes_jtcvs.md).
+[`hv_check_docx()`](https://ehrlinger.github.io/hvtiRtables/reference/hv_check_docx.md).
 
 **The two renderer families are the defining fact of this package.**
 They must not drift, and there is a test suite whose only job is to

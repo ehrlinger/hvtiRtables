@@ -7,8 +7,8 @@
 <title>Manuscript-Compliant Table Construction for HVTI CORR Group • hvtiRtables</title>
 <script src="lightswitch.js"></script><script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/Outfit-0.4.10/font.css" rel="stylesheet">
-<link href="deps/Fira_Code-0.4.10/font.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/Outfit-0.5.0/font.css" rel="stylesheet">
+<link href="deps/Fira_Code-0.5.0/font.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="index.html">hvtiRtables</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.15</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,16 +66,19 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="hvtirtables">hvtiRtables<a class="anchor" aria-label="anchor" href="#hvtirtables"></a>
+<div class="page-header"><h1 id="hvtirtables-manuscript-tables-that-follow-the-corr-rules">hvtiRtables: manuscript tables that follow the CORR rules<a class="anchor" aria-label="anchor" href="#hvtirtables-manuscript-tables-that-follow-the-corr-rules"></a>
 </h1></div>
 <!-- badges: start -->
 
 <p><a href="https://github.com/ehrlinger/hvtiRtables" class="external-link"><img src="https://img.shields.io/github/r-package/v/ehrlinger/hvtiRtables" alt="R package version"></a></p>
 <p><a href="https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml" class="external-link"><img src="https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml/badge.svg" alt="lint"></a> <!-- badges: end --></p>
-<p>Full reference documentation and worked examples: <a href="https://ehrlinger.github.io/hvtiRtables/">ehrlinger.github.io/hvtiRtables</a></p>
+<blockquote>
+<p><strong>Provenance.</strong> hvtiRtables is a port of the HVTI SAS table macro <code>%summarytable</code>. It gives the macro’s numbers except where four defaults differ, and the migration vignette’s “Defaults that differ” table lists them, with the argument that restores the macro’s behavior for each.</p>
+</blockquote>
 <p>You already know the drill: hand-copy a <code>gtsummary</code> table into a Word template, or run it through the SAS table macro, and by the third revision a footnote wording has drifted, a header has re-merged itself, or the font quietly changed. hvtiRtables closes that gap. Give it a <code>gtsummary</code> table object and you get back a <code>.docx</code> that already matches HVTI CORR’s “Table Construction for Manuscripts” rules (house font and rounding, footnotes and an abbreviation key as text below the table, no hidden spacer columns), the same way every time.</p>
 <p>Tables are drawn in a style named by its role. A report table (<code><a href="reference/hv_man_table.html">hv_man_table()</a></code>) is the working table of an analysis report. A manuscript table (<code>hv_man_table(style = "manuscript")</code>) is what a journal receives, laid out by what it does: <code>"compare"</code> for groups it compares, <code>"describe"</code> for cohorts or repeated measures it describes side by side.</p>
 <p>The <a href="https://ehrlinger.github.io/hvtiRtables/articles/table-styles.html">Table styles</a> article draws one table in each and lists what differs.</p>
+<p>Full reference documentation and worked examples: <a href="https://ehrlinger.github.io/hvtiRtables/">ehrlinger.github.io/hvtiRtables</a></p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -164,6 +167,101 @@
 <p>For CORR tables, the standard dagger footnote follows <code>continuous_stat</code> and <code>percentiles</code> automatically through <code><a href="reference/hv_man_table.html">hv_man_table()</a></code> and <code><a href="reference/hv_man_table_save.html">hv_man_table_save()</a></code>. A mean table therefore says <code>No. (%) or Mean±SD</code>; a table showing both statistics names both. The <code>(%)</code> lives there and in the describe layout’s second header row, not in the cells, which print <code>12(39)</code>: no sign, as the SAS macro does, and no space, so a count and its percent are one word toward a journal’s limit.</p>
 <p>Mean±SD cells follow Eugene H. Blackstone’s (EHB’s) paired rounding rule. The mean is rounded to the SD’s first-significant-digit place and the SD one place finer; an SD beginning with 1 gives both one additional place. Exact ties round to even, and so do those of medians and percentiles (62.5 shows as 62, where gtsummary and SAS showed 63). Medians and percentiles follow the house notation instead: brackets, 2 significant digits, and a value of 10 or more to the units place (<code>102 [63, 170]</code>). P values print without a leading zero (<code>.013</code>, <code>&lt;.001</code>). A table that mixes mean and median marks the cells of the statistic fewer rows use (<code>§</code> on medians, <code>¶</code> on means), with a note for each.</p>
 <p>Full parameter map, the four defaults that differ, and the <code>QNTLDEF</code> quantile trap: <strong><a href="https://ehrlinger.github.io/hvtiRtables/articles/sas-migration.html">Porting a <code>%summarytable</code> program to R</a></strong>.</p>
+</div>
+<div class="section level2">
+<h2 id="function-reference">Function reference<a class="anchor" aria-label="anchor" href="#function-reference"></a>
+</h2>
+<p>Compute the table:</p>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr>
+<th>Function</th>
+<th>What it does</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code><a href="reference/hv_tbl_summary.html">hv_tbl_summary()</a></code></td>
+<td>Build the summary table from data, the <code>%summarytable</code> way</td>
+</tr>
+<tr>
+<td><code><a href="reference/hv_tbl_compare.html">hv_tbl_compare()</a></code></td>
+<td>Join a comparison column computed elsewhere, such as standardized differences</td>
+</tr>
+<tr>
+<td><code><a href="reference/hv_correlation_table.html">hv_correlation_table()</a></code></td>
+<td>Pairwise correlations with Fisher confidence intervals</td>
+</tr>
+</tbody>
+</table>
+<p>Shape it and write it:</p>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr>
+<th>Function</th>
+<th>What it does</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code><a href="reference/hv_table_style.html">hv_table_style()</a></code></td>
+<td>A table style, named by its role, and its properties</td>
+</tr>
+<tr>
+<td><code><a href="reference/hv_man_table.html">hv_man_table()</a></code></td>
+<td>Shape a <code>gtsummary</code> table as a report or manuscript table</td>
+</tr>
+<tr>
+<td><code><a href="reference/hv_man_table_save.html">hv_man_table_save()</a></code></td>
+<td>Write the table to <code>.docx</code> with its footnotes and abbreviation key</td>
+</tr>
+<tr>
+<td><code><a href="reference/hv_man_table_display.html">hv_man_table_display()</a></code></td>
+<td>Show the table with its Word notes, for HTML output</td>
+</tr>
+<tr>
+<td><code><a href="reference/hv_man_footnotes.html">hv_man_footnotes()</a></code></td>
+<td>The house-standard footnotes</td>
+</tr>
+</tbody>
+</table>
+<p>Verify the file:</p>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr>
+<th>Function</th>
+<th>What it does</th>
+</tr></thead>
+<tbody><tr>
+<td><code><a href="reference/hv_check_docx.html">hv_check_docx()</a></code></td>
+<td>Check a written <code>.docx</code> for the structures the house rules forbid</td>
+</tr></tbody>
+</table>
+<p><code><a href="reference/hv_man_table_jtcvs.html">hv_man_table_jtcvs()</a></code>, <code><a href="reference/hv_man_table_save_jtcvs.html">hv_man_table_save_jtcvs()</a></code> and <code><a href="reference/hv_test_footnotes_jtcvs.html">hv_test_footnotes_jtcvs()</a></code> are deprecated; see above.</p>
+</div>
+<div class="section level2">
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+</h2>
+<ul>
+<li>
+<a href="https://ehrlinger.github.io/hvtiRtables/articles/hvtiRtables.html">Building a manuscript table end to end</a>: the overview, from data to a checked <code>.docx</code>.</li>
+<li>
+<a href="https://ehrlinger.github.io/hvtiRtables/articles/sas-migration.html">Porting a <code>%summarytable</code> program to R</a>: the parameter map and the defaults that differ.</li>
+<li>
+<a href="https://ehrlinger.github.io/hvtiRtables/articles/table-styles.html">Table styles</a>: one table in each style, and what differs between them.</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="related-packages">Related packages<a class="anchor" aria-label="anchor" href="#related-packages"></a>
+</h2>
+<p>hvtiRtables is a member of the HVTI R family; <a href="https://github.com/ehrlinger/hvtiR" class="external-link">hvtiR</a> installs and lists the rest. <a href="https://github.com/ehrlinger/hvtiRtemplates" class="external-link">hvtiRtemplates</a> builds its analysis templates’ tables with it.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="package-badges">

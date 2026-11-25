@@ -237,9 +237,10 @@ renderer attributes. A table whose rows mix mean and median also carries
 manuscript style also reads `hv_by_label`, the grouping's name (the
 variable's label when the data carry one), and the hidden `hv_n` column
 of `table_body`, each variable's overall non-missing count. A p-value
-comparison without the 'broom' package is an error of class
+comparison without the 'broom' package, or a standardized difference
+without the 'smd' package, is an error of class
 `hvtiRtables_missing_package`, so a runner can catch it and fall back to
-`compare = "smd"`.
+the comparison it can still make.
 
 ## Details
 
@@ -340,17 +341,20 @@ for the percentile-footnote house convention.
 ``` r
 # A baseline-characteristics table of the kind a study manuscript
 # actually carries: demography and disease sections, compared
-# across treatment arms.
-hv_tbl_summary(
-  gtsummary::trial,
-  by = "trt",
-  groups = list(
-    Demography = c("age", "marker"),
-    Disease = c("stage", "grade")
-  ),
-  continuous = c("age", "marker"),
-  categorical = c("stage", "grade")
-)
+# across treatment arms. The p-values need the 'broom' package, which
+# is suggested, not imported.
+if (requireNamespace("broom", quietly = TRUE)) {
+  hv_tbl_summary(
+    gtsummary::trial,
+    by = "trt",
+    groups = list(
+      Demography = c("age", "marker"),
+      Disease = c("stage", "grade")
+    ),
+    continuous = c("age", "marker"),
+    categorical = c("stage", "grade")
+  )
+}
 
 
   
