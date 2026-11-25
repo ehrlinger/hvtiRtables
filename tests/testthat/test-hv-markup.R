@@ -45,6 +45,7 @@ test_that(".markup_pieces() follows the pair rule", {
 })
 
 test_that("each table path raises and lowers label, level and header text", {
+  skip_if_not_installed("broom")
   tbl <- mk_markup_tbl()
   paths <- list(
     report = hv_man_table(tbl),
@@ -65,6 +66,7 @@ test_that("each table path raises and lowers label, level and header text", {
 })
 
 test_that("the deprecated JTCVS table renders markup too", {
+  skip_if_not_installed("broom")
   ft <- jtcvs_quiet(hv_man_table_jtcvs(
     mk_markup_tbl(), groups = c(stat_1 = "Arm a", stat_2 = "Arm b")
   ))
@@ -72,6 +74,7 @@ test_that("the deprecated JTCVS table renders markup too", {
 })
 
 test_that("a split label keeps its row's bold in Word", {
+  skip_if_not_installed("broom")
   out <- tempfile(fileext = ".docx")
   on.exit(unlink(out), add = TRUE)
   hv_man_table_save(hv_man_table(mk_markup_tbl()), out)
@@ -94,6 +97,7 @@ test_that("runs without markup are unchanged", {
 })
 
 test_that("the abbreviation key and the caption render markup in Word", {
+  skip_if_not_installed("broom")
   out <- tempfile(fileext = ".docx")
   on.exit(unlink(out), add = TRUE)
   hv_man_table_save(
@@ -122,6 +126,7 @@ test_that("the abbreviation key and the caption render markup in Word", {
 })
 
 test_that("the display's notes and key render markup", {
+  skip_if_not_installed("broom")
   ft <- hv_man_table_display(
     hv_man_table(mk_markup_tbl()),
     abbreviations = c(BSA = "body surface area (m^2^)",
@@ -135,6 +140,7 @@ test_that("the display's notes and key render markup", {
 })
 
 test_that("a note carrying markup renders it", {
+  skip_if_not_installed("broom")
   ft <- hv_man_table(mk_markup_tbl())
   attr(ft, "hv_footnotes")[["*"]] <- "Patients with BSA in m^2^."
   footer <- chunk_aligns(hv_man_table_display(ft), "footer")

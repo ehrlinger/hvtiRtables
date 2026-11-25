@@ -155,13 +155,16 @@
 #' library(gtsummary)
 #' tbl <- tbl_summary(trial, by = trt, include = c(age, grade))
 #' ft <- hv_man_table(tbl)
-#' ft2 <- hv_man_table(
-#'   hv_tbl_summary(
-#'     trial, by = "trt", groups = list(A = c("age", "grade")),
-#'     continuous = "age", categorical = "grade"
-#'   ),
-#'   style = "manuscript", layout = "describe"
-#' )
+#' # p-values need the 'broom' package, which is suggested, not imported.
+#' if (requireNamespace("broom", quietly = TRUE)) {
+#'   ft2 <- hv_man_table(
+#'     hv_tbl_summary(
+#'       trial, by = "trt", groups = list(A = c("age", "grade")),
+#'       continuous = "age", categorical = "grade"
+#'     ),
+#'     style = "manuscript", layout = "describe"
+#'   )
+#' }
 #'
 #' @export
 hv_man_table <- function(tbl, font = "Times New Roman", font_size = 12,

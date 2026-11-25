@@ -237,6 +237,7 @@ test_that("a fontless style's display takes the page's font in HTML", {
 })
 
 test_that("a report display keeps its own font, with no class", {
+  skip_if_not_installed("broom")
   shown <- hv_man_table_display(dp_ft(), abbreviations = dp_abbr)
   expect_null(shown$properties$opts_html$extra_class)
   html <- as.character(flextable::htmltools_value(shown))

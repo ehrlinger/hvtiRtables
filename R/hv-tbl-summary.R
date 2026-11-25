@@ -232,9 +232,10 @@
 #'   also reads `hv_by_label`, the grouping's name (the variable's label
 #'   when the data carry one), and the hidden `hv_n` column of
 #'   `table_body`, each variable's overall non-missing count. A p-value
-#'   comparison without the 'broom' package is an error of class
+#'   comparison without the 'broom' package, or a standardized difference
+#'   without the 'smd' package, is an error of class
 #'   `hvtiRtables_missing_package`, so a runner can catch it and fall back
-#'   to `compare = "smd"`.
+#'   to the comparison it can still make.
 #'
 #' @seealso [hv_man_table()] to render the result. [hv_man_footnotes()] for
 #'   the percentile-footnote house convention.
@@ -242,17 +243,20 @@
 #' @examples
 #' # A baseline-characteristics table of the kind a study manuscript
 #' # actually carries: demography and disease sections, compared
-#' # across treatment arms.
-#' hv_tbl_summary(
-#'   gtsummary::trial,
-#'   by = "trt",
-#'   groups = list(
-#'     Demography = c("age", "marker"),
-#'     Disease = c("stage", "grade")
-#'   ),
-#'   continuous = c("age", "marker"),
-#'   categorical = c("stage", "grade")
-#' )
+#' # across treatment arms. The p-values need the 'broom' package, which
+#' # is suggested, not imported.
+#' if (requireNamespace("broom", quietly = TRUE)) {
+#'   hv_tbl_summary(
+#'     gtsummary::trial,
+#'     by = "trt",
+#'     groups = list(
+#'       Demography = c("age", "marker"),
+#'       Disease = c("stage", "grade")
+#'     ),
+#'     continuous = c("age", "marker"),
+#'     categorical = c("stage", "grade")
+#'   )
+#' }
 #'
 #' @export
 hv_tbl_summary <- function(data, by = NULL, groups,
@@ -595,6 +599,17 @@ hv_tbl_summary <- function(data, by = NULL, groups,
         effective_compare, by, n_groups, hint
       ), call. = FALSE)
     }
+  }
+
+  # add_difference()'s "smd" method goes through cardx, which needs smd.
+  # Without it gtsummary only reports the error and leaves every Std. Diff.
+  # cell blank, the same silent failure as the broom case below.
+  if (effective_compare %in% c("smd", "both") && !.has_smd()) {
+    stop(errorCondition(paste0(
+      "hv_tbl_summary(): `compare = \"", effective_compare, "\"` needs ",
+      "the 'smd' package for its standardized differences, and it is not ",
+      "installed. Install it with install.packages(\"smd\")."
+    ), class = "hvtiRtables_missing_package", call = NULL))
   }
 
   # add_p()'s Wilcoxon test goes through cardx, which needs broom. Without
@@ -1148,3 +1163,4 @@ hv_tbl_summary <- function(data, by = NULL, groups,
 # A function rather than an inline requireNamespace() call so the tests
 # can mock broom's absence without uninstalling it.
 .has_broom <- function() requireNamespace("broom", quietly = TRUE)
+.has_smd <- function() requireNamespace("smd", quietly = TRUE)

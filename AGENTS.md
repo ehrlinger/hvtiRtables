@@ -1,10 +1,11 @@
 # hvtiRtables
 
-Manuscript table builders for the HVTI CORR group. Eight exports across two renderer
-families: the house tables (`hv_man_table()`, `hv_man_table_save()`) and the JTCVS
-journal variants (`hv_man_table_jtcvs()`, `hv_man_table_save_jtcvs()`), plus
-`hv_tbl_summary()`, `hv_man_footnotes()`, `hv_check_docx()` and
-`hv_test_footnotes_jtcvs()`.
+Manuscript table builders for the HVTI CORR group. Twelve exports across two renderer
+families: the house tables (`hv_man_table()`, `hv_man_table_save()`,
+`hv_man_table_display()`, `hv_table_style()`) and the JTCVS journal variants
+(`hv_man_table_jtcvs()`, `hv_man_table_save_jtcvs()`, `hv_test_footnotes_jtcvs()`,
+deprecated in 1.0.8), plus `hv_tbl_summary()`, `hv_tbl_compare()`,
+`hv_correlation_table()`, `hv_man_footnotes()` and `hv_check_docx()`.
 
 **The two renderer families are the defining fact of this package.** They must not drift,
 and there is a test suite whose only job is to enforce that.

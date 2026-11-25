@@ -1,5 +1,5 @@
 
-# hvtiRtables
+# hvtiRtables: manuscript tables that follow the CORR rules
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/ehrlinger/hvtiRtables/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ehrlinger/hvtiRtables/actions/workflows/R-CMD-check.yaml)
@@ -12,7 +12,10 @@
 [![lint](https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml/badge.svg)](https://github.com/ehrlinger/hvtiRtables/actions/workflows/lint.yaml)
 <!-- badges: end -->
 
-Full reference documentation and worked examples: [ehrlinger.github.io/hvtiRtables](https://ehrlinger.github.io/hvtiRtables/)
+> **Provenance.** hvtiRtables is a port of the HVTI SAS table macro
+> `%summarytable`. It gives the macro's numbers except where four defaults
+> differ, and the migration vignette's "Defaults that differ" table lists
+> them, with the argument that restores the macro's behavior for each.
 
 You already know the drill: hand-copy a `gtsummary` table into a Word
 template, or run it through the SAS table macro, and by the third revision
@@ -31,6 +34,8 @@ for cohorts or repeated measures it describes side by side.
 
 The [Table styles](https://ehrlinger.github.io/hvtiRtables/articles/table-styles.html)
 article draws one table in each and lists what differs.
+
+Full reference documentation and worked examples: [ehrlinger.github.io/hvtiRtables](https://ehrlinger.github.io/hvtiRtables/)
 
 ## Installation
 
@@ -135,3 +140,47 @@ table that mixes mean and median marks the cells of the statistic fewer rows use
 
 Full parameter map, the four defaults that differ, and the `QNTLDEF`
 quantile trap: **[Porting a `%summarytable` program to R](https://ehrlinger.github.io/hvtiRtables/articles/sas-migration.html)**.
+
+## Function reference
+
+Compute the table:
+
+| Function | What it does |
+|---|---|
+| `hv_tbl_summary()` | Build the summary table from data, the `%summarytable` way |
+| `hv_tbl_compare()` | Join a comparison column computed elsewhere, such as standardized differences |
+| `hv_correlation_table()` | Pairwise correlations with Fisher confidence intervals |
+
+Shape it and write it:
+
+| Function | What it does |
+|---|---|
+| `hv_table_style()` | A table style, named by its role, and its properties |
+| `hv_man_table()` | Shape a `gtsummary` table as a report or manuscript table |
+| `hv_man_table_save()` | Write the table to `.docx` with its footnotes and abbreviation key |
+| `hv_man_table_display()` | Show the table with its Word notes, for HTML output |
+| `hv_man_footnotes()` | The house-standard footnotes |
+
+Verify the file:
+
+| Function | What it does |
+|---|---|
+| `hv_check_docx()` | Check a written `.docx` for the structures the house rules forbid |
+
+`hv_man_table_jtcvs()`, `hv_man_table_save_jtcvs()` and
+`hv_test_footnotes_jtcvs()` are deprecated; see above.
+
+## Documentation
+
+- [Building a manuscript table end to end](https://ehrlinger.github.io/hvtiRtables/articles/hvtiRtables.html):
+  the overview, from data to a checked `.docx`.
+- [Porting a `%summarytable` program to R](https://ehrlinger.github.io/hvtiRtables/articles/sas-migration.html):
+  the parameter map and the defaults that differ.
+- [Table styles](https://ehrlinger.github.io/hvtiRtables/articles/table-styles.html):
+  one table in each style, and what differs between them.
+
+## Related packages
+
+hvtiRtables is a member of the HVTI R family; [hvtiR](https://github.com/ehrlinger/hvtiR)
+installs and lists the rest. [hvtiRtemplates](https://github.com/ehrlinger/hvtiRtemplates)
+builds its analysis templates' tables with it.

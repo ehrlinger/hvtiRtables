@@ -132,6 +132,7 @@ test_that("hv_check_docx rejects an empty string or NA path", {
 })
 
 test_that("hv_check_docx reports zero findings on the package's own output", {
+  skip_if_not_installed("broom")
   out <- tempfile(fileext = ".docx")
   on.exit(unlink(out), add = TRUE)
   report <- hv_check_docx(mk_clean_docx(out))
@@ -143,6 +144,7 @@ test_that("hv_check_docx reports zero findings on the package's own output", {
 })
 
 test_that("hv_check_docx detects a w:framePr floating layer", {
+  skip_if_not_installed("broom")
   clean <- tempfile(fileext = ".docx")
   dirty <- tempfile(fileext = ".docx")
   on.exit(unlink(c(clean, dirty)), add = TRUE)
@@ -164,6 +166,7 @@ test_that("hv_check_docx detects a w:framePr floating layer", {
 })
 
 test_that("hv_check_docx detects a floating text box", {
+  skip_if_not_installed("broom")
   clean <- tempfile(fileext = ".docx")
   dirty <- tempfile(fileext = ".docx")
   on.exit(unlink(c(clean, dirty)), add = TRUE)
@@ -190,6 +193,7 @@ test_that("hv_check_docx detects a floating text box", {
 })
 
 test_that("hv_check_docx detects an empty near-zero-width column", {
+  skip_if_not_installed("broom")
   clean <- tempfile(fileext = ".docx")
   dirty <- tempfile(fileext = ".docx")
   on.exit(unlink(c(clean, dirty)), add = TRUE)
@@ -206,6 +210,7 @@ test_that("hv_check_docx detects an empty near-zero-width column", {
 })
 
 test_that("hv_check_docx spares a wide gutter and a narrow filled column", {
+  skip_if_not_installed("broom")
   clean <- tempfile(fileext = ".docx")
   dirty <- tempfile(fileext = ".docx")
   on.exit(unlink(c(clean, dirty)), add = TRUE)
@@ -227,6 +232,7 @@ test_that("hv_check_docx spares a wide gutter and a narrow filled column", {
 })
 
 test_that("hv_check_docx detects a footnote row inside the table", {
+  skip_if_not_installed("broom")
   out <- tempfile(fileext = ".docx")
   on.exit(unlink(out), add = TRUE)
   report <- hv_check_docx(mk_footnote_docx(out))
@@ -238,6 +244,7 @@ test_that("hv_check_docx detects a footnote row inside the table", {
 })
 
 test_that("hv_check_docx detects a dagger-marked last row", {
+  skip_if_not_installed("broom")
   clean <- tempfile(fileext = ".docx")
   dirty <- tempfile(fileext = ".docx")
   on.exit(unlink(c(clean, dirty)), add = TRUE)
@@ -283,6 +290,7 @@ mk_digit_footnote_docx <- function(path, symbol = "1") {
 }
 
 test_that("hv_check_docx detects a gtsummary digit footnote row", {
+  skip_if_not_installed("broom")
   out <- tempfile(fileext = ".docx")
   on.exit(unlink(out), add = TRUE)
   report <- hv_check_docx(mk_digit_footnote_docx(out))
@@ -293,6 +301,7 @@ test_that("hv_check_docx detects a gtsummary digit footnote row", {
 })
 
 test_that("hv_check_docx detects a multi-digit footnote marker", {
+  skip_if_not_installed("broom")
   out <- tempfile(fileext = ".docx")
   on.exit(unlink(out), add = TRUE)
   report <- hv_check_docx(mk_digit_footnote_docx(out, symbol = "12"))
@@ -300,6 +309,7 @@ test_that("hv_check_docx detects a multi-digit footnote marker", {
 })
 
 test_that("hv_check_docx detects gtsummary's abbreviation row", {
+  skip_if_not_installed("broom")
   clean <- tempfile(fileext = ".docx")
   dirty <- tempfile(fileext = ".docx")
   on.exit(unlink(c(clean, dirty)), add = TRUE)
@@ -318,6 +328,7 @@ test_that("hv_check_docx detects gtsummary's abbreviation row", {
 })
 
 test_that("hv_check_docx spares a last row that starts with a plain digit", {
+  skip_if_not_installed("broom")
   clean <- tempfile(fileext = ".docx")
   dirty <- tempfile(fileext = ".docx")
   on.exit(unlink(c(clean, dirty)), add = TRUE)
@@ -334,6 +345,7 @@ test_that("hv_check_docx spares a last row that starts with a plain digit", {
 })
 
 test_that("hv_check_docx spares a last row that merely starts a word", {
+  skip_if_not_installed("broom")
   clean <- tempfile(fileext = ".docx")
   dirty <- tempfile(fileext = ".docx")
   on.exit(unlink(c(clean, dirty)), add = TRUE)
@@ -351,6 +363,7 @@ test_that("hv_check_docx spares a last row that merely starts a word", {
 })
 
 test_that("hv_check_docx reports every violation kind in one file", {
+  skip_if_not_installed("broom")
   fn <- tempfile(fileext = ".docx")
   dirty <- tempfile(fileext = ".docx")
   on.exit(unlink(c(fn, dirty)), add = TRUE)
@@ -485,6 +498,7 @@ test_that("header merges and full-width section rows pass the shared rule", {
 })
 
 test_that("the package's own tables pass the rule for their style", {
+  skip_if_not_installed("broom")
   tbl <- hv_tbl_summary(
     gtsummary::trial, by = "trt",
     groups = list(Demography = c("age", "grade"), Disease = "stage"),
@@ -573,6 +587,7 @@ test_that("legacy w:hMerge groups count as merged cells", {
 })
 
 test_that("hv_check_docx detects markup left as plain text", {
+  skip_if_not_installed("broom")
   clean <- tempfile(fileext = ".docx")
   dirty <- tempfile(fileext = ".docx")
   on.exit(unlink(c(clean, dirty)), add = TRUE)
@@ -592,6 +607,7 @@ test_that("hv_check_docx detects markup left as plain text", {
 })
 
 test_that("hv_check_docx does not flag the package's own rendered markup", {
+  skip_if_not_installed("broom")
   d <- gtsummary::trial
   attr(d$age, "label") <- "~~x~~"
   tbl <- hv_tbl_summary(
